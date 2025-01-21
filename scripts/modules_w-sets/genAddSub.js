@@ -6,50 +6,56 @@ function setAddSub(numOfTerms, operation, termRange) {
         operation: operation,
         termRange: termRange 
     };
+} // termRange should be a two-number array like [-5,4]
+
+function genAddSub(settings) {
+    const termArray = H.removeFromArray(0,H.integerArray(settings.termRange[0],settings.termRange[1])); // Array of possible values for the terms
+    const sumLength = settings.numOfTerms; // How many terms the sum will have
+
+    let sumString = '';
+    const sumElements = H.arrayOfRandsFromList(termArray, sumLength);
+    let sumElements_inMath = [...sumElements];
+    for (let i = 0; i < sumElements_inMath.length; i++) {
+        if (sumElements_inMath[i] < 0) sumElements_inMath[i] = '(' + sumElements_inMath[i] + ')';
+    } // Add parentheses to negative terms in the sum
+
+    
+    // creating the sum string and calculating the value of the sum
+    sumString = sumString + sumElements_inMath[0];
+    let valueOfSum = sumElements[0];
+    if (settings.operation === 'add') {
+        for (let i = 1; i < sumElements.length; i++) {
+            sumString = sumString + '+' + sumElements_inMath[i];
+            valueOfSum = valueOfSum + sumElements[i];
+        }
+    }
+    else if (settings.operation === 'subtract') {
+        for (let i = 1; i < sumElements.length; i++) {
+            sumString = sumString + '-' + sumElements_inMath[i];
+            valueOfSum = valueOfSum - sumElements[i];
+        }
+    }
+    else if (settings.operation === 'both') {
+        for (let i = 1; i < sumElements.length; i++) {
+            let switcher = H.randInt(0,1);
+
+            if (switcher === 0) {
+                sumString = sumString + '+' + sumElements_inMath[i];
+                valueOfSum = valueOfSum + sumElements[i];
+            }
+            else {
+                sumString = sumString + '-' + sumElements_inMath[i]; 
+                valueOfSum = valueOfSum - sumElements[i]; 
+            } 
+        } 
+    }
+
+    return {
+        question: sumString,
+        answer: valueOfSum
+    };
 }
 
 
-function genAddSub(settings) {
-    const range = settings.termRange; // The maximum magnitude of a number in the sum (numbers can be from -range to range excluding 0)
-    const sumLength = settings.numOfTerms; // How many numbers the sum will have
-    let constArray; // array to hold all the terms of the sum
-    
-    // Decide whether there should be addition, subtraction, or both
-    if (settings.operation === 'add') {
-        constArray = H.integerArray(1,range);
-    }
-    else if (settings.operation === 'subtract') {
-        constArray = H.integerArray((-1)*range,-1);
-    }
-    else if (settings.operation === 'both') {
-        constArray = H.removeFromArray(0,H.integerArray((-1) * range, range)); 
-    }
-
-
-    const sumTemplate = H.arrayOfRandsFromList(constArray,sumLength);
-    let sum = 0;
-
-    for (let i = 0; i < sumTemplate.length; i++) {
-        sum += sumTemplate[i]; // Add each element of the array to the sum
-    }
-
-
-    // conversion to math
-
-    let result = ""; 
-    for (let i = 0; i < sumTemplate.length; i++) {
-        let numStr = sumTemplate[i].toString(); 
-        if (numStr.charAt(0) !== '-' && i !== 0) {
-            numStr = '+' + numStr; 
-        }
-        result += numStr; 
-    }
-    
-    return {
-        question: result,
-        answer: sum
-    };
-} 
-
-let settings = setAddSub(2,'subtract',10);
+let settings = setAddSub(H.randInt(2,6),'both',[1,10]);
 console.log(genAddSub(settings));
