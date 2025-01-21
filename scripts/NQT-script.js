@@ -149,3 +149,5 @@ function resetStyles(elements) {
 createEventListeners();
 
 // this is a test comment
+
+// this is the second test comment
