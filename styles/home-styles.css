@@ -330,7 +330,7 @@ body::-webkit-scrollbar-thumb:hover {
     flex-direction: row;
     justify-content: space-between;
     width: 65vw;
-    height: 24vw;
+    height: 20vw;
 }
 
 .gen-column {
@@ -411,10 +411,9 @@ body::-webkit-scrollbar-thumb:hover {
     color: rgb(249, 247, 247);
     background-color: rgb(65, 168, 68);
     font-weight: 500;
-    margin-bottom: 0.6vw;
     border-radius: calc(0.07 * 3.8vw);
     border: 0.17vw solid rgb(22, 91, 3);
-    margin-top: 0vw;
+    margin-top: 1.5vw;
 }
 
 #regen-circle {
