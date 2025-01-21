@@ -1,0 +1,1 @@
+import*as H from"../helper-modules/gen-helpers.js";export default function genAddSub(){let e=H.removeFromArray(0,H.integerArray(-8,8)),r=H.randInt(2,4),t=H.arrayOfRandsFromList(e,r),n=0;for(let e=0;e<t.length;e++)n+=t[e];let o="";for(let r=0;r<t.length;r++){let e=t[r].toString();"-"!==e.charAt(0)&&0!==r&&(e="+"+e),o+=e}return{question:o,answer:n}}

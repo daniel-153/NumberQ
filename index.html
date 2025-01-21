@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NumberQ | Teacher</title>
+    <link rel="icon" href="images/icon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="styles/normalize.css" />
+    <link rel="stylesheet" href="styles/home-styles.css" />
+  </head>
+  <body>
+    <div id="home-page-content">
+      <div id="outer-title-container">
+        <div id="inner-title-container">
+          <h1 id="numberQ-header">
+            <span id="numberQ-N">N</span>umber\( \mathbb{Q} \)
+          </h1>
+          <h2 id="teacher-edition-header">Teacher Edition</h2>
+        </div>
+        <p id="numberQ-description">
+          Generate random math problems for your students. NumberQ allows
+          teachers to create unique problems in a wide array of subjects.
+        </p>
+      </div>
+      <div id="generator-list">
+        <div class="generator arithmetic-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Addition & Subtraction</h1>
+            <h2 class="gen-topic">(arithmetic)</h2>
+          </div>
+          <div class="example-problem">\(4-6+8-5\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Addition & Subtraction"
+            data-gen-func-name="genAddSub"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator arithmetic-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Multiplication & Division</h1>
+            <h2 class="gen-topic">(arithmetic)</h2>
+          </div>
+          <div class="example-problem">
+            \(4\cdot\frac{1}{6}\cdot3\cdot\frac{1}{2}\)
+          </div>
+          <button
+            class="start-button"
+            data-gen-type="Multiplication & Division"
+            data-gen-func-name="genMulDiv"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator algebra-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Linear Equations</h1>
+            <h2 class="gen-topic">(algebra)</h2>
+          </div>
+          <div class="example-problem" id="lin-eq-example-problem">
+            \(3x+2=14-9x\)
+          </div>
+          <button
+            class="start-button"
+            data-gen-type="Linear Equations"
+            data-gen-func-name="genLinEq"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator algebra-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Quadratics & Factoring</h1>
+            <h2 class="gen-topic">(algebra)</h2>
+          </div>
+          <div class="example-problem">\(8x^{2}+10x+3\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Quadratics & Factoring"
+            data-gen-func-name="genFacQuad"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator algebra-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Systems of Equations</h1>
+            <h2 class="gen-topic">(algebra)</h2>
+          </div>
+          <div class="example-problem shrunk-question">
+            \(3x-2y=5\)<br />\(x+5=4y\)
+          </div>
+          <button
+            class="start-button"
+            data-gen-type="Systems of Equations"
+            data-gen-func-name="genSysEqs"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator algebra-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Simplify Radicals</h1>
+            <h2 class="gen-topic">(algebra)</h2>
+          </div>
+          <div class="example-problem">\(\sqrt{27}+\sqrt{75}\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Simplify Radicals"
+            data-gen-func-name="genSimRad"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator precalc-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Trig Values</h1>
+            <h2 class="gen-topic">(pre-calculus)</h2>
+          </div>
+          <div class="example-problem">\(\cos\left(\frac{4\pi}{3}\right)\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Trig Values"
+            data-gen-func-name="genTrigEx"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator precalc-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Rational Expressions</h1>
+            <h2 class="gen-topic">(pre-calculus)</h2>
+          </div>
+          <div class="example-problem">\(\frac{x+2}{x-3}+\frac{3x+1}{5x}\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Rational Expressions"
+            data-gen-func-name="genRatEx"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator precalc-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Polynomial Division</h1>
+            <h2 class="gen-topic">(pre-calculus)</h2>
+          </div>
+          <div class="example-problem">\(\frac{x^{3}+6x^{2}+11x+6}{x+2}\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Polynomial Division"
+            data-gen-func-name="genPolArith"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator precalc-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Complex Division</h1>
+            <h2 class="gen-topic">(pre-calculus)</h2>
+          </div>
+          <div class="example-problem">\(\frac{6+8i}{2-4i}\)</div>
+          <button
+            class="start-button"
+            data-gen-type="Complex Division"
+            data-gen-func-name="genComArith"
+          >
+            Generate
+          </button>
+        </div>
+        <div class="generator" id="coming-soon-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title" id="coming-soon-header">More Coming Soon</h1>
+          </div>
+          <div class="example-problem" id="coming-soon-problems">
+            \(\frac{d}{dx}\left[5x^{2}\sin\left(x\right)\right]\)&thinsp;\(\sqrt[3]{\frac{3x^{5}y^{4}}{24y}}\)&thinsp;\(\log_{5}(x^{3}y)-\log_{5}(y^{4})\)
+          </div>
+          <button id="feedback-button">Give Feedback/Suggestions</button>
+        </div>
+        <div class="generator" id="info-gen">
+          <div class="gen-title-container">
+            <h1 class="gen-title">Info about the Generators</h1>
+          </div>
+          <div class="example-problem" id="generator-info-examples">
+            How are the answers verified? <br />
+            How many problems are possible? <br />
+            How will settings work?
+          </div>
+          <button id="see-info-button">See Info & FAQ</button>
+        </div>
+      </div>
+    </div>
+    <div id="generation-content" class="hidden-content">
+      <img
+        id="back-arrow-p-modes"
+        src="images/back_arrow.png"
+        alt="back-arrow"
+      />
+      <div id="generation-content-wrapper">
+        <div id="generation-container">
+          <h1 id="gen-type-header">
+            <div id="generator-name"></div>
+          </h1>
+          <div id="inner-generation-wrapper">
+            <div id="Q-A-container">
+              <div id="Q-column" class="gen-column">
+                <h2 class="column-header">Q</h2>
+                <div class="output-box-wrapper">
+                  <div class="output-box rendered-box" id="rendered-Q"></div>
+                  <div class="output-box latex-box" id="un-rendered-Q"></div>
+                  <button class="copy-button" id="Q-copy-button">Copy</button>
+                </div>
+              </div>
+              <div id="A-column" class="gen-column">
+                <h2 class="column-header">A</h2>
+                <div class="output-box-wrapper">
+                  <div class="output-box rendered-box" id="rendered-A"></div>
+                  <div class="output-box latex-box" id="un-rendered-A"></div>
+                  <button class="copy-button" id="A-copy-button">Copy</button>
+                </div>
+              </div>
+            </div>
+            <button id="generate-button">
+              Generate&thinsp;<span id="regen-circle">&#x21bb;</span>
+            </button>
+          </div>
+          <div id="settings-container">
+            <form id="settings-list">
+              <div class="setting-box"></div>
+              <div class="setting-box"></div>
+              <div class="setting-box"></div>
+              <div class="setting-box"></div>
+              <div class="setting-box"></div>
+              <div class="setting-box"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="FAQ-page" class="hidden-content">
+      <img id="back-arrow-FAQ" src="images/back_arrow.png" alt="back-arrow" />
+      <div id="FAQ-content-container">
+        <h1 id="FAQ-header">Info & FAQ</h1>
+        <div id="question-container">
+          <h2 class="FAQ-question">
+            How are the answers to the problems verified?
+          </h2>
+          <p class="FAQ-answer">
+            For many of the problem types, the answer to the question is
+            actually determined first and is used to build the rest of the
+            problem. In linear equations for instance, the x value that solves
+            the equation is 'built-in' to the coefficients; so we can have
+            random values for the coefficients and still always have a
+            particular solution. Despite this, all of the generators have been
+            tested extensively using a computer algebra system (CAS) by matching
+            the answer supplied by the generator to the one calculated by the
+            CAS. Each generator has been tested over 100,000 times.
+          </p>
+          <h2 class="FAQ-question">
+            How many different problems are possible in each generator?
+          </h2>
+          <p class="FAQ-answer">
+            The number of possible problems varies widely by the type of
+            generator. As an example, up to 100,000 different combinations of
+            numbers are possible with the linear equation generator, but only
+            around 500 are possible with the polynomial division generator. It's
+            hard to get the exact number of possible configurations for some of
+            the generators (since they can take on so many different forms), but
+            a conservative estimate can be obtained by multiplying the number of
+            possible coefficients by the number of possible forms and ensuring
+            cases like 2+3 and 3+2 are only counted as one problem. Generally
+            speaking, the numerical generators have several hundred possible
+            problems and the expression/equation generators have anywhere from a
+            few thousand to a hundred thousand possible problems. One notable
+            exception is the trig expression generator, which only has 68
+            possibilities (to ensure the values always have an exact form).
+          </p>
+          <h2 class="FAQ-question">How will settings work?</h2>
+          <p class="FAQ-answer">
+            The goal with settings will be to make the generators completely
+            customizable. In quadratics and factoring for instance, the settings
+            will allow you to specify a range for the numbers and pick the form
+            (perfect square, no constant term, etc). In polynomial division,
+            settings will allow you to pick the degree of the polynomial, which
+            factors it has, and whether or not it will divide evenly. In other
+            words, everything that is random now will be controllable by
+            settings soon.
+          </p>
+        </div>
+      </div>
+    </div>
+    <script
+      type="text/javascript"
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+    ></script>
+    <script type="module" src="scripts/NQT-script.js"></script>
+  </body>
+</html>

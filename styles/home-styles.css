@@ -1,0 +1,990 @@
+:root {
+    --title-container-width: 55vw;
+    --numberQ-width: 50vw;
+    --description-width: 45vw;
+    --gen-width: 21.5vw;
+    --gen-container-width: 87.5vw;
+}
+
+body {
+    background-color: #292929;
+    position: relative;
+    overflow-y: visible;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+body::-webkit-scrollbar {
+    width: 16px; 
+}
+
+body::-webkit-scrollbar-track {
+  background: #4d4c4c;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: #9f9f9f;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+  background: rgb(123, 119, 119);
+}
+
+.hidden-content {
+    display: none !important;
+}
+
+
+/* Front Page */
+
+#outer-title-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 3vh;
+    margin-bottom: 7vh;
+    gap: 2vw;
+}
+
+#inner-title-container {
+    display: flex;
+    flex-direction: column;
+    width: var(--numberQ-width);
+    height: calc(var(--numberQ-width) * 0.24);
+    justify-content: space-between;
+    align-items: center;
+    background-color: #3A3A3A;
+    border-radius: calc(0.05 * var(--numberQ-width) * 0.2);
+}
+
+#numberQ-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: whitesmoke;
+    font-size: 9vw;
+    font-family: 'Times New Roman', Times, serif;
+    margin: 0;
+    font-weight: 600;
+    line-height: 0.9;
+    margin-top: 0.3vw;
+}
+
+#numberQ-N {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+#teacher-edition-header {
+    margin: 0;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-style: italic;
+    color: aqua;
+    font-size: 2.5vw;
+    font-weight: 400;
+    margin-bottom: 0.25vw;
+    text-decoration: underline;
+}
+
+#numberQ-description {
+    display: flex;
+    width: var(--description-width);
+    color: whitesmoke;
+    font-size: 1.5vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    justify-content: center;
+    align-items: center;
+    color: #8ee536;
+    margin: 0;
+    text-align: center;
+}
+
+/* Generator grid styles */
+
+#generator-list {
+    display: grid;
+    grid-template-columns: repeat(4,var(--gen-width)); 
+    grid-template-rows: calc(var(--gen-width) * 0.5);
+    grid-gap: 2vw 2vw;
+    width: 92vw;
+    height: fit-content;
+    padding-bottom: 1.5vw;
+}
+
+.generator {
+   display: flex;
+   flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+   width: var(--gen-width);
+   height: calc(var(--gen-width) * 0.5);
+   background-color: bisque;
+   border-radius: calc(0.07 * var(--gen-width) * 0.5); 
+}
+
+.gen-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.3vw;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    color: #0f0a0a;
+}
+
+.example-problem {
+    font-size: 2.8vw;
+    color: whitesmoke;
+}
+
+.shrunk-question {
+    font-size: 1.9vw;
+}
+
+.start-button {
+    width: 7vw;
+    height: 2.5vw;
+    font-size: 1.2vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    background-color: rgb(218, 165, 32);
+    color: whitesmoke;
+    border-radius: calc(0.1 * 2vw);
+    border: 0.15vw solid rgb(229, 197, 15);
+    margin-bottom: 0.25vw;
+}
+
+.start-button:hover, .start-button:focus {
+    cursor: pointer;
+    background-color: rgb(234, 179, 40);
+    font-size: 1.175vw;
+    border-width: 0.18vw;
+}
+
+.gen-title {
+    margin: 0;
+    font-size: 1.7vw;
+}
+
+.shrunk-title {
+    font-size: 1.5vw;
+}
+
+.gen-topic {
+    margin: 0;
+    font-size: 1.1vw;
+}
+
+.arithmetic-gen {
+    background-color: #7f4c7f;
+    border: 0.153867vw solid rgb(170, 7, 170);
+}
+
+.algebra-gen {
+    background-color: #4c7f4c;
+    border: 0.153867vw solid rgb(7, 156, 7);
+}
+
+.precalc-gen {
+    background-color: #4c4c7f;
+    border: 0.153867vw solid rgb(67, 43, 221);
+}
+
+.calc-gen {
+    background-color: #4c7f7f;
+    border: 0.153867vw solid rgb(9, 169, 169);
+}
+
+#coming-soon-gen {
+    background-color: rgb(175, 167, 167);
+    border: 0.153867vw solid rgb(85, 86, 86);
+}
+
+#coming-soon-header {
+    color: rgb(62, 58, 58);
+}
+
+#coming-soon-problems {
+    text-align: center;
+    font-size: 1.5vw;
+}
+
+#feedback-button {
+    width: 15vw;
+    height: 2.4vw;
+    font-size: 1.06vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    background-color: rgb(104, 10, 163);
+    color: whitesmoke;
+    border-radius: calc(0.1 * 2vw);
+    border: 0.15vw solid rgb(75, 9, 108);
+    margin-bottom: 0.25vw;
+}
+
+#feedback-button:hover, #feedback-button:focus {
+    cursor: pointer;
+    background-color: rgb(121, 18, 185);
+    font-size: 1.05vw;
+    border-width: 0.18vw;
+}
+
+#info-gen {
+    background-color: rgb(49, 132, 159);
+    border: 0.153867vw solid rgb(40, 157, 196);
+}
+
+#generator-info-examples {
+    font-family: monospace;
+    font-size: 1vw;
+    text-align: center;
+    line-height: 1.8;
+}
+
+#see-info-button {
+    width: 11vw;
+    height: 2.4vw;
+    font-size: 1.2vw;
+    margin-bottom: 0.25vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: white;
+    font-weight: 500;
+    background-color: rgb(81, 103, 173);
+    border: 0.15vw solid rgb(57, 85, 175);
+    border-radius: calc(0.1 * 2vw);
+}
+
+#see-info-button:hover, #see-info-button:focus {
+    cursor: pointer;
+    background-color: rgb(101, 124, 199);
+    font-size: 1.175vw;
+    border-width: 0.18vw;
+}
+
+/* Generation content */
+
+#back-arrow-p-modes {
+    outline: none;
+    border: none;
+    background: none;
+    width: 2.6vw;
+    height: auto;
+    position: absolute;
+    left: 0.5vw;
+    top: 0.5vw;
+    padding: 0.2vw;
+    border: 0.12vw solid black;
+    border-radius: calc(0.075 * 2.6vw);
+    z-index: 9999;
+}
+
+#back-arrow-p-modes:hover, 
+#back-arrow-p-modes:focus {
+    width: 2.65vw;
+    border: 0.15vw solid rgb(96, 26, 145); 
+    cursor: pointer;
+}
+
+#generation-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: var(--gen-container-width);
+    height: 93vh;
+    left: calc(50vw - var(--gen-container-width) * 0.5);
+    top: calc(50vh - 93vh * 0.5);
+    background-color: rgb(255, 229, 192);
+    border-radius: calc(0.01 * var(--gen-container-width));
+    border: 0.25vw solid rgb(203, 182, 151);
+}
+
+#gen-type-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+}
+
+#generator-name {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: rgb(22, 14, 68);
+    font-size: 1.78vw;
+    text-decoration: underline;
+    margin-top: 0.5vw;
+    font-weight: 700;
+}
+
+#inner-generation-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#Q-A-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 65vw;
+    height: 24vw;
+}
+
+.gen-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 47%;
+    height: 100%;
+}
+
+.column-header {
+    font-size: 4.5vw;
+    font-family: 'Times New Roman', Times, serif;
+    margin: 0;
+    color: rgb(10, 6, 6);
+}
+
+.output-box-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.output-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3vw;
+    width: 100%;
+    height: 6vw;
+    background-color: whitesmoke;
+    border-radius: calc(0.08 * 5vw);
+    border: 0.13vw solid darkblue;
+    font-family: 'Source Code Pro', monospace;
+}
+
+.latex-box {
+    border: 0.1vw solid #5ab8b8;
+    overflow: hidden;
+    height: 2vw;
+    margin-top: 1vw;
+    margin-bottom: 1.4vw;
+    white-space: nowrap;
+    overflow-x: hidden;
+    font-size: 1.2vw;
+}
+
+/* .latex-box:hover {
+    overflow-x: scroll;
+}
+
+.latex-box::-webkit-scrollbar {
+    height: 0.4vw;
+}
+
+.latex-box::-webkit-scrollbar-track {
+    background-color: #e2e2e2;
+    border-radius: 0.4vw;
+    margin-right: 0.1vw;
+    margin-left: 0.1vw;
+}
+
+.latex-box::-webkit-scrollbar-thumb {
+    background-color: #a6a6a6;
+    border-radius: 0.4vw;
+} */
+
+.copy-button {
+    width: 6.9vw;
+    height: 3vw;
+    font-size: 1.45vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: rgb(249, 247, 247);
+    background-color: #4ba1a1;
+    border: 0.17vw solid rgb(42, 74, 181);
+    border-radius: calc(0.07 * 3.5vw);
+    font-weight: 500;
+}
+
+.copy-button:hover {
+    cursor: pointer;
+    border: 0.2vw solid rgb(42, 74, 181);
+    background-color: #5ab8b8;
+    font-size: 1.425vw;
+}
+
+.copy-button[data-status='text-was-copied'] {
+    background-color: #4b66a1;
+}
+
+#generate-button {
+    width: 10.4vw;
+    height: 3.8vw;
+    font-size: 1.7vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: rgb(249, 247, 247);
+    background-color: rgb(65, 168, 68);
+    font-weight: 500;
+    margin-bottom: 0.6vw;
+    border-radius: calc(0.07 * 3.8vw);
+    border: 0.17vw solid rgb(22, 91, 3);
+    margin-top: 0vw;
+}
+
+#regen-circle {
+    font-weight: 600;
+    font-size: 2vw;
+}
+
+#generate-button:hover {
+    cursor: pointer;
+    border: 0.2vw solid rgb(22, 91, 3);
+    background-color: rgb(74, 181, 77);
+    font-size: 1.675vw;
+}
+
+#settings-container {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: fit-content;
+    height: 33%;
+    margin-bottom: 0.4vw;
+    border: 3px solid green;
+    overflow-y: scroll;
+
+}
+
+#settings-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Three columns per row */
+    gap: 5vw;
+    height: fit-content;
+}
+
+.setting-box {
+    width: 12.5vw;
+    height: 12.5vw;
+    background-color: #4ba1a1;
+    border: 3px solid red;
+}
+
+/* Special style accomodations for the output boxes */
+
+#un-rendered-Q[data-special-styles='genMulDiv'] {
+    font-size: 0.8vw;
+}
+
+.rendered-box[data-special-styles='genSysEqs'] {
+    height: 8.7vw;
+}
+
+.latex-box[data-special-styles='genSysEqs'] {
+    font-size: 1.2vw;
+}
+
+.rendered-box[data-special-styles='genRatEx'] {
+    height: 7.5vw;
+    font-size: 3.5vw;
+}
+
+.latex-box[data-special-styles='genRatEx'] {
+    font-size: 1.2vw;
+}
+
+#rendered-A[data-special-styles='genPolArith'] {
+    font-size: 2.3vw;
+}
+
+.rendered-box[data-special-styles='genComArith'] {
+    height: 8.7vw;
+}
+
+#rendered-Q[data-special-styles='genComArith'] {
+    font-size: 4vw;
+}
+
+#rendered-Q[data-special-styles='genSimRad'] {
+    font-size: 2.5vw;
+}
+
+#un-rendered-Q[data-special-styles='genSimRad'] {
+    font-size: 1vw;
+}
+
+#rendered-A[data-special-styles='genSimRad'] {
+    font-size: 2.7vw;
+}
+
+/* FAQ content */
+
+#FAQ-content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: absolute;
+    width: 50vw;
+    height: 90vh;
+    left: calc(50vw - 50vw * 0.5);
+    top: calc(50vh - 90vh * 0.5);
+    background-color: rgb(255, 229, 192);
+    border: 0.25vw solid rgb(203, 182, 151);
+    border-radius: calc(0.01 * 90vh);
+    overflow-y: scroll;
+}
+
+#FAQ-header {
+    margin-top: 0.2vw;
+    margin-bottom: 3vw;
+    color: #0f0a0a;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: 3.5vw;
+    font-weight: 600;
+    padding: 0.2vw 1vw 0.2vw 1vw;
+    border-radius: calc(0.1 * 3.5vw);
+    border: 0.15vw solid rgb(203, 182, 151);
+}
+
+#back-arrow-FAQ {
+    outline: none;
+    border: none;
+    background: none;
+    width: 2.6vw;
+    height: auto;
+    position: absolute;
+    left: 0.5vw;
+    top: 0.5vw;
+    padding: 0.2vw;
+    border: 0.12vw solid black;
+    border-radius: calc(0.075 * 2.6vw);
+}
+
+#back-arrow-FAQ:hover, 
+#back-arrow-FAQ:focus {
+    width: 2.65vw;
+    border: 0.15vw solid rgb(96, 26, 145); 
+    cursor: pointer;
+}
+
+#question-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: flex-start;
+    padding: 0 1.75vw 1vw 1.75vw;
+}
+
+.FAQ-question {
+    margin: 0;
+    margin-bottom: 0.6vw;
+    color: rgb(16, 10, 48);
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: 2vw;
+}
+
+.FAQ-answer {
+    margin: 0;
+    margin-bottom: 2vw;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 1.5vw;
+    line-height: 1.4;
+}
+
+/* Resize for smaller devices */
+
+@media (max-width: 1150px) {
+    #outer-title-container {
+        margin-bottom: 5.5vh;
+    }
+    
+    #inner-title-container {
+        width: calc(var(--numberQ-width) * 1.3);
+        height: calc(var(--numberQ-width) * 0.24 * 1.54);
+        border-radius: calc(0.05 * var(--numberQ-width) * 0.3);
+    }
+    
+    #numberQ-header {
+        font-size: 11vw;
+        margin-top: 1vw;
+    }
+    
+    #teacher-edition-header {
+        font-size: 4vw;
+        margin-bottom: 0.4vw;
+        font-weight: 400;
+    }
+    
+    #numberQ-description {
+        font-size: 4vw;
+        width: 70vw;
+    }
+    
+    #generator-list {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        gap: 3vh;
+        width: 95vw;
+        padding-bottom: 5vw;
+    } 
+
+    .generator {
+        width: 66vw;
+        height: 33vw;
+        border-radius: calc(0.062 * 33vw);
+        border-width: 0.6vw;
+    }
+
+    .gen-title-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.3vw;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+        color: #0f0a0a;
+    }
+
+    .start-button {
+        width: 24vw;
+        height: 6.7vw;
+        font-size: 3.8vw;
+        border-radius: calc(0.4 * 2vw);
+        border-width: 0.4vw;
+        margin-bottom: 1vw;
+    }
+
+    .start-button:hover, .start-button:focus {
+        cursor: pointer;
+        background-color: rgb(234, 179, 40);
+        font-size: 3.775vw;
+        border-width: 0.5vw;
+    }
+    
+    .gen-title {
+        margin: 0;
+        font-size: 4.6vw;
+    }
+    
+    .shrunk-title {
+        font-size: 4.2vw;
+    }
+    
+    .gen-topic {
+        margin: 0;
+        font-size: 2.7vw;
+    }
+
+    .example-problem {
+        font-size: 8.5vw;
+    }
+    
+    .shrunk-question {
+        font-size: 6.5vw;
+    }
+
+    #lin-eq-example-problem {
+        font-size: 7vw;
+    }
+
+    #coming-soon-gen {
+        border-width: 0.5vw;
+    }
+    
+    #coming-soon-problems {
+        font-size: 5vw;
+    }
+    
+    /* dfbhsaolaaaaaaalalaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaa */
+
+    #generation-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        overflow-y: visible;
+    }
+    
+    #back-arrow-p-modes {
+        width: 7vw;
+        left: 0.7vw;
+        top: 1vw;
+        border-width: 0.3vw;
+    }
+    
+    #back-arrow-p-modes:hover, 
+    #back-arrow-p-modes:focus {
+        width: 7vw;
+        border: 0..3vw solid black; 
+        cursor: default;
+    }
+    
+    #generation-container {
+        margin-top: 9.5vw;
+        position: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        width: 90vw;
+        height: 176.5vw;
+        border-radius: calc(0.025 * var(--gen-container-width));
+        border-width: 0.6vw;
+    }
+    
+    #gen-type-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+    }
+    
+    #generator-name {
+        font-size: 6vw;
+        margin-top: 0.75vw;
+    }
+    
+    #Q-A-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 6vw;
+        align-items: center;
+        height: fit-content;
+    }
+    
+    .gen-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .column-header {
+        font-size: 11vw;
+    }
+    
+    .output-box {
+        font-size: 7vw;
+        width: 73vw;
+        height: 15vw;
+        margin: 2vw;
+        border-radius: calc(0.25 * 5vw);
+    }
+    
+    .copy-button {
+        width: 27vw;
+        height: 9vw;
+        font-size: 4vw;
+        border: 0.6vw solid rgb(42, 74, 181);
+        border-radius: calc(0.2 * 3.5vw);
+        margin-top: 2vw;
+    }
+    
+    .copy-button:hover, .copy-button:focus {
+        cursor: default;
+        border: 0.6vw solid rgb(42, 74, 181);
+        background-color: #4ba1a1;
+        font-size: 4vw;
+    }
+    
+    .copy-button[data-status='text-was-copied'] {
+        background-color: #4b66a1;
+    }
+    
+    #generate-button {
+        width: 33vw;
+        height: 12vw;
+        font-size: 5vw;
+        margin-bottom: 1.5vw;
+        border-radius: calc(0.2 * 3.8vw);
+        border-width: 0.6vw;
+    }
+    
+    #generate-button:hover, #generate-button:focus {
+        font-size: 5vw;
+        border-width: 0.6vw;
+        background-color: rgb(65, 168, 68);
+        cursor: default;
+    }
+
+    #regen-circle {
+        font-size: 6vw;
+    }
+
+    /* ahjfgdsddsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdd */
+
+    #feedback-button {
+        width: 42vw;
+        height: 6.7vw;
+        font-size: 2.9vw;
+        border-radius: calc(0.4 * 2vw);
+        border-width: 0.5vw;
+        margin-bottom: 1vw;
+    }
+
+    #feedback-button:hover, 
+    #feedback-button:focus {
+        width: 42vw;
+        height: 6.7vw;
+        font-size: 2.9vw;
+        border-radius: calc(0.4 * 2vw);
+        border-width: 0.5vw;
+        margin-bottom: 1vw;
+        background-color: rgb(104, 10, 163);
+        border-color: rgb(75, 9, 108);
+    }
+
+    #info-gen {
+        border-width: 0.5vw;
+    }
+    
+    #generator-info-examples {
+        font-size: 3vw;
+    }
+    
+    #see-info-button {
+        width: 25vw;
+        height: 6.7vw;
+        font-size: 3vw;
+        margin-bottom: 1vw;
+        border-width: 0.5vw;
+        border-radius: calc(0.4 * 2vw);
+    }
+
+    #FAQ-content-container {
+        width: 90vw;
+        height: 93vh;
+        left: calc(50vw - 90vw * 0.5);
+        top: calc(50vh - 90vh * 0.5);
+        top: 9.5vw;
+        border-width: 0.4vw;
+    }
+    
+    #FAQ-header {
+        margin-top: 0.2vw;
+        margin-bottom: 5.5vw;
+        font-size: 9vw;
+        border-radius: calc(0.2 * 3.5vw);
+        border-width: 0.4vw;
+    }
+    
+    #back-arrow-FAQ {
+        width: 7vw;
+        left: 0.7vw;
+        top: 1vw;
+        border-width: 0.3vw;
+    }
+    
+    #back-arrow-FAQ:hover, 
+    #back-arrow-FAQ:focus {
+        width: 7vw;
+        border: 0.12vw solid black; 
+        cursor: default;
+    }   
+
+    #question-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        justify-content: flex-start;
+        padding: 0 1.75vw 1vw 1.75vw;
+    }
+    
+    .FAQ-question {
+        margin-bottom: 0.6vw;
+        font-size: 5.5vw;
+    }
+    
+    .FAQ-answer {
+        margin-bottom: 5vw;
+        font-size: 4.2vw;
+    }
+
+    #rendered-Q[data-special-styles='genLinEq'] {
+        font-size: 5.75vw;
+    }
+
+    #un-rendered-Q[data-special-styles='genMulDiv'] {
+        font-size: 3.73vw;
+    }
+    
+    #rendered-Q[data-special-styles='genSysEqs'] {
+        height: 21.75vw;
+    }
+    
+    #rendered-A[data-special-styles='genSysEqs'] {
+        height: 21.75vw;
+    }
+    
+    #un-rendered-Q[data-special-styles='genSysEqs'] {
+        font-size: 5.36vw;
+    }
+    
+    #un-rendered-A[data-special-styles='genSysEqs'] {
+        font-size: 5.36vw;
+    }
+    
+    .latex-box[data-special-styles='genTrigEx'] {
+        font-size: 3.96vw;
+    }
+    
+    .rendered-box[data-special-styles='genRatEx'] {
+        height: 18.75vw;
+        font-size: 8.16vw;
+    }
+    
+    .latex-box[data-special-styles='genRatEx'] {
+        font-size: 4.66vw;
+    }
+    
+    #rendered-A[data-special-styles='genPolArith'] {
+        font-size: 5.36vw;
+    }
+    
+    #un-rendered-Q[data-special-styles='genPolArith'] {
+        font-size: 3.96vw;
+    }
+    
+    #un-rendered-A[data-special-styles='genPolArith'] {
+        font-size: 4.66vw;
+    }
+    
+    .rendered-box[data-special-styles='genComArith'] {
+        height: 21.75vw;
+    }
+    
+    #rendered-Q[data-special-styles='genComArith'] {
+        font-size: 9.33vw;
+    }
+    
+    .latex-box[data-special-styles='genComArith'] {
+        font-size: 5.36vw;
+    }
+    
+    #rendered-Q[data-special-styles='genSimRad'] {
+        font-size: 5.83vw;
+    }
+    
+    #un-rendered-Q[data-special-styles='genSimRad'] {
+        font-size: 4.2vw;
+    }
+    
+    #rendered-A[data-special-styles='genSimRad'] {
+        font-size: 6.3vw;
+    }
+    
+    #un-rendered-A[data-special-styles='genSimRad'] {
+        font-size: 5.13vw;
+    }
+}
