@@ -7,6 +7,7 @@
     <link rel="icon" href="images/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="styles/normalize.css" />
     <link rel="stylesheet" href="styles/home-styles.css" />
+    <link rel="stylesheet" href="styles/settings-styles.css" />
   </head>
   <body>
     <div id="home-page-content">
@@ -227,9 +228,38 @@
           </div>
           <div id="settings-container">
             <form id="settings-list">
-              <div class="setting-box"></div>
-              <div class="setting-box"></div>
-              <div class="setting-box"></div>
+              <div class="setting-box">
+                <label for="name">Number of Terms:</label>
+                <input type="text" id="name" name="name" />
+              </div>
+              <div class="setting-box">
+                <label for="name">Number Range:</label>
+                <input type="text" id="name" name="name" />
+              </div>
+              <div class="setting-box">
+                <label for="options">Operations:</label><br /><br />
+                <input
+                  type="radio"
+                  id="option1"
+                  name="option"
+                  value="option1"
+                />
+                <label for="option1">Addition</label><br />
+                <input
+                  type="radio"
+                  id="option2"
+                  name="option"
+                  value="option2"
+                />
+                <label for="option2">Subtraction</label><br />
+                <input
+                  type="radio"
+                  id="option3"
+                  name="option"
+                  value="option3"
+                />
+                <label for="option3">Both</label><br /><br />
+              </div>
               <div class="setting-box"></div>
               <div class="setting-box"></div>
               <div class="setting-box"></div>
