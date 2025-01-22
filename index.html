@@ -226,44 +226,79 @@
               Generate&thinsp;<span id="regen-circle">&#x21bb;</span>
             </button>
           </div>
-          <div id="settings-container">
-            <form id="settings-list">
-              <div class="setting-box">
-                <label for="name">Number of Terms:</label>
-                <input type="text" id="name" name="name" />
-              </div>
-              <div class="setting-box">
-                <label for="name">Number Range:</label>
-                <input type="text" id="name" name="name" />
-              </div>
-              <div class="setting-box">
-                <label for="options">Operations:</label><br /><br />
-                <input
-                  type="radio"
-                  id="option1"
-                  name="option"
-                  value="option1"
-                />
-                <label for="option1">Addition</label><br />
-                <input
-                  type="radio"
-                  id="option2"
-                  name="option"
-                  value="option2"
-                />
-                <label for="option2">Subtraction</label><br />
-                <input
-                  type="radio"
-                  id="option3"
-                  name="option"
-                  value="option3"
-                />
-                <label for="option3">Both</label><br /><br />
-              </div>
-              <div class="setting-box"></div>
-              <div class="setting-box"></div>
-              <div class="setting-box"></div>
-            </form>
+          <div id="settings-container-wrapper">
+            <button id="randomize-all-button">Randomize All</button>
+            <div id="settings-container">
+              <form id="settings-list">
+                <div class="setting-box">
+                  <label for="name" class="settings-label"
+                    >Number of Terms:</label
+                  >
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="settings-text-box"
+                  />
+                  <button type="button" class="settings-info-button">?</button>
+                </div>
+                <div class="setting-box">
+                  <label for="name" class="settings-label">Number Range:</label>
+                  <div id="term-range-wrapper">
+                    from:&thinsp;<input
+                      type="text"
+                      class="settings-text-box number-range-box"
+                    />&thinsp;to:&thinsp;<input
+                      type="text"
+                      class="settings-text-box number-range-box"
+                    />
+                  </div>
+                  <button type="button" class="settings-info-button">?</button>
+                </div>
+                <div class="setting-box">
+                  <label for="options" class="settings-label">Operation:</label>
+                  <div class="outer-radio-button-wrapper">
+                    <div class="inner-radio-button-wrapper">
+                      <input
+                        type="radio"
+                        id="option1"
+                        name="option"
+                        value="option1"
+                        class="operation-buttons"
+                      />
+                      <label for="option1" class="operation-button-label"
+                        >Addition</label
+                      >
+                    </div>
+                    <div class="inner-radio-button-wrapper">
+                      <input
+                        type="radio"
+                        id="option2"
+                        name="option"
+                        value="option2"
+                        class="operation-buttons"
+                      />
+                      <label for="option2" class="operation-button-label"
+                        >Subtraction</label
+                      >
+                    </div>
+                    <div class="inner-radio-button-wrapper last-option-radio">
+                      <input
+                        type="radio"
+                        id="option3"
+                        name="option"
+                        value="option3"
+                        class="operation-buttons"
+                      />
+                      <label for="option3" class="operation-button-label"
+                        >Both</label
+                      >
+                    </div>
+                  </div>
+                  <button type="button" class="settings-info-button">?</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
