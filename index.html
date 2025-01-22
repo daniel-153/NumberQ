@@ -227,9 +227,9 @@
             </button>
           </div>
           <div id="settings-container-wrapper">
-            <button id="randomize-all-button">Randomize All</button>
+            <div id="randomize-all-tab"><input type="checkbox" id="randomize-all-checkbox">Randomize All</div>
             <div id="settings-container">
-              <form id="settings-list">
+              <form id="settings-list" autocomplete="off">
                 <div class="setting-box">
                   <label for="name" class="settings-label"
                     >Number of Terms:</label
@@ -240,7 +240,7 @@
                     name="name"
                     class="settings-text-box"
                   />
-                  <button type="button" class="settings-info-button">?</button>
+                  <div class="settings-info-button" data-tooltip="How many numbers should be in the sum? Accepts intergers from 2 to 6.">?</div>
                 </div>
                 <div class="setting-box">
                   <label for="name" class="settings-label">Number Range:</label>
@@ -253,7 +253,7 @@
                       class="settings-text-box number-range-box"
                     />
                   </div>
-                  <button type="button" class="settings-info-button">?</button>
+                  <div class="settings-info-button">?</div>
                 </div>
                 <div class="setting-box">
                   <label for="options" class="settings-label">Operation:</label>
@@ -295,7 +295,7 @@
                       >
                     </div>
                   </div>
-                  <button type="button" class="settings-info-button">?</button>
+                  <div class="settings-info-button">?</div>
                 </div>
               </form>
             </div>
