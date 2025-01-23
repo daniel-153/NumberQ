@@ -1,12 +1,13 @@
 import * as H from '../helper-modules/gen-helpers.js';
 
-function setAddSub(numOfTerms, operation, termRange) {
-    return {
-        numOfTerms: numOfTerms,
-        operation: operation,
-        termRange: termRange 
-    };
-} // termRange should be a two-number array like [-5,4]
+function processAddSubSettings(formObj) {
+    // An internal function to process the formObject and return 'settings' as its used below
+    //
+    // This will be called inside of the genAddSub function like settings = processAddSubSettings(formObj);
+    //
+    // Also, this is likely the proper place to validate the settings and figure out which error message should be displayed in which case
+    // (so if there's an error in processing, the genAddSub function can return an error/something that indicates an error)    
+}   
 
 function genAddSub(settings) {
     const termArray = H.removeFromArray(0,H.integerArray(settings.termRange[0],settings.termRange[1])); // Array of possible values for the terms
@@ -56,6 +57,17 @@ function genAddSub(settings) {
     };
 }
 
+export function get_addSubPresets() {
+    return {
+        numOfTerms: 2,
+        termRange: [H.randInt(-99, -1),H.randInt(1, 99)],
+        operation: H.randFromList('add','subtract')
+    };
+}
 
-let settings = setAddSub(H.randInt(2,6),'both',[1,10]);
-console.log(genAddSub(settings));
+
+const myObj = {
+    "my-key": value
+}
+
+console.log(myObj['my-key'])
