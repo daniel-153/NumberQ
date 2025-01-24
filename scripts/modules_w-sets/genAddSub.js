@@ -9,9 +9,9 @@ function processAddSubSettings(formObj) {
     // (so if there's an error in processing, the genAddSub function can return an error/something that indicates an error)    
 }   
 
-function genAddSub(settings) {
-    const termArray = H.removeFromArray(0,H.integerArray(settings.termRange[0],settings.termRange[1])); // Array of possible values for the terms
-    const sumLength = settings.numOfTerms; // How many terms the sum will have
+export default function genAddSub(settings) {
+    const termArray = H.removeFromArray(0,H.integerArray(settings.term_range_min,settings.term_range_max)); // Array of possible values for the terms
+    const sumLength = settings.number_of_terms; // How many terms the sum will have
 
     let sumString = '';
     const sumElements = H.arrayOfRandsFromList(termArray, sumLength);
@@ -24,19 +24,19 @@ function genAddSub(settings) {
     // creating the sum string and calculating the value of the sum
     sumString = sumString + sumElements_inMath[0];
     let valueOfSum = sumElements[0];
-    if (settings.operation === 'add') {
+    if (settings.operation_type === 'add') {
         for (let i = 1; i < sumElements.length; i++) {
             sumString = sumString + '+' + sumElements_inMath[i];
             valueOfSum = valueOfSum + sumElements[i];
         }
     }
-    else if (settings.operation === 'subtract') {
+    else if (settings.operation_type === 'subtract') {
         for (let i = 1; i < sumElements.length; i++) {
             sumString = sumString + '-' + sumElements_inMath[i];
             valueOfSum = valueOfSum - sumElements[i];
         }
     }
-    else if (settings.operation === 'both') {
+    else if (settings.operation_type === 'both') {
         for (let i = 1; i < sumElements.length; i++) {
             let switcher = H.randInt(0,1);
 
@@ -57,17 +57,13 @@ function genAddSub(settings) {
     };
 }
 
-export function get_addSubPresets() {
+export function get_presets() {
     return {
-        numOfTerms: 2,
-        termRange: [H.randInt(-99, -1),H.randInt(1, 99)],
-        operation: H.randFromList('add','subtract')
+        number_of_terms: 2,
+        term_range_min: H.randInt(-50, -1),
+        term_range_max: H.randInt(1, 50),
+        operation_type: H.randFromList(['add','subtract'])
     };
 }
 
 
-const myObj = {
-    "my-key": value
-}
-
-console.log(myObj['my-key'])

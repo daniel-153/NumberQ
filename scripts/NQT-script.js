@@ -89,8 +89,10 @@ async function preloadModules() {
 }
 
 const loadModule = async (funcName) => {
-    const module = await import(`./gen-modules/${funcName}.js`);  
-    return module.default;  
+    const module = await import(`./modules_w-sets/${funcName}.js`); 
+    console.log(`./modules_w-sets/${funcName}.js`)
+    console.log(module.default) 
+    return module;  
 };
 
 async function initiateGenerator(type, funcName) {
@@ -100,11 +102,16 @@ async function initiateGenerator(type, funcName) {
         element.setAttribute("data-special-styles", funcName);
     });
 
-    const currentGen = await loadModule(funcName);
-    switchToNewQuestion(currentGen());  
+    const currentModule = await loadModule(funcName); 
+    const currentGen = currentModule.default;
+    const pre_settings = currentModule.get_presets();
+    console.log(pre_settings)
+    console.log(currentGen(pre_settings))
+    switchToNewQuestion(currentGen(pre_settings));  
 
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
-        switchToNewQuestion(currentGen());
+        const currentSettings = new FormData(document.getElementById('settings-form'));
+        switchToNewQuestion(currentGen(currentSettings));
     });
 }
 

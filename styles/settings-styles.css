@@ -46,7 +46,7 @@
     padding-top: 1.25vw;
 }
 
-#settings-list {
+#settings-form {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* Three columns per row */
     gap: 5vw;
