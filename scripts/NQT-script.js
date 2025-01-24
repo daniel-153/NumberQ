@@ -110,7 +110,8 @@ async function initiateGenerator(type, funcName) {
     switchToNewQuestion(currentGen(pre_settings));  
 
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
-        const currentSettings = new FormData(document.getElementById('settings-form'));
+        const currentSettings = Object.fromEntries((new FormData(document.getElementById('settings-form'))).entries());
+        console.log(currentSettings)
         switchToNewQuestion(currentGen(currentSettings));
     });
 }

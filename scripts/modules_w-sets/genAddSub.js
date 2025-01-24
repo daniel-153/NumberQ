@@ -1,6 +1,8 @@
 import * as H from '../helper-modules/gen-helpers.js';
 
-function processAddSubSettings(formObj) {
+function processSettings(formObj) {
+    min = Number(min); // temp reminder
+    max = Number(max);
     // An internal function to process the formObject and return 'settings' as its used below
     //
     // This will be called inside of the genAddSub function like settings = processAddSubSettings(formObj);
@@ -9,16 +11,29 @@ function processAddSubSettings(formObj) {
     // (so if there's an error in processing, the genAddSub function can return an error/something that indicates an error)    
 }   
 
+//
+// The number concantination bug is still present in the addSub function BECAUSE of the fact that the form inputs are read as strings
+// and I removed the type conversion from the integerArray function BECAUSE ensuring the settings are readable is the responsibility of
+// the processSettings function
+//
+
+
+
 export default function genAddSub(settings) {
+    console.log('min: ',settings.term_range_min);
     const termArray = H.removeFromArray(0,H.integerArray(settings.term_range_min,settings.term_range_max)); // Array of possible values for the terms
+    console.log('term arr: ',termArray)
     const sumLength = settings.number_of_terms; // How many terms the sum will have
+    console.log(sumLength)
 
     let sumString = '';
     const sumElements = H.arrayOfRandsFromList(termArray, sumLength);
+    console.log(sumElements)
     let sumElements_inMath = [...sumElements];
     for (let i = 0; i < sumElements_inMath.length; i++) {
         if (sumElements_inMath[i] < 0) sumElements_inMath[i] = '(' + sumElements_inMath[i] + ')';
     } // Add parentheses to negative terms in the sum
+    console.log(sumElements_inMath)
 
     
     // creating the sum string and calculating the value of the sum
