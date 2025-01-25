@@ -89,9 +89,7 @@ async function preloadModules() {
 }
 
 const loadModule = async (funcName) => {
-    const module = await import(`./modules_w-sets/${funcName}.js`); 
-    console.log(`./modules_w-sets/${funcName}.js`)
-    console.log(module.default) 
+    const module = await import(`./modules_w-sets/${funcName}.js`);  
     return module;  
 };
 
@@ -105,13 +103,11 @@ async function initiateGenerator(type, funcName) {
     const currentModule = await loadModule(funcName); 
     const currentGen = currentModule.default;
     const pre_settings = currentModule.get_presets();
-    console.log(pre_settings)
-    console.log(currentGen(pre_settings))
-    switchToNewQuestion(currentGen(pre_settings));  
+    switchToNewQuestion(currentGen(pre_settings)); 
+    updateSettings(pre_settings); 
 
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
         const currentSettings = Object.fromEntries((new FormData(document.getElementById('settings-form'))).entries());
-        console.log(currentSettings)
         switchToNewQuestion(currentGen(currentSettings));
     });
 }
@@ -134,6 +130,13 @@ function switchToNewQuestion(newQuestion) {
     document.getElementById('un-rendered-A').innerHTML = TeXanswer;
 
     MathJax.typesetPromise([document.getElementById('Q-A-container')]);
+
+    // Change settings if needed here
+    const error_locations = newQuestion.error_locations;
+    if (error_locations.length > 0) {
+        updateSettings(newQuestion.settings);
+
+    }
 } 
 
 function removeCopyMessage(element) {
@@ -153,6 +156,39 @@ function resetStyles(elements) {
         element.removeAttribute('style');
     });
 }
+
+function updateSettings(settings) {
+    const form = document.getElementById('settings-form');
+
+    for (const [key, value] of Object.entries(settings)) {
+        const element = form.elements[key];
+
+        if (!element) {
+            console.warn(`No form element found with the name '${key}'.`);
+            continue;
+        }
+
+        // Handle input types
+        if (element.type === 'checkbox') {
+            element.checked = Boolean(value);
+        } else if (element.type === 'radio') {
+            // For radio buttons, select the one matching the value
+            const radio = form.querySelector(`input[name="${key}"][value="${value}"]`);
+            if (radio) {
+                radio.checked = true;
+            }
+        } else if (element.type === 'select-multiple') {
+            // Handle multi-selects
+            for (const option of element.options) {
+                option.selected = Array.isArray(value) && value.includes(option.value);
+            }
+        } else {
+            // Default: Set value for text, number, select-one, etc.
+            element.value = value;
+        }
+    }
+}
+
 
 createEventListeners();
 
