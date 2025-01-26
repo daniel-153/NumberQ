@@ -107,8 +107,14 @@ async function initiateGenerator(type, funcName) {
     updateSettings(pre_settings); 
 
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
-        const currentSettings = Object.fromEntries((new FormData(document.getElementById('settings-form'))).entries());
-        switchToNewQuestion(currentGen(currentSettings));
+        if (!document.getElementById('randomize-all-checkbox').checked) {
+            const currentSettings = Object.fromEntries((new FormData(document.getElementById('settings-form'))).entries());
+            switchToNewQuestion(currentGen(currentSettings)); 
+        } // randomize_all isn't checked -> use provided settings
+        else {
+            const currentSettings = currentModule.get_rand_settings();
+            switchToNewQuestion(currentGen(currentSettings));
+        } // randomize_all is checked -> use random (pre-set) settings
     });
 }
 
@@ -132,10 +138,12 @@ function switchToNewQuestion(newQuestion) {
     MathJax.typesetPromise([document.getElementById('Q-A-container')]);
 
     // Change settings if needed here
+    updateSettings(newQuestion.settings);
+
+    // flash any elements with errors here
     const error_locations = newQuestion.error_locations;
     if (error_locations.length > 0) {
-        updateSettings(newQuestion.settings);
-
+        flashElements(error_locations);
     }
 } 
 
@@ -189,7 +197,45 @@ function updateSettings(settings) {
     }
 }
 
+function flashElements(element_name_array) {
+    const form = document.getElementById('settings-form');
+    if (!form) {
+        console.error("Form with ID 'settings-form' not found.");
+        return;
+    }
+
+    element_name_array.forEach(name => {
+        const element = form.elements[name];
+
+        if (!element) {
+            console.warn(`No form element found with the name '${name}'.`);
+            return;
+        }
+
+        // Store the original styles
+        const originalBorderColor = element.style.borderColor || '';
+        const originalTextColor = element.style.color || '';
+
+        // Apply flashing effect
+        element.style.borderColor = 'red';
+        element.style.color = 'red';
+
+        setTimeout(() => {
+            element.style.borderColor = originalBorderColor;
+            element.style.color = originalTextColor;
+
+            setTimeout(() => {
+                element.style.borderColor = 'red';
+                element.style.color = 'red';
+
+                setTimeout(() => {
+                    element.style.borderColor = originalBorderColor;
+                    element.style.color = originalTextColor;
+                }, 200); // End of second red flash
+            }, 100); // Pause before second flash
+        }, 200); // Hold the first red flash
+    });
+}
 
 createEventListeners();
 
-// test

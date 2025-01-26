@@ -100,9 +100,6 @@ function processSettings(formObj) {
   // also, you should create a module of 'validation helper functions' for this
 
 
-
-
-
 export default function genAddSub(formObj) {
     const settings = processSettings(formObj);
     
@@ -173,4 +170,12 @@ export function get_presets() {
     };
 }
 
+export function get_rand_settings() {
+    return {
+        number_of_terms: H.randInt(2,4),
+        term_range_min: H.randInt(-20, -1),
+        term_range_max: H.randInt(1, 20),
+        operation_type: H.randFromList(['add','subtract','both'])
+    }; 
+}
 
