@@ -178,7 +178,7 @@ function updateSettings(settings) {
         const element = form.elements[key];
 
         if (!element) {
-            console.warn(`No form element found with the name '${key}'.`);
+            // there used to be a warning here saying there was no element by name of error_locations. Why was 'error_locations' ever here?
             continue;
         }
 
