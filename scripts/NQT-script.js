@@ -1,6 +1,12 @@
 function createEventListeners() {
     preloadModules();
 
+    // This is the auto text-fitter
+    // NOTE: when you go to the other gens/mobile, you need to somehow supply the initial font size specific to each gen 
+    // (right now, 3vw is the global default). And you'll probably also need to put this on the rendered and un-rendered answer boxes
+    observeTextChanges(document.getElementById('rendered-Q'), '3vw');
+    observeTextChanges(document.getElementById('un-rendered-Q'), '1.2vw');
+
     [...document.getElementsByClassName('start-button')].forEach((element) => {
         element.addEventListener(
             'click',
@@ -235,6 +241,41 @@ function flashElements(element_name_array) {
             }, 100); // Pause before second flash
         }, 200); // Hold the first red flash
     });
+}
+
+function observeTextChanges(element, initial_font_size) {
+    const originalFontSize = (initial_font_size !== undefined) ? initial_font_size : '3vw'; // Define your original font size
+
+    // Function to adjust font size dynamically
+    function fitTextToDiv(container) {
+      container.style.fontSize = originalFontSize; // Reset to original font size
+
+      // Detect overflow
+      let scaleFactor = 1; // Initialize scale factor
+      const isOverflowing = () =>
+        container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth;
+
+      while (isOverflowing()) {
+        // Calculate how much to downsize
+        const heightRatio = container.clientHeight / container.scrollHeight;
+        const widthRatio = container.clientWidth / container.scrollWidth;
+        scaleFactor = Math.min(heightRatio, widthRatio);
+
+        // Apply scale factor
+        const newFontSize = parseFloat(getComputedStyle(container).fontSize) * scaleFactor;
+        container.style.fontSize = newFontSize + 'px';
+
+        // Break loop if scale factor is minimal
+        if (scaleFactor >= 1) break;
+      }
+    }
+
+    // MutationObserver to detect changes in text content
+    const observer = new MutationObserver(() => {
+      fitTextToDiv(element); // Adjust font size when content changes
+    });
+
+    observer.observe(element, { characterData: true, childList: true, subtree: true });
 }
 
 createEventListeners();
