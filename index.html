@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles/normalize.css" />
     <link rel="stylesheet" href="styles/home-styles.css" />
     <link rel="stylesheet" href="styles/settings-styles.css" />
+    <link rel="stylesheet" href="styles/presentation-styles.css" />
   </head>
   <body>
     <div id="home-page-content">
@@ -208,7 +209,10 @@
               <div id="Q-column" class="gen-column">
                 <h2 class="column-header">Q</h2>
                 <div class="output-box-wrapper">
-                  <div class="output-box rendered-box" id="rendered-Q"></div>
+                  <div id="rendered-Q-wrapper">
+                    <button id="fullscreen-mode-button">Fullscreen Mode</button>
+                    <div class="output-box rendered-box" id="rendered-Q"></div>
+                  </div>
                   <div class="output-box latex-box" id="un-rendered-Q"></div>
                   <button class="copy-button" id="Q-copy-button">Copy</button>
                 </div>
@@ -233,13 +237,14 @@
             <div id="settings-container">
               <form id="settings-form" autocomplete="off">
                 <div class="setting-box">
-                  <label for="number_of_terms" class="settings-label"
+                  <label for="number_of_terms_input" class="settings-label"
                     >Number of Terms:</label
                   >
                   <input
                     type="text"
                     name="number_of_terms"
                     class="settings-text-box"
+                    id="number_of_terms_input"
                   />
                   <div
                     class="settings-info-button"
@@ -249,12 +254,15 @@
                   </div>
                 </div>
                 <div class="setting-box">
-                  <label class="settings-label">Number Range:</label>
+                  <label for="term_range_min_input" class="settings-label"
+                    >Number Range:</label
+                  >
                   <div id="term-range-wrapper">
                     from:&thinsp;<input
                       type="text"
                       name="term_range_min"
                       class="settings-text-box number-range-box"
+                      id="term_range_min_input"
                     />&thinsp;to:&thinsp;<input
                       type="text"
                       name="term_range_max"
@@ -269,7 +277,9 @@
                   </div>
                 </div>
                 <div class="setting-box">
-                  <label class="settings-label">Operation:</label>
+                  <label for="add_operation_option" class="settings-label"
+                    >Operation:</label
+                  >
                   <div class="outer-radio-button-wrapper">
                     <div class="inner-radio-button-wrapper">
                       <input
@@ -277,8 +287,11 @@
                         name="operation_type"
                         value="add"
                         class="operation-buttons"
+                        id="add_operation_option"
                       />
-                      <label for="option1" class="operation-button-label"
+                      <label
+                        for="add_operation_option"
+                        class="operation-button-label"
                         >Addition</label
                       >
                     </div>
@@ -288,8 +301,11 @@
                         name="operation_type"
                         value="subtract"
                         class="operation-buttons"
+                        id="subtract_operation_option"
                       />
-                      <label for="option2" class="operation-button-label"
+                      <label
+                        for="subtract_operation_option"
+                        class="operation-button-label"
                         >Subtraction</label
                       >
                     </div>
@@ -299,8 +315,11 @@
                         name="operation_type"
                         value="both"
                         class="operation-buttons"
+                        id="both_operation_option"
                       />
-                      <label for="option3" class="operation-button-label"
+                      <label
+                        for="both_operation_option"
+                        class="operation-button-label"
                         >Both</label
                       >
                     </div>
@@ -315,6 +334,19 @@
               </form>
             </div>
           </div>
+        </div>
+      </div>
+      <div id="presenation-content">
+        <div id="presenation-banner">
+          <div id="fullscreen-Q-A-wrapper">
+            <div id="fullscreen-question">\(3x+2=14-9x\)</div>
+            <div id="fullscreen-answer-wrapper">
+              <div id="answer-label">Answer:</div>
+              <div id="fullscreen-answer"></div>
+              <button id="show-hide-button">Show</button>
+            </div>
+          </div>
+          <button id="fullscreen-exit-button">Exit</button>
         </div>
       </div>
     </div>
