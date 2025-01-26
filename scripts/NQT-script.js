@@ -13,6 +13,7 @@ function createEventListeners() {
             () => {
                 document.getElementById('home-page-content').classList.toggle('hidden-content');
                 document.getElementById('generation-content').classList.toggle('hidden-content');
+                document.getElementById('presenation-content').classList.add('hidden-content');
                 initiateGenerator(element.getAttribute('data-gen-type'),element.getAttribute('data-gen-func-name'));
                 window.scrollTo(0, 0);
                 history.pushState({ page: 'generator' }, '', '');
@@ -64,6 +65,45 @@ function createEventListeners() {
         ACopyButton.innerHTML = 'Copied!';
         ACopyButton.setAttribute('data-status','text-was-copied')
         removeCopyMessage(ACopyButton);
+    });
+
+    // Presentation mode event listeners
+    document.getElementById('fullscreen-regen-button').addEventListener('click', () => {
+        document.getElementById('generate-button').click();
+    });
+
+    let answerIsShown = false;
+    document.getElementById('show-hide-button').addEventListener('click', () => {
+        if (!answerIsShown) {
+            document.getElementById('fullscreen-answer').style.background = 'whitesmoke';
+            document.getElementById('fullscreen-answer').style.color = 'rgb(11, 5, 5)';
+            document.getElementById('show-hide-button').innerHTML = 'Hide';
+            document.getElementById('show-hide-button').setAttribute('data-status','hide');
+            answerIsShown = true;
+        }
+        else {
+            document.getElementById('fullscreen-answer').style.background = '';
+            document.getElementById('fullscreen-answer').style.color = '';
+            document.getElementById('show-hide-button').innerHTML = 'Show';
+            document.getElementById('show-hide-button').removeAttribute('data-status');
+            answerIsShown = false;
+        }
+    });
+
+    document.getElementById('fullscreen-mode-button').addEventListener('click', () => {
+        document.getElementById('presenation-content').classList.toggle('hidden-content');
+        observeTextChanges(document.getElementById('fullscreen-question'), '3.75vw');
+
+        // Same as else{} just above^ (hackfix)
+        document.getElementById('fullscreen-answer').style.background = '';
+        document.getElementById('fullscreen-answer').style.color = '';
+        document.getElementById('show-hide-button').innerHTML = 'Show';
+        document.getElementById('show-hide-button').removeAttribute('data-status');
+        answerIsShown = false;
+    });
+
+    document.getElementById('fullscreen-exit-button').addEventListener('click', () => {
+        document.getElementById('presenation-content').classList.toggle('hidden-content');
     });
 }
 
@@ -151,6 +191,14 @@ function switchToNewQuestion(newQuestion) {
     if (error_locations.length > 0) {
         flashElements(error_locations);
     }
+
+
+    // Presentation mode updates
+
+    document.getElementById('fullscreen-question').innerHTML = '\\(' + question + '\\)';
+    document.getElementById('fullscreen-answer').innerHTML = '\\(' + answer + '\\)';
+
+    MathJax.typesetPromise([document.getElementById('fullscreen-Q-A-wrapper')]);
 } 
 
 function removeCopyMessage(element) {
@@ -244,39 +292,52 @@ function flashElements(element_name_array) {
 }
 
 function observeTextChanges(element, initial_font_size) {
-    const originalFontSize = (initial_font_size !== undefined) ? initial_font_size : '3vw'; // Define your original font size
-
+    const originalFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Define your original font size
+  
     // Function to adjust font size dynamically
     function fitTextToDiv(container) {
       container.style.fontSize = originalFontSize; // Reset to original font size
-
+  
       // Detect overflow
       let scaleFactor = 1; // Initialize scale factor
       const isOverflowing = () =>
         container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth;
-
+  
       while (isOverflowing()) {
         // Calculate how much to downsize
         const heightRatio = container.clientHeight / container.scrollHeight;
         const widthRatio = container.clientWidth / container.scrollWidth;
         scaleFactor = Math.min(heightRatio, widthRatio);
-
+  
         // Apply scale factor
         const newFontSize = parseFloat(getComputedStyle(container).fontSize) * scaleFactor;
-        container.style.fontSize = newFontSize + 'px';
-
+        container.style.fontSize = newFontSize + "px";
+  
         // Break loop if scale factor is minimal
         if (scaleFactor >= 1) break;
       }
     }
-
+  
+    // Function to clean the element from existing MutationObservers
+    function cleanFromListeners(el) {
+      const clone = el.cloneNode(true);
+      el.parentNode.replaceChild(clone, el);
+      return clone;
+    }
+  
+    // Clean the element to remove existing listeners
+    element = cleanFromListeners(element);
+  
+    // Run the downsizing logic immediately if there’s overflow
+    fitTextToDiv(element);
+  
     // MutationObserver to detect changes in text content
     const observer = new MutationObserver(() => {
       fitTextToDiv(element); // Adjust font size when content changes
     });
-
+  
     observer.observe(element, { characterData: true, childList: true, subtree: true });
-}
+} 
 
 createEventListeners();
 
