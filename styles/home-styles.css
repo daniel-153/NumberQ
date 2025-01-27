@@ -295,7 +295,8 @@ body::-webkit-scrollbar-thumb:hover {
     align-items: center;
     justify-content: space-between;
     width: var(--gen-container-width);
-    height: 93vh;
+    min-height: 93vh;
+    height: auto;
     left: calc(50vw - var(--gen-container-width) * 0.5);
     top: calc(50vh - 93vh * 0.5);
     background-color: rgb(255, 229, 192);
