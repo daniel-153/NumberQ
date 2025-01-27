@@ -161,6 +161,13 @@ export default function genAddSub(formObj) {
     };
 }
 
+// defines which settings are to be fetched for this gen and in which order they should appear
+export const settings_fields = [
+    'number_of_terms',
+    'term_range',
+    'addsub_operation_type'
+];
+
 export function get_presets() {
     return {
         number_of_terms: 2,
