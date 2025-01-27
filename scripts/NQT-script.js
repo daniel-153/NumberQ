@@ -149,8 +149,13 @@ async function initiateGenerator(type, funcName) {
     const currentModule = await loadModule(funcName); 
     const currentGen = currentModule.default;
     const pre_settings = currentModule.get_presets();
+
+    insertSettings(currentModule.settings_fields).then(() => {
+        // This will run after all settings have been inserted
+        updateSettings(pre_settings);
+    });
+
     switchToNewQuestion(currentGen(pre_settings)); 
-    updateSettings(pre_settings); 
 
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
         if (!document.getElementById('randomize-all-checkbox').checked) {
@@ -338,6 +343,111 @@ function observeTextChanges(element, initial_font_size) {
   
     observer.observe(element, { characterData: true, childList: true, subtree: true });
 } 
+
+function insertSettings(settings_names) {
+    const settingsForm = document.getElementById('settings-form');
+    settingsForm.innerHTML = '';
+  
+    // Array to store promises for loading HTML and CSS
+    const loadPromises = [];
+  
+    settings_names.forEach(setting_name => {
+      // Paths to the HTML and CSS files
+      const htmlPath = `../settings/html/${setting_name}.html`;
+      const cssPath = `../settings/styles/${setting_name}.css`;
+  
+      // **Load HTML Content**
+      const htmlPromise = fetch(htmlPath)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to load HTML for ${setting_name}: ${response.statusText}`);
+          }
+          return response.text();
+        })
+        .then(htmlContent => {
+          settingsForm.insertAdjacentHTML('beforeend', htmlContent);
+        })
+        .catch(error => {
+          console.error(`Error loading HTML for ${setting_name}:`, error);
+        });
+  
+      // Add the HTML promise to the array
+      loadPromises.push(htmlPromise);
+  
+      // **Load CSS Stylesheet**
+      if (!document.querySelector(`link[href="${cssPath}"]`)) {
+        const cssPromise = new Promise((resolve, reject) => {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = cssPath;
+  
+          link.onload = () => resolve();
+          link.onerror = () => {
+            console.error(`Error loading CSS for ${setting_name}`);
+            // Decide whether to resolve or reject based on your needs
+            resolve(); // Continue even if CSS fails to load
+          };
+  
+          document.head.appendChild(link);
+        });
+  
+        // Add the CSS promise to the array
+        loadPromises.push(cssPromise);
+      }
+    });
+  
+    // Return a Promise that resolves when all resources have been loaded
+    return Promise.all(loadPromises);
+}
+
+// function insertSettings(settings_names) {
+//     // Get the 'settings-form' element
+//     const settingsForm = document.getElementById('settings-form');
+  
+//     // Start by clearing the innerHTML of 'settings-form'
+//     settingsForm.innerHTML = '';
+  
+//     // Iterate over the array of setting names
+//     settings_names.forEach(setting_name => {
+//       // Path to the HTML file for the current setting
+//       const htmlPath = `../settings/html/${setting_name}.html`;
+  
+//       // Fetch the HTML content
+//       fetch(htmlPath)
+//         .then(response => {
+//           if (!response.ok) {
+//             throw new Error(`Failed to load HTML for ${setting_name}: ${response.statusText}`);
+//           }
+//           return response.text();
+//         })
+//         .then(htmlContent => {
+//           // Insert the HTML content into 'settings-form'
+//           settingsForm.insertAdjacentHTML('beforeend', htmlContent);
+//         })
+//         .catch(error => {
+//           console.error(`Error loading HTML for ${setting_name}:`, error);
+//         });
+  
+//       // Path to the CSS file for the current setting
+//       const cssPath = `../settings/styles/${setting_name}.css`;
+  
+//       // Check if the stylesheet is already loaded to avoid duplicates
+//       if (!document.querySelector(`link[href="${cssPath}"]`)) {
+//         // Create a link element for the stylesheet
+//         const link = document.createElement('link');
+//         link.rel = 'stylesheet';
+//         link.href = cssPath;
+  
+//         // Append the link element to the head
+//         document.head.appendChild(link);
+  
+//         // Optional: Add error handling for stylesheet loading
+//         link.onerror = () => {
+//           console.error(`Error loading CSS for ${setting_name}`);
+//         };
+//       }
+//     });
+// }
 
 createEventListeners();
 
