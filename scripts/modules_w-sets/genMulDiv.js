@@ -1,29 +1,45 @@
+import { answer_form, multiply_symbol, number_type } from '../../settings/setting_templates.js';
 import * as H from '../helper-modules/gen-helpers.js';
 import * as PH from"../helper-modules/polynom-helpers.js";
+import * as SH from '../helper-modules/settings-helpers.js';
 
-const example_settings = {
-    number_of_terms: 2,
-    term_range_min: -10,
-    term_range_max: 10,
-    operation_type: ['multiply','divide'], // ['multiply'], ['divide'], both -> ['multiply','divide']
-    number_type: ['integers','fractions'], // ['integers'], ['fractions'], both -> ['integers','fractions'] 
-    multiply_symbol: H.randFromList([' \\times ',' \\cdot ']), // cross (x) or dot (*)
-    answer_form: H.randFromList(['factions & integers', 'whole part + remainder']) // factions & integers, whole part + remainder
-};
+function processSettings(formObj) {
+    let { number_of_terms, term_range_min, term_range_max, operation_type, number_type, multiply_symbol, answer_form } = formObj;
+    let error_locations = []; // stores a list of input fields where errors occures (same field can appear multiple times)
+    
+    // validate number_of_terms and keep track of error locations
+    number_of_terms = SH.val_term_number(number_of_terms, error_locations);
+    
 
-// testing only:
-window.onload = function() {
-    const newQuestion = genMulDiv(example_settings);
-    const question = newQuestion.question;
-    const answer = newQuestion.answer;
+    // validate the term range and keep track of error locations
+    let validatedMinMax = SH.val_min_max_range(term_range_min, term_range_max, error_locations);
+    term_range_min = validatedMinMax.term_range_min;
+    term_range_max = validatedMinMax.term_range_max;
 
-    document.getElementById('math_output').innerHTML = '\\(' + question + '\\)';
-    document.getElementById('math_answer').innerHTML = '\\(' + answer + '\\)';
+    // convert operation type to an array for settings
+    if (operation_type === 'multiply') operation_type = ['multiply'];
+    else if (operation_type === 'divide') operation_type = ['divide'];
+    else if (operation_type === 'both') operation_type = ['multiply', 'divide'];
 
-    MathJax.typeset();
-};
+    // convert number type to an array for settings
+    if (number_type === 'integers') number_type = ['integers'];
+    else if (number_type === 'fractions') number_type = ['fractions'];
+    else if (number_type === 'both') number_type = ['integers', 'fractions'];
 
-function genMulDiv(settings) {
+    return {
+        number_of_terms: number_of_terms,
+        term_range_min: term_range_min,
+        term_range_max: term_range_max,
+        operation_type: operation_type,
+        number_type: number_type,
+        multiply_symbol: multiply_symbol,
+        answer_form: answer_form,
+        error_locations: error_locations
+    };
+}
+
+export default function genMulDiv(formObj) {
+    const settings = processSettings(formObj);
 
     const termArray = H.removeFromArray(0,H.integerArray(settings.term_range_min,settings.term_range_max));
 
@@ -70,8 +86,6 @@ function genMulDiv(settings) {
         denom = denom * productElements[0][1];
     } // the current element is a fraction
 
-    console.log('initial numer: ',numer)
-    console.log('initial denom: ',denom)
 
     for (let i = 1; i < settings.number_of_terms; i++) {
         let operation_type = H.randFromList(settings.operation_type);
@@ -100,16 +114,10 @@ function genMulDiv(settings) {
         }
     }
 
-    console.log('semi-final numer: ',numer)
-    console.log('semi-final denom: ',denom)
-
     // simplify the numer and denom
     const simplifiedFraction = PH.simplifyFraction(numer, denom);
     numer = simplifiedFraction.numer;
     denom = simplifiedFraction.denom;
-
-    console.log('final numer: ',numer)
-    console.log('final denom: ',denom)
 
     let answer = '';
     if (settings.answer_form === 'factions & integers') {
@@ -125,9 +133,20 @@ function genMulDiv(settings) {
         answer = whole_part + '\\;\\,R' + remainder;
     }
 
+    // This seems to violate seperation of concerns but so does dealing with processSettings() here, and would there even be any obvious way
+    // to avoid this?...
+    let error_locations = [];
+    if (settings.error_locations.length > 0) {
+        if (settings.error_locations.indexOf('number_of_terms') !== -1) error_locations.push('number_of_terms');
+        if (settings.error_locations.indexOf('term_range_min') !== -1) error_locations.push('term_range_min');
+        if (settings.error_locations.indexOf('term_range_max') !== -1) error_locations.push('term_range_max');
+    }
+
     return {
         question: productString,
-        answer: answer
+        answer: answer,
+        settings: settings,
+        error_locations: error_locations
     };
 }   
 
@@ -141,6 +160,7 @@ export const settings_fields = [
     'answer_form'
 ];
 
+// need to improve/fix these two functions quite a bit
 export function get_presets() {
     return {
         number_of_terms: 2,
@@ -148,7 +168,19 @@ export function get_presets() {
         term_range_max: H.randInt(2, 20),
         operation_type: 'both',
         number_type: 'integers',
-        multiply_symbol: ' \\\\cdot ',
+        multiply_symbol: ' \\cdot ',
         answer_form: 'factions & integers'
     };
+}
+
+export function get_rand_settings() {
+    return {
+        number_of_terms: H.randInt(2,4),
+        term_range_min: H.randInt(-20, -1),
+        term_range_max: H.randInt(1, 20),
+        operation_type: H.randFromList(['multiply','divide','both']),
+        number_type: H.randFromList(['integers','fractions','both']),
+        multiply_symbol: H.randFromList([' \\cdot ', ' \\times']),
+        answer_form: H.randFromList(['factions & integers','whole part + remainder'])
+    }; 
 }
