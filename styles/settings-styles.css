@@ -68,6 +68,8 @@
     background-color: rgb(236, 236, 236);
     border: 0.1vw solid grey;
     border-radius: calc(0.05 * 12.5vw);
+    padding-left: 0.1vw;
+    padding-right: 0.1vw;
 }
 
 .settings-label {
