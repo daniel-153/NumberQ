@@ -227,8 +227,8 @@ function resetStyles(elements) {
 function updateSettings(settings) {
     const form = document.getElementById('settings-form');
 
-    for (const [key, value] of Object.entries(settings)) {
-        const element = form.elements[key];
+    for (const [setting_name, value] of Object.entries(settings)) {
+        const element = form.elements[setting_name];
 
         if (!element) {
             // there used to be a warning here saying there was no element by name of error_locations. Why was 'error_locations' ever here?
@@ -240,7 +240,7 @@ function updateSettings(settings) {
             element.checked = Boolean(value);
         } else if (element.type === 'radio') {
             // For radio buttons, select the one matching the value
-            const radio = form.querySelector(`input[name="${key}"][value="${value}"]`);
+            const radio = form.querySelector(`input[name="${setting_name}"][value="${value}"]`);
             if (radio) {
                 radio.checked = true;
             }
@@ -344,110 +344,137 @@ function observeTextChanges(element, initial_font_size) {
     observer.observe(element, { characterData: true, childList: true, subtree: true });
 } 
 
-function insertSettings(settings_names) {
-    const settingsForm = document.getElementById('settings-form');
-    settingsForm.innerHTML = '';
-  
-    // Array to store promises for loading HTML and CSS
-    const loadPromises = [];
-  
-    settings_names.forEach(setting_name => {
-      // Paths to the HTML and CSS files
-      const htmlPath = `../settings/html/${setting_name}.html`;
-      const cssPath = `../settings/styles/${setting_name}.css`;
-  
-      // **Load HTML Content**
-      const htmlPromise = fetch(htmlPath)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`Failed to load HTML for ${setting_name}: ${response.statusText}`);
-          }
-          return response.text();
-        })
-        .then(htmlContent => {
-          settingsForm.insertAdjacentHTML('beforeend', htmlContent);
-        })
-        .catch(error => {
-          console.error(`Error loading HTML for ${setting_name}:`, error);
-        });
-  
-      // Add the HTML promise to the array
-      loadPromises.push(htmlPromise);
-  
-      // **Load CSS Stylesheet**
-      if (!document.querySelector(`link[href="${cssPath}"]`)) {
-        const cssPromise = new Promise((resolve, reject) => {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = cssPath;
-  
-          link.onload = () => resolve();
-          link.onerror = () => {
-            console.error(`Error loading CSS for ${setting_name}`);
-            // Decide whether to resolve or reject based on your needs
-            resolve(); // Continue even if CSS fails to load
-          };
-  
-          document.head.appendChild(link);
-        });
-  
-        // Add the CSS promise to the array
-        loadPromises.push(cssPromise);
-      }
-    });
-  
-    // Return a Promise that resolves when all resources have been loaded
-    return Promise.all(loadPromises);
-}
+async function insertSettings(settings_names) {
+    const settings_templates = await import('../settings/setting_templates.js');
+    const settings_objects = {}; // this is an object of objects instead of an array of objects
 
-// function insertSettings(settings_names) {
-//     // Get the 'settings-form' element
-//     const settingsForm = document.getElementById('settings-form');
-  
-//     // Start by clearing the innerHTML of 'settings-form'
-//     settingsForm.innerHTML = '';
-  
-//     // Iterate over the array of setting names
-//     settings_names.forEach(setting_name => {
-//       // Path to the HTML file for the current setting
-//       const htmlPath = `../settings/html/${setting_name}.html`;
-  
-//       // Fetch the HTML content
-//       fetch(htmlPath)
-//         .then(response => {
-//           if (!response.ok) {
-//             throw new Error(`Failed to load HTML for ${setting_name}: ${response.statusText}`);
-//           }
-//           return response.text();
-//         })
-//         .then(htmlContent => {
-//           // Insert the HTML content into 'settings-form'
-//           settingsForm.insertAdjacentHTML('beforeend', htmlContent);
-//         })
-//         .catch(error => {
-//           console.error(`Error loading HTML for ${setting_name}:`, error);
-//         });
-  
-//       // Path to the CSS file for the current setting
-//       const cssPath = `../settings/styles/${setting_name}.css`;
-  
-//       // Check if the stylesheet is already loaded to avoid duplicates
-//       if (!document.querySelector(`link[href="${cssPath}"]`)) {
-//         // Create a link element for the stylesheet
-//         const link = document.createElement('link');
-//         link.rel = 'stylesheet';
-//         link.href = cssPath;
-  
-//         // Append the link element to the head
-//         document.head.appendChild(link);
-  
-//         // Optional: Add error handling for stylesheet loading
-//         link.onerror = () => {
-//           console.error(`Error loading CSS for ${setting_name}`);
-//         };
-//       }
-//     });
-// }
+    settings_names.forEach((setting_name) => {        
+        if (settings_templates[setting_name]) {
+          settings_objects[setting_name] = settings_templates[setting_name]; // find the settings object and put it in setting_objects {...}
+        }
+        else {
+            console.error(`No setting with name ${setting_name} found in settings_templates.js`)
+        }
+    });
+
+    let combined_html = '';
+    Object.values(settings_objects).forEach(setting_obj => {
+        combined_html = combined_html + createSettingHtml(setting_obj);
+    });
+
+    document.getElementById('settings-form').innerHTML = combined_html;
+
+    // function that generates the html for each settings field
+    function createSettingHtml(setting_obj) {
+        let output_html; // string that will hold the form element that is created
+    
+        // setting is a collection of radio buttons
+        if (setting_obj.type === 'radio_buttons') {
+            const {code_name, display_name, radio_buttons, tooltip } = setting_obj;
+    
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div class="outer-radio-button-wrapper">
+            `;
+    
+            // create first through second-to-last radio buttons
+            for (let i = 0; i < radio_buttons.length - 1; i++) {
+                output_html = output_html + `
+                    <div class="inner-radio-button-wrapper">
+                    <input
+                        type="radio"
+                        name="${code_name}"
+                        value="${radio_buttons[i][0]}"
+                        class="radio-buttons"
+                        id="${code_name}-option-${i + 1}"
+                    />
+                    <label for="option-${i + 1}" class="radio-button-label"
+                        >${radio_buttons[i][1]}</label
+                    >
+                    </div>
+                `;
+            }
+    
+            // create the last radio button
+            output_html = output_html + `
+                <div class="inner-radio-button-wrapper last-radio-option">
+                <input
+                    type="radio"
+                    name="${code_name}"
+                    value="${radio_buttons[radio_buttons.length - 1][0]}"
+                    class="radio-buttons"
+                    id="${code_name}-option-${radio_buttons.length}"
+                />
+                <label for="option-${radio_buttons.length}" class="radio-button-label"
+                    >${radio_buttons[radio_buttons.length - 1][1]}</label
+                >
+                </div>
+            </div>
+            <div
+                class="settings-info-button"
+                data-tooltip="${tooltip}"
+            >
+                ?
+            </div>
+            </div>
+            `;
+    
+            return output_html;
+        } 
+        else if (setting_obj.type === 'single_textbox') { // setting is a single textbox
+            const {code_name, display_name, tooltip} = setting_obj;
+    
+            output_html = `
+                <div class="setting-box">
+                <label for="${code_name}-text-box" class="settings-label">${display_name}:</label>
+                <input
+                    type="text"
+                    name="${code_name}"
+                    class="settings-text-box"
+                    id="${code_name}-text-box"
+                />
+                <div
+                    class="settings-info-button"
+                    data-tooltip="${tooltip}"
+                >
+                    ?
+                </div>
+                </div>
+            `;
+    
+            return output_html;
+        }
+        else if (setting_obj.type === 'range_textboxes') { // settings is a range textbox (two textboxes)
+            const {code_names, display_name, tooltip} = setting_obj;
+    
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div id="number-range-wrapper">
+                    from:&thinsp;<input
+                    type="text"
+                    name="${code_names[0]}"
+                    class="settings-text-box number-range-box"
+                    />&thinsp;to:&thinsp;<input
+                    type="text"
+                    name="${code_names[1]}"
+                    class="settings-text-box number-range-box"
+                    />
+                </div>
+                <div
+                    class="settings-info-button"
+                    data-tooltip="${tooltip}"
+                >
+                    ?
+                </div>
+                </div>
+            `;
+    
+            return output_html;
+        }
+    }
+}
 
 createEventListeners();
 
