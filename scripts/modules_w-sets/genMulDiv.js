@@ -1,4 +1,4 @@
-import { answer_form, multiply_symbol, number_type } from '../../settings/setting_templates.js';
+import { answer_form, multiply_symbol, number_of_terms, number_type } from '../../settings/setting_templates.js';
 import * as H from '../helper-modules/gen-helpers.js';
 import * as PH from"../helper-modules/polynom-helpers.js";
 import * as SH from '../helper-modules/settings-helpers.js';
@@ -15,16 +15,6 @@ function processSettings(formObj) {
     let validatedMinMax = SH.val_min_max_range(term_range_min, term_range_max, error_locations);
     term_range_min = validatedMinMax.term_range_min;
     term_range_max = validatedMinMax.term_range_max;
-
-    // convert operation type to an array for settings
-    if (operation_type === 'multiply') operation_type = ['multiply'];
-    else if (operation_type === 'divide') operation_type = ['divide'];
-    else if (operation_type === 'both') operation_type = ['multiply', 'divide'];
-
-    // convert number type to an array for settings
-    if (number_type === 'integers') number_type = ['integers'];
-    else if (number_type === 'fractions') number_type = ['fractions'];
-    else if (number_type === 'both') number_type = ['integers', 'fractions'];
 
     return {
         number_of_terms: number_of_terms,
@@ -43,11 +33,22 @@ export default function genMulDiv(formObj) {
 
     const termArray = H.removeFromArray(0,H.integerArray(settings.term_range_min,settings.term_range_max));
 
+    // extra pre-processing to make loops simpler
+    let possible_operation_types;
+    if (settings.operation_type === 'multiply') possible_operation_types = ['multiply'];
+    else if (settings.operation_type === 'divide') possible_operation_types = ['divide'];
+    else if (settings.operation_type === 'both') possible_operation_types = ['multiply', 'divide'];
+
+    let possible_number_types;
+    if (settings.number_type === 'integers') possible_number_types = ['integers'];
+    else if (settings.number_type === 'fractions') possible_number_types = ['fractions'];
+    else if (settings.number_type === 'both') possible_number_types = ['integers', 'fractions'];
+
 
     let productElements = [];
     let productElements_inMath = [];
     for (let i = 0; i < settings.number_of_terms; i++) {
-        let number_type = H.randFromList(settings.number_type);
+        let number_type = H.randFromList(possible_number_types);
         let currentElement;
 
         if (number_type === 'integers') {
@@ -88,7 +89,7 @@ export default function genMulDiv(formObj) {
 
 
     for (let i = 1; i < settings.number_of_terms; i++) {
-        let operation_type = H.randFromList(settings.operation_type);
+        let operation_type = H.randFromList(possible_operation_types);
 
         if (operation_type === 'multiply') {
             productString = productString + multiply_symbol + productElements_inMath[i];
@@ -127,8 +128,9 @@ export default function genMulDiv(formObj) {
         if (denom === 1) answer = numer; 
     }
     else if (settings.answer_form === 'whole part + remainder') {
-        const whole_part = Math.floor(numer / denom);
-        const remainder = Math.abs(numer % denom);
+        const divisionResult = PH.remainderDivision(numer, denom);
+        const whole_part = divisionResult.quotient;
+        const remainder = divisionResult.remainder;
         
         answer = whole_part + '\\;\\,R' + remainder;
     }
@@ -160,27 +162,33 @@ export const settings_fields = [
     'answer_form'
 ];
 
-// need to improve/fix these two functions quite a bit
 export function get_presets() {
+    const operation_type = H.randFromList(['multiply','divide']);
+    const answer_form = (operation_type === 'multiply') ? 'factions & integers' : 'whole part + remainder';
+    const term_range_min = (operation_type === 'multiply') ? H.randInt(-20, -2) : 2; 
+
     return {
         number_of_terms: 2,
-        term_range_min: H.randInt(-20, -2),
-        term_range_max: H.randInt(2, 20),
-        operation_type: 'both',
+        term_range_min: term_range_min,
+        term_range_max: H.randInt(3, 20),
+        operation_type: operation_type,
         number_type: 'integers',
-        multiply_symbol: ' \\cdot ',
-        answer_form: 'factions & integers'
+        multiply_symbol: ' \\times ',
+        answer_form: answer_form
     };
 }
 
 export function get_rand_settings() {
+    const operation_type = H.randFromList(['multiply','divide','both']);
+    const answer_form = (operation_type === 'multiply' || operation_type === 'both') ? 'factions & integers' : 'whole part + remainder';
+
     return {
         number_of_terms: H.randInt(2,4),
         term_range_min: H.randInt(-20, -1),
         term_range_max: H.randInt(1, 20),
-        operation_type: H.randFromList(['multiply','divide','both']),
+        operation_type: operation_type,
         number_type: H.randFromList(['integers','fractions','both']),
-        multiply_symbol: H.randFromList([' \\cdot ', ' \\times']),
-        answer_form: H.randFromList(['factions & integers','whole part + remainder'])
+        multiply_symbol: H.randFromList([' \\cdot ', ' \\times ']),
+        answer_form: answer_form
     }; 
 }
