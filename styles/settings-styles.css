@@ -77,6 +77,7 @@
     margin-top: 0.3vw;
     color: rgb(10, 7, 25);
     text-decoration: underline;
+    margin-bottom: 0;
 }
 
 .settings-text-box {
@@ -98,66 +99,108 @@
 /* Settings tooltip styles */
 
 .settings-info-button {
-    width: 1.3vw;
-    height: 1.3vw;
-    font-size: 1.1vw;
-    font-weight: 600;
-    background-color: rgb(255, 166, 0);
-    color: white;
-    margin-bottom: 0.2vw;
-    border: none;
-    border-radius: 0.1vw;
-    text-align: center;
-    position: relative;
-  }
-  
-  .settings-info-button:hover,
-  .settings-info-button:focus {
-    cursor: default;
-    outline: 0.05vw solid darkblue;
-  }
-  
-  .settings-info-button::before {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 0.65vw); /* Position tooltip above the button and arrow */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 11vw; /* Fixed width, allows height to grow dynamically */
-    padding: 0.5vw;
-    background-color: #333;
-    color: whitesmoke;
-    border-radius: 0.3vw;
-    text-align: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 1vw;
-    height: max-content; /* Allows text wrapping */
-    white-space: normal;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 25ms ease-in-out;
-    z-index: 10;
-  }
-  
-  .settings-info-button:hover::before {
-    opacity: 1; /* Makes the tooltip visible on hover */
-  }
-  
-  .settings-info-button::after {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 0.2vw); /* Place arrow just below the tooltip box */
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 0.5vw solid transparent;
-    border-right: 0.5vw solid transparent;
-    border-top: 0.5vw solid #333; /* Matches tooltip background */
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 25ms ease-in-out;
-  }
-  
-  .settings-info-button:hover::after {
-    opacity: 1; /* Makes the arrow visible on hover */
-  }
+  width: 1.3vw;
+  height: 1.3vw;
+  font-size: 1.1vw;
+  font-weight: 600;
+  background-color: rgb(255, 166, 0);
+  color: white;
+  margin-bottom: 0.2vw;
+  border: none;
+  border-radius: 0.1vw;
+  text-align: center;
+  position: relative;
+}
+
+.settings-info-button:hover,
+.settings-info-button:focus {
+  cursor: default;
+  outline: 0.05vw solid darkblue;
+}
+
+.settings-info-button::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 0.65vw); /* Position tooltip above the button and arrow */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 11vw; /* Fixed width, allows height to grow dynamically */
+  padding: 0.5vw;
+  background-color: #333;
+  color: whitesmoke;
+  border-radius: 0.3vw;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1vw;
+  height: max-content; /* Allows text wrapping */
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 25ms ease-in-out;
+  z-index: 10;
+}
+
+.settings-info-button:hover::before {
+  opacity: 1; /* Makes the tooltip visible on hover */
+}
+
+.settings-info-button::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 0.2vw); /* Place arrow just below the tooltip box */
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 0.5vw solid transparent;
+  border-right: 0.5vw solid transparent;
+  border-top: 0.5vw solid #333; /* Matches tooltip background */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 25ms ease-in-out;
+}
+
+.settings-info-button:hover::after {
+  opacity: 1; /* Makes the arrow visible on hover */
+}
+
+/* Radio button styles */
+
+.radio-buttons {
+  width: 1vw;
+  height: 1vw;
+  margin-right: 0.5vw;
+}
+
+.radio-buttons:hover {
+  cursor: pointer;
+}
+
+.radio-button-label {
+  display: inline;
+  font-size: 1vw;
+  font-family: monospace;
+}
+
+.inner-radio-button-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 1.7vw;
+}
+
+.last-radio-option {
+  margin-bottom: 0;
+}
+
+/* number range styles */
+
+#number-range-wrapper {
+  font-size: 0.8vw;
+  font-family: monospace;
+}
+
+.number-range-box {
+  font-size: 1.8vw;
+}
+
+
 
