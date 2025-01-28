@@ -130,3 +130,25 @@ function genMulDiv(settings) {
         answer: answer
     };
 }   
+
+
+export const settings_fields = [
+    'number_of_terms',
+    'term_range',
+    'muldiv_operation_type',
+    'number_type',
+    'multiply_symbol',
+    'answer_form'
+];
+
+export function get_presets() {
+    return {
+        number_of_terms: 2,
+        term_range_min: H.randInt(-20, -2),
+        term_range_max: H.randInt(2, 20),
+        operation_type: 'both',
+        number_type: 'integers',
+        multiply_symbol: ' \\\\cdot ',
+        answer_form: 'factions & integers'
+    };
+}
