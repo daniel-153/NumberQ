@@ -1,0 +1,30 @@
+.operation-buttons {
+    width: 1vw;
+    height: 1vw;
+    margin-right: 0.5vw;
+}
+
+.operation-buttons:hover {
+    cursor: pointer;
+}
+
+#option3CHANGE {
+    margin-bottom: 0;
+}
+
+.operation-button-label {
+    display: inline;
+    font-size: 1vw;
+    font-family: monospace;
+}
+
+.inner-radio-button-wrapper {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 1.7vw;
+}
+
+.last-option-radio {
+    margin-bottom: 0;
+}
