@@ -389,7 +389,7 @@ async function insertSettings(settings_names) {
                         class="radio-buttons"
                         id="${code_name}-option-${i + 1}"
                     />
-                    <label for="option-${i + 1}" class="radio-button-label"
+                    <label for="${code_name}-option-${i + 1}" class="radio-button-label"
                         >${radio_buttons[i][1]}</label
                     >
                     </div>
@@ -406,7 +406,7 @@ async function insertSettings(settings_names) {
                     class="radio-buttons"
                     id="${code_name}-option-${radio_buttons.length}"
                 />
-                <label for="option-${radio_buttons.length}" class="radio-button-label"
+                <label for="${code_name}-option-${radio_buttons.length}" class="radio-button-label"
                     >${radio_buttons[radio_buttons.length - 1][1]}</label
                 >
                 </div>
