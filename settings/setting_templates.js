@@ -38,6 +38,30 @@ export const number_type = {
     tooltip: 'What type of numbers should be in the expression?'
 };
 
+export const angular_unit = {
+    type: 'radio_buttons',
+    code_name: 'angular_unit',
+    display_name: 'Angular Unit',
+    radio_buttons: [['radians','Radians (0&ndash;2pi)'],['degrees','Degrees (0&ndash;360)'],['both','Both']], 
+    tooltip: 'Should the trig values be in radians or degrees?'
+};
+
+export const argument_sign = {
+    type: 'radio_buttons',
+    code_name: 'argument_sign',
+    display_name: 'Argument Sign',
+    radio_buttons: [['positive','Positive'],['negative','Negative'],['both','Both']], 
+    tooltip: 'Should the numbers inside the trig functions be positive or negative?' 
+};
+
+export const trig_function_types = {
+    type: 'check_boxes',
+    code_name: 'trig_function_types',
+    display_name: 'Trig Functions',
+    check_boxes: [['sine','sin(&theta;)'],['cosine','cos(&theta;)'],['tangent','tan(&theta;)']], 
+    tooltip: 'Which trig functions should be used? (sine, cosine, or tangent)' 
+};
+
 export const number_of_terms = {
     type: 'single_textbox',
     code_name: 'number_of_terms',
