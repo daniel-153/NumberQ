@@ -159,7 +159,7 @@ async function initiateGenerator(type, funcName) {
 
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
         if (!document.getElementById('randomize-all-checkbox').checked) {
-            const currentSettings = Object.fromEntries((new FormData(document.getElementById('settings-form'))).entries());
+            const currentSettings = currentFormObject();
             switchToNewQuestion(currentGen(currentSettings)); 
         } // randomize_all isn't checked -> use provided settings
         else {
@@ -369,7 +369,7 @@ async function insertSettings(settings_names) {
         let output_html; // string that will hold the form element that is created
     
         // setting is a collection of radio buttons
-        if (setting_obj.type === 'radio_buttons') {
+        if (setting_obj.type === 'radio_buttons') { // setting is a collection of radio buttons
             const {code_name, display_name, radio_buttons, tooltip } = setting_obj;
     
             output_html = `
@@ -445,7 +445,7 @@ async function insertSettings(settings_names) {
     
             return output_html;
         }
-        else if (setting_obj.type === 'range_textboxes') { // settings is a range textbox (two textboxes)
+        else if (setting_obj.type === 'range_textboxes') { // setting is a range textbox (two textboxes)
             const {code_names, display_name, tooltip} = setting_obj;
     
             output_html = `
@@ -473,8 +473,30 @@ async function insertSettings(settings_names) {
     
             return output_html;
         }
+        else if (setting_obj.type === 'check_boxes') { // settings is a collection of checkboxes
+
+        }
     }
 }
+
+function currentFormObject() {
+    const form = document.getElementById("settings-form");
+    const formData = new FormData(form);
+    const formObject = {};
+
+    // Process FormData correctly
+    for (const [key, value] of formData.entries()) {
+        // If the key already exists, ensure it becomes an array
+        if (formObject.hasOwnProperty(key)) {
+            // Convert to array if it's not one already
+            formObject[key] = [].concat(formObject[key], value);
+        } else {
+            formObject[key] = value;
+        }
+    }
+
+    return formObject;
+}  
 
 createEventListeners();
 
