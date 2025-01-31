@@ -228,30 +228,39 @@ function updateSettings(settings) {
     const form = document.getElementById('settings-form');
 
     for (const [setting_name, value] of Object.entries(settings)) {
-        const element = form.elements[setting_name];
+        const elements = form.elements[setting_name];
 
-        if (!element) {
+        if (!elements) {
             // there used to be a warning here saying there was no element by name of error_locations. Why was 'error_locations' ever here?
             continue;
         }
 
-        // Handle input types
-        if (element.type === 'checkbox') {
-            element.checked = Boolean(value);
-        } else if (element.type === 'radio') {
-            // For radio buttons, select the one matching the value
+        // Handle collections of checkboxes
+        if (elements.length && elements[0].type === 'checkbox') {
+            for (const checkbox of elements) {
+                checkbox.checked = Array.isArray(value) && value.includes(checkbox.value);
+            }
+        } 
+        // Handle single checkboxes
+        else if (elements.type === 'checkbox') {
+            elements.checked = Boolean(value);
+        } 
+        // Handle radio buttons
+        else if (elements.type === 'radio') {
             const radio = form.querySelector(`input[name="${setting_name}"][value="${value}"]`);
             if (radio) {
                 radio.checked = true;
             }
-        } else if (element.type === 'select-multiple') {
-            // Handle multi-selects
-            for (const option of element.options) {
+        } 
+        // Handle multi-select dropdowns
+        else if (elements.type === 'select-multiple') {
+            for (const option of elements.options) {
                 option.selected = Array.isArray(value) && value.includes(option.value);
             }
-        } else {
-            // Default: Set value for text, number, select-one, etc.
-            element.value = value;
+        } 
+        // Default case: set value for text inputs, number inputs, select-one, etc.
+        else {
+            elements.value = value;
         }
     }
 }
@@ -474,7 +483,57 @@ async function insertSettings(settings_names) {
             return output_html;
         }
         else if (setting_obj.type === 'check_boxes') { // settings is a collection of checkboxes
+            const {code_name, display_name, check_boxes, tooltip } = setting_obj;
+    
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div class="outer-radio-button-wrapper">
+            `;
 
+            // create first through second-to-last radio buttons
+            for (let i = 0; i < check_boxes.length - 1; i++) {
+                output_html = output_html + `
+                    <div class="inner-radio-button-wrapper">
+                    <input
+                        type="checkbox"
+                        name="${code_name}"
+                        value="${check_boxes[i][0]}"
+                        class="radio-buttons"
+                        id="${code_name}-option-${i + 1}"
+                    />
+                    <label for="${code_name}-option-${i + 1}" class="radio-button-label"
+                        >${check_boxes[i][1]}</label
+                    >
+                    </div>
+                `;
+            }
+
+            // create the last radio button
+            output_html = output_html + `
+                <div class="inner-radio-button-wrapper last-radio-option">
+                <input
+                    type="checkbox"
+                    name="${code_name}"
+                    value="${check_boxes[check_boxes.length - 1][0]}"
+                    class="radio-buttons"
+                    id="${code_name}-option-${check_boxes.length}"
+                />
+                <label for="${code_name}-option-${check_boxes.length}" class="radio-button-label"
+                    >${check_boxes[check_boxes.length - 1][1]}</label
+                >
+                </div>
+            </div>
+            <div
+                class="settings-info-button"
+                data-tooltip="${tooltip}"
+            >
+                ?
+            </div>
+            </div>
+            `;
+
+            return output_html;
         }
     }
 }
@@ -484,19 +543,26 @@ function currentFormObject() {
     const formData = new FormData(form);
     const formObject = {};
 
-    // Process FormData correctly
     for (const [key, value] of formData.entries()) {
-        // If the key already exists, ensure it becomes an array
+        const inputElements = form.elements[key];
+
+        // Check if the input type is a collection of checkboxes
+        const isCheckboxGroup = inputElements && inputElements[0]?.type === "checkbox";
+
         if (formObject.hasOwnProperty(key)) {
-            // Convert to array if it's not one already
-            formObject[key] = [].concat(formObject[key], value);
+            // Only enforce an array for checkboxes
+            if (isCheckboxGroup) {
+                formObject[key] = [].concat(formObject[key], value);
+            } else {
+                formObject[key] = value; // Ensure radios remain a single value
+            }
         } else {
-            formObject[key] = value;
+            formObject[key] = isCheckboxGroup ? [value] : value;
         }
     }
 
     return formObject;
-}  
+}
 
 createEventListeners();
 
