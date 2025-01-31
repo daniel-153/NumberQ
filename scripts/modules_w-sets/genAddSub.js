@@ -21,8 +21,7 @@ function processSettings(formObj) {
         operation_type: operation_type,
         error_locations: error_locations
     };
-} // Note: later on, you likely want to have reusable functions for validation like val_minMaxRange(min,max), or val_termNumber
-  // also, you should create a module of 'validation helper functions' for this
+} 
 
 
 export default function genAddSub(formObj) {
