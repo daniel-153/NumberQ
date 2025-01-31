@@ -458,7 +458,7 @@ export default function genTrigEx(formObj) {
 
     // determine which argument sign is used
     let argumentSign;
-    if (settings.argument_sign === 'postive') argumentSign = 'positive';
+    if (settings.argument_sign === 'positive') argumentSign = 'positive';
     else if (settings.argument_sign === 'negative') argumentSign = 'negative';
     else if (settings.argument_sign === 'both') argumentSign = H.randFromList(['positive', 'negative']);
 
@@ -482,5 +482,25 @@ export default function genTrigEx(formObj) {
         error_locations: error_locations
     };
 } 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// NOTE: to add checkboxes, maybe you can reuse almost everything from radio buttons and just change type to ="checkbox"
+
+export const settings_fields = [
+    'angular_unit',
+    'argument_sign',
+    'trig_function_types'
+];
+
+export function get_presets() {
+    return {
+        angular_unit: 'radians',
+        argument_sign: 'positive',
+        trig_function_types: ['sine','cosine']
+    };
+}
+
+export function get_rand_settings() {
+    return {
+        angular_unit: H.randFromList(['radians','degrees','both']),
+        argument_sign: H.randFromList(['positive','negative','both']),
+        trig_function_types: H.randFromList([['sine'],['cosine'],['tangent']])
+    }; 
+}
