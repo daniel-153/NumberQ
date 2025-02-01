@@ -76,7 +76,7 @@
     width: 120%;
     border-bottom: 0.1vw solid black;
     font-size: 3.75vw;
-    margin-top: 0.1vw;
+    margin-top: 0.3vw;
 }
 
 #fullscreen-answer-wrapper {
@@ -206,4 +206,14 @@
 #fullscreen-answer[data-special-styles='genSimRad'] {
     height: 4.75vw;
     margin-bottom: 0.65vw;
+}
+
+#fullscreen-answer[data-special-styles='genComArith'] {
+    width: 14vw;
+    height: 4.75vw;
+    margin-bottom: 0.65vw;
+}
+
+#fullscreen-question[data-special-styles='genComArith'] {
+    height: 15%;
 }
