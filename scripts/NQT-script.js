@@ -433,21 +433,31 @@ async function insertSettings(settings_names) {
     // function that generates the html for each settings field
     function createSettingHtml(setting_obj) {
         let output_html; // string that will hold the form element that is created
-    
+
         // setting is a collection of radio buttons
         if (setting_obj.type === 'radio_buttons') { // setting is a collection of radio buttons
             const {code_name, display_name, radio_buttons, tooltip } = setting_obj;
-    
+
+            // Calculate the number of options and the appropriate margin-bottom value.
+            const numberOfOptions = radio_buttons.length;
+            let marginBottom;
+            if (numberOfOptions <= 3) {
+                marginBottom = '1.7vw';
+            } else {
+                const computedMargin = 1.7 * (3 / numberOfOptions);
+                marginBottom = `${computedMargin}vw`;
+            }
+
             output_html = `
                 <div class="setting-box">
                 <h3 class="settings-label">${display_name}:</h3>
                 <div class="outer-radio-button-wrapper">
             `;
-    
+
             // create first through second-to-last radio buttons
             for (let i = 0; i < radio_buttons.length - 1; i++) {
                 output_html = output_html + `
-                    <div class="inner-radio-button-wrapper">
+                    <div class="inner-radio-button-wrapper" style="margin-bottom: ${marginBottom};">
                     <input
                         type="radio"
                         name="${code_name}"
@@ -461,7 +471,7 @@ async function insertSettings(settings_names) {
                     </div>
                 `;
             }
-    
+
             // create the last radio button
             output_html = output_html + `
                 <div class="inner-radio-button-wrapper last-radio-option">
@@ -485,12 +495,12 @@ async function insertSettings(settings_names) {
             </div>
             </div>
             `;
-    
+
             return output_html;
         } 
         else if (setting_obj.type === 'single_textbox') { // setting is a single textbox
             const {code_name, display_name, tooltip} = setting_obj;
-    
+
             output_html = `
                 <div class="setting-box">
                 <label for="${code_name}-text-box" class="settings-label">${display_name}:</label>
@@ -508,12 +518,12 @@ async function insertSettings(settings_names) {
                 </div>
                 </div>
             `;
-    
+
             return output_html;
         }
         else if (setting_obj.type === 'range_textboxes') { // setting is a range textbox (two textboxes)
             const {code_names, display_name, tooltip} = setting_obj;
-    
+
             output_html = `
                 <div class="setting-box">
                 <h3 class="settings-label">${display_name}:</h3>
@@ -536,22 +546,32 @@ async function insertSettings(settings_names) {
                 </div>
                 </div>
             `;
-    
+
             return output_html;
         }
         else if (setting_obj.type === 'check_boxes') { // settings is a collection of checkboxes
             const {code_name, display_name, check_boxes, tooltip } = setting_obj;
-    
+
+            // Calculate the number of options and the appropriate margin-bottom value.
+            const numberOfOptions = check_boxes.length;
+            let marginBottom;
+            if (numberOfOptions <= 3) {
+                marginBottom = '1.7vw';
+            } else {
+                const computedMargin = 1.7 * (3 / numberOfOptions);
+                marginBottom = `${computedMargin}vw`;
+            }
+
             output_html = `
                 <div class="setting-box">
                 <h3 class="settings-label">${display_name}:</h3>
                 <div class="outer-radio-button-wrapper">
             `;
 
-            // create first through second-to-last radio buttons
+            // create first through second-to-last checkboxes
             for (let i = 0; i < check_boxes.length - 1; i++) {
                 output_html = output_html + `
-                    <div class="inner-radio-button-wrapper">
+                    <div class="inner-radio-button-wrapper" style="margin-bottom: ${marginBottom};">
                     <input
                         type="checkbox"
                         name="${code_name}"
@@ -566,7 +586,7 @@ async function insertSettings(settings_names) {
                 `;
             }
 
-            // create the last radio button
+            // create the last checkbox
             output_html = output_html + `
                 <div class="inner-radio-button-wrapper last-radio-option">
                 <input
