@@ -66,7 +66,7 @@ export const number_of_terms = {
     type: 'single_textbox',
     code_name: 'number_of_terms',
     display_name: 'Number of Terms',
-    tooltip: 'How many numbers should be in the expression? (enter an integer from 2 to 10)'
+    tooltip: 'How many terms should be in the expression? (enter an integer from 2 to 10)'
 };
 
 export const term_range = {
@@ -74,5 +74,19 @@ export const term_range = {
     code_names: ['term_range_min','term_range_max'],
     display_name: 'Number Range',
     tooltip: 'How big or small should the numbers be? (create a range with integers within ±999)'
+};
+
+export const root_number = {
+    type: 'single_textbox',
+    code_name: 'root_number',
+    display_name: 'Number Under Roots',
+    tooltip: "What common number should be under the roots? (enter a non-square integer from 2 to 10)"
+};
+
+export const coef_number_size = {
+    type: 'single_textbox',
+    code_name: 'coef_number_size',
+    display_name: 'Numbers Before Roots',
+    tooltip: "How big should the numbers in front of the roots get? (enter an integer from 2 to 20)"
 };
 
