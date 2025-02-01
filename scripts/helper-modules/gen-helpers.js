@@ -38,3 +38,24 @@ export function randomizeList(array) {
     }
     return array;
 }
+
+export function nonPerfectSquares(integerLimit) {
+    if (integerLimit < 1 || !Number.isInteger(integerLimit)) {
+        throw new Error("Input must be a positive integer.");
+    }
+
+    const result = [];
+    const perfectSquares = new Set();
+
+    for (let i = 1; i * i <= integerLimit; i++) {
+        perfectSquares.add(i * i);
+    }
+
+    for (let num = 1; num <= integerLimit; num++) {
+        if (!perfectSquares.has(num)) {
+            result.push(num);
+        }
+    }
+
+    return result;
+}
