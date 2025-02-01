@@ -62,6 +62,30 @@ export const trig_function_types = {
     tooltip: 'Which trig functions should be used? (sine, cosine, or tangent)' 
 };
 
+export const general_operation_types = {
+    type: 'check_boxes',
+    code_name: 'general_operation_types',
+    display_name: 'Operations',
+    check_boxes: [['add','Addition'],['subtract','Subtraction'],['multiply','Multiplication'],['divide','Division']], 
+    tooltip: 'What operations should be done on the expressions?' 
+};
+
+export const randomize_order = {
+    type: 'radio_buttons',
+    code_name: 'randomize_order',
+    display_name: 'Randomize Order',
+    radio_buttons: [['yes','Yes (a+bi or bi+a)'],['no','No (only a+bi)']], 
+    tooltip: 'Should the order of real and complex part of the complex numbers be randomized?'
+};
+
+export const force_ints_in_div = {
+    type: 'radio_buttons',
+    code_name: 'force_ints_in_div',
+    display_name: 'Force Integers',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'In division, should the answer be required to only include integers?'
+};
+
 export const number_of_terms = {
     type: 'single_textbox',
     code_name: 'number_of_terms',
