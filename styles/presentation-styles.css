@@ -195,3 +195,10 @@
     border-width: 0.17vw;
     font-size: 3.2vw;
 }
+
+/* Special style accomodations for Q and A boxes */
+
+#fullscreen-answer[data-special-styles='genTrigEx'] {
+    height: 6vw;
+    margin-bottom: 1.7vw;
+}

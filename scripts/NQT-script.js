@@ -167,6 +167,12 @@ async function initiateGenerator(type, funcName) {
             switchToNewQuestion(currentGen(currentSettings));
         } // randomize_all is checked -> use random (pre-set) settings
     });
+
+    // change sizing of Q and A boxes in fullscreen mode (if needed)
+    document.getElementById('fullscreen-question').removeAttribute("data-special-styles");
+    document.getElementById('fullscreen-question').setAttribute("data-special-styles", funcName);
+    document.getElementById('fullscreen-answer').removeAttribute("data-special-styles");
+    document.getElementById('fullscreen-answer').setAttribute("data-special-styles", funcName);
 }
 
 function cleanedFromListeners(element) {
