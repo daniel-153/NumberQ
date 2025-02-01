@@ -92,6 +92,7 @@ function createEventListeners() {
     document.getElementById('fullscreen-mode-button').addEventListener('click', () => {
         document.getElementById('presenation-content').classList.toggle('hidden-content');
         observeTextChanges(document.getElementById('fullscreen-question'), '3.75vw','run_once');
+        observeTextChanges(document.getElementById('fullscreen-answer'),'3.3vw');
 
         // Same as else{} just above^ (hackfix)
         document.getElementById('fullscreen-answer').style.background = '';
