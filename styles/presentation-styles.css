@@ -202,3 +202,8 @@
     height: 6vw;
     margin-bottom: 1.7vw;
 }
+
+#fullscreen-answer[data-special-styles='genSimRad'] {
+    height: 4.75vw;
+    margin-bottom: 0.65vw;
+}
