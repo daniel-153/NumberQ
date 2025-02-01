@@ -1,31 +1,31 @@
-export function val_term_number(number_of_terms,error_locations) {
+export function val_term_number(number_of_terms, error_locations, max_number_of_terms = 10, input_name = 'number_of_terms') {
     if (number_of_terms === '') {
         number_of_terms = 2;
-        error_locations.push('number_of_terms');
+        error_locations.push(input_name);
     } // Number of terms has no input value
     else number_of_terms = Number(number_of_terms);
 
     if (Number.isNaN(number_of_terms)) {
         number_of_terms = 2;
-        error_locations.push('number_of_terms');
+        error_locations.push(input_name);
     } // number of terms is not a number (can't be converted to a number)
-    else if (number_of_terms > 10) {
-        number_of_terms = 10;
-        error_locations.push('number_of_terms');
+    else if (number_of_terms > max_number_of_terms) {
+        number_of_terms = max_number_of_terms;
+        error_locations.push(input_name);
     } // Number of terms exceeds the max of the range
     else if (number_of_terms < 2) {
         number_of_terms = 2;
-        error_locations.push('number_of_terms');
+        error_locations.push(input_name);
     } // Number of terms is below the mix of the range
-    else if (number_of_terms >= 2 && number_of_terms <= 10) {
+    else if (number_of_terms >= 2 && number_of_terms <= max_number_of_terms) {
         if (!Number.isInteger(number_of_terms)) {
             number_of_terms = Math.floor(Math.abs(number_of_terms));
-            error_locations.push('number_of_terms');
+            error_locations.push(input_name);
         }
     } // number of terms is in the correct range but isn't an integer
 
     return number_of_terms;
-}
+} // built for validating number_of_terms, but can be used to val any text input looking for a positive int if you specify last two params
 
 export function val_min_max_range(term_range_min,term_range_max,error_locations) {
     term_range_min = Number(term_range_min);
@@ -86,4 +86,15 @@ export function val_min_max_range(term_range_min,term_range_max,error_locations)
         term_range_min: term_range_min,
         term_range_max: term_range_max
     };
+}
+
+export function val_root_number(root_number, error_locations) {
+    root_number = val_term_number(root_number, error_locations, 10, 'root_number'); // after this, root_number must be a positive integer
+
+    if (Math.sqrt(root_number) === Math.floor(Math.sqrt(root_number))) { // after this, root_number must NOT be a perfect square
+        root_number = root_number + 1;
+        error_locations.push('root_number');
+    }
+
+    return root_number;
 }
