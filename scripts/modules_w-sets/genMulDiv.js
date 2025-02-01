@@ -1,4 +1,3 @@
-import { answer_form, multiply_symbol, number_of_terms, number_type } from '../../settings/setting_templates.js';
 import * as H from '../helper-modules/gen-helpers.js';
 import * as PH from"../helper-modules/polynom-helpers.js";
 import * as SH from '../helper-modules/settings-helpers.js';
