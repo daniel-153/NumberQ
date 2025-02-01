@@ -187,7 +187,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: 1.7vw;
+  margin-bottom: 1.7vw; /* This is now overridden by the JS in the insertSettings function (dynamically calculated margin) */
 }
 
 .last-radio-option {
