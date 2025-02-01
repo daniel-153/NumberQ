@@ -4,7 +4,6 @@ function createEventListeners() {
     // This is the auto text-fitter
     // NOTE: when you go to the other gens/mobile, you need to somehow supply the initial font size specific to each gen 
     // (right now, 3vw is the global default). And you'll probably also need to put this on the rendered and un-rendered answer boxes
-    observeTextChanges(document.getElementById('rendered-Q'), '3vw');
     observeTextChanges(document.getElementById('un-rendered-Q'), '1.2vw');
 
     [...document.getElementsByClassName('start-button')].forEach((element) => {
@@ -92,7 +91,7 @@ function createEventListeners() {
 
     document.getElementById('fullscreen-mode-button').addEventListener('click', () => {
         document.getElementById('presenation-content').classList.toggle('hidden-content');
-        observeTextChanges(document.getElementById('fullscreen-question'), '3.75vw');
+        observeTextChanges(document.getElementById('fullscreen-question'), '3.75vw','run_once');
 
         // Same as else{} just above^ (hackfix)
         document.getElementById('fullscreen-answer').style.background = '';
@@ -187,7 +186,7 @@ function switchToNewQuestion(newQuestion) {
     const TeXquestion = (newQuestion.TeXquestion === undefined) ? newQuestion.question : newQuestion.TeXquestion;
     const TeXanswer = (newQuestion.TeXanswer === undefined) ? newQuestion.answer : newQuestion.TeXanswer;
     
-    document.getElementById('rendered-Q').innerHTML = '\\(' + question + '\\)';
+    updateElementMath('rendered-Q',question,'3vw')
     document.getElementById('un-rendered-Q').innerHTML = TeXquestion;
     document.getElementById('rendered-A').innerHTML = '\\(' + answer + '\\)';
     document.getElementById('un-rendered-A').innerHTML = TeXanswer;
@@ -206,7 +205,7 @@ function switchToNewQuestion(newQuestion) {
 
     // Presentation mode updates
 
-    document.getElementById('fullscreen-question').innerHTML = '\\(' + question + '\\)';
+    updateElementMath('fullscreen-question',question,'3.75vw')
     document.getElementById('fullscreen-answer').innerHTML = '\\(' + answer + '\\)';
 
     MathJax.typesetPromise([document.getElementById('fullscreen-Q-A-wrapper')]);
@@ -311,53 +310,104 @@ function flashElements(element_name_array) {
     });
 }
 
-function observeTextChanges(element, initial_font_size) {
+function observeTextChanges(element, initial_font_size, method) {
     const originalFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Define your original font size
-  
+    method = method || 'set'; // Default method is 'set'
+
     // Function to adjust font size dynamically
     function fitTextToDiv(container) {
-      container.style.fontSize = originalFontSize; // Reset to original font size
-  
-      // Detect overflow
-      let scaleFactor = 1; // Initialize scale factor
-      const isOverflowing = () =>
-        container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth;
-  
-      while (isOverflowing()) {
-        // Calculate how much to downsize
-        const heightRatio = container.clientHeight / container.scrollHeight;
-        const widthRatio = container.clientWidth / container.scrollWidth;
-        scaleFactor = Math.min(heightRatio, widthRatio);
-  
-        // Apply scale factor
-        const newFontSize = parseFloat(getComputedStyle(container).fontSize) * scaleFactor;
-        container.style.fontSize = newFontSize + "px";
-  
-        // Break loop if scale factor is minimal
-        if (scaleFactor >= 1) break;
-      }
+        container.style.fontSize = originalFontSize; // Reset to original font size
+
+        // Detect overflow
+        let scaleFactor = 1; // Initialize scale factor
+        const isOverflowing = () =>
+            container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth;
+
+        while (isOverflowing()) {
+            // Calculate how much to downsize
+            const heightRatio = container.clientHeight / container.scrollHeight;
+            const widthRatio = container.clientWidth / container.scrollWidth;
+            scaleFactor = Math.min(heightRatio, widthRatio);
+
+            // Apply scale factor
+            const newFontSize = parseFloat(getComputedStyle(container).fontSize) * scaleFactor;
+            container.style.fontSize = newFontSize + "px";
+
+            // Break loop if scale factor is minimal
+            if (scaleFactor >= 1) break;
+        }
     }
-  
+
     // Function to clean the element from existing MutationObservers
     function cleanFromListeners(el) {
-      const clone = el.cloneNode(true);
-      el.parentNode.replaceChild(clone, el);
-      return clone;
+        const clone = el.cloneNode(true);
+        el.parentNode.replaceChild(clone, el);
+        return clone;
     }
-  
+
     // Clean the element to remove existing listeners
     element = cleanFromListeners(element);
-  
-    // Run the downsizing logic immediately if there’s overflow
+
+    // Run the downsizing logic immediately
     fitTextToDiv(element);
-  
-    // MutationObserver to detect changes in text content
-    const observer = new MutationObserver(() => {
-      fitTextToDiv(element); // Adjust font size when content changes
+
+    if (method === 'set') {
+        // MutationObserver to detect changes in text content
+        const observer = new MutationObserver(() => {
+            fitTextToDiv(element); // Adjust font size when content changes
+        });
+
+        observer.observe(element, { characterData: true, childList: true, subtree: true });
+    }
+    // If method is 'run_once', we don't create any observer
+}
+
+function updateElementMath(elementID, latexCode, initial_font_size) {
+    const element = document.getElementById(elementID);
+    const defaultFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Default font size
+
+    // Determine if the LaTeX code contains a fraction
+    const adjustedFontSize = latexCode.includes("\\frac") ? "4.2vw" : defaultFontSize;
+
+    // Automatically insert delimiters around the LaTeX code
+    const wrappedLatexCode = '\\(' + latexCode + '\\)';
+
+    // Set the initial font size before rendering
+    element.style.fontSize = adjustedFontSize;
+
+    // Insert the LaTeX code into the element
+    element.innerHTML = wrappedLatexCode;
+
+    // Render the content with MathJax
+    MathJax.typesetPromise([element]).then(() => {
+        // After rendering, adjust font size to fit the container
+        fitTextToDiv(element, adjustedFontSize);
     });
-  
-    observer.observe(element, { characterData: true, childList: true, subtree: true });
-} 
+
+    // Function to adjust font size dynamically
+    function fitTextToDiv(container, originalFontSize) {
+        container.style.fontSize = originalFontSize; // Reset to original font size
+
+        // Detect overflow
+        const isOverflowing = () =>
+            container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth;
+
+        while (isOverflowing()) {
+            // Calculate how much to downsize
+            const heightRatio = container.clientHeight / container.scrollHeight;
+            const widthRatio = container.clientWidth / container.scrollWidth;
+            const scaleFactor = Math.min(heightRatio, widthRatio);
+
+            // Apply scale factor
+            const currentFontSize = parseFloat(getComputedStyle(container).fontSize);
+            const newFontSize = currentFontSize * scaleFactor;
+            container.style.fontSize = newFontSize + "px";
+
+            // Break loop if scale factor is minimal
+            if (scaleFactor >= 1 || newFontSize < 12) break;
+        }
+    }
+}
 
 async function insertSettings(settings_names) {
     const settings_templates = await import('../settings/setting_templates.js');
