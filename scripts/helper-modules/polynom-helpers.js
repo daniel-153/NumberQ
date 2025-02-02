@@ -37,19 +37,19 @@ export function polyTemplateToMath(coefArray) {
     for (let i = Degree; i >= 2; i--) {
         if (coefArray[Degree - i] === 0) {} 
         else if (coefArray[Degree - i] === -1) {
-            polynom = polynom + '-x^' + i;
+            polynom = polynom + '-x^{' + i + '}';
         }
         else if ((coefArray[Degree - i] === 1) && (polynom !== '')) {
-            polynom = polynom + '+x^' + i;
+            polynom = polynom + '+x^{' + i + '}';
         }
         else if (coefArray[Degree - i] === 1) {
-            polynom = polynom + 'x^' + i;
+            polynom = polynom + 'x^{' + i + '}';
         }
         else if ((coefArray[Degree - i] > 0) && (polynom !== '')) {
-            polynom = polynom + '+' + coefArray[Degree - i] + 'x^' + i;
+            polynom = polynom + '+' + coefArray[Degree - i] + 'x^{' + i + '}';
         }
         else {
-            polynom = polynom + coefArray[Degree - i] + 'x^' + i;
+            polynom = polynom + coefArray[Degree - i] + 'x^{' + i + '}';
         }
     } // Handles everything between the first term and x^2
     
@@ -412,67 +412,3 @@ export function evaluatePolynomial(p1, value) {
 
     return result;
 }
-
-export function numericalRemainder(p1, p2) {
-    // Step 1: Perform long division until the denominator is of degree 1
-    let currentP1 = [...p1];
-    let currentP2 = [...p2];
-    let quotient = [];
-    
-    // Helper function for dividing polynomials
-    function dividePolynomials(dividend, divisor) {
-        const deg1 = dividend.length - 1;
-        const deg2 = divisor.length - 1;
-    
-        if (deg1 < deg2) {
-            return { quotient: [0], remainder: dividend };
-        }
-    
-        const quotient = Array(deg1 - deg2 + 1).fill(0);
-        let remainder = [...dividend];
-    
-        for (let i = 0; i <= deg1 - deg2; i++) {
-            let coeff = remainder[i] / divisor[0];
-            quotient[i] = coeff;
-    
-            for (let j = 0; j <= deg2; j++) {
-                remainder[i + j] -= coeff * divisor[j];
-            }
-        }
-    
-        return { quotient, remainder };
-    }
-
-    while (currentP2.length > 2) {
-        const { quotient: partialQuotient, remainder } = dividePolynomials(currentP1, currentP2);
-        quotient = addPolynomials(quotient, partialQuotient);
-        currentP1 = remainder;
-    }
-
-    // Step 2: After division, check if the denominator is x - k
-    if (currentP2.length !== 2 || currentP2[0] !== 1) {
-        console.error("Error: The denominator did not simplify to a linear form (x - k).");
-        return null;
-    }
-
-    // Extract k from (x - k)
-    const k = -currentP2[1];
-
-    // Step 3: Compute the numerical remainder by evaluating P(k)
-    const numericalRemainder = evaluatePolynomial(currentP1, k);
-
-
-    // copy the final divisor
-    const finalDivisor = [...currentP2];
-
-    console.log(quotient); // output: empty array []
-
-    // Return quotient, numerical remainder, and divisor
-    return { quotient, numericalRemainder, finalDivisor };
-}
-
-
-
-
-
-
