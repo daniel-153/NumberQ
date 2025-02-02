@@ -314,3 +314,165 @@ export function remainderDivision(a, b) {
     }
     return { quotient: q, remainder: r };
 } // returns the quotient and remainder of a division of positive or negative integers
+
+export function addPolynomials(p1, p2) {
+    // Determine the lengths of the input arrays
+    const maxLength = Math.max(p1.length, p2.length);
+  
+    // Pad the shorter array with zeros at the start
+    const padZeros = (arr, numZeros) => Array(numZeros).fill(0).concat(arr);
+    const p1Padded = padZeros(p1, maxLength - p1.length);
+    const p2Padded = padZeros(p2, maxLength - p2.length);
+  
+    // Add the corresponding coefficients
+    const result = [];
+    for (let i = 0; i < maxLength; i++) {
+      result.push(p1Padded[i] + p2Padded[i]);
+    }
+  
+    // Remove leading zeros
+    function removeLeadingZeros(arr) {
+        let index = 0;
+        while (index < arr.length - 1 && arr[index] === 0) {
+          index++;
+        }
+        return arr.slice(index);
+    }
+    const trimmedResult = removeLeadingZeros(result);
+  
+    // Handle the case where all coefficients are zero
+    return trimmedResult.length > 0 ? trimmedResult : [0];
+}
+  
+export function multiplyPolynomials(p1, p2) {
+    // The degree of the product polynomial
+    const resultLength = p1.length + p2.length - 1;
+    const result = Array(resultLength).fill(0);
+  
+    // Multiply and accumulate the products
+    for (let i = 0; i < p1.length; i++) {
+      for (let j = 0; j < p2.length; j++) {
+        result[i + j] += p1[i] * p2[j];
+      }
+    }
+  
+    // Remove leading zeros
+    function removeLeadingZeros(arr) {
+        let index = 0;
+        while (index < arr.length - 1 && arr[index] === 0) {
+          index++;
+        }
+        return arr.slice(index);
+    }
+    const trimmedResult = removeLeadingZeros(result);
+  
+    // Handle the case where all coefficients are zero
+    return trimmedResult.length > 0 ? trimmedResult : [0];
+}
+
+export function longDivision(p1, p2) {
+    // Condition (b): Ensure degree of p2 <= degree of p1
+    if (p2.length > p1.length) {
+        console.error("Error: The degree of the divisor (p2) must be less than or equal to the degree of the dividend (p1).");
+        return null;
+    }
+
+    // Condition (a): Ensure p1 is exactly divisible by p2 (no remainder)
+    const deg1 = p1.length - 1;
+    const deg2 = p2.length - 1;
+    const quotient = Array(deg1 - deg2 + 1).fill(0);
+    let remainder = [...p1];
+
+    for (let i = 0; i <= deg1 - deg2; i++) {
+        let coeff = remainder[i] / p2[0];
+        quotient[i] = coeff;
+
+        for (let j = 0; j <= deg2; j++) {
+            remainder[i + j] -= coeff * p2[j];
+        }
+    }
+
+    // Check if remainder is all zeros
+    if (!remainder.slice(deg1 - deg2 + 1).every(coef => coef === 0)) {
+        console.error("Error: The division does not result in a polynomial with no remainder.");
+        return null;
+    }
+
+    return quotient;
+}
+
+export function evaluatePolynomial(p1, value) {
+    let result = 0;
+    let power = 1; // Tracks value^i
+
+    for (let i = p1.length - 1; i >= 0; i--) {
+        result += p1[i] * power;
+        power *= value;
+    }
+
+    return result;
+}
+
+export function numericalRemainder(p1, p2) {
+    // Step 1: Perform long division until the denominator is of degree 1
+    let currentP1 = [...p1];
+    let currentP2 = [...p2];
+    let quotient = [];
+    
+    // Helper function for dividing polynomials
+    function dividePolynomials(dividend, divisor) {
+        const deg1 = dividend.length - 1;
+        const deg2 = divisor.length - 1;
+    
+        if (deg1 < deg2) {
+            return { quotient: [0], remainder: dividend };
+        }
+    
+        const quotient = Array(deg1 - deg2 + 1).fill(0);
+        let remainder = [...dividend];
+    
+        for (let i = 0; i <= deg1 - deg2; i++) {
+            let coeff = remainder[i] / divisor[0];
+            quotient[i] = coeff;
+    
+            for (let j = 0; j <= deg2; j++) {
+                remainder[i + j] -= coeff * divisor[j];
+            }
+        }
+    
+        return { quotient, remainder };
+    }
+
+    while (currentP2.length > 2) {
+        const { quotient: partialQuotient, remainder } = dividePolynomials(currentP1, currentP2);
+        quotient = addPolynomials(quotient, partialQuotient);
+        currentP1 = remainder;
+    }
+
+    // Step 2: After division, check if the denominator is x - k
+    if (currentP2.length !== 2 || currentP2[0] !== 1) {
+        console.error("Error: The denominator did not simplify to a linear form (x - k).");
+        return null;
+    }
+
+    // Extract k from (x - k)
+    const k = -currentP2[1];
+
+    // Step 3: Compute the numerical remainder by evaluating P(k)
+    const numericalRemainder = evaluatePolynomial(currentP1, k);
+
+
+    // copy the final divisor
+    const finalDivisor = [...currentP2];
+
+    console.log(quotient); // output: empty array []
+
+    // Return quotient, numerical remainder, and divisor
+    return { quotient, numericalRemainder, finalDivisor };
+}
+
+
+
+
+
+
