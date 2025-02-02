@@ -217,3 +217,16 @@
 #fullscreen-question[data-special-styles='genComArith'] {
     height: 15%;
 }
+
+#fullscreen-question[data-special-styles='genPolArith'] {
+    height: 12.5%;
+}
+
+#fullscreen-answer[data-special-styles='genPolArith'] {
+    width: 22vw;
+    height: 4.75vw;
+    margin-bottom: 0.65vw;
+}
+
+
+
