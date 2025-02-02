@@ -16,7 +16,7 @@ export function val_term_number(number_of_terms, error_locations, max_number_of_
     else if (number_of_terms < 2) {
         number_of_terms = 2;
         error_locations.push(input_name);
-    } // Number of terms is below the mix of the range
+    } // Number of terms is below the min of the range
     else if (number_of_terms >= 2 && number_of_terms <= max_number_of_terms) {
         if (!Number.isInteger(number_of_terms)) {
             number_of_terms = Math.floor(Math.abs(number_of_terms));
@@ -98,3 +98,32 @@ export function val_root_number(root_number, error_locations) {
 
     return root_number;
 }
+
+export function val_restricted_integer(input_value, error_locations, min_value, max_value, input_field_name) {
+    if (input_value === '') {
+        input_value = min_value;
+        error_locations.push(input_field_name);
+    } // Number of terms has no input value
+    else input_value = Number(input_value);
+
+    if (Number.isNaN(input_value)) {
+        input_value = min_value;
+        error_locations.push(input_field_name);
+    } // number of terms is not a number (can't be converted to a number)
+    else if (input_value > max_value) {
+        input_value = max_value;
+        error_locations.push(input_field_name);
+    } // Number of terms exceeds the max of the range
+    else if (input_value < min_value) {
+        input_value = min_value;
+        error_locations.push(input_field_name);
+    } // Number of terms is below the min of the range
+    else if (input_value >= min_value && input_value <= max_value) {
+        if (!Number.isInteger(input_value)) {
+            input_value = Math.floor(Math.abs(input_value));
+            error_locations.push(input_field_name);
+        }
+    } // number of terms is in the correct range but isn't an integer
+
+    return input_value;
+} // generalized version of val_term_number (can validate any single textbox looking for an integer within a specified range)
