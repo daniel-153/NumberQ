@@ -5,6 +5,8 @@ function createEventListeners() {
     // NOTE: when you go to the other gens/mobile, you need to somehow supply the initial font size specific to each gen 
     // (right now, 3vw is the global default). And you'll probably also need to put this on the rendered and un-rendered answer boxes
     observeTextChanges(document.getElementById('un-rendered-Q'), '1.2vw');
+    observeTextChanges(document.getElementById('un-rendered-A'), '1.2vw');
+
 
     [...document.getElementsByClassName('start-button')].forEach((element) => {
         element.addEventListener(
@@ -16,6 +18,7 @@ function createEventListeners() {
                 initiateGenerator(element.getAttribute('data-gen-type'),element.getAttribute('data-gen-func-name'));
                 window.scrollTo(0, 0);
                 history.pushState({ page: 'generator' }, '', '');
+                document.getElementById('randomize-all-checkbox').checked = false; // make sure randomize-all always starts unchecked
         });
     });
 
@@ -189,7 +192,7 @@ function switchToNewQuestion(newQuestion) {
     
     updateElementMath('rendered-Q',question,'3vw')
     document.getElementById('un-rendered-Q').innerHTML = TeXquestion;
-    document.getElementById('rendered-A').innerHTML = '\\(' + answer + '\\)';
+    updateElementMath('rendered-A',answer,'2.3vw')
     document.getElementById('un-rendered-A').innerHTML = TeXanswer;
 
     MathJax.typesetPromise([document.getElementById('Q-A-container')]);
