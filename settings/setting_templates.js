@@ -114,3 +114,38 @@ export const coef_number_size = {
     tooltip: "How big should the numbers in front of the roots get? (enter an integer from 2 to 20)"
 };
 
+export const polynomial_A_degree = {
+    type: 'single_textbox',
+    code_name: 'polynomial_A_degree',
+    display_name: "Degree of Polynomial-A",
+    tooltip: "What degree should the first polynomial in the operation have? (enter an integer from 1 to 10)"
+};
+
+export const polynomial_B_degree = {
+    type: 'single_textbox',
+    code_name: 'polynomial_B_degree',
+    display_name: "Degree of Polynomial-B",
+    tooltip: "What degree should the second polynomial in the operation have? (enter an integer from 1 to 10)"
+};
+
+export const coef_size = {
+    type: 'single_textbox',
+    code_name: 'coef_size',
+    display_name: "Size of Coefficients",
+    tooltip: "How large should the coefficients (&plusmn;ax^n) in the polynomials be? (enter an integer from 2 to 20)"
+};
+
+export const factor_size = {
+    type: 'single_textbox',
+    code_name: 'factor_size',
+    display_name: "Size of Factors",
+    tooltip: "In division, how large should the factors (x&plusmn;a) be? (enter an integer from 1 to 10)"
+};
+
+export const division_result = {
+    type: 'radio_buttons',
+    code_name: 'division_result',
+    display_name: 'Division Quotient Form',
+    radio_buttons: [['divide_evenly','Divide Evenly'],['numerical_remainder','Numerical Remainder'],['quotient_plus_remainder','Quotient+Remainder']], 
+    tooltip: 'In division, what form should the quotient be in?'
+};
