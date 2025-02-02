@@ -192,7 +192,7 @@ function switchToNewQuestion(newQuestion) {
     
     updateElementMath('rendered-Q',question,'3vw')
     document.getElementById('un-rendered-Q').innerHTML = TeXquestion;
-    updateElementMath('rendered-A',answer,'2.3vw')
+    updateElementMath('rendered-A',answer,'2.5vw')
     document.getElementById('un-rendered-A').innerHTML = TeXanswer;
 
     MathJax.typesetPromise([document.getElementById('Q-A-container')]);
@@ -371,7 +371,7 @@ function updateElementMath(elementID, latexCode, initial_font_size) {
     const defaultFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Default font size
 
     // Determine if the LaTeX code contains a fraction
-    const adjustedFontSize = latexCode.includes("\\frac") ? "4.2vw" : defaultFontSize;
+    const adjustedFontSize = String(latexCode).includes("\\frac") ? "4.2vw" : defaultFontSize;
 
     // Automatically insert delimiters around the LaTeX code
     const wrappedLatexCode = '\\(' + latexCode + '\\)';
