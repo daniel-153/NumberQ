@@ -40,7 +40,7 @@ export default function genPolArith(formObj) {
     const settings = processSettings(formObj);
     let {polynomial_A_degree, polynomial_B_degree, coef_size, factor_size, division_result} = settings;
     const operation_type = H.randFromList(settings.general_operation_types);
-    console.log('operation type: ',operation_type)
+
 
     const coefArray = H.integerArray((-1)*coef_size, coef_size); // array of possible coefficients (for everything but div)
     const nz_coefArray = H.removeFromArray(0, coefArray);
@@ -50,8 +50,11 @@ export default function genPolArith(formObj) {
     templateA.unshift(H.randFromList(nz_coefArray));
     let templateB = H.arrayOfRandsFromList(coefArray, polynomial_B_degree); 
     templateB.unshift(H.randFromList(nz_coefArray));
-    console.log('templateA: ',templateA)
-    console.log('templateB: ',templateB)
+
+    // these are to keep track of B in division
+    let B_factors_from_A = []; // the factors we took from A and put in B
+    let B_nonfactor; // the one factor we chose for B that definetly isn't a factor of A
+
 
     // Create template if the operation Is div
     if (operation_type === 'divide') {
@@ -80,7 +83,15 @@ export default function genPolArith(formObj) {
         // construct polynomial B (either to definetly divide evenly or definetly not divide evenly)
         let factorArrayB = [];
         if (division_result === 'divide_evenly') {
-            factorArrayB = [...H.arrayOfRandsFromList(factorArrayA, polynomial_B_degree)];
+            let factorArrayA_copy = [...factorArrayA];
+
+            // this loop is needed so that we remove the factors after we pick them (to make sure everything divides out)
+            for (let i = 1; i <= polynomial_B_degree; i++) {
+                let currentFactor = factorArrayA_copy.splice(H.randInt(0, factorArrayA_copy.length - 1), 1)
+                
+                // put a factor of A in B and remove it^ from the copy of A's factor array (to avoid repeats)
+                factorArrayB.push(currentFactor);
+            }
         }
         else if (division_result === 'numerical_remainder' || division_result === 'quotient_plus_remainder') {
             let nonFactorArray = H.integerArray((-1)*factor_size, factor_size); // create an array to have *none* of A's factors
@@ -89,14 +100,21 @@ export default function genPolArith(formObj) {
             // expand the non factor array if it's empty
             if (nonFactorArray.length === 0) nonFactorArray.push((-1)*factor_size - 1, factor_size + 1);
 
-            // start by adding one *non*-factor to B
-            factorArrayB.push(H.randFromList(nonFactorArray));
+            // start by adding one *non*-factor to B (and keep track of it in B_nonfactor)
+            B_nonfactor = H.randFromList(nonFactorArray);
+            factorArrayB.push(B_nonfactor);
 
             let factorArrayA_copy = [...factorArrayA]; // create a copy of factorArrayA
             
             // for every degree B has beyond 1, add a factor of A to B's factor array (so B has the proper degree but still only has a linear remainder)
             for (let i = 1; i <= polynomial_B_degree - 1; i++) {
-                factorArrayB.push(factorArrayA_copy.splice(H.randInt(0, factorArrayA_copy.length - 1), 1));
+                let currentFactor = factorArrayA_copy.splice(H.randInt(0, factorArrayA_copy.length - 1), 1)
+                
+                // put a factor of A in B and remove it from the copy of A's factor array (to avoid repeats)
+                factorArrayB.push(currentFactor);
+
+                // keep track of the factors of A that we put in B
+                B_factors_from_A.push(currentFactor);
             }
 
             // randomize the order of factorArrayB
@@ -143,14 +161,26 @@ export default function genPolArith(formObj) {
             resultPolynomial = PH.polyTemplateToMath(resultTemplate);
         }
         else if (division_result === 'numerical_remainder') {
-            const remainder = PH.numericalRemainder(templateA, templateB).numericalRemainder;
+            // dividing A by factors we know it has -> (this must reduce to a polynomial with no remainder)
+            const firstQuotient = PH.longDivision(templateA, PH.expandBinomials(B_factors_from_A)); 
 
-            resultPolynomial = 'R=' + remainder;
+            // find the final remainder and quotient
+            const finalRemainder = PH.dividePolynomial(firstQuotient, B_nonfactor).remainder;
+
+            resultPolynomial = 'R=' + finalRemainder;
         }
         else if (division_result === 'quotient_plus_remainder') {
-            const divisionResult = PH.numericalRemainder(templateA, templateB);
+            // dividing A by factors we know it has -> (this must reduce to a polynomial with no remainder)
+            const firstQuotient = PH.longDivision(templateA, PH.expandBinomials(B_factors_from_A)); 
+
+            // find the final remainder and quotient
+            const finalQuotientAndRem = PH.dividePolynomial(firstQuotient, B_nonfactor);
+
+            const finalQuotient = PH.polyTemplateToMath(finalQuotientAndRem.quotient);
+            const finalRemainder = finalQuotientAndRem.remainder;
+            const finalLinearFactor = PH.polyTemplateToMath([1, (-1)*B_nonfactor]);
             
-            resultPolynomial = PH.polyTemplateToMath(divisionResult.quotient) + '+' + '\\frac{' + divisionResult.numericalRemainder + '}{' + PH.polyTemplateToMath(divisionResult.finalDivisor) + '}';
+            resultPolynomial = finalQuotient + '+' + '\\frac{' + finalRemainder + '}{' + finalLinearFactor + '}';
         }
     }
 
@@ -191,82 +221,13 @@ export function get_presets() {
     };
 }
 
-
-
-'add','multiply',
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function _genPolArith() {
-    const maxFRange = 6; // Controls how big the factors can get. If you set k here, 1st degrees will have numbers up to k, 2nd degrees will have numbers up to k-1, 3rd degrees will have numbers up to k-2, and so on
-    // If you want to increase the degree of the polynomial beyond 6, you also need to increase this range, or there will be bugs
-    const Degree = H.randInt(2,5); // What the degree of the polynomial will be
-    const FRange = maxFRange - (Degree - 1); // Based on the degree, this is what the max value (magnitude) of the factors can be
-
-    let factorArrayA = [];
-    let coefArray = [];
-    let quotArray = [];
-    let divisor;
-    let template; 
-
-    for (let i = 1; i <= Degree; i++) {
-        factorArrayA.push(H.randInt((-1) * FRange,FRange));
-    }
-    coefArray = PH.expandBinomials(factorArrayA);
-
-    const switcher = H.randInt(0,5);
-
-    if (switcher !== 5) {
-        divisor = H.randFromList(factorArrayA);
-        quotArray = PH.dividePolynomial(coefArray,divisor).quotient;
-
-        template = {
-            coefficients: coefArray,
-            divisor: divisor,
-            quotient: quotArray
-        };
-    } // The quotient divides evenly (0-8)
-    else {
-        let NonfactorArrayA = H.removeFromArray(0,H.integerArray((-1) * FRange,FRange)); // Remove 0 bc it's too obvious
-        NonfactorArrayA = H.removeFromArray(factorArrayA,NonfactorArrayA); // remove all the factors from the non-factor array
-
-        if (NonfactorArrayA.length !== 0) {
-            divisor = H.randFromList(NonfactorArrayA);
-        }
-        else {
-            divisor = H.randFromList([(-1)*(FRange + 1),(FRange + 1)]); // guarunteed to be a non-factor 
-        }
-
-        template = {
-            coefficients: coefArray,
-            divisor: divisor,
-            quotient: 'R=' + PH.dividePolynomial(coefArray,divisor).remainder
-        };
-    } // The quotient DOES NOT divide evenly (9)
-
-    // conversion to math
-
-    coefArray = template.coefficients; // Raw numerical values of the coefficients
-    divisor = template.divisor;
-    const quotientArr = template.quotient;
-    
-    const polynom = PH.polyTemplateToMath(coefArray);
-    const binom = PH.polyTemplateToMath([1,(-1)*divisor]);
-    const quotient = Array.isArray(quotientArr) ? PH.polyTemplateToMath(quotientArr) : quotientArr;
-
+export function get_rand_settings() {
     return {
-        question: '\\frac{' + polynom + '}{' + binom + '}',
-        answer: quotient
-    };
+        polynomial_A_degree: H.randInt(1,3),
+        polynomial_B_degree: H.randInt(1,3),
+        general_operation_types: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
+        coef_size: H.randInt(5,10),
+        factor_size: H.randInt(2,7),
+        division_result: H.randFromList(['divide_evenly','numerical_remainder','quotient_plus_remainder'])
+    }; 
 }
