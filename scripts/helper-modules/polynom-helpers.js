@@ -412,3 +412,7 @@ export function evaluatePolynomial(p1, value) {
 
     return result;
 }
+
+export function keepCoprimesFromList(number, array) {
+    return array.filter(num => factorBinomial([number, num])[0] === 1);
+}
