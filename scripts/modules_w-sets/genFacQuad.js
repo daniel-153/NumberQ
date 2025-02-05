@@ -4,7 +4,7 @@ import * as PH from '../helper-modules/polynom-helpers.js';
 const settings = {
     factor_size: 5, // (+ or -) whatever value is here
     leading_coef: 1,
-    type_of_quadratic: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares','no_c_term','not_factorable','complex_roots'],
+    type_of_quadratic: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares','no_c_term','not_factorable','complex_roots', 'real_solvebyroots','complex_solvebyroots'],
     quadratic_prompt_type: H.randFromList(['expression','equation']),
     qf_answer_type: H.randFromList(['single_expression','comma_seperated_values'])
 };
@@ -189,20 +189,125 @@ export default function genFacQuad(formObj) {
         // not using lead_coef_in_math here because it's already included in (a) (above^)
         global_factored_form = a + 'x(x' + b + ')'
     }
-    else if (type_of_quadratic === 'not_factorable') {
+    else if (type_of_quadratic === 'not_factorable' || type_of_quadratic === 'complex_roots') { // combine cases to avoid repeated code
+        let a,b,c;
+
+        let abc_possibilities = []; // every permuation of a, b, and c given nz_factor_array (contains repeats)
+        for (let i = 0; i < nz_factor_array.length; i++) {
+            for (let j = 0; j < nz_factor_array.length; j++) {
+                for (let k = 0; k < nz_factor_array.length; k++) {
+                    permuationArray.push([nz_factor_array[i], nz_factor_array[j], nz_factor_array[k]]);
+                }
+            } 
+        }
+
+        // filter only the [a,b,c] arrays that don't have anything that can be factored out 'GCF' === 1
+        abc_possibilities = abc_possibilities.filter(triplet_arr =>
+            PH.factorBinomial(triplet_arr)[0] === 1
+        );
+
+        // filter only the [a,b,c] arrays that have the 'not-factorable' condition or the 'complex_root' condition (depeding on the selection)
+        if (type_of_quadratic === 'not_factorable') {
+            abc_possibilities = PH.quadraticCoefFilter(abc_possibilities, 'pos_root');
+        }
+        else if (type_of_quadratic === 'complex_roots') {
+            abc_possibilities = PH.quadraticCoefFilter(abc_possibilities, 'neg_root');
+        }
+
+        // pick a random [a,b,c] triplet and assign it into a,b, and c
+        [a, b, c] = H.randFromList(abc_possibilities);
+
+        // assign global A, B, and C
+        global_A = a;
+        global_B = b;
+        global_C = c;
+    }
+    else if (type_of_quadratic === 'real_solvebyroots' || type_of_quadratic === 'complex_solvebyroots') {
+        let a_arr = H.integerArray(1, factor_size).filter(num => Number.isInteger(Math.sqrt(num))); // keep only numbers whose square roots don't reduce
+        if (a_arr.length === 0) a_arr = [2]; // make sure a_arr ins't empty (in case it starts out like [-1,1])
+
+        let a = H.randFromList(a_arr); // assign (a) in x^2(+/-)a (keep in mind that it's certainly positive and not square at this point)
+
+        if (type_of_quadratic === 'real_solvebyroots') a = (-1)*a;
+        
+        // assign global A, B, and C
+        global_A = 1;
+        global_B = 0;
+        global_C = a;
+    }
+
+
+    // the quadratic prompt
+    let final_prompt = PH.polyTemplateToMath(PH.multiplyArray([global_A, global_B, global_C], leading_coef));
+
+    // determine what the final answer should look like (factored form, or a version of x=)
+    let final_answer;
+    if (quadratic_prompt_type === 'expression') final_answer = global_factored_form;
+    else if (quadratic_prompt_type === 'equation') {
+        final_prompt = final_prompt + '=0'; // convert to an equation if specified
+
+        // find neg_b, disc, and two_a in the QF: x=(neg_b +- sqrt(disc))/two_a
+        let neg_b = (-1)*global_B;
+        let disc = global_B**2 - 4*global_A*global_C;
+        let two_a = 2*global_A;
+
+        // assign based on the cases: factorable, not factorable, and complex
+        let single_expression, comma_seperated_values; // the two forms the answer can be in
+        if ((disc > 0) && (Number.isInteger(Math.sqrt(disc)))) { // the quad is factorable
+            let sqrt_of_disc = Math.sqrt(disc);
+            let first_fraction = PH.simplifyFraction(neg_b, two_a); // -b/2a
+            let second_fraction = PH.simplifyFraction(sqrt_of_disc, two_a); // sqrt(b^2-4ac)/2a
+
+            // putting the fractions together (but with everything in simplest terms)
+            let common_denom = PH.LCM(first_fraction.denom, second_fraction.denom);
+            let first_numer_term = first_fraction.numer * (common_denom / first_fraction.denom);
+            let second_numer_term = second_fraction.numer * (common_denom / second_fraction.denom);
+
+
+            // calculation and assignment for the 'comma-seperated' case
+            let sol_a_frac = [first_numer_term + second_numer_term, common_denom];
+            let sol_b_frac = [first_numer_term - second_numer_term, common_denom];
+            //simplify
+            sol_a_frac = [PH.simplifyFraction(sol_a_frac[0], sol_a_frac[1]).numer, PH.simplifyFraction(sol_a_frac[0], sol_a_frac[1]).denom];
+            sol_b_frac = [PH.simplifyFraction(sol_b_frac[0], sol_b_frac[1]).numer, PH.simplifyFraction(sol_b_frac[0], sol_b_frac[1]).denom];
+            let sol_a = (sol_a_frac[1] === 1) ? sol_a_frac[0] : '\\frac{' + sol_a_frac[0] + '}{' + sol_a_frac[1] + '}';
+            let sol_b = (sol_b_frac[1] === 1) ? sol_b_frac[0] : '\\frac{' + sol_b_frac[0] + '}{' + sol_b_frac[1] + '}';
+            comma_seperated_values = 'x=' + sol_a + ',\\:'  + sol_b;
+            if (sol_a === sol_b) comma_seperated_values = 'x=' + sol_a;
+
+
+            // now handle the case where the answer should be a 'single_expression'
+            if (first_fraction.denom === 1 && second_fraction.denom === 1) { // form is x=a(+-)b
+                if (first_fraction.numer === 0) first_fraction.numer = '';
+                single_expression = 'x=' + first_fraction.numer + '\\pm' + Math.abs(second_fraction.numer);
+                if (first_fraction.numer === '' && second_fraction.numer === 0) single_expression = 'x=0';
+            }
+            else { // form is x=(a(+-)b)/c
+                if (first_numer_term === 0) first_numer_term = '';
+                single_expression = '\\frac{' + first_numer_term + '\\pm' + Math.abs(second_numer_term) + '}{' + common_denom + '}';
+            }
+        }
+        else if (disc > 0) { // the quad has real answers but is not factorable
+
+        }
+        else if (disc < 0) { // the quad has complex answers
+
+        }   
         
 
 
 
 
 
-    }
-    else if (type_of_quadratic === 'complex_roots') {
+
+
+
+
+
+
+
 
     }
-
-
-
 
 
 
