@@ -449,3 +449,37 @@ export function permutationsFromLists(array1, array2) {
 
     return permutationArray;
 }
+
+export function quadraticCoefFilter(coefTripletArray, discriminantType) {
+    // coef triplet array is all the possiblities for (a), (b), and (c) (an array like [[1,2,3],[2,1,2],[1,3,2]...]) | discriminant type is either 'pos_root' or 'neg_root' right now (other types can be added later but these are the ones needed for facQuad)
+
+    let filteredCoefs; // an array of all the triplets of ceofficients that meet the condition
+    let a,b,c; // the values of (a), (b), and (c) in each iteration
+    if (discriminantType === 'pos_root') {
+        for (let i  = 0; i < coefTripletArray.length; i++) {
+            [a, b, c] = coefTripletArray[i];
+            if (
+                b**2 - 4*a*c > 0 &&
+                Math.sqrt(b**2 - 4*a*c) !== Math.floor(Math.sqrt(b**2 - 4*a*c))
+            ) {filteredCoefs.push(coefTripletArray[i])}
+        } // only pick triplets of coefficients that have *positive* discriminants that are *not* integers
+    }
+    else if (discriminantType === 'neg_root') {
+        for (let i  = 0; i < coefTripletArray.length; i++) {
+            [a, b, c] = coefTripletArray[i];
+            if (
+                b**2 - 4*a*c < 0 &&
+                Math.sqrt((-1)*(b**2 - 4*a*c)) !== Math.floor(Math.sqrt((-1)*(b**2 - 4*a*c)))
+            ) {filteredCoefs.push(coefTripletArray[i])}
+        } // only pick triplets of coefficients that have *negative* discriminants that are *not* integers
+    }
+
+    return filteredCoefs;
+} // Note: the coefTripletArray you put into this function shouldn't have any repeat permuations (or else the picking of coefficients won't be random)
+
+export function LCM(num1, num2) {
+    function gcd(a, b) {
+        return b === 0 ? a : gcd(b, a % b);
+    }
+    return Math.abs(num1 * num2) / gcd(num1, num2);
+}
