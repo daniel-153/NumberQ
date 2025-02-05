@@ -4,7 +4,7 @@ import * as PH from '../helper-modules/polynom-helpers.js';
 const settings = {
     factor_size: 5, // (+ or -) whatever value is here
     leading_coef: 1,
-    type_of_quadratic: ['perf_square','diff_squares','no_c_term','no_lead_coef','yes_lead_coef','not_factorable','complex_roots'],
+    type_of_quadratic: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares','no_c_term','not_factorable','complex_roots'],
     quadratic_prompt_type: H.randFromList(['expression','equation']),
     qf_answer_type: H.randFromList(['single_expression','comma_seperated_values'])
 };
@@ -34,7 +34,7 @@ export default function genFacQuad(formObj) {
 
 
     // in the cases below, first find what global_A,B,andC should be (based on the type), then assign a factored form if applicable
-    if (type_of_quadratic === 'no_lead_coef') {
+    if (type_of_quadratic === 'two_integer_factors') {
         let first_factor = H.randFromList(nz_factor_array);
 
         // remove -first_factor and first_factor from possible factors so the trinomial doesn't become perfect square or diff of squares
@@ -56,7 +56,7 @@ export default function genFacQuad(formObj) {
 
         global_factored_form = leading_coef_in_math + '(x' + first_factor + ')(x' + second_factor + ')';
     }
-    else if (type_of_quadratic === 'yes_lead_coef') {
+    else if (type_of_quadratic === 'two_non_integer_factors') {
         let a,b,c,d;
         // ensure neither (a) nor (c) can be negative (take only the positive part of the factor array)
         let a_arr = H.integerArray(1, factor_size);
@@ -132,15 +132,69 @@ export default function genFacQuad(formObj) {
         global_factored_form = leading_coef_in_math + '(' + a + 'x' + b + ')(' + c + 'x' + d + ')';
     }
     else if (type_of_quadratic === 'perf_square') {
-        // factor as (x-a)^2 instead of (x-a)(x-a)
+        let a = H.randFromList(nz_factor_array);
+
+        // assign global A, B, and C
+        global_A = 1;
+        global_B = (-2)*a;
+        global_C = a**2;
+
+        // convert to math
+        a = (-1)*a;
+        if (a > 0) a = '+' + a;
+
+        global_factored_form = leading_coef_in_math + '(x' + a + ')^2';
     }
     else if (type_of_quadratic === 'diff_squares') {
+        // ensure (a) is positive because negative solution is impossible here (negative is lost in x^2-a^2)
+        let a = H.randFromList(H.integerArray(1, factor_size)); 
 
+        // assign global A, B, and C
+        global_A = 1;
+        global_B = 0;
+        global_C = (-1)*a**2;
+
+        // conversion to math happens here
+        global_factored_form = leading_coef_in_math + '(x+' + a + ')(x-' + a + ')';
     }
     else if (type_of_quadratic === 'no_c_term') {
+        // ensure (a) and (b) are treated equally
+        const switcher = H.randInt(0, 1);
+        if (switcher === 0) {
+            // pick a positive number
+            let a = H.randFromList(H.integerArray(1, factor_size));
 
+            // pick a number that's comprime (so we know nothing factors out of the base ax^2-bx expression)
+            let b = H.randFromList(PH.keepCoprimesFromList(a, nz_factor_array));
+        }
+        else if (switcher === 1) {
+            // pick a positive number
+            let b = H.randFromList(H.integerArray(1, factor_size));
+
+            // pick a number that's comprime (so we know nothing factors out of the base ax^2-bx expression)
+            let a = H.randFromList(PH.keepCoprimesFromList(b, nz_factor_array));
+        } // From here, (a) must be positive and (b) could be positive or negative
+
+
+        // assign global A, B, and C
+        global_A = a;
+        global_B = (-1)*b;
+        global_C = 0;
+
+        // conversion to math
+        b = (-1)*b;
+        if (b > 0) b = '+' + b;
+        a = a * leading_coef; // multiply (a) by the leading coefficient
+
+        // not using lead_coef_in_math here because it's already included in (a) (above^)
+        global_factored_form = a + 'x(x' + b + ')'
     }
     else if (type_of_quadratic === 'not_factorable') {
+        
+
+
+
+
 
     }
     else if (type_of_quadratic === 'complex_roots') {
