@@ -415,4 +415,37 @@ export function evaluatePolynomial(p1, value) {
 
 export function keepCoprimesFromList(number, array) {
     return array.filter(num => factorBinomial([number, num])[0] === 1);
+} // if you picked one factor (a) in ax-b, this is used to ensure nothing factors out of ax-b (assuming a>0)
+
+export function permutationsFromLists(array1, array2) {
+    let permutationArray = [];
+    // helper function
+    function removeFromArray(elementsToRemove, array) {
+        // Convert single number input to an array
+        if (!Array.isArray(elementsToRemove)) {
+            elementsToRemove = [elementsToRemove];
+        }
+    
+        return array.filter(item => !elementsToRemove.includes(item));
+    }
+
+
+    // for an element in array1, pair it with every element in array2, then repeat for every element in array1
+    for (let i = 0; i < array1.length; i++) {
+        for (let j = 0; j < array2.length; j++) {
+            permutationArray.push([array1[i], array2[j]]);
+        }
+    }
+
+    // remove common elements between array1 and array2
+    array1 = removeFromArray(array2, array1);
+
+    // for an element in array2, pair it with every element in array1, then repeats for every element in array2
+    for (let i = 0; i < array2.length; i++) {
+        for (let j = 0; j < array1.length; j++) {
+            permutationArray.push([array2[i], array1[j]]);
+        }
+    }
+
+    return permutationArray;
 }
