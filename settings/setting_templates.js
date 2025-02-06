@@ -149,3 +149,44 @@ export const division_result = {
     radio_buttons: [['divide_evenly','Divide Evenly'],['numerical_remainder','Numerical Remainder'],['quotient_plus_remainder','Quotient+Remainder']], 
     tooltip: 'In division, what form should the quotient be in?'
 };
+
+export const types_of_quadratics = {
+    type: 'check_boxes',
+    code_name: 'types_of_quadratics',
+    display_name: 'Quadratic Forms',
+    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)^2'],['diff_squares','(x+a)(x-a)'],['no_c_term','ax(x-b)']], 
+    tooltip: 'Which forms of quadratic equations should be included?' 
+};
+
+export const types_of_quadratics_continued = {
+    type: 'check_boxes',
+    code_name: 'types_of_quadratics_continued',
+    display_name: 'Quadratic Forms (continued)',
+    check_boxes: [['not_factorable','&radic;(b^2-4ac)&ne;k (QF needed)'],['complex_roots','b^2-4ac<0 (complex roots)'],['real_solvebyroots','x^2-a (take roots)'],['complex_solvebyroots','x^2+a (take roots)']], 
+    tooltip: 'Which forms of quadratic equations should be included?' 
+};
+
+export const leading_coef = {
+    type: 'single_textbox',
+    code_name: 'leading_coef',
+    display_name: "GCF",
+    tooltip: "Would should the GCF G(ax^2+bx+c) be? (enter a non-zero integer from -10 to 10)"
+};
+
+export const quadratic_prompt_type = {
+    type: 'radio_buttons',
+    code_name: 'quadratic_prompt_type',
+    display_name: 'Type of Question',
+    radio_buttons: [['expression','Expression P(x)'],['equation','Equation P(x)&thinsp;=&thinsp;0']], 
+    tooltip: 'Should the prompt be to factor an expression or solve an equation?'
+};
+
+export const qf_answer_type = {
+    type: 'radio_buttons',
+    code_name: 'qf_answer_type',
+    display_name: 'Answer Form',
+    radio_buttons: [['single_expression','x&ThinSpace;=&ThinSpace;A&ThinSpace;&plusmn;&ThinSpace;B'],['comma_seperated_values','x&ThinSpace;=&ThinSpace;A,&ThinSpace;B']], 
+    tooltip: 'What form should the answers to a quadratic equation be in?'
+};
+
+
