@@ -414,7 +414,7 @@ export function evaluatePolynomial(p1, value) {
 }
 
 export function keepCoprimesFromList(number, array) {
-    return array.filter(num => factorBinomial([number, num])[0] === 1);
+    return array.filter(num => factorBinomial(number, num)[0] === 1);
 } // if you picked one factor (a) in ax-b, this is used to ensure nothing factors out of ax-b (assuming a>0)
 
 export function permutationsFromLists(array1, array2) {
@@ -482,4 +482,27 @@ export function LCM(num1, num2) {
         return b === 0 ? a : gcd(b, a % b);
     }
     return Math.abs(num1 * num2) / gcd(num1, num2);
+}
+
+export function simplifySQRT(n) {
+    if (n < 0) return null; // No real square root for negative numbers
+
+    let numberInFront = 1;
+    let numberUnderRoot = n;
+
+    for (let i = 2; i * i <= numberUnderRoot; i++) {
+        while (numberUnderRoot % (i * i) === 0) {
+            numberInFront *= i;
+            numberUnderRoot /= i * i;
+        }
+    }
+
+    return {numberInFront, numberUnderRoot};
+}
+
+export function GCD(a, b) {
+    while (b !== 0) {
+        [a, b] = [b, a % b];
+    }
+    return a;
 }
