@@ -154,15 +154,7 @@ export const types_of_quadratics = {
     type: 'check_boxes',
     code_name: 'types_of_quadratics',
     display_name: 'Quadratic Forms',
-    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)^2'],['diff_squares','(x+a)(x-a)'],['no_c_term','ax(x-b)']], 
-    tooltip: 'Which forms of quadratic equations should be included?' 
-};
-
-export const types_of_quadratics_continued = {
-    type: 'check_boxes',
-    code_name: 'types_of_quadratics_continued',
-    display_name: 'Quadratic Forms (continued)',
-    check_boxes: [['not_factorable','&radic;(b^2-4ac)&ne;k (QF needed)'],['complex_roots','b^2-4ac<0 (complex roots)'],['real_solvebyroots','x^2-a (take roots)'],['complex_solvebyroots','x^2+a (take roots)']], 
+    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)^2'],['diff_squares','(x+a)(x-a)'],['no_c_term','ax(x-b)'],['not_factorable','&radic;(b^2-4ac)&ne;k (QF)'],['complex_roots','b^2-4ac<0 (with i)'],['real_solvebyroots','x^2-a'],['complex_solvebyroots','x^2+a']], 
     tooltip: 'Which forms of quadratic equations should be included?' 
 };
 
