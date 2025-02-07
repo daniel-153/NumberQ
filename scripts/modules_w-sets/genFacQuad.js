@@ -114,7 +114,6 @@ export default function genFacQuad(formObj) {
         let c, d;
         let c_arr = H.integerArray(1, factor_size); // the broadest possible list of values for (c)
         switcher = H.randInt(0, 1);
-
         if (switcher === 0) {
             // start by assigning (c) (with some conditions)
             if (a !== 1) { // assignment to (c) if (a) is not 1 (no restrictions)
@@ -126,26 +125,22 @@ export default function genFacQuad(formObj) {
             else if (a === 1 && c_arr.length === 1) { // don't let (c) become undefined if (a) is 1 and the factor range is just [1]
                 c = 2;
             } // now (c) is a *positive* integer from 1 to factor_size && (a) or (c) != 1
-            console.log('value of c: ',c)
+
 
             // |d| is comprime with (c) but can have any sign (+ or -)
             let d_arr = H.removeFromArray([(b*c)/a, ((-1)*b*c)/a], PH.keepCoprimesFromList(c, H.integerArray(1, factor_size))); 
 
-            console.log('d_arr bases on c: ',d_arr)
-
             if (d_arr.length === 0) { // if d_arr is empty, fill it with the small integer that meets all the conditions
                 let d_candidate = 1;
                 while (
-                    PH.GCD(c, d_candidate) !== 1 &&
-                    d_candidate !== (b*c)/a &&
-                    d_candidate !== ((-1)*b*c)/a
+                    PH.GCD(c, d_candidate) !== 1 ||
+                    d_candidate === (b*c)/a ||
+                    d_candidate === ((-1)*b*c)/a
                 ) {
                     d_candidate++;
                 }
                 d_arr.push(d_candidate);
             }
-
-            console.log('the new d_arr we created: ',d_arr)
 
             d = (-1)**H.randInt(0, 1) * H.randFromList(d_arr);
         }
@@ -163,9 +158,9 @@ export default function genFacQuad(formObj) {
                 if (a !== 1) {
                     let c_candidate = 1;
                     while (
-                        PH.GCD(d, c_candidate) !== 1 &&
-                        c_candidate !== (a*d)/b &&
-                        c_candidate !== ((-1)*a*d)/b
+                        PH.GCD(d, c_candidate) !== 1 ||
+                        c_candidate === (a*d)/b ||
+                        c_candidate === ((-1)*a*d)/b
                     ) {
                         c_candidate++;
                     }
@@ -174,9 +169,9 @@ export default function genFacQuad(formObj) {
                 else if (a === 1) {
                     let c_candidate = 2;
                     while (
-                        PH.GCD(d, c_candidate) !== 1 &&
-                        c_candidate !== (a*d)/b &&
-                        c_candidate !== ((-1)*a*d)/b 
+                        PH.GCD(d, c_candidate) !== 1 ||
+                        c_candidate === (a*d)/b ||
+                        c_candidate === ((-1)*a*d)/b 
                     ) {
                         c_candidate++;
                     }
@@ -288,6 +283,7 @@ export default function genFacQuad(formObj) {
         b = (-1)*b;
         if (b > 0) b = '+' + b;
         a = a * leading_coef; // multiply (a) by the leading coefficient
+        if (a === 1) a = '';
 
         // not using lead_coef_in_math here because it's already included in (a) (above^)
         global_factored_form = a + 'x(x' + b + ')'
