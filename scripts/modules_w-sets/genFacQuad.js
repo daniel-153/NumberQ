@@ -303,8 +303,10 @@ export default function genFacQuad(formObj) {
 
         // filter only the [a,b,c] arrays that don't have anything that can be factored out 'GCF' === 1
         abc_possibilities = abc_possibilities.filter(triplet_arr =>
-            PH.factorBinomial(triplet_arr)[0] === 1
+            PH.factorBinomial(...triplet_arr)[0] === 1
         );
+
+        console.log('abc_arr: ',abc_possibilities)
 
         // filter only the [a,b,c] arrays that have the 'not-factorable' condition or the 'complex_root' condition (depeding on the selection)
         if (type_of_quadratic === 'not_factorable') {
@@ -323,7 +325,7 @@ export default function genFacQuad(formObj) {
         global_C = c;
     }
     else if (type_of_quadratic === 'real_solvebyroots' || type_of_quadratic === 'complex_solvebyroots') {
-        let a_arr = H.integerArray(1, factor_size).filter(num => Number.isInteger(Math.sqrt(num))); // keep only numbers whose square roots don't reduce
+        let a_arr = H.integerArray(1, factor_size).filter(num => !Number.isInteger(Math.sqrt(num))); // keep only numbers whose square roots don't reduce
         if (a_arr.length === 0) a_arr = [2]; // make sure a_arr ins't empty (in case it starts out like [-1,1])
 
         let a = H.randFromList(a_arr); // assign (a) in x^2(+/-)a (keep in mind that it's certainly positive and not square at this point)
@@ -352,7 +354,7 @@ export default function genFacQuad(formObj) {
         let two_a = 2*global_A;
 
         // assign based on the cases: factorable, not factorable, and complex
-        if ((disc > 0) && (Number.isInteger(Math.sqrt(disc)))) { // the quad is factorable
+        if ((disc >= 0) && (Number.isInteger(Math.sqrt(disc)))) { // the quad is factorable
             console.log('made it here')
             let sqrt_of_disc = Math.sqrt(disc);
             let first_fraction = PH.simplifyFraction(neg_b, two_a); // -b/2a
@@ -393,7 +395,7 @@ export default function genFacQuad(formObj) {
             }
             else { // form is x=(a(+-)b)/c
                 if (first_numer_term === 0) first_numer_term = '';
-                single_expression = '\\frac{' + first_numer_term + '\\pm' + Math.abs(second_numer_term) + '}{' + common_denom + '}';
+                single_expression = 'x=\\frac{' + first_numer_term + '\\pm' + Math.abs(second_numer_term) + '}{' + common_denom + '}';
             }
         }
         else { // the quad is not factorable (and is either real or complex -> both cases are handled here)
@@ -429,7 +431,7 @@ export default function genFacQuad(formObj) {
                     sol_b = first_fraction.numer + '-' + second_numer_term;
                 }
                         
-                single_expression = 'x=' + first_fraction.numer + '\\pm' + second_numer_term;
+                single_expression = 'x=' + first_fraction.numer + '\\pm ' + second_numer_term;
                 comma_seperated_values = 'x=' + sol_a + ',\\:'  + sol_b;
             }
             else { // form is x=(a(+-)b)/c
@@ -444,7 +446,7 @@ export default function genFacQuad(formObj) {
                     sol_b = '\\frac{' + first_numer_term + '-' + second_numer_term + '}{' + common_denom + '}';
                 }
 
-                single_expression = '\\frac{' + first_numer_term + '\\pm' + second_numer_term + '}{' + common_denom + '}';
+                single_expression = 'x=\\frac{' + first_numer_term + '\\pm ' + second_numer_term + '}{' + common_denom + '}';
                 comma_seperated_values = 'x=' + sol_a + ',\\:'  + sol_b;
             }
         }
