@@ -19,6 +19,7 @@ function createEventListeners() {
                 window.scrollTo(0, 0);
                 history.pushState({ page: 'generator' }, '', '');
                 document.getElementById('randomize-all-checkbox').checked = false; // make sure randomize-all always starts unchecked
+                document.getElementById('settings-container').scrollTop = 0; // reset the scroll on the settings group
         });
     });
 
