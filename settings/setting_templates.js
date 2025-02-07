@@ -139,7 +139,7 @@ export const factor_size = {
     type: 'single_textbox',
     code_name: 'factor_size',
     display_name: "Size of Factors",
-    tooltip: "In division, how large should the factors (x&plusmn;a) be? (enter an integer from 1 to 10)"
+    tooltip: "How large should the factors (x&plusmn;a) be? (enter an integer from 1 to 10)"
 };
 
 export const division_result = {
@@ -161,8 +161,8 @@ export const types_of_quadratics = {
 export const leading_coef = {
     type: 'single_textbox',
     code_name: 'leading_coef',
-    display_name: "GCF",
-    tooltip: "Would should the GCF G(ax^2+bx+c) be? (enter a non-zero integer from -10 to 10)"
+    display_name: "Common Factor",
+    tooltip: "What should the common factor of the terms C(ax^2+bx+c) be? (enter a non-zero integer from -10 to 10)"
 };
 
 export const quadratic_prompt_type = {
