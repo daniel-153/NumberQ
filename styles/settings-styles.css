@@ -170,6 +170,8 @@
 .radio-buttons {
   width: 1vw;
   height: 1vw;
+  min-width: 1vw;
+  min-height: 1vw;
   margin-right: 0.5vw;
 }
 
@@ -181,6 +183,31 @@
   display: inline;
   font-size: 1vw;
   font-family: monospace;
+}
+
+.outer-radio-button-wrapper {
+  overflow-y: auto;
+  padding-top: 0.4vw;
+  padding-bottom: 0.4vw;
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar {
+  width: 0.4vw; /* Scrollbar width */
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar-thumb {
+  background-color: #555; /* Dark gray thumb */
+  border-radius: 0.2vw;
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #666; /* Slightly lighter on hover */
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar-track {
+  background: #2222223d; /* Dark background for contrast */
+  border-radius: 0.4vw; /* Round the track ends */
+  margin: 0.4vw 0; /* Prevents the track from extending fully */
 }
 
 .inner-radio-button-wrapper {
