@@ -191,6 +191,7 @@
   padding-bottom: 0.4vw;
 }
 
+/* Scroll bar if the settings overflow a settings box */
 .outer-radio-button-wrapper::-webkit-scrollbar {
   width: 0.4vw; /* Scrollbar width */
 }

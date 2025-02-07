@@ -228,5 +228,11 @@
     margin-bottom: 0.65vw;
 }
 
+#fullscreen-answer[data-special-styles='genFacQuad'] {
+    width: 24vw;
+    height: 6vw;
+    margin-bottom: 1.7vw;
+}
+
 
 
