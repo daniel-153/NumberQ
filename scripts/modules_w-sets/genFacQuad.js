@@ -3,7 +3,7 @@ import * as PH from '../helper-modules/polynom-helpers.js';
 import * as SH from '../helper-modules/settings-helpers.js';
 
 function processSettings(formObj) {
-    let { factor_size, types_of_quadratics, types_of_quadratics_continued, leading_coef, quadratic_prompt_type, qf_answer_type } = formObj;
+    let { factor_size, types_of_quadratics, leading_coef, quadratic_prompt_type, qf_answer_type } = formObj;
     let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
 
 
@@ -17,14 +17,12 @@ function processSettings(formObj) {
 
     // make sure that at least one quadratic type is selected (we don't need to combine here: that happens in the gen function)
     if (types_of_quadratics === undefined) types_of_quadratics = [];
-    if (types_of_quadratics_continued === undefined) types_of_quadratics_continued = [];
-    if (types_of_quadratics.length === 0 && types_of_quadratics_continued.length === 0) types_of_quadratics = ['two_integer_factors'];
+    if (types_of_quadratics.length === 0) types_of_quadratics = ['two_integer_factors'];
 
 
     return {
         factor_size: factor_size,
         types_of_quadratics: types_of_quadratics,
-        types_of_quadratics_continued: types_of_quadratics_continued,
         leading_coef: leading_coef,
         quadratic_prompt_type: quadratic_prompt_type,
         qf_answer_type: qf_answer_type,
@@ -34,8 +32,8 @@ function processSettings(formObj) {
 
 export default function genFacQuad(formObj) {
     const settings = processSettings(formObj);
-    let {factor_size, types_of_quadratics, types_of_quadratics_continued, leading_coef, quadratic_prompt_type, qf_answer_type} = settings;
-    const type_of_quadratic = H.randFromList([...types_of_quadratics, ...types_of_quadratics_continued]); 
+    let {factor_size, types_of_quadratics, leading_coef, quadratic_prompt_type, qf_answer_type} = settings;
+    const type_of_quadratic = H.randFromList([...types_of_quadratics]); 
     
     // When the QF is needed, automatically force the prompt type to be 'equation' (since we won't factor into root expressions or complex ones)
     if (
@@ -59,7 +57,14 @@ export default function genFacQuad(formObj) {
     if (leading_coef_in_math === 1) leading_coef_in_math = '';
     else if (leading_coef_in_math === -1) leading_coef_in_math = '-';
 
-    const nz_factor_array = H.removeFromArray(0, H.integerArray((-1)*factor_size, factor_size)); // non-zero array to chose factors from
+    let nz_factor_array = H.removeFromArray(0, H.integerArray((-1)*factor_size, factor_size)); // non-zero array to chose factors from
+
+    // In these cases, increase factor size to 2 if it's 1 (since that would forcce it to be a perf square of diff or squares/causes problems in these cases)
+    if (factor_size === 1 && (type_of_quadratic === 'two_integer_factors' || type_of_quadratic === 'two_non_integer_factors')) {
+        factor_size = 2;
+        settings.factor_size = 2;
+        nz_factor_array = H.removeFromArray(0, H.integerArray((-1)*factor_size, factor_size)); 
+    }
 
 
     // in the cases below, first find what global_A,B,andC should be (based on the type), then assign a factored form if applicable
@@ -105,17 +110,11 @@ export default function genFacQuad(formObj) {
             a = H.randFromList(PH.keepCoprimesFromList(Math.abs(b), H.integerArray(1, factor_size)));
         } // From here, (a) must be positive and (b) could be positive or negative
 
-        // conditions:
-        /*
-        If A is 1, C can't be 1
-        No perf squares
-        No diff squares
-        */
-
-        
+        // now assign (c) and (d) (with more constraints)
         let c, d;
         let c_arr = H.integerArray(1, factor_size); // the broadest possible list of values for (c)
         switcher = H.randInt(0, 1);
+
         if (switcher === 0) {
             // start by assigning (c) (with some conditions)
             if (a !== 1) { // assignment to (c) if (a) is not 1 (no restrictions)
@@ -127,10 +126,12 @@ export default function genFacQuad(formObj) {
             else if (a === 1 && c_arr.length === 1) { // don't let (c) become undefined if (a) is 1 and the factor range is just [1]
                 c = 2;
             } // now (c) is a *positive* integer from 1 to factor_size && (a) or (c) != 1
-
+            console.log('value of c: ',c)
 
             // |d| is comprime with (c) but can have any sign (+ or -)
             let d_arr = H.removeFromArray([(b*c)/a, ((-1)*b*c)/a], PH.keepCoprimesFromList(c, H.integerArray(1, factor_size))); 
+
+            console.log('d_arr bases on c: ',d_arr)
 
             if (d_arr.length === 0) { // if d_arr is empty, fill it with the small integer that meets all the conditions
                 let d_candidate = 1;
@@ -143,6 +144,8 @@ export default function genFacQuad(formObj) {
                 }
                 d_arr.push(d_candidate);
             }
+
+            console.log('the new d_arr we created: ',d_arr)
 
             d = (-1)**H.randInt(0, 1) * H.randFromList(d_arr);
         }
@@ -306,7 +309,6 @@ export default function genFacQuad(formObj) {
             PH.factorBinomial(...triplet_arr)[0] === 1
         );
 
-        console.log('abc_arr: ',abc_possibilities)
 
         // filter only the [a,b,c] arrays that have the 'not-factorable' condition or the 'complex_root' condition (depeding on the selection)
         if (type_of_quadratic === 'not_factorable') {
@@ -354,8 +356,7 @@ export default function genFacQuad(formObj) {
         let two_a = 2*global_A;
 
         // assign based on the cases: factorable, not factorable, and complex
-        if ((disc >= 0) && (Number.isInteger(Math.sqrt(disc)))) { // the quad is factorable
-            console.log('made it here')
+        if ((disc > 0) && (Number.isInteger(Math.sqrt(disc)))) { // the quad is factorable (everything but perfect square x^2+2ax+a^2 is here)
             let sqrt_of_disc = Math.sqrt(disc);
             let first_fraction = PH.simplifyFraction(neg_b, two_a); // -b/2a
             let second_fraction = PH.simplifyFraction(sqrt_of_disc, two_a); // sqrt(b^2-4ac)/2a
@@ -394,9 +395,18 @@ export default function genFacQuad(formObj) {
                 if (first_fraction.numer === '' && second_fraction.numer === 0) single_expression = 'x=0';
             }
             else { // form is x=(a(+-)b)/c
-                if (first_numer_term === 0) first_numer_term = '';
                 single_expression = 'x=\\frac{' + first_numer_term + '\\pm' + Math.abs(second_numer_term) + '}{' + common_denom + '}';
+                if (first_numer_term === 0) {
+                    single_expression = 'x=\\pm \\frac{' + Math.abs(second_numer_term) + '}{' + common_denom + '}';
+                }
             }
+        }
+        else if (disc === 0) { // the perfect square case (x^2+2ax+a^2)
+            // this is the x-val that solves the equation in a perf square case
+            let single_sol = PH.simplifyFraction(neg_b, two_a).numer; // this is an integer (pos or neg) and the denom is = 1
+
+            comma_seperated_values = 'x=' + single_sol;
+            single_expression = 'x=' + single_sol; // no need to have (+-) if there's only one sol
         }
         else { // the quad is not factorable (and is either real or complex -> both cases are handled here)
             let simplified_disc = PH.simplifySQRT(Math.abs(disc)); // make sure both real and complex cases can be handled
@@ -456,9 +466,7 @@ export default function genFacQuad(formObj) {
     if (quadratic_prompt_type === 'expression') {
         final_answer = global_factored_form;
     }
-    else if (quadratic_prompt_type === 'equation') {
-        console.log('final comma seperated values: ',comma_seperated_values)
-        
+    else if (quadratic_prompt_type === 'equation') {        
         if (qf_answer_type === 'single_expression') final_answer = single_expression;
         else if (qf_answer_type === 'comma_seperated_values') final_answer = comma_seperated_values;
     }
@@ -467,7 +475,8 @@ export default function genFacQuad(formObj) {
     // hackfix to get error_locations back to main
     let error_locations = [];
     if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('number_of_terms') !== -1) error_locations.push('number_of_terms');
+        if (settings.error_locations.indexOf('factor_size') !== -1) error_locations.push('factor_size');
+        if (settings.error_locations.indexOf('leading_coef') !== -1) error_locations.push('leading_coef');
     }
 
 
@@ -482,7 +491,6 @@ export default function genFacQuad(formObj) {
 export const settings_fields = [
     'factor_size',
     'types_of_quadratics',
-    'types_of_quadratics_continued',
     'quadratic_prompt_type',
     'qf_answer_type',
     'leading_coef'
@@ -491,12 +499,21 @@ export const settings_fields = [
 export function get_presets() {
     return {
         factor_size: 5, // (+ or -) whatever value is here
-        types_of_quadratics: ['two_non_integer_factors'],
-        types_of_quadratics_continued: [],
+        types_of_quadratics: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares'],
         leading_coef: 1,
         quadratic_prompt_type: H.randFromList(['expression','equation']),
         qf_answer_type: H.randFromList(['single_expression','comma_seperated_values'])
     };
+}
+
+export function get_rand_settings() {
+    return {
+        factor_size: H.randInt(2,8), // (+ or -) whatever value is here
+        types_of_quadratics: H.randFromList([['two_integer_factors'],['two_non_integer_factors'],['perf_square'],['diff_squares'],['not_factorable'],['complex_roots'],['real_solvebyroots'],['complex_solvebyroots']]),
+        leading_coef: H.randFromList(H.removeFromArray(0, H.integerArray(-3,3))),
+        quadratic_prompt_type: H.randFromList(['expression','equation']),
+        qf_answer_type: H.randFromList(['single_expression','comma_seperated_values'])
+    }; 
 }
 
 
