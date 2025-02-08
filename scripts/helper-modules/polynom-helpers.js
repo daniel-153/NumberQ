@@ -104,6 +104,14 @@ export function multiplyArray(array, factor) {
 } // Multiply each entry of the array by the given factor
 
 export function GCF(a, b, c = null) {
+    // Input verification: Check if all inputs are integers
+    const isValidInteger = (num) => Number.isInteger(num);
+
+    if (!isValidInteger(a) || !isValidInteger(b) || (c !== null && !isValidInteger(c))) {
+        console.error("PH.GCF function error: One or more inputs to GCF were not integers.");
+        return null; // Return null to indicate failure
+    }
+
     const gcdTwoNumbers = (x, y) => {
         while (y !== 0) {
             [x, y] = [y, x % y];
@@ -111,14 +119,8 @@ export function GCF(a, b, c = null) {
         return x;
     };
 
-    if (c === null) {
-        // Only two arguments provided
-        return gcdTwoNumbers(a, b);
-    } else {
-        // Three arguments: GCF(a, b, c) = GCF(GCF(a, b), c)
-        return gcdTwoNumbers(gcdTwoNumbers(a, b), c);
-    }
-} //returns the gcf of the arguments, can take two or three
+    return c === null ? gcdTwoNumbers(a, b) : gcdTwoNumbers(gcdTwoNumbers(a, b), c);
+}
 
 export function factorBinomial(...coefficients) {
     // Compute the GCF of all coefficients
@@ -281,13 +283,8 @@ export function convertFactoredToMath(factoredTemplate) {
 } //Takes a factored template and puts it in proper math notation (Built for facQuads and extended to ratEx but WON'T work in general)
 
 export function simplifyFraction(numer, denom) {
-    // Get the greatest common divisor (GCD) using the Euclidean algorithm
-    function gcd(a, b) {
-        return b === 0 ? Math.abs(a) : gcd(b, a % b);
-    }
-
-    // Calculate the GCD of the numerator and denominator
-    const divisor = gcd(numer, denom);
+    // Calculate the GCF of the numerator and denominator
+    const divisor = GCF(numer, denom);
 
     // Simplify the numerator and denominator
     let simplifiedNumer = numer / divisor;
@@ -478,10 +475,7 @@ export function quadraticCoefFilter(coefTripletArray, discriminantType) {
 } // Note: the coefTripletArray you put into this function shouldn't have any repeat permuations (or else the picking of coefficients won't be random)
 
 export function LCM(num1, num2) {
-    function gcd(a, b) {
-        return b === 0 ? a : gcd(b, a % b);
-    }
-    return Math.abs(num1 * num2) / gcd(num1, num2);
+    return Math.abs(num1 * num2) / GCF(num1, num2);
 }
 
 export function simplifySQRT(n) {
@@ -498,11 +492,4 @@ export function simplifySQRT(n) {
     }
 
     return {numberInFront, numberUnderRoot};
-}
-
-export function GCD(a, b) {
-    while (b !== 0) {
-        [a, b] = [b, a % b];
-    }
-    return a;
 }

@@ -133,7 +133,7 @@ export default function genFacQuad(formObj) {
             if (d_arr.length === 0) { // if d_arr is empty, fill it with the small integer that meets all the conditions
                 let d_candidate = 1;
                 while (
-                    PH.GCD(c, d_candidate) !== 1 ||
+                    PH.GCF(c, d_candidate) !== 1 ||
                     d_candidate === (b*c)/a ||
                     d_candidate === ((-1)*b*c)/a
                 ) {
@@ -158,7 +158,7 @@ export default function genFacQuad(formObj) {
                 if (a !== 1) {
                     let c_candidate = 1;
                     while (
-                        PH.GCD(d, c_candidate) !== 1 ||
+                        PH.GCF(d, c_candidate) !== 1 ||
                         c_candidate === (a*d)/b ||
                         c_candidate === ((-1)*a*d)/b
                     ) {
@@ -169,7 +169,7 @@ export default function genFacQuad(formObj) {
                 else if (a === 1) {
                     let c_candidate = 2;
                     while (
-                        PH.GCD(d, c_candidate) !== 1 ||
+                        PH.GCF(d, c_candidate) !== 1 ||
                         c_candidate === (a*d)/b ||
                         c_candidate === ((-1)*a*d)/b 
                     ) {
