@@ -2,40 +2,35 @@ import * as H from '../helper-modules/gen-helpers.js';
 import * as PH from '../helper-modules/polynom-helpers.js';
 import * as SH from '../helper-modules/settings-helpers.js';
 
-const settings = {
-    sys_eqs_coef_size: 5, // (+-) this value for Ax and By (but not the C term - that can get much larger)
-    linear_equation_form: H.randFromList(['standard','equal_to_zero','slope_intercept','randomized']),
-    sys_eqs_term_number: H.randFromList(['2_x_2_y','1_x_2_y','2_x_1_y','1_x_1_y']), // 1 and 2 mean the total number of x's and y's in both Eqs combined
-    sys_eqs_x_solution: 6, // might be randomized
-    sys_eqs_y_solution: -4, // might be randomized
-    randomize_solutions: ['yes'] // can be either ['yes'] or []?????
-};
-
 function processSettings(formObj) {
+    let { sys_eqs_coef_size, linear_equation_form, sys_eqs_term_number, sys_eqs_x_solution, sys_eqs_y_solution, randomize_solutions } = formObj;
+    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
 
+    // make sure coefficient size is an integer from -20 to 20
+    sys_eqs_coef_size = SH.val_restricted_integer(sys_eqs_coef_size, error_locations, 1, 20, 'sys_eqs_coef_size');
 
+    if (randomize_solutions === 'is_checked') { // randomize the sol if specified
+        sys_eqs_x_solution = H.randInt(-7, 7);
+        sys_eqs_y_solution = H.randInt(-7, 7);
+    }
 
+    // validate the (x,y) solution
+    sys_eqs_x_solution = SH.val_restricted_integer(sys_eqs_x_solution, error_locations, -20, 20, 'sys_eqs_x_solution');
+    sys_eqs_y_solution = SH.val_restricted_integer(sys_eqs_y_solution, error_locations, -20, 20, 'sys_eqs_y_solution');
 
+    // validate term number (make sure its 2_2 if the form is slope-int)
+    if (linear_equation_form === 'slope_intercept') sys_eqs_term_number = '2_x_2_y';
 
-
-
-
-
-
-
-
-
-
-
+    return {
+        sys_eqs_coef_size: sys_eqs_coef_size,
+        linear_equation_form: linear_equation_form,
+        sys_eqs_term_number: sys_eqs_term_number,
+        sys_eqs_x_solution: sys_eqs_x_solution,
+        sys_eqs_y_solution: sys_eqs_y_solution,
+        randomize_solutions: randomize_solutions,
+        error_locations: error_locations
+    };
 }
-
-// Note: if the eq-type is slope_intercept, force the term_number to be 2_2
-// (to avoid lots of extra handling + fact that it wouldn't even really look like slope intercept)
-
-
-
-
-
 
 export default function genSysEqs(formObj) {
     const settings = processSettings(formObj);
@@ -92,37 +87,41 @@ export default function genSysEqs(formObj) {
 
         // conversion to math (NOTE: we are dealing in terms, not coefficients -> A1+B1=C1 | Ax+By=C)
         let A1,B1,C1,A2,B2,C2;
-        // first y term
-        if (eq1_y_coef === 1) A1 === 'y';
-        else if (eq1_y_coef === -1) A1 = '-y';
-        else if (eq1_y_coef === 0) A1 = '';
-        else A1 = eq1_y_coef + 'y';
-
-        // second y term
-        if (eq2_y_coef === 1) A2 === 'y';
-        else if (eq2_y_coef === -1) A2 = '-y';
-        else if (eq2_y_coef === 0) A2 = '';
-        else A2 = eq2_y_coef + 'y';
-
         // first x term
-        if (eq1_x_coef === 1) B1 = '+x';
-        else if (eq1_x_coef === -1) B1 = '-x';
-        else if (eq1_x_coef === 0) B1 = '';
-        else if (eq1_x_coef > 0) B1 = '+' + eq1_x_coef + 'x';
-        else if (eq1_x_coef < 0) B1 = eq1_x_coef + 'x';
+        if (eq1_x_coef === 1) A1 = 'x';
+        else if (eq1_x_coef === -1) A1 = '-x';
+        else if (eq1_x_coef === 0) A1 = '';
+        else A1 = eq1_x_coef + 'x';
 
         // second x term
-        if (eq2_x_coef === 1) B2 = '+x';
-        else if (eq2_x_coef === -1) B2 = '-x';
-        else if (eq2_x_coef === 0) B2 = '';
-        else if (eq2_x_coef > 0) B2 = '+' + eq2_x_coef + 'x';
-        else if (eq2_x_coef < 0) B2 = eq2_x_coef + 'x';
+        if (eq2_x_coef === 1) A2 = 'x';
+        else if (eq2_x_coef === -1) A2 = '-x';
+        else if (eq2_x_coef === 0) A2 = '';
+        else A2 = eq2_x_coef + 'x';
+
+        // first y term
+        if (eq1_y_coef === 1 && A1 === '') B1 = 'y';
+        else if (eq1_y_coef === 1) B1 = '+y';
+        else if (eq1_y_coef === -1) B1 = '-y';
+        else if (eq1_y_coef === 0) B1 = '';
+        else if (eq1_y_coef > 0 && A1 === '') B1 = eq1_y_coef + 'y';
+        else if (eq1_y_coef > 0) B1 = '+' + eq1_y_coef + 'y';
+        else if (eq1_y_coef < 0) B1 = eq1_y_coef + 'y';
+
+        // second y term
+        if (eq2_y_coef === 1 && A2 === '') B2 = 'y';
+        else if (eq2_y_coef === 1) B2 = '+y';
+        else if (eq2_y_coef === -1) B2 = '-y';
+        else if (eq2_y_coef === 0) B2 = '';
+        else if (eq2_y_coef > 0 && A2 === '') B2 = eq2_y_coef + 'y';
+        else if (eq2_y_coef > 0) B2 = '+' + eq2_y_coef + 'y'; 
+        else if (eq2_y_coef < 0) B2 = eq2_y_coef + 'y';
 
         // NOTE: in the case, there is guaranteed to be at least one variable term (X or Y) on the left side, so you never need to worry about the left side zeroing out
         if (linear_equation_form === 'standard') {
             // find the constant term (C) in Ax+By=C (conversion to math is 'built-in' here)
             C1 = (eq1_side_R[1] - eq1_side_L[1]) + '';
-            C2 = (eq2_const_term = eq2_side_R[1] - eq2_side_L[1]) + '';
+            C2 = (eq2_side_R[1] - eq2_side_L[1]) + '';
 
             final_eq_1 = A1 + B1 + '=' + C1;
             final_eq_2 = A2 + B2 + '=' + C2;
@@ -130,7 +129,7 @@ export default function genSysEqs(formObj) {
         else if (linear_equation_form === 'equal_to_zero') {
             // find the constant term (C) in Ax+By-C=0 
             C1 = (-1) * (eq1_side_R[1] - eq1_side_L[1]);
-            C2 = (-1) * (eq2_const_term = eq2_side_R[1] - eq2_side_L[1]);  
+            C2 = (-1) * (eq2_side_R[1] - eq2_side_L[1]);  
 
             // conversion to math
             if (C1 > 0) C1 = '+' + C1;
@@ -207,33 +206,33 @@ export default function genSysEqs(formObj) {
         let side_switcher = H.randInt(0, 1); // 0->left | 1->right
         if (side_switcher === 0) {
             eq1_x_coef = (-1)*eq1_side_R[0];
-            eq1_SL.push('X' + eq1_x_coef);
+            if (eq1_x_coef !== 0) eq1_SL.push('X' + eq1_x_coef);
         }
         else if (side_switcher === 1) {
             eq1_x_coef = eq1_side_R[0];
-            eq1_SR.push('X' + eq1_x_coef);
+            if (eq1_x_coef !== 0) eq1_SR.push('X' + eq1_x_coef);
         }
 
         let eq1_y_coef;
         side_switcher = H.randInt(0, 1);
         if (side_switcher === 0) {
             eq1_y_coef = eq1_side_L[0];
-            eq1_SL.push('Y' + eq1_y_coef);
+            if (eq1_y_coef !== 0) eq1_SL.push('Y' + eq1_y_coef);
         }
         else if (side_switcher === 1) {
             eq1_y_coef = (-1)*eq1_side_L[0];
-            eq1_SR.push('Y' + eq1_y_coef);
+            if (eq1_y_coef !== 0) eq1_SR.push('Y' + eq1_y_coef);
         }
 
         let eq1_const;
         side_switcher = H.randInt(0, 1);
         if (side_switcher === 0) {
             eq1_const = eq1_side_L[1] - eq1_side_R[1];
-            eq1_SL.push('C' + eq1_const);
+            if (eq1_const !== 0) eq1_SL.push('C' + eq1_const);
         }
         else if (side_switcher === 1) {
             eq1_const = eq1_side_R[1] - eq1_side_L[1];
-            eq1_SR.push('C' + eq1_const);
+            if (eq1_const !== 0) eq1_SR.push('C' + eq1_const);
         }
 
         // EQ2 | create the coefficents based on the side
@@ -241,33 +240,33 @@ export default function genSysEqs(formObj) {
         side_switcher = H.randInt(0, 1); // 0->left | 1->right
         if (side_switcher === 0) {
             eq2_x_coef = (-1)*eq2_side_R[0];
-            eq2_SL.push('X' + eq2_x_coef);
+            if (eq2_x_coef !== 0) eq2_SL.push('X' + eq2_x_coef);
         }
         else if (side_switcher === 1) {
             eq2_x_coef = eq2_side_R[0];
-            eq2_SR.push('X' + eq2_x_coef);
+            if (eq2_x_coef !== 0) eq2_SR.push('X' + eq2_x_coef);
         }
 
         let eq2_y_coef;
         side_switcher = H.randInt(0, 1);
         if (side_switcher === 0) {
             eq2_y_coef = eq2_side_L[0];
-            eq2_SL.push('Y' + eq2_y_coef);
+            if (eq2_y_coef !== 0) eq2_SL.push('Y' + eq2_y_coef);
         }
         else if (side_switcher === 1) {
             eq2_y_coef = (-1)*eq2_side_L[0];
-            eq2_SR.push('Y' + eq2_y_coef);
+            if (eq2_y_coef !== 0) eq2_SR.push('Y' + eq2_y_coef);
         }
 
         let eq2_const;
         side_switcher = H.randInt(0, 1);
         if (side_switcher === 0) {
             eq2_const = eq2_side_L[1] - eq2_side_R[1];
-            eq2_SL.push('C' + eq2_const);
+            if (eq2_const !== 0) eq2_SL.push('C' + eq2_const);
         }
         else if (side_switcher === 1) {
             eq2_const = eq2_side_R[1] - eq2_side_L[1];
-            eq2_SR.push('C' + eq2_const);
+            if (eq2_const !== 0) eq2_SR.push('C' + eq2_const);
         }
 
         // randomize the order of the coefficients on each side of each equation
@@ -276,12 +275,11 @@ export default function genSysEqs(formObj) {
         eq2_SL = H.randomizeList(eq2_SL);
         eq2_SR = H.randomizeList(eq2_SR);
 
-
         // conversion to math
         let eq1_SL_string = '', eq1_SR_string = '', eq2_SL_string = '', eq2_SR_string = ''; 
         let equation_side_list = [eq1_SL, eq1_SR, eq2_SL, eq2_SR]; // organize all the sides into one array for the following loop
         let equation_string_list = [eq1_SL_string, eq1_SR_string, eq2_SL_string, eq2_SR_string]; // organize all the string into one array
-        let arr_entry, coef_value;
+        let arr_entry, term_type, coef_value;
         let T; // the cleaned/processed term that will be put in the equation string
 
         // convert the numbers on each side of each equation to math
@@ -305,11 +303,12 @@ export default function genSysEqs(formObj) {
                 else if (term_type === 'C') {
                     T = coef_value;
                 }
+                
                 equation_string_list[i] += T;
                 
                 // handle any elements beyond the first one (if there are any)
-                for (let i = 1; i < equation_side.length; i++) {
-                    arr_entry = equation_side[i];
+                for (let j = 1; j < equation_side.length; j++) {
+                    arr_entry = equation_side[j];
                     term_type = arr_entry.charAt(0);
                     coef_value = Number(arr_entry.slice(1));
                     if (term_type === 'X') {
@@ -351,12 +350,12 @@ export default function genSysEqs(formObj) {
 
     let final_prompt, prompt_in_TeX, final_answer;
     if (linear_equation_form !== 'randomized') { // align the equations at the '=' for every form except for 'randomized'
-        final_prompt = `\\[
+        final_prompt = `
             \\begin{aligned}
                 ${final_eq_1.replace("=", "&=")} \\\\
                 ${final_eq_2.replace("=", "&=")}
             \\end{aligned}
-        \\]`;
+        `;
     }
     else { // don't align the equations if the form is 'randomized'
         final_prompt = '\\begin{array}{c} ' + final_eq_1 + ' \\\\ ' + final_eq_2 + ' \\end{array}'
@@ -377,6 +376,42 @@ export default function genSysEqs(formObj) {
     return {
         question: final_prompt,
         answer: final_answer,
-        TeXquestion: prompt_in_TeX
+        TeXquestion: prompt_in_TeX,
+        settings: settings,
+        error_locations: error_locations
     };
+}
+
+export const settings_fields = [
+    'sys_eqs_coef_size',
+    'linear_equation_form',
+    'solution_point',
+    'sys_eqs_term_number' 
+];
+
+export function get_presets() {
+    return {
+        sys_eqs_coef_size: 8,
+        linear_equation_form: 'randomized',
+        sys_eqs_x_solution: 1,
+        sys_eqs_y_solution: 1,
+        randomize_solutions: 'is_checked',
+        sys_eqs_term_number: '2_x_2_y'
+    };
+}
+
+export function get_rand_settings() {
+    let sys_eqs_term_number;
+    const term_number_picker = H.randInt(1, 100);
+    if (term_number_picker <= 85) sys_eqs_term_number = '2_x_2_y';
+    else sys_eqs_term_number = H.randFromList(['1_x_2_y','2_x_1_y','1_x_1_y']);
+    
+    return {
+        sys_eqs_coef_size: H.randInt(1,10),
+        linear_equation_form: H.randFromList(['standard','equal_to_zero','slope_intercept','randomized']),
+        sys_eqs_x_solution: 1,
+        sys_eqs_y_solution: 1,
+        randomize_solutions: 'is_checked',
+        sys_eqs_term_number: sys_eqs_term_number
+    }; 
 }
