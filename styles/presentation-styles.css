@@ -234,5 +234,14 @@
     margin-bottom: 1.7vw;
 }
 
+#fullscreen-question[data-special-styles='genSysEqs'] {
+    height: 18%;
+}
+
+#fullscreen-answer[data-special-styles='genSysEqs'] {
+    width: 14vw;
+    height: 4.5vw;
+    margin-bottom: 0.4vw;
+}
 
 
