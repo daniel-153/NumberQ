@@ -157,10 +157,10 @@ async function initiateGenerator(type, funcName) {
     insertSettings(currentModule.settings_fields).then(() => {
         // This will run after all settings have been inserted
         updateSettings(pre_settings);
+        // moved this into the .then because pre-sets might not actually match the first generation (due to a change in validation or as in sysEqs)
+        switchToNewQuestion(currentGen(pre_settings));
     });
-
-    switchToNewQuestion(currentGen(pre_settings)); 
-
+    
     cleanedFromListeners(document.getElementById("generate-button")).addEventListener("click", async () => {
         if (!document.getElementById('randomize-all-checkbox').checked) {
             const currentSettings = currentFormObject();
@@ -553,7 +553,7 @@ async function insertSettings(settings_names) {
 
             return output_html;
         }
-        else if (setting_obj.type === 'check_boxes') { // settings is a collection of checkboxes
+        else if (setting_obj.type === 'check_boxes') { // setting is a collection of checkboxes
             const {code_name, display_name, check_boxes, tooltip } = setting_obj;
 
             // Calculate the number of options and the appropriate margin-bottom value.
@@ -612,6 +612,37 @@ async function insertSettings(settings_names) {
                 ?
             </div>
             </div>
+            `;
+
+            return output_html;
+        }
+        else if (setting_obj.type === 'point_check_boxes') { // setting is a user-picked point (_,_) (with a radomize option)
+            const {code_names, display_name, tooltip} = setting_obj;
+
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div id="solution-point-wrapper">
+                    (<input
+                    type="text"
+                    name="${code_names[0]}"
+                    class="settings-text-box number-range-box"
+                    />,<input
+                    type="text"
+                    name="${code_names[1]}"
+                    class="settings-text-box number-range-box"
+                    />)
+                </div>
+                <div class="settings-checkbox-tab">
+                    <input
+                    type="checkbox"
+                    name="${code_names[2]}"
+                    value="is_checked"
+                    class="single-settings-checkbox"
+                    />Randomize
+                </div>
+                <div class="settings-info-button" data-tooltip="${tooltip}">?</div>
+                </div>
             `;
 
             return output_html;
