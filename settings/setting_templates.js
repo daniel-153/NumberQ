@@ -181,4 +181,32 @@ export const qf_answer_type = {
     tooltip: 'What form should the answers to a quadratic equation be in?'
 };
 
+export const solution_point = {
+    type: 'point_check_boxes',
+    code_names: ['sys_eqs_x_solution','sys_eqs_y_solution','randomize_solutions'],
+    display_name: 'Solution (x,&ThinSpace;y)',
+    tooltip: 'What should the solution (x,y) be? (enter integers from -20 to 20 or randomize)'
+};
 
+export const sys_eqs_coef_size = {
+    type: 'single_textbox',
+    code_name: 'sys_eqs_coef_size',
+    display_name: "Size of Coefficients",
+    tooltip: "How large should the coefficients (&plusmn;ax &  &plusmn;by) in the equations be? (enter an integer from 1 to 20)"
+};
+
+export const linear_equation_form = {
+    type: 'radio_buttons',
+    code_name: 'linear_equation_form',
+    display_name: 'Equation Form',
+    radio_buttons: [['standard','ax+by=c (standard)'],['equal_to_zero','ax+by+c=0 (= to 0)'],['slope_intercept','y=mx+b (slope-int)'],['randomized','Randomized']], 
+    tooltip: 'What form should the equations be in?'
+};
+
+export const sys_eqs_term_number = {
+    type: 'radio_buttons',
+    code_name: 'sys_eqs_term_number',
+    display_name: 'Number of Terms',
+    radio_buttons: [['2_x_2_y','2 Xs, 2 Ys'],['1_x_2_y','1 X, 2 Ys'],['2_x_1_y','2 Xs, 1 Y'],['1_x_1_y','1 X, 1 Y']], 
+    tooltip: 'How many x terms and y terms should be in the system?'
+};
