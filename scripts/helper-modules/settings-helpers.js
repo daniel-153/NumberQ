@@ -127,3 +127,11 @@ export function val_restricted_integer(input_value, error_locations, min_value, 
 
     return input_value;
 } // generalized version of val_term_number (can validate any single textbox looking for an integer within a specified range)
+
+export function val_variable_letter(input_value, error_locations) {
+    if (typeof input_value !== 'string' || input_value.length !== 1 || !/^[a-zA-Z]$/.test(input_value)) {
+        error_locations.push('variable_letter');
+        return 'x'; // Return 'x' if input is invalid
+    }
+    return input_value; // Return the valid letter
+} // validate an input that is suppose to be a capital or lowercase alphabet letter
