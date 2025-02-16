@@ -210,3 +210,54 @@ export const sys_eqs_term_number = {
     radio_buttons: [['2_x_2_y','2 Xs, 2 Ys'],['1_x_2_y','1 X, 2 Ys'],['2_x_1_y','2 Xs, 1 Y'],['1_x_1_y','1 X, 1 Y']], 
     tooltip: 'How many x terms and y terms should be in the system?'
 };
+
+export const solution_size_range = {
+    type: 'radio_buttons',
+    code_name: 'solution_size_range',
+    display_name: 'Solution Size',
+    radio_buttons: [['single_digit','Single Digit (-9 to 9)'],['multi_digit','Multi Digit (-99 to 99)']], 
+    tooltip: 'How large should the solutions to the equations be?'
+};
+
+export const lin_eq_equation_form = {
+    type: 'radio_buttons',
+    code_name: 'lin_eq_equation_form',
+    display_name: 'Equation Form',
+    radio_buttons: [
+        ['begin_1','begin_1'],['begin_2','begin_2'],['begin_3','begin_3'],['begin_4','begin_4'],['begin_5','begin_5'],['begin_6','begin_6'],['begin_7','begin_7'],['begin_8','begin_8'],['begin_9','begin_9'],['begin_10','begin_10'],['begin_11','begin_11'],['begin_12','begin_12'],['begin_13','begin_13'],
+        ['inter_1','inter_1'],['inter_2','inter_2'],['inter_3','inter_3'],['inter_4','inter_4'],['inter_5','inter_5'],['inter_6','inter_6'],['inter_7','inter_7'],['inter_8','inter_8'],['inter_9','inter_9'],['inter_10','inter_10'],['inter_11','inter_11'],['inter_12','inter_12'],['inter_13','inter_13'],['inter_14','inter_14'],['inter_15','inter_15'],['inter_16','inter_16'],
+        ['advan_1','advan_1'],['advan_2','advan_2'],['advan_3','advan_3'],['advan_4','advan_4'],['advan_5','advan_5'],['advan_6','advan_6'],['advan_7','advan_7'],['advan_8','advan_8'],['advan_9','advan_9'],['advan_10','advan_10'],['advan_11','advan_11'],['advan_12','advan_12'],['advan_13','advan_13']
+    ], 
+    tooltip: 'What kind of linear equation should be used? (Beginner, Intermediate, or Advanced forms)' 
+};
+
+export const solution_form = {
+    type: 'radio_buttons',
+    code_name: 'solution_form',
+    display_name: 'Solution Form',
+    radio_buttons: [['integers','Integers'],['fractions','Fractions'],['both','Both']], 
+    tooltip: 'Should the solutions be integers or fractions?'
+};
+
+export const variable_letter = {
+    type: 'single_textbox',
+    code_name: 'variable_letter',
+    display_name: 'Variable Letter',
+    tooltip: 'What letter should represent the unknown? (enter a capital or lowercase alphabet letter)'
+};
+
+export const flip_equation = {
+    type: 'radio_buttons',
+    code_name: 'flip_equation',
+    display_name: 'Flip Equation',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should the equation be flipped at the equals sign?'
+};
+
+export const force_positive_coefs = {
+    type: 'radio_buttons',
+    code_name: 'force_positive_coefs',
+    display_name: 'Force Postive Coefficients',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should all the coefficients in the equation be positive? (some equations may take up less space with this enabled)'
+};
