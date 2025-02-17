@@ -1205,10 +1205,14 @@ export default function genLinEq(formObj) {
         }
     }
 
+    // get the current equation object that will be used (this has verify_reqs, get_sol, create_prompt, absorber, number_of_coefs)
+    const current_EQ_obj = equations[lin_eq_equation_form]; 
+
     // pick a starting range for the absorber term based on a pre-set probability distribution
     // 35% 1-20 | 25% 21-36 | 20% 37-54 | 20% 55-72
     let absorber_coef_range; // range for the absorber term
-    const absorber_range_options = [[1,20],[21,36],[37,54],[55,72]]; 
+    let absorber_range_options = [[1,20],[21,36],[37,54],[55,72]]; 
+    if (current_EQ_obj.absorber.length === 0) absorber_range_options = [[-9,9],[-9,9][-9,9],[-9,9]]; // case when there's no absorber (any coef set results in an int sol like x+a=b)
     const normal_coef_range = [-9,9]; // range for normal terms
     let rangePicker = H.randInt(1, 100);
     let absorber_range_index; // the index of whichever range will be picked from the array above
@@ -1229,18 +1233,96 @@ export default function genLinEq(formObj) {
         absorber_range_index = 3;
     }
 
-    // get the current equation object that will be used (this has verify_reqs, get_sol, create_prompt, absorber, number_of_coefs)
-    const current_EQ_obj = equations[lin_eq_equation_form]; 
-    
     // generate the initial ranges for all of the coefs
     let coefficient_ranges = [];
     const number_of_coefs = current_EQ_obj.number_of_coefs;
-    const absorber_index = current_EQ_obj.absorber[0].charCodeAt(0) - 97; // turn 'a' into 0, 'b' into '1', and so on
+    let absorber_index;
+    if (current_EQ_obj.absorber.length !== 0) absorber_index = current_EQ_obj.absorber[0].charCodeAt(0) - 97; // turn 'a' into 0, 'b' into '1', and so on
+    else absorber_index = 0; // there is no absorber (index doesn't matter as long as it's inside of the range_options array)
     for (let i = 0; i < number_of_coefs; i++) {
         if (i !== absorber_index) coefficient_ranges.push(normal_coef_range);
         else coefficient_ranges.push(absorber_coef_range)
     }
 
+    let List_of_sols = [];
+    
+
+
+
+
+
+    
+
+    // final coefs and sol 
+    let final_coef_array = possible_sols[0].slice(1);
+    let final_solution = possible_sols[0][0];
+    if (solution_form === 'fractions') {
+        let sol_obj = current_EQ_obj.get_sol(...final_coef_array);
+        let sol_fraction = PH.simplifyFraction(sol_obj.numer, sol_obj.denom);
+        let sol_numer = sol_fraction.numer;
+        let sol_denom = sol_fraction.denom;
+
+        if (sol_numer > 0) final_solution = '\\frac{' + sol_numer + '}{' + sol_denom + '}';
+        else if (sol_numer < 0) final_solution = '-\\frac{' + (-1)*sol_numer + '}{' + sol_denom + '}';
+    }
+    final_solution = variable_letter + '=' + final_solution;
+
+    // create the equation with the user-selected variable letter and the final coefs
+    let final_prompt = current_EQ_obj.create_prompt(variable_letter, ...final_coef_array);
+
+    if (flip_equation === 'yes') { // flip the equation if specified
+        let [ left_side, right_side ] = final_prompt.split('=');
+        final_prompt = right_side + '=' + left_side;
+    }
+
+    console.log('sol list: ',list_of_sols)
+    console.log('% of Coefs that were viable: ' + (list_of_sols.length / initial_coef_list.length) * 100 + '%')
+
+    // hackfix to get error_locations back to main
+    let error_locations = [];
+    if (settings.error_locations.length > 0) {
+        if (settings.error_locations.indexOf('variable_letter') !== -1) error_locations.push('variable_letter');
+    }
+
+
+    return {
+        question: final_prompt,
+        answer: final_solution,
+        settings: settings,
+        error_locations: error_locations
+    }
+}
+
+const settings = {
+    solution_size_range: 'single_digit', // ['single_digit', 'multi_digit']
+    lin_eq_equation_form: 'begin_1', // begin, inter, and advan
+    solution_form: 'integers', // ['integers', 'fractions', 'both']
+    variable_letter: 'x', // any capital or lowercase char
+    flip_equation: 'no', // yes or no
+    force_positive_coefs: 'yes' // yes or no
+};
+
+export const settings_fields = [
+    'solution_size_range',
+    'lin_eq_equation_form',
+    'solution_form',
+    'variable_letter',
+    'flip_equation',
+    'force_positive_coefs'
+];
+
+export function get_presets() {
+    return {
+        solution_size_range: 'single_digit', // (+ or -) whatever value is here
+        lin_eq_equation_form: 'inter_1', // need the ability to 'select all' from begin, inter, or advan
+        solution_form: 'integers',
+        variable_letter: 'x',
+        flip_equation: 'no',
+        force_positive_coefs: 'no'
+    };
+}
+
+{
     // helper function to generate the permuation of the coefficients
     function generateCombinations(ranges) {
         let values = ranges.map(([min, max]) => {
@@ -1381,77 +1463,7 @@ export default function genLinEq(formObj) {
         current_coef = H.randFromList(removeArrayRepeats(extractSubElements(current_coef_index, list_of_sols))); // pick a coef
         possible_sols = keepSolutions(current_coef, current_coef_index, list_of_sols); // keep only the sols with that coef in that spot
     } // now, possible sols must only contain one sub_array (like [[1,2,3]]), and this is the final set of coefs
-
-    // final coefs and sol 
-    let final_coef_array = possible_sols[0].slice(1);
-    let final_solution = possible_sols[0][0];
-    if (solution_form === 'fractions') {
-        let sol_obj = current_EQ_obj.get_sol(...final_coef_array);
-        let sol_fraction = PH.simplifyFraction(sol_obj.numer, sol_obj.denom);
-        let sol_numer = sol_fraction.numer;
-        let sol_denom = sol_fraction.denom;
-
-        if (sol_numer > 0) final_solution = '\\frac{' + sol_numer + '}{' + sol_denom + '}';
-        else if (sol_numer < 0) final_solution = '-\\frac{' + (-1)*sol_numer + '}{' + sol_denom + '}';
-    }
-    final_solution = variable_letter + '=' + final_solution;
-
-    // create the equation with the user-selected variable letter and the final coefs
-    let final_prompt = current_EQ_obj.create_prompt(variable_letter, ...final_coef_array);
-
-    if (flip_equation === 'yes') { // flip the equation if specified
-        let [ left_side, right_side ] = final_prompt.split('=');
-        final_prompt = right_side + '=' + left_side;
-    }
-
-    console.log('sol list: ',list_of_sols)
-    console.log('% of Coefs that were viable: ' + (list_of_sols.length / initial_coef_list.length) * 100 + '%')
-
-    // hackfix to get error_locations back to main
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('variable_letter') !== -1) error_locations.push('variable_letter');
-    }
-
-
-    return {
-        question: final_prompt,
-        answer: final_solution,
-        settings: settings,
-        error_locations: error_locations
-    }
 }
-
-const settings = {
-    solution_size_range: 'single_digit', // ['single_digit', 'multi_digit']
-    lin_eq_equation_form: 'begin_1', // begin, inter, and advan
-    solution_form: 'integers', // ['integers', 'fractions', 'both']
-    variable_letter: 'x', // and capital or lowercase char
-    flip_equation: 'no', // yes or no
-    force_positive_coefs: 'yes' // yes or no
-};
-
-export const settings_fields = [
-    'solution_size_range',
-    'lin_eq_equation_form',
-    'solution_form',
-    'variable_letter',
-    'flip_equation',
-    'force_positive_coefs'
-];
-
-export function get_presets() {
-    return {
-        solution_size_range: 'single_digit', // (+ or -) whatever value is here
-        lin_eq_equation_form: 'inter_1', // need the ability to 'select all' from begin, inter, or advan
-        solution_form: 'integers',
-        variable_letter: 'x',
-        flip_equation: 'no',
-        force_positive_coefs: 'no'
-    };
-}
-
-
 
 
 
