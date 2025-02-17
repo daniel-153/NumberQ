@@ -1245,8 +1245,68 @@ export default function genLinEq(formObj) {
     }
 
     let List_of_sols = [];
+    function createMapBranches(number_of_coefs, map) {
+        if (!(map instanceof Map)) {
+            throw new Error("Provided argument is not a Map.");
+        }
     
+        return function insertSolution(solution, coefficients) {
+            if (!map.has(solution)) {
+                map.set(solution, new Map());
+            }
+            let currentLevel = map.get(solution);
+    
+            for (let i = 0; i < number_of_coefs; i++) {
+                let coef = coefficients[i];
+                if (!currentLevel.has(coef)) {
+                    currentLevel.set(coef, new Map());
+                }
+                currentLevel = currentLevel.get(coef);
+            }
+    
+            // Store full coefficient set at the last level
+            if (!currentLevel.has("coefs")) {
+                currentLevel.set("coefs", []);
+            }
+            currentLevel.get("coefs").push(coefficients);
+        };
+    }
 
+    function reorderArray(order, array) {
+        return order.map(index => array[index]);
+    }
+
+    function getRandFromMap(map) {
+        let currentLevel = map;
+        let path = [];
+    
+        // Traverse down the structure randomly
+        while (typeof currentLevel === 'object' && currentLevel !== null) {
+            let keys = Object.keys(currentLevel);
+            if (keys.length === 0) return null; // No available values
+    
+            let randomKey = keys[Math.floor(Math.random() * keys.length)];
+            path.push(randomKey);
+            currentLevel = currentLevel[randomKey];
+        }
+    
+        // Now, currentLevel is the coefficient array to return
+        let selectedValue = currentLevel;
+    
+        // Clear all values from the map but keep the structure
+        function clearValues(level) {
+            for (let key in level) {
+                if (typeof level[key] === 'object') {
+                    clearValues(level[key]); // Recursively clear deeper levels
+                } else {
+                    level[key] = null; // Remove the coefficient array
+                }
+            }
+        }
+        clearValues(map); // Clear all values but keep key structure
+    
+        return selectedValue;
+    }
 
 
 
