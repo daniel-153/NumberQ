@@ -283,23 +283,24 @@ export function convertFactoredToMath(factoredTemplate) {
 } //Takes a factored template and puts it in proper math notation (Built for facQuads and extended to ratEx but WON'T work in general)
 
 export function simplifyFraction(numer, denom) {
-    // Calculate the GCF of the numerator and denominator
-    const divisor = GCF(numer, denom);
+    // Fast inline GCF calculation
+    let a = Math.abs(numer), b = Math.abs(denom);
+    while (b !== 0) {
+        [a, b] = [b, a % b];
+    }
+    let divisor = a;
 
-    // Simplify the numerator and denominator
+    // Simplify
     let simplifiedNumer = numer / divisor;
     let simplifiedDenom = denom / divisor;
 
-    // Ensure the denominator is positive
+    // Ensure denominator is positive
     if (simplifiedDenom < 0) {
         simplifiedNumer = -simplifiedNumer;
         simplifiedDenom = -simplifiedDenom;
     }
 
-    return {
-        numer: simplifiedNumer,
-        denom: simplifiedDenom,
-    };
+    return { numer: simplifiedNumer, denom: simplifiedDenom };
 }
 
 export function remainderDivision(a, b) {
