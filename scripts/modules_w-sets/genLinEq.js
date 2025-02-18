@@ -1176,8 +1176,9 @@ export default function genLinEq(formObj) {
         solution_size = 99;
     }
 
-    // create a function that checks if the answer is within range for integer solutions and fractional solutions
+    // create different functions to verify the solution and to process the sol object for fractions and integers
     let solutionIsValid;
+    let processSolObj;
     if (solution_form === 'integers') { // Note: 'solution_obj' below is {raw_value, numer, denom}
         solutionIsValid = function(solution_obj, sol_size_max) { // ensure the sol is between (+ or -) solution_size AND sol is an int
             let raw_sol_value = solution_obj.raw_value;
@@ -1187,6 +1188,10 @@ export default function genLinEq(formObj) {
                 raw_sol_value <= sol_size_max &&
                 raw_sol_value >= (-1)*sol_size_max
             );
+        }
+
+        processSolObj = function(solution_obj) {
+            return solution_obj.raw_value;
         }
     }
     else if (solution_form === 'fractions') {
@@ -1202,6 +1207,11 @@ export default function genLinEq(formObj) {
                 sol_denom <= sol_size_max &&
                 sol_denom >= (-1)*sol_size_max
             );
+        }
+
+        processSolObj = function(solution_obj) {
+            const { numer, denom } = PH.simplifyFraction(solution_obj.numer, solution_obj.denom);
+            return numer + '/' + denom;
         }
     }
 
@@ -1244,78 +1254,251 @@ export default function genLinEq(formObj) {
         else coefficient_ranges.push(absorber_coef_range)
     }
 
-    let List_of_sols = [];
-    function createMapBranches(number_of_coefs, map) {
-        if (!(map instanceof Map)) {
-            throw new Error("Provided argument is not a Map.");
-        }
+
+    // function that creates the map structure for an existing map and returns two function to modify it: insert and getRand (which also clears the map)
+    // function createMapBranches(number_of_coefs, key_order, map) {
+    //     if (!(map instanceof Map)) {
+    //         throw new Error("Provided argument is not a Map.");
+    //     }
+    //     if (!Array.isArray(key_order) || key_order.length !== number_of_coefs) {
+    //         throw new Error("Invalid key order array.");
+    //     }
+        
+    //     function insertSolution(solution, coefficients) {
+    //         if (!map.has(solution)) {
+    //             map.set(solution, new Map());
+    //         }
+    //         let currentLevel = map.get(solution);
     
-        return function insertSolution(solution, coefficients) {
+    //         // Reorder coefficients based on key_order
+    //         let reorderedCoefficients = key_order.map(index => coefficients[index]);
+    
+    //         for (let i = 0; i < number_of_coefs; i++) {
+    //             let coef = reorderedCoefficients[i];
+    //             if (!currentLevel.has(coef)) {
+    //                 currentLevel.set(coef, new Map());
+    //             }
+    //             currentLevel = currentLevel.get(coef);
+    //         }
+    
+    //         // Store full coefficient set at the last level
+    //         if (!currentLevel.has("coefs")) {
+    //             currentLevel.set("coefs", []);
+    //         }
+    //         currentLevel.get("coefs").push(coefficients);
+    //     }
+    
+    //     function getRandFromMap() {
+    //         let currentLevel = map;
+    //         let path = [];
+    
+    //         // Traverse down the structure randomly
+    //         while (currentLevel instanceof Map) {
+    //             let keys = Array.from(currentLevel.keys()).filter(k => k !== "coefs");
+    //             if (keys.length === 0) break; // No available values
+    
+    //             let randomKey = keys[Math.floor(Math.random() * keys.length)];
+    //             path.push(randomKey);
+    //             currentLevel = currentLevel.get(randomKey);
+    //         }
+    
+    //         // Now, currentLevel is the coefficient array to return
+    //         let selectedValue = currentLevel.get("coefs") || null;
+    
+    //         // Clear all values from the map but keep the structure
+    //         function clearValues(level) {
+    //             for (let key of level.keys()) {
+    //                 if (key === "coefs") {
+    //                     level.set("coefs", []); // Reset stored coefficient arrays
+    //                 } else {
+    //                     clearValues(level.get(key)); // Recursively clear deeper levels
+    //                 }
+    //             }
+    //         }
+    //         clearValues(map); // Clear all values but keep key structure
+            
+    //         const random_coef_arr = selectedValue ? selectedValue[Math.floor(Math.random() * selectedValue.length)] : null;
+            
+    //         return { sol: path[0], coef_arr: random_coef_arr };
+    //     }
+    
+    //     return { insertSolution, getRandFromMap };
+    // }
+    
+
+    
+    function createMapBranches(number_of_coefs, key_order, map) {
+
+        function insertSolution(solution, coef_array) {
             if (!map.has(solution)) {
                 map.set(solution, new Map());
             }
-            let currentLevel = map.get(solution);
+            let current_map = map.get(solution); // which map we are currently on (starts off one level below outermost)
     
+            let reordered_coef_array = key_order.map(index => coef_array[index]); // coefs in the order of the map structure
+    
+            // loop to create branches if they don't already exist
+            let layer_index = 1; // indicates we are starting one layer below the outmost (the first coef layer)
+            let current_coef = reordered_coef_array[0]; // the value of the coef we are currently dealing with
+            while (layer_index < number_of_coefs - 1) { // everything from the first coef to the second from the last
+                current_coef = reordered_coef_array[layer_index - 1]
+                if (!current_map.has(current_coef)) {
+                    current_map.set(current_coef, new Map());
+                }
+                current_map = current_map.get(current_coef); // move one layer (map) foward
+    
+                layer_index++;
+            }
+            if (!current_map.has(current_coef)) { // the final layer is just key,value (not another map) because (in a linear EQ) if you know the sol and all but one of the coefs, there is only one possibility for the last coef
+                current_map.set(current_coef, reordered_coef_array[layer_index]);
+            }
+        }
+    
+        function getRandFromMap() {
+            let solution = H.randFromList([...map.keys]); // the current unique list (set) of keys
+            let coef_array = []; // doesn't need to be int8 because we are never actually storing arrays at any level of the maps
+    
+            // go down the branches in a random order to pick coefficients for the solution
+            let current_layer = map.get(solution); // get the values of the current key (which are maps all the way until the last key)
+            let current_value;
+            for (let i = 0; i < number_of_coefs - 1; i++) {
+                current_value = H.randFromList([...current_layer.keys]);
+                coef_array[i] = current_value;
+                current_layer = current_layer.get(current_value);
+            }
+            coef_array[number_of_coefs - 1] = current_layer; // since the last layer is a unique value (not a map), we can do this 
+    
+            // put the coefs back in the proper order
+            let reordered_coef_array = [];
             for (let i = 0; i < number_of_coefs; i++) {
-                let coef = coefficients[i];
-                if (!currentLevel.has(coef)) {
-                    currentLevel.set(coef, new Map());
-                }
-                currentLevel = currentLevel.get(coef);
+                reordered_coef_array[key_order[i]] = coef_array[i];
             }
     
-            // Store full coefficient set at the last level
-            if (!currentLevel.has("coefs")) {
-                currentLevel.set("coefs", []);
-            }
-            currentLevel.get("coefs").push(coefficients);
-        };
-    }
-
-    function reorderArray(order, array) {
-        return order.map(index => array[index]);
-    }
-
-    function getRandFromMap(map) {
-        let currentLevel = map;
-        let path = [];
+            // reset the map completely
+            map = new Map();
     
-        // Traverse down the structure randomly
-        while (typeof currentLevel === 'object' && currentLevel !== null) {
-            let keys = Object.keys(currentLevel);
-            if (keys.length === 0) return null; // No available values
-    
-            let randomKey = keys[Math.floor(Math.random() * keys.length)];
-            path.push(randomKey);
-            currentLevel = currentLevel[randomKey];
+            return {sol: solution, coef_arr: reordered_coef_array};
         }
     
-        // Now, currentLevel is the coefficient array to return
-        let selectedValue = currentLevel;
-    
-        // Clear all values from the map but keep the structure
-        function clearValues(level) {
-            for (let key in level) {
-                if (typeof level[key] === 'object') {
-                    clearValues(level[key]); // Recursively clear deeper levels
-                } else {
-                    level[key] = null; // Remove the coefficient array
-                }
-            }
-        }
-        clearValues(map); // Clear all values but keep key structure
-    
-        return selectedValue;
+        return { insertSolution, getRandFromMap };
     }
 
 
 
 
     
+    
+    // the order in which the coefs become keys (randomized)
+    const coef_key_order = H.randomizeList(H.integerArray(0, number_of_coefs - 1));
 
-    // final coefs and sol 
-    let final_coef_array = possible_sols[0].slice(1);
-    let final_solution = possible_sols[0][0];
+    // create the map to temporarily hold sols and its methods
+    const buffer_sol_list = new Map();
+    const buffer_methods = createMapBranches(number_of_coefs, coef_key_order, buffer_sol_list);
+    const addToBuffer = buffer_methods.insertSolution;
+    const randFromBuffer = buffer_methods.getRandFromMap;  
+
+    // create the map to 'permanently' hold sols from the buffer (1/500) until we select one
+    const sol_list = new Map();
+    const sol_list_methods = createMapBranches(number_of_coefs, coef_key_order, sol_list);
+    const addToSolList = sol_list_methods.insertSolution;
+    const randFromSolList = sol_list_methods.getRandFromMap;
+
+
+    // function to dynamically create the for-loops (NOT stand-alone -> completely depends on all the variables above)
+    function createPermutLoops(coefficient_ranges) {
+        let coef_number = coefficient_ranges.length; // the number of coefs
+
+        // initialize all the mins and maxes below by extracting them from^. These are literal 'let min = k' statements placed before everything
+        let min_max_declarations = ''; 
+        for (let i = 0; i < coef_number; i++) {
+            min_max_declarations += `
+            let min${i} = ${coefficient_ranges[i][0]};
+            let max${i} = ${coefficient_ranges[i][1]};
+            `;
+        }
+        
+        // the successive 'for (let i0 = min0; i0 <= max0; i0++) {' statements
+        let top_of_loops = ''; 
+        for (let i = 0; i < coef_number; i++) {
+            top_of_loops += `for (let i${i} = min${i}; i${i} <= max${i}; i${i}++) {`;
+        }
+
+        // the brackets to close all of the loops
+        let bottom_of_loops = '}'.repeat(coef_number);
+
+        // create the list of params of the i's -> i0, i1, i2, i3
+        let list_of_params = '';
+        for (let i = 0; i < coef_number - 1; i++) {
+            list_of_params += `i${i},`
+        }
+        list_of_params += `i${coef_number - 1}`
+
+        // create the i0 === 0 || i1 === 0 || i2 === 0 || i3 === 0 condition
+        let non_zero_condition = '';
+        for (let i = 0; i < coef_number - 1; i++) {
+            non_zero_condition += `i${i} === 0 || `;
+        }
+        non_zero_condition += `i${coef_number - 1} === 0`
+
+        // fill the int8Array with the coefs
+        let array_assignments = '';
+        for (let i = 0; i < coef_number; i++) {
+            array_assignments += `current_coef_arr[${i}] = i${i};`;
+        }
+
+        // all of the logic inside at the very inside of all the nested for-loops
+        let inner_loop_content = `
+            current_sol_obj = current_EQ_obj.get_sol(${list_of_params});
+    
+            if (!current_EQ_obj.verify_reqs(${list_of_params}) || !solutionIsValid(current_sol_obj,solution_size)) {
+                continue; // Skip this iteration ASAP
+            }
+            if (${non_zero_condition}) {
+                continue; // Secondary check
+            }
+            
+            ${array_assignments}
+            addToBuffer(processSolObj(current_sol_obj), current_coef_arr);
+
+            current_permutation++;
+            if (current_permutation >= 500) {
+                rand_sol = randFromBuffer();
+                addToSolList(rand_sol.sol, rand_sol.coef_arr);
+                current_permutation = 0;
+            }
+        `;
+
+        let final_code = min_max_declarations + top_of_loops + inner_loop_content + bottom_of_loops; // combine all the code
+        console.log('final eval code: ',final_code)
+        return final_code;
+    }
+
+
+
+    // OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+    //
+    // Remember that you still need to shift to a new range if sols aren't found
+    //
+    // OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+
+
+    // these variables are built into the runPermutLoops function, so their names can't change
+    let current_permutation = 0;
+    let current_sol_obj;
+    let current_coef_arr = new Int8Array(number_of_coefs);
+    let rand_sol;
+    eval(createPermutLoops(coefficient_ranges));
+    // Manually empty the buffer at the end
+    rand_sol = randFromBuffer();
+    addToSolList(rand_sol.sol, rand_sol.coef_arr);
+    
+
+    // final coefs and sol
+    let selected_sol_obj = randFromSolList(); 
+    let final_coef_array = selected_sol_obj.coef_arr;
+    let final_solution = selected_sol_obj.sol;
+
+    // process the solution into math 
     if (solution_form === 'fractions') {
         let sol_obj = current_EQ_obj.get_sol(...final_coef_array);
         let sol_fraction = PH.simplifyFraction(sol_obj.numer, sol_obj.denom);
@@ -1335,8 +1518,6 @@ export default function genLinEq(formObj) {
         final_prompt = right_side + '=' + left_side;
     }
 
-    console.log('sol list: ',list_of_sols)
-    console.log('% of Coefs that were viable: ' + (list_of_sols.length / initial_coef_list.length) * 100 + '%')
 
     // hackfix to get error_locations back to main
     let error_locations = [];
@@ -1373,7 +1554,7 @@ export const settings_fields = [
 
 export function get_presets() {
     return {
-        solution_size_range: 'single_digit', // (+ or -) whatever value is here
+        solution_size_range: 'multi_digit', // (+ or -) whatever value is here
         lin_eq_equation_form: 'inter_1', // need the ability to 'select all' from begin, inter, or advan
         solution_form: 'integers',
         variable_letter: 'x',
@@ -1382,148 +1563,190 @@ export function get_presets() {
     };
 }
 
-{
-    // helper function to generate the permuation of the coefficients
-    function generateCombinations(ranges) {
-        let values = ranges.map(([min, max]) => {
-            return Array.from({ length: max - min + 1 }, (_, i) => min + i);
-        });
+
+// {
+//     for (let i0 = min0; i0 <= max0; i0++) { 
+//         for (let i1 = min1; i1 <= max1; i1++) {
+//             for (let i2 = min2; i2 <= max2; i2++) {
+//                 for (let i3 = min3; i3 <= max3; i3++) {
+//                     ////////
+
+
+//                     current_sol_obj = current_EQ_obj.get_sol(i0, i1, i2, i3);
     
-        let result = [[]]; // Start with an empty combination
+//                     if (!current_EQ_obj.verify_reqs(i0, i1, i2, i3) || !solutionIsValid(current_sol_obj)) {
+//                         continue; // Skip this iteration ASAP
+//                     }
+//                     if (i0 === 0 || i1 === 0 || i2 === 0 || i3 === 0) {
+//                         continue; // Secondary check
+//                     }
+                    
+//                     current_coef_arr[0] = i0;
+//                     current_coef_arr[1] = i1;
+//                     current_coef_arr[2] = i2;
+//                     current_coef_arr[3] = i3;
+//                     addToBuffer(processSolObj(current_sol_obj), current_coef_arr);
     
-        for (let valueSet of values) {
-            let temp = [];
-            for (let partial of result) {
-                for (let value of valueSet) {
-                    temp.push([...partial, value]); // Append new values
-                }
-            }
-            result = temp; // Update result with new combinations
-        }
+//                     current_permutation++;
+//                     if (current_permutation >= 500) {
+//                         rand_sol = randFromBuffer();
+//                         addToSolList(rand_sol.sol, rand_sol.coef_arr);
+//                         current_permutation = 0;
+//                     }
+
+
+//                     ////////
+//                 }
+//             }
+//         }
+//     } 
+// }
+
+
+
+
+// {
+//     // helper function to generate the permuation of the coefficients
+//     function generateCombinations(ranges) {
+//         let values = ranges.map(([min, max]) => {
+//             return Array.from({ length: max - min + 1 }, (_, i) => min + i);
+//         });
     
-        return result;
-    }
+//         let result = [[]]; // Start with an empty combination
     
-    // the initial list of coefs (filter ensures they are all non-zero)
-    let initial_coef_list  = generateCombinations(coefficient_ranges).filter(coefs => !coefs.includes(0));
+//         for (let valueSet of values) {
+//             let temp = [];
+//             for (let partial of result) {
+//                 for (let value of valueSet) {
+//                     temp.push([...partial, value]); // Append new values
+//                 }
+//             }
+//             result = temp; // Update result with new combinations
+//         }
     
-    // only allow positive coefs if specified
-    if (force_positive_coefs === 'yes') {
-        initial_coef_list = initial_coef_list.filter(coefs => !coefs.some(num => num < 0));
-    }
+//         return result;
+//     }
+    
+//     // the initial list of coefs (filter ensures they are all non-zero)
+//     let initial_coef_list  = generateCombinations(coefficient_ranges).filter(coefs => !coefs.includes(0));
+    
+//     // only allow positive coefs if specified
+//     if (force_positive_coefs === 'yes') {
+//         initial_coef_list = initial_coef_list.filter(coefs => !coefs.some(num => num < 0));
+//     }
 
-    // start by searching all of the initial coefs, then (if no sol is found) search the next absorber range
-    let current_coef_set; // the set of coefficients in the current iteration
-    let current_sol_obj; // the solution obj {raw_value, numer, denom} of a given coef set
-    let list_of_sols = []; // all of the solutions that were found (where entry 0 is the sol, and the rest of the entries are the coefs
+//     // start by searching all of the initial coefs, then (if no sol is found) search the next absorber range
+//     let current_coef_set; // the set of coefficients in the current iteration
+//     let current_sol_obj; // the solution obj {raw_value, numer, denom} of a given coef set
+//     let list_of_sols = []; // all of the solutions that were found (where entry 0 is the sol, and the rest of the entries are the coefs
 
-    // initial_coef_list = [[-5,7,2,-35]]; // testing
+//     // initial_coef_list = [[-5,7,2,-35]]; // testing
 
-    for (let i = 0; i < initial_coef_list.length; i++) {
-        current_coef_set = initial_coef_list[i];
-        current_sol_obj = current_EQ_obj.get_sol(...current_coef_set);
-        if (
-            current_EQ_obj.verify_reqs(...current_coef_set) &&
-            solutionIsValid(current_sol_obj, solution_size)
-        ) { // all requirements are met (coef reqs + int sol + sol within range) 
-            if (solution_form === 'integers') {
-                list_of_sols.push([current_sol_obj.raw_value, ...current_coef_set]);
-            }
-            else if (solution_form === 'fractions') {
-                const fractional_sol = current_coef_set.numer + '/' + current_sol_obj.denom;
-                list_of_sols.push([fractional_sol, ...current_coef_set]);
-            }
-        }
+//     for (let i = 0; i < initial_coef_list.length; i++) {
+//         current_coef_set = initial_coef_list[i];
+//         current_sol_obj = current_EQ_obj.get_sol(...current_coef_set);
+//         if (
+//             current_EQ_obj.verify_reqs(...current_coef_set) &&
+//             solutionIsValid(current_sol_obj, solution_size)
+//         ) { // all requirements are met (coef reqs + int sol + sol within range) 
+//             if (solution_form === 'integers') {
+//                 list_of_sols.push([current_sol_obj.raw_value, ...current_coef_set]);
+//             }
+//             else if (solution_form === 'fractions') {
+//                 const fractional_sol = current_coef_set.numer + '/' + current_sol_obj.denom;
+//                 list_of_sols.push([fractional_sol, ...current_coef_set]);
+//             }
+//         }
 
-        i++;
-    } // now, all sets of coefficients from the initial ranges have been tested
+//         i++;
+//     } // now, all sets of coefficients from the initial ranges have been tested
 
-    // determine whether the initial ranges yielded any solutions
-    let solution_is_found = false;
-    if (list_of_sols.length > 0) {
-        solution_is_found = true;
-    }
+//     // determine whether the initial ranges yielded any solutions
+//     let solution_is_found = false;
+//     if (list_of_sols.length > 0) {
+//         solution_is_found = true;
+//     }
 
-    let current_search_range = (absorber_range_index + 1) % absorber_range_options.length;
-    while (
-        !solution_is_found && 
-        current_search_range % absorber_range_options.length !== absorber_range_index
-    ) { // keep running this code until we find a solution OR check all the ranges
-        coefficient_ranges.splice(absorber_index, 1, absorber_range_options[current_search_range]); // switch to the new range for the absorber
-        let new_coef_list = generateCombinations(coefficient_ranges).filter(coefs => !coefs.includes(0));
+//     let current_search_range = (absorber_range_index + 1) % absorber_range_options.length;
+//     while (
+//         !solution_is_found && 
+//         current_search_range % absorber_range_options.length !== absorber_range_index
+//     ) { // keep running this code until we find a solution OR check all the ranges
+//         coefficient_ranges.splice(absorber_index, 1, absorber_range_options[current_search_range]); // switch to the new range for the absorber
+//         let new_coef_list = generateCombinations(coefficient_ranges).filter(coefs => !coefs.includes(0));
         
-        for (let i = 0; i < new_coef_list.length; i++) {
-            current_coef_set = new_coef_list[i];
-            current_sol_obj = current_EQ_obj.get_sol(...current_coef_set);
-            if (
-                current_EQ_obj.verify_reqs(...current_coef_set) &&
-                solutionIsValid(current_sol_obj)
-            ) { // all requirements are met (coef reqs + int sol + sol within range) 
-                if (solution_form === 'integers') {
-                    list_of_sols.push([current_sol_obj.raw_value, ...current_coef_set]);
-                }
-                else if (solution_form === 'fractions') {
-                    const fractional_sol = current_coef_set.numer + '/' + current_sol_obj.denom;
-                    list_of_sols.push([fractional_sol, ...current_coef_set]);
-                }
-            }
+//         for (let i = 0; i < new_coef_list.length; i++) {
+//             current_coef_set = new_coef_list[i];
+//             current_sol_obj = current_EQ_obj.get_sol(...current_coef_set);
+//             if (
+//                 current_EQ_obj.verify_reqs(...current_coef_set) &&
+//                 solutionIsValid(current_sol_obj)
+//             ) { // all requirements are met (coef reqs + int sol + sol within range) 
+//                 if (solution_form === 'integers') {
+//                     list_of_sols.push([current_sol_obj.raw_value, ...current_coef_set]);
+//                 }
+//                 else if (solution_form === 'fractions') {
+//                     const fractional_sol = current_coef_set.numer + '/' + current_sol_obj.denom;
+//                     list_of_sols.push([fractional_sol, ...current_coef_set]);
+//                 }
+//             }
     
-            i++;
-        } // now we've search the next range in the list (or a wrap-around)
+//             i++;
+//         } // now we've search the next range in the list (or a wrap-around)
 
-        // determine if any solutions where found in the new range
-        if (list_of_sols.length > 0) solution_is_found = true; 
-        else { // move to the next range OR give an error if we searched all the ranges without finding a sol
-            if (current_search_range % absorber_range_options.length !== absorber_range_index) current_search_range++
-            else {
-                console.error('No solutions were found for Equation_ID = ' + lin_eq_equation_form + 
-                    ', with a Solution_Range of: ' + solution_size_range);
-            }
-        }
-    } // now list_of_sols contains all the possible solutions that can be picked for this generation
+//         // determine if any solutions where found in the new range
+//         if (list_of_sols.length > 0) solution_is_found = true; 
+//         else { // move to the next range OR give an error if we searched all the ranges without finding a sol
+//             if (current_search_range % absorber_range_options.length !== absorber_range_index) current_search_range++
+//             else {
+//                 console.error('No solutions were found for Equation_ID = ' + lin_eq_equation_form + 
+//                     ', with a Solution_Range of: ' + solution_size_range);
+//             }
+//         }
+//     } // now list_of_sols contains all the possible solutions that can be picked for this generation
         
-    // helper function to remove all repeat elements from arrays
-    function removeArrayRepeats(array) {
-        return [...new Set(array)];
-    }
+//     // helper function to remove all repeat elements from arrays
+//     function removeArrayRepeats(array) {
+//         return [...new Set(array)];
+//     }
 
-    // helper function to keep all solution sets with 'element' at 'sub_index'
-    function keepSolutions(element, sub_index, solution_list) {
-        return solution_list.filter(subArray => subArray[sub_index] === element);
-    }
+//     // helper function to keep all solution sets with 'element' at 'sub_index'
+//     function keepSolutions(element, sub_index, solution_list) {
+//         return solution_list.filter(subArray => subArray[sub_index] === element);
+//     }
 
-    // helper function to extract a particular coefficient from the solution list
-    function extractSubElements(sub_index, array) {
-        return array.map(subArray => subArray[sub_index]);
-    }
+//     // helper function to extract a particular coefficient from the solution list
+//     function extractSubElements(sub_index, array) {
+//         return array.map(subArray => subArray[sub_index]);
+//     }
 
-    // decide which order to select the coefs in ([3,1,2] means to select 'c', then 'a', then 'b')
-    let coef_select_order = H.randomizeList(H.integerArray(1, number_of_coefs));
+//     // decide which order to select the coefs in ([3,1,2] means to select 'c', then 'a', then 'b')
+//     let coef_select_order = H.randomizeList(H.integerArray(1, number_of_coefs));
 
-    // randomly pick a solution
-    const picked_solution = H.randFromList(removeArrayRepeats(extractSubElements(0, list_of_sols)));
-    let possible_sols; // list all sets of coefs that result in the given sol
-    if (solution_form === 'integers') {
-        possible_sols = keepSolutions(picked_solution, 0, list_of_sols);
-    }
-    else if (solution_form === 'fractions') {
-        let [ numer, denom ] = picked_solution.split('/');
-        let sol_value = Number(numer) / Number(denom);
+//     // randomly pick a solution
+//     const picked_solution = H.randFromList(removeArrayRepeats(extractSubElements(0, list_of_sols)));
+//     let possible_sols; // list all sets of coefs that result in the given sol
+//     if (solution_form === 'integers') {
+//         possible_sols = keepSolutions(picked_solution, 0, list_of_sols);
+//     }
+//     else if (solution_form === 'fractions') {
+//         let [ numer, denom ] = picked_solution.split('/');
+//         let sol_value = Number(numer) / Number(denom);
 
-        possible_sols = list_of_sols.filter(subArray => // filter all the fractions that have the same value as the selected solution
-            (Number(subArray.split('/')[0]) / Number(subArray.split('/')[1])) === sol_value
-        );
-    }
+//         possible_sols = list_of_sols.filter(subArray => // filter all the fractions that have the same value as the selected solution
+//             (Number(subArray.split('/')[0]) / Number(subArray.split('/')[1])) === sol_value
+//         );
+//     }
 
-    // randomly pick coefs from those that are possible
-    let current_coef_index; // the index of whichever coef is being dealt with 1 -> 'a', 2 -> 'b', etc
-    let current_coef; // the coefficient that is selected from all those possible (in a given loop run)
-    for (let i = 0; i < coef_select_order.length; i++) {
-        current_coef_index = coef_select_order[i]; // pick the coefficients in the randomize order determined by coef_select_order
-        current_coef = H.randFromList(removeArrayRepeats(extractSubElements(current_coef_index, list_of_sols))); // pick a coef
-        possible_sols = keepSolutions(current_coef, current_coef_index, list_of_sols); // keep only the sols with that coef in that spot
-    } // now, possible sols must only contain one sub_array (like [[1,2,3]]), and this is the final set of coefs
-}
+//     // randomly pick coefs from those that are possible
+//     let current_coef_index; // the index of whichever coef is being dealt with 1 -> 'a', 2 -> 'b', etc
+//     let current_coef; // the coefficient that is selected from all those possible (in a given loop run)
+//     for (let i = 0; i < coef_select_order.length; i++) {
+//         current_coef_index = coef_select_order[i]; // pick the coefficients in the randomize order determined by coef_select_order
+//         current_coef = H.randFromList(removeArrayRepeats(extractSubElements(current_coef_index, list_of_sols))); // pick a coef
+//         possible_sols = keepSolutions(current_coef, current_coef_index, list_of_sols); // keep only the sols with that coef in that spot
+//     } // now, possible sols must only contain one sub_array (like [[1,2,3]]), and this is the final set of coefs
+// }
 
 
 
