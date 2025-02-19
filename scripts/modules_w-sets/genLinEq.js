@@ -1355,14 +1355,14 @@ export default function genLinEq(formObj) {
         }
     
         function getRandFromMap() {
-            let solution = H.randFromList([...map.keys]); // the current unique list (set) of keys
+            let solution = H.randFromList([...map.keys()]); // the current unique list (set) of keys
             let coef_array = []; // doesn't need to be int8 because we are never actually storing arrays at any level of the maps
     
             // go down the branches in a random order to pick coefficients for the solution
             let current_layer = map.get(solution); // get the values of the current key (which are maps all the way until the last key)
             let current_value;
             for (let i = 0; i < number_of_coefs - 1; i++) {
-                current_value = H.randFromList([...current_layer.keys]);
+                current_value = H.randFromList([...current_layer.keys()]);
                 coef_array[i] = current_value;
                 current_layer = current_layer.get(current_value);
             }
