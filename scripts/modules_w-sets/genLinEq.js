@@ -1326,7 +1326,17 @@ export default function genLinEq(formObj) {
     let current_sol_obj;
     const solGetter = current_EQ_obj.get_sol;
     const coefVerifier = current_EQ_obj.verify_reqs;
-    while (!sol_is_found) {
+
+    // cancel the solution search (while loop), after max_time_ms
+    let t_lim_reached = false;
+    const max_time_ms = 200;
+    eval(`setTimeout(() => {
+        t_lim_reached = true;
+        console.log("value fliped");
+    }, max_time_ms);`)
+
+    // solution search
+    while (!sol_is_found && !t_lim_reached) {
         // pick every coef besides the last two
         while (coef_index < number_of_coefs - 2) {
             coef_arr[coef_index] = H.randFromList(coefficient_ranges[coef_index]); // pick the value for the coef
@@ -1347,6 +1357,12 @@ export default function genLinEq(formObj) {
         }
         coef_index = 0;
     }
+
+    // check if time ran out (in which case we need to use a backup template)
+    if (!sol_is_found) {
+        console.log('backup code runs......')
+    }
+
  
 
     // final coefs and sol
