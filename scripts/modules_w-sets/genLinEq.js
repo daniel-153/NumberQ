@@ -120,7 +120,8 @@ export default function genLinEq(formObj) {
                 return vl + a + '=' + b;
             },
             absorber: [],
-            number_of_coefs: 2
+            number_of_coefs: 2,
+            no_fractions: true
         },
         begin_3: {
             verify_reqs(a, b) {
@@ -140,7 +141,8 @@ export default function genLinEq(formObj) {
                 return a + '+' + vl + '=' + b;
             },
             absorber: [],
-            number_of_coefs: 2
+            number_of_coefs: 2,
+            no_fractions: true
         },
         begin_4: {
             verify_reqs(a, b) {
@@ -163,7 +165,8 @@ export default function genLinEq(formObj) {
                 return x_on_a + '=' + b;
             },
             absorber: [],
-            number_of_coefs: 2
+            number_of_coefs: 2,
+            no_fractions: true
         },
         begin_5: {
             verify_reqs(a, b, c) {
@@ -243,7 +246,9 @@ export default function genLinEq(formObj) {
                     b === 1 ||
                     d === 1 ||
                     a === b ||
-                    c === d 
+                    a === -b ||
+                    c === d ||
+                    c === -d 
                 ); 
             },
             get_sol(a, b, c, d) {
@@ -270,7 +275,9 @@ export default function genLinEq(formObj) {
                     b === 1 ||
                     d === 1 ||
                     a === b ||
-                    c === d 
+                    a === -b ||
+                    c === d ||
+                    c === -d 
                 ); 
             },
             get_sol(a, b, c, d) {
@@ -311,7 +318,8 @@ export default function genLinEq(formObj) {
                 return on_b + '=' + c
             },
             absorber: [],
-            number_of_coefs: 3
+            number_of_coefs: 3,
+            no_fractions: true
         },
         begin_11: {
             verify_reqs(a, b, c) {
@@ -335,7 +343,8 @@ export default function genLinEq(formObj) {
                 return x_on_a + b + '=' + c;
             },
             absorber: [],
-            number_of_coefs: 3
+            number_of_coefs: 3,
+            no_fractions: true
         },
         begin_12: {
             verify_reqs(a, b, c) {
@@ -359,7 +368,8 @@ export default function genLinEq(formObj) {
                 return a + x_on_b + '=' + c;
             },
             absorber: [],
-            number_of_coefs: 3
+            number_of_coefs: 3,
+            no_fractions: true
         },
         begin_13: {
             verify_reqs(a, b, c) {
@@ -452,7 +462,7 @@ export default function genLinEq(formObj) {
     
                 return a + '(' + vl + b + ')=' + c;
             },
-            absorber: [H.randFromList(['b','c'])],
+            absorber: ['c'],
             number_of_coefs: 3
         },
         inter_4: {
@@ -680,8 +690,8 @@ export default function genLinEq(formObj) {
                 };
             },
             create_prompt(vl, a, b, c) {
-                let x_on_a = MH.start_frac(vl, a);
-                let x_on_b = MH.middle_frac(vl, b);
+                let x_on_a = MH.start_denom(a, vl);
+                let x_on_b = MH.middle_denom(b, vl);
                 c = c + '';
     
                 return x_on_a + x_on_b + '=' + c;
@@ -705,7 +715,7 @@ export default function genLinEq(formObj) {
                 };
             },
             create_prompt(vl, a, b, c, d) {
-                let x_on_a = MH.start_frac(a, vl);
+                let x_on_a = MH.start_denom(a, vl);
                 b = MH.middle_const(b);
                 c = MH.start_var(c);
                 d = MH.middle_const(d);
@@ -918,6 +928,7 @@ export default function genLinEq(formObj) {
                     f < 0 ||
                     c === 1 ||
                     f === 1 ||
+                    c === f ||
                     (a*f) === (c*d) 
                 );
             },
@@ -940,7 +951,6 @@ export default function genLinEq(formObj) {
             },
             absorber: [H.randFromList(['b','e'])],
             number_of_coefs: 6
-    
         },
         advan_6: {
             verify_reqs(a, b, c, d, e, f, g) {
@@ -1069,7 +1079,9 @@ export default function genLinEq(formObj) {
                     b === 1 ||
                     f === 1 ||
                     a === b ||
+                    a === -b ||
                     e === f ||
+                    e === -f ||
                     (a*c*f) === (b*e*g) 
                 );
             },
@@ -1160,11 +1172,11 @@ export default function genLinEq(formObj) {
         advan_13: {
             verify_reqs(a, b, c, d, e, f, g, h) {
                 return !(
-                    a < 0 ||
+                    b < 0 ||
                     d < 0 ||
                     f < 0 ||
                     h < 0 ||
-                    a === 1 ||
+                    b === 1 ||
                     d === 1 ||
                     f === 1 ||
                     h === 1 ||
@@ -1326,17 +1338,10 @@ export default function genLinEq(formObj) {
     let current_sol_obj;
     const solGetter = current_EQ_obj.get_sol;
     const coefVerifier = current_EQ_obj.verify_reqs;
+    let run_counter = 0;
 
-    // cancel the solution search (while loop), after max_time_ms
-    let t_lim_reached = false;
-    const max_time_ms = 200;
-    eval(`setTimeout(() => {
-        t_lim_reached = true;
-        console.log("value fliped");
-    }, max_time_ms);`)
-
-    // solution search
-    while (!sol_is_found && !t_lim_reached) {
+    // solution search 
+    while (!sol_is_found && run_counter < 500) {
         // pick every coef besides the last two
         while (coef_index < number_of_coefs - 2) {
             coef_arr[coef_index] = H.randFromList(coefficient_ranges[coef_index]); // pick the value for the coef
@@ -1356,11 +1361,11 @@ export default function genLinEq(formObj) {
             }
         }
         coef_index = 0;
+        run_counter++;
     }
 
-    // check if time ran out (in which case we need to use a backup template)
     if (!sol_is_found) {
-        console.log('backup code runs......')
+        console.log('back up code runs.......')
     }
 
  
