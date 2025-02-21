@@ -244,4 +244,10 @@
     margin-bottom: 0.4vw;
 }
 
+#fullscreen-answer[data-special-styles='genLinEq'] {
+    width: 14vw;
+    height: 5.5vw;
+    margin-bottom: 1.2vw;
+}
+
 
