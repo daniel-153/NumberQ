@@ -433,6 +433,7 @@ async function insertSettings(settings_names) {
     });
 
     document.getElementById('settings-form').innerHTML = combined_html;
+    MathJax.typesetPromise(["#settings-form"]);
 
     // function that generates the html for each settings field
     function createSettingHtml(setting_obj) {
@@ -440,16 +441,21 @@ async function insertSettings(settings_names) {
 
         // setting is a collection of radio buttons
         if (setting_obj.type === 'radio_buttons') { // setting is a collection of radio buttons
-            const {code_name, display_name, radio_buttons, tooltip } = setting_obj;
+            let {code_name, display_name, radio_buttons, tooltip } = setting_obj;
+            let current_class; // the special class of whichever radio button we are currently on (if provided)
 
             // Calculate the number of options and the appropriate margin-bottom value.
             const numberOfOptions = radio_buttons.length;
             let marginBottom;
             if (numberOfOptions <= 3) {
                 marginBottom = '1.7vw';
-            } else {
+            } 
+            else if (numberOfOptions <= 9) {
                 const computedMargin = 1.7 * (3 / numberOfOptions);
                 marginBottom = `${computedMargin}vw`;
+            }
+            else {
+                marginBottom = '0.57vw'
             }
 
             output_html = `
@@ -459,7 +465,15 @@ async function insertSettings(settings_names) {
             `;
 
             // create first through second-to-last radio buttons
+            let current_label; // the visible label for the radio button
             for (let i = 0; i < radio_buttons.length - 1; i++) {
+                current_label = radio_buttons[i][1] // pull out the label so we can modify it
+                
+                // add a special class to the radio button if specified (in the settings template)
+                if (radio_buttons[i][2] !== undefined) current_class = radio_buttons[i][2];
+                else current_class = '';
+                if (current_class === 'radio-math') current_label = '\\(' + current_label + '\\)'; // make it renderable for MathJax
+                
                 output_html = output_html + `
                     <div class="inner-radio-button-wrapper" style="margin-bottom: ${marginBottom};">
                     <input
@@ -469,14 +483,19 @@ async function insertSettings(settings_names) {
                         class="radio-buttons"
                         id="${code_name}-option-${i + 1}"
                     />
-                    <label for="${code_name}-option-${i + 1}" class="radio-button-label"
-                        >${radio_buttons[i][1]}</label
+                    <label for="${code_name}-option-${i + 1}" class="radio-button-label ${current_class}"
+                        >${current_label}</label
                     >
                     </div>
                 `;
             }
 
             // create the last radio button
+            current_label = radio_buttons[radio_buttons.length - 1][1];
+            if (radio_buttons[radio_buttons.length - 1][2] !== undefined) current_class = radio_buttons[radio_buttons.length - 1][2];
+            else current_class = '';
+            if (current_class === 'radio-math') current_label = '\\(' + current_label + '\\)';
+
             output_html = output_html + `
                 <div class="inner-radio-button-wrapper last-radio-option">
                 <input
@@ -486,8 +505,8 @@ async function insertSettings(settings_names) {
                     class="radio-buttons"
                     id="${code_name}-option-${radio_buttons.length}"
                 />
-                <label for="${code_name}-option-${radio_buttons.length}" class="radio-button-label"
-                    >${radio_buttons[radio_buttons.length - 1][1]}</label
+                <label for="${code_name}-option-${radio_buttons.length}" class="radio-button-label ${current_class}"
+                    >${current_label}</label
                 >
                 </div>
             </div>
