@@ -20,9 +20,6 @@ function processSettings(formObj) {
     };
 }
 
-// NOTE: need the ability to 'select all' from begin, inter, or advan
-
-
 export default function genLinEq(formObj) {
     const settings = processSettings(formObj);
     let { solution_size_range, lin_eq_equation_form, solution_form, variable_letter, flip_equation, force_positive_coefs } = settings;
@@ -1214,6 +1211,11 @@ export default function genLinEq(formObj) {
     // pick either integers or fractions if both was selected
     if (solution_form === 'both') solution_form = H.randFromList(['integers','fractions']);
 
+    // pick a random template from begin, inter, or advan if "All" of a category was selected
+    if (lin_eq_equation_form === 'all_begin') lin_eq_equation_form = H.randFromList(['begin_1', 'begin_2', 'begin_3', 'begin_4', 'begin_5', 'begin_6', 'begin_7', 'begin_8', 'begin_9', 'begin_10', 'begin_11', 'begin_12', 'begin_13']);
+    else if (lin_eq_equation_form === 'all_inter') lin_eq_equation_form = H.randFromList(['inter_1', 'inter_2', 'inter_3', 'inter_4', 'inter_5', 'inter_6', 'inter_7', 'inter_8', 'inter_9', 'inter_10', 'inter_11', 'inter_12', 'inter_13', 'inter_14', 'inter_15', 'inter_16']);
+    else if (lin_eq_equation_form === 'all_advan') lin_eq_equation_form = H.randFromList(['advan_1', 'advan_2', 'advan_3', 'advan_4', 'advan_5', 'advan_6', 'advan_7', 'advan_8', 'advan_9', 'advan_10', 'advan_11', 'advan_12', 'advan_13']);
+    
     // force integers on EQs that can't have fractional sols like x+a=b
     if (equations[lin_eq_equation_form].no_fractions) { 
         solution_form = 'integers';
@@ -1464,15 +1466,6 @@ export default function genLinEq(formObj) {
     }
 }
 
-const settings = {
-    solution_size_range: 'single_digit', // ['single_digit', 'multi_digit']
-    lin_eq_equation_form: 'begin_1', // begin, inter, and advan
-    solution_form: 'integers', // ['integers', 'fractions', 'both']
-    variable_letter: 'x', // any capital or lowercase char
-    flip_equation: 'no', // yes or no
-    force_positive_coefs: 'yes' // yes or no
-};
-
 export const settings_fields = [
     'solution_size_range',
     'lin_eq_equation_form',
@@ -1485,7 +1478,7 @@ export const settings_fields = [
 export function get_presets() {
     return {
         solution_size_range: 'single_digit', 
-        lin_eq_equation_form: 'inter_1', // need the ability to 'select all' from begin, inter, or advan
+        lin_eq_equation_form: 'all_begin',
         solution_form: 'integers',
         variable_letter: 'x',
         flip_equation: 'no',
@@ -1496,14 +1489,10 @@ export function get_presets() {
 export function get_rand_settings() {
     return {
         solution_size_range: H.randFromList(['single_digit','multi_digit']), 
-        lin_eq_equation_form: 'inter_1', // need the ability to 'select all' from begin, inter, or advan
+        lin_eq_equation_form: H.randFromList(['begin_1', 'begin_2', 'begin_3', 'begin_4', 'begin_5', 'begin_6', 'begin_7', 'begin_8', 'begin_9', 'begin_10', 'begin_11', 'begin_12', 'begin_13', 'inter_1', 'inter_2', 'inter_3', 'inter_4', 'inter_5', 'inter_6', 'inter_7', 'inter_8', 'inter_9', 'inter_10', 'inter_11', 'inter_12', 'inter_13', 'inter_14', 'inter_15', 'inter_16', 'advan_1', 'advan_2', 'advan_3', 'advan_4', 'advan_5', 'advan_6', 'advan_7', 'advan_8', 'advan_9', 'advan_10', 'advan_11', 'advan_12', 'advan_13', 'all_begin', 'all_inter', 'all_advan']),
         solution_form: H.randFromList(['integers','fractions','both']),
         variable_letter: "abcdfghjkmnpqrstuvwxyz"[Math.floor(Math.random() * 22)], // rand alphabet letter excluding e,i,o,l
         flip_equation: H.randFromList(['yes','no']),
         force_positive_coefs: H.randFromList(['yes','no'])
     }; 
 }
-
-
-
-
