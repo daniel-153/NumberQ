@@ -114,13 +114,14 @@ export default function genMulDiv(formObj) {
         }
     }
 
-    // simplify the numer and denom
-    const simplifiedFraction = PH.simplifyFraction(numer, denom);
-    numer = simplifiedFraction.numer;
-    denom = simplifiedFraction.denom;
-
+    
     let answer = '';
     if (settings.answer_form === 'factions & integers') {
+        // simplify the numer and denom
+        const simplifiedFraction = PH.simplifyFraction(numer, denom);
+        numer = simplifiedFraction.numer;
+        denom = simplifiedFraction.denom;
+        
         answer = '\\frac{' + Math.abs(numer) + '}{' + denom + '}';
 
         if (numer < 0) answer = '-' + answer;
