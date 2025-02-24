@@ -303,3 +303,73 @@ export const force_positive_coefs = {
     radio_buttons: [['yes','Yes'],['no','No']], 
     tooltip: 'Should all the coefficients in the equation be positive? (some equations may take up less space with this enabled)'
 };
+
+export const ratex_add_sub_form = {
+    type: 'radio_buttons',
+    code_name: 'ratex_add_sub_form',
+    display_name: 'Addition & Subtraction Forms',
+    radio_buttons: [['as_1','as_1'],
+                    ['as_2','as_2'],
+                    ['as_3','as_3'],
+                    ['as_4','as_4'],
+                    ['as_5','as_5'],
+                    ['as_6','as_6'],
+                    ['as_7','as_7'],
+                    ['as_8','as_8'],
+                    ['as_9','as_9'],
+                    ['as_10','as_10'],
+                    ['as_11','as_11'],
+                    ['as_12','as_12'],
+                    ['as_13','as_13'],
+                    ['as_14','as_14'],
+                    ['as_15','as_15']
+                ], 
+    tooltip: 'If the operation is addition or subtraction, what form should the initial expression be in?'
+};
+
+export const ratex_mul_div_form = {
+    type: 'radio_buttons',
+    code_name: 'ratex_mul_div_form',
+    display_name: 'Multiplication & Division Forms',
+    radio_buttons: [['md_1','md_1'],
+                    ['md_2','md_2'],
+                    ['md_3','md_3'],
+                    ['md_4','md_4'],
+                    ['md_5','md_5'],
+                    ['md_6','md_6'],
+                    ['md_7','md_7'],
+                    ['md_8','md_8'],
+                    ['md_9','md_9'],
+                    ['md_10','md_10'],
+                    ['md_11','md_11'],
+                    ['md_12','md_12'],
+                    ['md_13','md_13'],
+                    ['md_14','md_14'],
+                    ['md_15','md_15']
+                ], 
+    tooltip: 'If the operation is multiplication or division, what form should the initial expression be in?'
+};
+
+export const numer_form = {
+    type: 'radio_buttons',
+    code_name: 'numer_form',
+    display_name: 'Final Numerator Form',
+    radio_buttons: [['factored','Factored'],['expanded','Expanded']], 
+    tooltip: 'Should the numerator in the answer be factored (if possible) or expanded?'
+};
+
+export const denom_form = {
+    type: 'radio_buttons',
+    code_name: 'denom_form',
+    display_name: 'Final Denominator Form',
+    radio_buttons: [['factored','Factored'],['expanded','Expanded']], 
+    tooltip: 'Should the denominator in the answer be factored (if possible) or expanded?'
+};
+
+export const give_excluded_values = {
+    type: 'radio_buttons',
+    code_name: 'give_excluded_values',
+    display_name: 'State Excluded Values',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should the values that make the denominators zero (if any) be stated?'
+};
