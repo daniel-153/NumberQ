@@ -1,0 +1,1145 @@
+import * as H from '../helper-modules/gen-helpers.js';
+import * as PH from '../helper-modules/polynom-helpers.js';
+import * as SH from '../helper-modules/settings-helpers.js';
+import * as MH from '../helper-modules/math-string-helpers.js';
+
+function processSettings(formObj) {
+    let { ratex_add_sub_form, ratex_mul_div_form, general_operation_types, numer_form, denom_form, give_excluded_values } = formObj;
+    let error_locations = [];
+
+    // set the operation types if none were selected
+    if (general_operation_types === undefined) general_operation_types = ['add','multiply','divide'];
+
+    return {
+        ratex_add_sub_form,
+        ratex_mul_div_form,
+        general_operation_types,
+        numer_form,
+        denom_form,
+        give_excluded_values,
+        error_locations
+    }
+}
+
+export default function genRatEx(formObj) {
+    const settings = processSettings(formObj);
+    let {ratex_add_sub_form, ratex_mul_div_form, numer_form, denom_form, give_excluded_values} = settings;
+    let operation_type = H.randFromList(settings.general_operation_types);
+
+    const max_fact_size = 7; // (+ or -), defined globally instead of using a dynamic setting for ease of use
+    const nz_arr = H.removeFromArray(0, H.integerArray((-1)*max_fact_size, max_fact_size));
+
+    const add_sub = {
+        as_1: {
+            global_reqs(a,b) {
+                return (
+                    a > 0 &&
+                    b > 0
+                );
+            },
+            add_reqs(a,b) {
+                return (
+                    a !== (-b)
+                );
+            },
+            sub_reqs(a,b) {
+                return (
+                    a !== b
+                );
+            },
+            structure(a, b) {
+                return {
+                    num_A: [1],
+                    den_A: [a, 0],
+                    num_B: [1],
+                    den_B: [b, 0]
+                }
+            },
+            number_of_coefs: 2
+        },
+        as_2: {
+            global_reqs(a,b) {
+                return (
+                    true
+                );
+            },
+            add_reqs(a,b) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b) {
+                return (
+                    a !== b
+                );
+            },
+            structure(a, b) {
+                return {
+                    num_A: [1],
+                    den_A: [1, a],
+                    num_B: [1],
+                    den_B: [1, b]
+                }
+            },
+            number_of_coefs: 2
+        },
+        as_3: {
+            global_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            add_reqs(a,b,c,d) {
+                return (
+                    (a !== (-c) || (a*d) !== ((-1)*b*c))
+                );
+            },
+            sub_reqs(a,b,c,d) {
+                return (
+                    (a !== c || (a*d) !== (b*c))
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [a],
+                    den_A: [1, b],
+                    num_B: [c],
+                    den_B: [1, d]
+                }
+            },
+            number_of_coefs: 4
+        },
+        as_4: {
+            global_reqs(a,b,c,d,e) {
+                return (
+                    b > 0 &&
+                    e > 0
+                );
+            },
+            add_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d,e) {
+                return {
+                    num_A: [a],
+                    den_A: [b, c],
+                    num_B: [d],
+                    den_B: [e, 0]
+                }
+            },
+            number_of_coefs: 5
+        },
+        as_5: {
+            global_reqs(a,b,c,d,e,f) {
+                return (
+                    b > 0 &&
+                    e > 0
+                );
+            },
+            add_reqs(a,b,c,d,e,f) {
+                return (
+                    ((a*e) !== ((-1)*b*d) || (a*f) !== ((-1)*c*d))
+                );
+            },
+            sub_reqs(a,b,c,d,e,f) {
+                return (
+                    ((a*e) !== (b*d) || (a*f) !== (c*d))
+                );
+            },
+            structure(a,b,c,d,e,f) {
+                return {
+                    num_A: [a],
+                    den_A: [b, c],
+                    num_B: [d],
+                    den_B: [e, f]
+                }
+            },
+            number_of_coefs: 6
+        },
+        as_6: {
+            global_reqs(a,b,c,d,e,f,g,h) {
+                return (
+                    c > 0 &&
+                    g > 0
+                );
+            },
+            add_reqs(a,b,c,d,e,f,g,h) {
+                return (
+                    ((a*g) !== ((-1)*c*e) || (a*h + b*g + c*f + d*e !== 0) || (b*h) !== ((-1)*d*f))
+                );
+            },
+            sub_reqs(a,b,c,d,e,f,g,h) {
+                return (
+                    ((a*g) !== (c*e) || (a*h + b*g) !== (c*f + d*e) || (b*h) !== (d*f))
+                );
+            },
+            structure(a,b,c,d,e,f,g,h) {
+                return {
+                    num_A: [a, b],
+                    den_A: [c, d],
+                    num_B: [e, f],
+                    den_B: [g, h]
+                }
+            },
+            number_of_coefs: 8
+        },
+        as_7: {
+            global_reqs(a,b,c,d,e,f) {
+                return (
+                    c > 0 &&
+                    f > 0
+                );
+            },
+            add_reqs(a,b,c,d,e,f) {
+                return (
+                    (a !== ((-1)*c*e) || b !== ((-1)*d*e))
+                );
+            },
+            sub_reqs(a,b,c,d,e,f) {
+                return (
+                    (a !== (c*e) || b !== (d*e))
+                );
+            },
+            structure(a,b,c,d,e,f) {
+                return {
+                    num_A: [a, b],
+                    den_A: [c, d],
+                    num_B: [e],
+                    den_B: [f]
+                }
+            },
+            number_of_coefs: 6
+        },
+        as_8: {
+            global_reqs(a,d,e,f,A) {
+                return (
+                    true
+                );
+            },
+            add_reqs(a,d,e,f,A) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,d,e,f,A) {
+                return (
+                    true
+                );
+            },
+            structure(a,d,e,f,A) {
+                return {
+                    num_A: [a],
+                    den_A: [1, e + A, e*A],
+                    num_B: [d],
+                    den_B: [1, e]
+                }
+            },
+            number_of_coefs: 5,
+            transformed_coefs: ['b','c']
+        },
+        as_9: {
+            global_reqs(a,b,c) {
+                return (
+                    b > 0
+                );
+            },
+            add_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c) {
+                return {
+                    num_A: [1, a],
+                    den_A: [b, c, 0],
+                    num_B: [d],
+                    den_B: [b, c]
+                }
+            },
+            number_of_coefs: 3
+        },
+        as_10: {
+            global_reqs(a,b,c,d,e) {
+                return (
+                    b > 0 &&
+                    e > 0
+                );
+            },
+            add_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d,e) {
+                return {
+                    num_A: [a],
+                    den_A: [b, c, 0],
+                    num_B: [d],
+                    den_B: [e, 0]
+                }
+            },
+            number_of_coefs: 5
+        },
+        as_11: {
+            global_reqs(a,d,e,A) {
+                return (
+                    true
+                );
+            },
+            add_reqs(a,d,e,A) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,d,e,A) {
+                return (
+                    true
+                );
+            },
+            structure(a,d,e,A) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, e + A, e*A],
+                    num_B: [1, d],
+                    den_B: [1, e]
+                }
+            },
+            number_of_coefs: 4,
+            transformed_coefs: ['b','c']
+        },
+        as_12: {
+            global_reqs(a,b,c,d,e) {
+                return (
+                    e > 0
+                );
+            },
+            add_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d,e) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, b, c],
+                    num_B: [d],
+                    den_B: [e]
+                }
+            },
+            number_of_coefs: 5
+        },
+        as_13: {
+            global_reqs(a,b,c,d) {
+                return (
+                    b > 0 &&
+                    d > 0
+                );
+            },
+            add_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [a],
+                    den_A: [b, 0, 0],
+                    num_B: [c],
+                    den_B: [d, 0]
+                }
+            },
+            number_of_coefs: 4
+        },
+        as_14: {
+            global_reqs(a,b,c) {
+                return (
+                    b > 0 &&
+                    d > 0
+                );
+            },
+            add_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c) {
+                return {
+                    num_A: [a],
+                    den_A: [1, b],
+                    num_B: [c],
+                    den_B: [1, -b]
+                }
+            },
+            number_of_coefs: 3
+        },
+        as_15: {
+            global_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            add_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            sub_reqs(a,b,c) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, 0, (-1)*b**2],
+                    num_B: [1, c],
+                    den_B: [1, b]
+                }
+            },
+            number_of_coefs: 3
+        },
+    };
+
+    const mul_div = {
+        md_1: {
+            global_reqs(a,b,c,d) {
+                return (
+                    d > 0
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [a],
+                    den_A: [1, b],
+                    num_B: [1, c],
+                    den_B: [d]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_2: {
+            global_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [a],
+                    den_A: [1, b],
+                    num_B: [c],
+                    den_B: [1, d]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_3: {
+            global_reqs(a,b,c,d) {
+                return (
+                    b > 0
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    d !== a &&
+                    d !== c
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    c !== a &&
+                    d !== d
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [1, a],
+                    den_A: [b],
+                    num_B: [1, c],
+                    den_B: [1, d]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_4: {
+            global_reqs(a,b,c,d) {
+                return (
+                    d > 0
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    b !== a &&
+                    b !== c
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, b],
+                    num_B: [1, c],
+                    den_B: [d]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_5: {
+            global_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, b],
+                    num_B: [1, c],
+                    den_B: [1, d]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_6: {
+            global_reqs(a,b,c,d) {
+                return (
+                    b > 0 &&
+                    d > 0
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [a, 0],
+                    den_A: [b],
+                    num_B: [c],
+                    den_B: [d, 0]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_7: {
+            global_reqs(a,b,c,d) {
+                return (
+                    b > 0 &&
+                    d > 0
+                );
+            },
+            mul_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d) {
+                return {
+                    num_A: [a],
+                    den_A: [b, 0],
+                    num_B: [c],
+                    den_B: [d, 0]
+                }
+            },
+            number_of_coefs: 4
+        },
+        md_8: {
+            global_reqs(a,d,e,A,B) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(a,d,e,A,B) {
+                return (
+                    A === d
+                );
+            },
+            div_reqs(a,d,e,A,B) {
+                return (
+                    A === e
+                );
+            },
+            structure(a,d,e,A,B) {
+                return {
+                    num_A: [a],
+                    den_A: [1, e + A, e*A],
+                    num_B: [1, d],
+                    den_B: [1, e]
+                }
+            },
+            number_of_coefs: 5,
+            transformed_coefs: ['b','c']
+        },
+        md_9: {
+            global_reqs(a,d,e,A,B) {
+                return (
+                    e > 0
+                );
+            },
+            mul_reqs(a,d,e,A,B) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,d,e,A,B) {
+                return (
+                    A === a
+                );
+            },
+            structure(a,d,e,A,B) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, e + A, e*A],
+                    num_B: [1, d],
+                    den_B: [1, e]
+                }
+            },
+            number_of_coefs: 5,
+            transformed_coefs: ['b','c']
+        },
+        md_10: {
+            global_reqs(a,d,e,A,B) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(a,d,e,A,B) {
+                return (
+                    (A === a || A === d)
+                );
+            },
+            div_reqs(a,d,e,A,B) {
+                return (
+                    (A === a || A === e)
+                );
+            },
+            structure(a,d,e,A,B) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, e + A, e*A],
+                    num_B: [1, d],
+                    den_B: [e]
+                }
+            },
+            number_of_coefs: 5,
+            transformed_coefs: ['b','c']
+        },
+        md_11: {
+            global_reqs(a,f,A,B,C,D) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(a,f,A,B,C,D) {
+                return (
+                    (A === C || A === a || C === f)
+                );
+            },
+            div_reqs(a,f,A,B,C,D) {
+                return (
+                    ((A === a && C === f) || (C === a && A === f))
+                );
+            },
+            structure(a,f,A,B,C,D) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, A + B, A*B],
+                    num_B: [1, C + D, C*D],
+                    den_B: [1, f]
+                }
+            },
+            number_of_coefs: 6,
+            transformed_coefs: ['b','c','d','e']
+        },
+        md_12: {
+            global_reqs(a,d,A,B,C,D) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(a,d,A,B,C,D) {
+                return (
+                    ((A === a && C === d) || (C === a && A === d))
+                );
+            },
+            div_reqs(a,d,A,B,C,D) {
+                return (
+                    (A === C || A === a || C === d)
+                );
+            },
+            structure(a,d,A,B,C,D) {
+                return {
+                    num_A: [1, a],
+                    den_A: [1, A + B, A*B],
+                    num_B: [1, d],
+                    den_B: [1, C + D, C*D]
+                }
+            },
+            number_of_coefs: 6,
+            transformed_coefs: ['b','c','e','f']
+        },
+        md_13: {
+            global_reqs(c,A,B,C,D,E,F) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(c,A,B,C,D,E,F) {
+                let switcher = H.randInt(0,2);
+    
+                if (switcher === 0) return (C === c && A === E && F !== D && F !== B);
+                else if (switcher === 1) return (C === E && A === F && c !== B && c !== D);
+                else return (A === F && C === c && E !== B && E !== D);
+            },
+            div_reqs(c,A,B,C,D,E,F) {
+                let switcher = H.randInt(0,2);
+    
+                if (switcher === 0) return (A === c && B === C && D !== E && D !== F);
+                else if (switcher === 1) return (E === c && A === D && C !== B && C !== F);
+                else return (E === C && A === D && c !== B && c !== F);
+            },
+            structure(c,A,B,C,D,E,F) {
+                return {
+                    num_A: [1, A + B, A*B],
+                    den_A: [1, c],
+                    num_B: [1, C + D, C*D],
+                    den_B: [1, E + F, E*F]
+                }
+            },
+            number_of_coefs: 7,
+            transformed_coefs: ['a','b','d','e','f','g']
+        },
+        md_14: {
+            global_reqs(A,B,C,D,E,F,G,H) {
+                return (
+                    true
+                );
+            },
+            mul_reqs(A,B,C,D,E,F,G,H) {
+                let switcher = H.randInt(0,3);
+    
+                if (switcher === 0) return (A == C && E === G);
+                else if (switcher === 1) return (A === C && B === G);
+                else if (switcher === 2) return (F === C && E === G);
+                else return (E === C && A === G);
+            },
+            div_reqs(A,B,C,D,E,F,G,H) {
+                let switcher = H.randInt(0,3);
+    
+                if (switcher === 0) return (A === C && G === E);
+                else if (switcher === 1) return (A === C && B === E);
+                else if (switcher === 2) return (H === C && G === E);
+                else return (H === C && B === E);
+            },
+            structure(A,B,C,D,E,F,G,H) {
+                return {
+                    num_A: [1, A + B, A*B],
+                    den_A: [1, C + D, C*D],
+                    num_B: [1, E + F, E*F],
+                    den_B: [1, G + H, G*H]
+                }
+            },
+            number_of_coefs: 8,
+            transformed_coefs: ['a','b','c','d','e','f','g','h']
+        },
+        md_15: {
+            global_reqs(a,b,c,d,e) {
+                return (
+                    b > 0
+                );
+            },
+            mul_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d,e) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d,e) {
+                return {
+                    num_A: [a, 0],
+                    den_A: [b, c, 0],
+                    num_B: [1, d],
+                    den_B: [1, e]
+                }
+            },
+            number_of_coefs: 5
+        },
+        md_16: {
+            global_reqs(a,b,c,d,e,f) {
+                return (
+                    c > 0
+                );
+            },
+            mul_reqs(a,b,c,d,e,f) {
+                return (
+                    true
+                );
+            },
+            div_reqs(a,b,c,d,e,f) {
+                return (
+                    true
+                );
+            },
+            structure(a,b,c,d,e,f) {
+                return {
+                    num_A: [a, b, 0],
+                    den_A: [c, d, 0],
+                    num_B: [1, e],
+                    den_B: [1, f]
+                }
+            },
+            number_of_coefs: 6
+        }
+    };
+
+    // pull out the object for the prompt that is being used and the apropriate check function
+    let current_Q_obj; // current question object ('as_1: {}', 'md_5: {}', etc)
+    let global_reqs = current_Q_obj.global_reqs; // check the reqs for the prompt (which are needed regaurdless of the operation)
+    let operation_reqs; // check the reqs specific to the operation (whether add, sub, mul, or div)
+    let operation_symbol;
+    if (operation_type === 'add') {
+        current_Q_obj = add_sub[ratex_add_sub_form];
+        operation_reqs = current_Q_obj.add_reqs;
+        operation_symbol = '+';
+    }
+    else if (operation_type === 'subtract') {
+        current_Q_obj = add_sub[ratex_add_sub_form];
+        operation_reqs = current_Q_obj.sub_reqs;
+        operation_symbol = '-';
+    }
+    else if (operation_type === 'multiply') {
+        current_Q_obj = mul_div[ratex_mul_div_form];
+        operation_reqs = current_Q_obj.mul_reqs;
+        operation_symbol = '\\cdot';
+    }
+    else if (operation_type === 'divide') {
+        current_Q_obj = mul_div[ratex_mul_div_form];
+        operation_reqs = current_Q_obj.div_reqs;
+        operation_symbol = '\\div';
+    }
+
+    
+    // first, we need to find a set of coefs that is valid for the given template and operation
+    const number_of_coefs = current_Q_obj.number_of_coefs; 
+    let sol_is_found = false;
+    let current_coef_arr; // the coef array of the current iteration
+    let final_coef_arr; // the first valid coef array we can find
+    while (!sol_is_found) { {}{}{}{}{}{}{}{}{}{} // !!!!!!IMPORTANT!!!!!!!: you should add a max number of iterations here to be safe
+        current_coef_arr = [];
+
+        for (let i = 0; i < number_of_coefs; i++) {
+            current_coef_arr[i] = H.randFromList(nz_arr);
+        }
+        
+        if (operation_reqs(...current_coef_arr) && global_reqs(...current_coef_arr)) {
+            final_coef_arr = [...current_coef_arr];
+            sol_is_found = true;
+        }
+    }
+
+
+    // Next, we can use the valid coefs we got to get a prompt in math and calculate a template for the answer
+    let prompt_template = current_Q_obj.structure(...final_coef_arr);
+    let num_A = prompt_template.num_A;
+    let den_A = prompt_template.den_A;
+    let num_B = prompt_template.num_B;
+    let den_B = prompt_template.den_B;
+    const final_prompt = MH.fraction(PH.polyTemplateToMath(num_A), PH.polyTemplateToMath(den_A)) + operation_symbol + MH.fraction(PH.polyTemplateToMath(num_B), PH.polyTemplateToMath(den_B));
+
+    // helper function for this specific use case (degree 0 through 2) {not generalizable}
+    function getPolynomZeros(poly_template) { 
+        if (poly_template.length === 3) { // quadratic (use QF)
+            let [a, b, c] = poly_template;
+
+            return [(-b + Math.sqrt(b**2 - 4*a*c))/2*a, (-b - Math.sqrt(b**2 - 4*a*c))/2*a];
+        }
+        else if (poly_template.length === 2) { // binomial (solve equation)
+            let [a, b] = poly_template;
+
+            return [(-b)/a];
+        }
+        else if (poly_template.length === 1) { // constant (not possible to have zeros (besides y=0, but that's not possible here))
+            return [];
+        }
+        else return null;
+    }
+
+    // find the excluded values and avoid repeats
+    let den_A_zeros = getPolynomZeros(den_A);
+    let den_B_zeros = getPolynomZeros(den_B);
+    const excluded_values = [...new Set(den_A_zeros.concat(den_B_zeros))];
+
+    // do the actual operation on the two rational expressions (creating a raw answer in inter_numer and inter_denom)
+    let inter_numer, inter_denom; // the final num and denom WITHOUT any common factors removed
+    if (operation_type === 'add') {
+        inter_numer = PH.addPolynomials(PH.multiplyPolynomials(num_A, den_B),PH.multiplyPolynomials(den_A, num_B));
+        inter_denom = PH.multiplyPolynomials(den_A, den_B);
+    }
+    else if (operation_type === 'subtract') {
+        inter_numer = PH.addPolynomials(PH.multiplyPolynomials(num_A, den_B),PH.multiplyArray(PH.multiplyPolynomials(den_A, num_B), (-1)));
+        inter_denom = PH.multiplyPolynomials(den_A, den_B);
+    }
+    else if (operation_type === 'multiply') {
+        inter_numer = PH.multiplyPolynomials(num_A, num_B);
+        inter_denom = PH.multiplyPolynomials(den_A, den_B);
+    }
+    else if (operation_type === 'divide') {
+        inter_numer = PH.multiplyPolynomials(num_A, den_B);
+        inter_denom = PH.multiplyPolynomials(den_A, num_B);
+    }
+
+    // extract the signed GCFs from the intermediate numer and denom
+    let num_gcf_sign, den_gcf_sign; // the sign (+ or -) of the gcf in the numer and denom
+    let num_GCF, den_GCF; // the signed (positive or negative) GCFs of the numer and denom
+    if (inter_numer[0] > 0) num_gcf_sign = 1;
+    else if (inter_numer[0] < 0) num_gcf_sign = -1;
+    num_GCF = PH.gcfOfArray(inter_numer) * num_gcf_sign;
+    inter_numer = PH.divideArray(inter_numer, num_GCF);
+
+    if (inter_denom[0] > 0) den_gcf_sign = 1;
+    else if (inter_denom < 0) den_gcf_sign = -1;
+    den_GCF = PH.gcfOfArray(inter_denom) * den_gcf_sign;
+    inter_denom = PH.divideArray(inter_denom, den_GCF);
+
+    let gcf_fraction = PH.simplifyFraction(num_GCF, den_GCF); // num_GCF over den_GCF
+    num_GCF = gcf_fraction.numer;
+    den_GCF = gcf_fraction.denom;
+
+    // create math-string version of the two GCFs above (for the case when we put them directly in front of a '(' or an 'x'))
+    let num_GCF_string, den_GCF_string;
+    if (num_GCF === 1) num_GCF_string = '';
+    else if (num_GCF === -1) num_GCF_string = '-';
+    else num_GCF_string = num_GCF + '';
+    if (den_GCF === 1) den_GCF_string = '';
+    else if (den_GCF === -1) den_GCF_string = '-';
+    else den_GCF_string = den_GCF + '';
+
+
+    // now we need to remove any common factors between the numer and denom
+    let denom_factors = PH.factorPolynomial(inter_denom);
+    let final_denom_factors = []; // the factors of the denom that DID NOT divide out
+    for (let i = 0; i < denom_factors.length; i++) {
+        if (PH.longDivision(inter_numer, denom_factors[i]) !== null) { // factor divides out
+            inter_numer = PH.longDivision(inter_numer, denom_factors[i]).quotient;
+        }
+        else { // factor does NOT divide out
+            final_denom_factors.push(denom_factors[i]);
+        }
+    }
+    inter_denom = PH.expandPolyFactors(final_denom_factors); // re-expand the denom
+
+    // the next step is to put the numer and denom in math and decide whether they are factored or not
+    let final_numer; // currently the numer is an unfactored template
+    if (numer_form === 'factored') {
+        if (inter_numer.length >= 3) { // quadratic or higher 
+            if (PH.factorPolynomial(inter_numer) !== null) { // it factors
+                final_numer = num_GCF_string + PH.factorListToMath(PH.factorPolynomial(inter_numer));
+            }
+            else { // it does NOT factor (we still pull out a GCF if possible)
+                if (num_GCF_string !== '') { // make sure the gcf isn't =to 1 (in which case we wouldn't factor it out)
+                    final_numer = num_GCF_string + '(' + PH.polyTemplateToMath(inter_numer) + ')';
+                }
+                else final_numer = PH.polyTemplateToMath(inter_numer);
+            }
+        }
+        else if (inter_numer.length === 2) { // binomial (linear)
+            if (num_GCF_string !== '') { // make sure the gcf isn't =to 1 (in which case we wouldn't factor it out)
+                final_numer = num_GCF_string + '(' + PH.polyTemplateToMath(inter_numer) + ')';
+            }
+            else final_numer = PH.polyTemplateToMath(inter_numer);
+        }
+        else if (inter_numer.length === 1) { // just a number (constant)
+            final_numer = inter_numer[0] * num_GCF;
+        }
+    }
+    else if (numer_form === 'expanded') {
+        if (inter_numer.length >= 3) { // quadratic or higher 
+            final_numer = PH.polyTemplateToMath(PH.multiplyArray(inter_numer, num_GCF));
+        }
+        else if (inter_numer.length === 2) { // binomial (linear)
+            final_numer = PH.polyTemplateToMath(PH.multiplyArray(inter_numer, num_GCF));
+        }
+        else if (inter_numer.length === 1) { // just a number (constant)
+            final_numer = inter_numer[0] * num_GCF;
+        }
+    }
+
+    let final_denom; // currently the denom is also an unfactored template (like the numer)
+    if (denom_form === 'factored') {
+        if (inter_denom.length >= 3) { // quadratic or higher 
+            if (PH.factorPolynomial(inter_denom) !== null) { // it factors
+                final_denom = den_GCF_string + PH.factorListToMath(PH.factorPolynomial(inter_denom));
+            }
+            else { // it does NOT factor (we still pull out a GCF if possible)
+                if (den_GCF_string !== '') { // make sure the gcf isn't =to 1 (in which case we wouldn't factor it out)
+                    final_denom = den_GCF_string + '(' + PH.polyTemplateToMath(inter_denom) + ')';
+                }
+                else final_denom = PH.polyTemplateToMath(inter_denom);
+            }
+        }
+        else if (inter_denom.length === 2) { // binomial (linear)
+            if (den_GCF_string !== '') { // make sure the gcf isn't =to 1 (in which case we wouldn't factor it out)
+                final_denom = den_GCF_string + '(' + PH.polyTemplateToMath(inter_denom) + ')';
+            }
+            else final_denom = PH.polyTemplateToMath(inter_denom);
+        }
+        else if (inter_denom.length === 1) { // just a number (constant)
+            final_denom = inter_denom[0] * den_GCF;
+        }
+    }
+    else if (denom_form === 'expanded') {
+        if (inter_denom.length >= 3) { // quadratic or higher 
+            final_denom = PH.polyTemplateToMath(PH.multiplyArray(inter_denom, den_GCF));
+        }
+        else if (inter_denom.length === 2) { // binomial (linear)
+            final_denom = PH.polyTemplateToMath(PH.multiplyArray(inter_denom, den_GCF));
+        }
+        else if (inter_denom.length === 1) { // just a number (constant)
+            final_denom = inter_denom[0] * den_GCF;
+        }
+    }
+    // combine the final numer and denom into the fraction
+    let final_answer = MH.fraction(final_numer, final_denom);
+    
+    // there's a small chance that both the numer and denom are numbers; in this case, we need to check if the expression reduces to a whole number
+    numerical_numer = Number(final_numer);
+    numerical_denom = Number(final_denom);
+    if (!Number.isNaN(numerical_numer) && !Number.isNaN(Number(numerical_denom))) {
+        let num_over_den = PH.simplifyFraction(numerical_numer, numerical_denom);
+
+        if (num_over_den.denom === 1) final_answer = num_over_den.numer;
+    }
+
+    // give the excluded values if specified (and there actually are any)
+    let excluded_value_string = '';
+    if (give_excluded_values === 'yes' && excluded_values.length !== 0) {
+        excluded_value_string = '; \\quad x \\neq ' + excluded_values.join(',');
+    }
+    final_answer += excluded_value_string; // the string will be empty if we don't give excluded values 
+
+    // don't need to actually get any error locations because no 'free response' fields
+    let error_locations = []; // but still ensure it's not undefined
+
+    return {
+        question: final_prompt,
+        answer: final_answer,
+        settings: settings,
+        error_locations: error_locations
+    };
+}
+
+export const settings_fields = [
+    'ratex_add_sub_form',
+    'ratex_mul_div_form',
+    'general_operation_types',
+    'numer_form',
+    'denom_form',
+    'give_excluded_values'
+];
+
+export function get_presets() {
+    return {
+        ratex_add_sub_form: 'as_1', // need a way to select all
+        ratex_mul_div_form: 'md_1', // need a way to select all
+        general_operation_types: ['add','multiply'],
+        numer_form: 'factored',
+        denom_form: 'factored',
+        give_excluded_values: 'no'
+    };
+}
+
+// Note: remember to set a iteration limit on the while loop and set up a backup json like genLinEq
+
+const settings = {
+    ratex_add_sub_form: 'as_5',
+    ratex_mul_div_form: 'md_8',
+    general_operation_types: ['add','subtract','multiply','divide'],
+    numer_form: H.randFromList(['factored','expanded']),
+    denom_form: H.randFromList(['factored','expanded']),
+    give_excluded_values: 'yes'
+}
+
+
+
+
