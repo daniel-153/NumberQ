@@ -1,6 +1,7 @@
 import * as H from '../helper-modules/gen-helpers.js';
 import * as PH from '../helper-modules/polynom-helpers.js';
 import * as SH from '../helper-modules/settings-helpers.js';
+import * as MH from '../helper-modules/math-string-helpers.js';
 
 function processSettings(formObj) {
     let { solution_size_range, lin_eq_equation_form, solution_form, variable_letter, flip_equation, force_positive_coefs } = formObj;
@@ -23,55 +24,6 @@ function processSettings(formObj) {
 export default function genLinEq(formObj) {
     const settings = processSettings(formObj);
     let { solution_size_range, lin_eq_equation_form, solution_form, variable_letter, flip_equation, force_positive_coefs } = settings;
-
-    // helpers for verifying and constucting the equations
-    const MH = { 
-        middle_const(a) { // a constant term in the middle of an expression
-            if (a > 0) a = '+' + a;
-    
-            return a + '';
-        },
-        start_frac(a, b) { // assumes the fraction is non-zero, non-undefined, and reduced
-            if (a < 0) return '-\\frac{' + (-1)*a + '}{' + b + '}';
-            return '\\frac{' + a + '}{' + b + '}';
-        },
-        middle_frac(a, b) {
-            if (a < 0) return '-\\frac{' + (-1)*a + '}{' + b + '}';
-            return '+\\frac{' + a + '}{' + b + '}';
-        },
-        start_var(a) { // a variable term at the start of an expression
-            if (a === 1) a = '';
-            else if (a === -1) a = '-';
-    
-            return a + ''; 
-        },
-        middle_var(a) { // a variable term in the middle of an expression
-            if (a === 1) a = '+';
-            else if (a === -1) a  = '-';
-            else if (a > 0) a = '+' + a;
-    
-            return a + '';
-        },
-        start_denom(a, numer_expression) { // an expression with a numerical denom like x/a or sin(x)/a
-            let k = ''; // this is what will be in front of the frac (like k(x/a))
-            if (a < 0) { 
-                a = (-1)*a;
-                k = '-'
-            }
-    
-            return k + '\\frac{' + numer_expression + '}{' + a + '}';
-        },
-        middle_denom(a, numer_expression) {
-            let k; // this is what will be in front of the frac (like k(x/a))
-            if (a < 0) { 
-                a = (-1)*a;
-                k = '-'
-            }
-            else k = '+';
-    
-            return k + '\\frac{' + numer_expression + '}{' + a + '}';
-        }
-    };
     
     // equation templates, solutions and requirements
     const equations = {
