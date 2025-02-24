@@ -103,6 +103,10 @@ export function multiplyArray(array, factor) {
     return array.map(num => num * factor);
 } // Multiply each entry of the array by the given factor
 
+export function divideArray(array, divisor) {
+    return array.map(num => num / divisor);
+} // Divide each entry of the array by the given divisor (meant for the case where you need to divide out a GCF and you already know all entries are divisible)
+
 export function GCF(a, b, c = null) {
     // Input verification: Check if all inputs are integers
     const isValidInteger = (num) => Number.isInteger(num);
@@ -388,8 +392,7 @@ export function longDivision(p1, p2) {
 
     // Check if remainder is all zeros
     if (!remainder.slice(deg1 - deg2 + 1).every(coef => coef === 0)) {
-        console.error("Error: The division does not result in a polynomial with no remainder.");
-        return null;
+        return null; // indicate that there is a remainder (the division wasn't equal like it was supposed to be)
     }
 
     return quotient;
@@ -490,3 +493,149 @@ export function simplifySQRT(n) {
 
     return {numberInFront, numberUnderRoot};
 }
+
+export function gcfOfArray(array) {
+    // Helper function to find GCF of two numbers using the Euclidean algorithm
+    function gcf(a, b) {
+        while (b !== 0) {
+            [a, b] = [b, a % b];
+        }
+        return a;
+    }
+
+    // Input validation
+    if (!Array.isArray(array) || array.length === 0) {
+        console.error("Input must be a non-empty array of integers.");
+        return null;
+    }
+    
+    for (let num of array) {
+        if (!Number.isInteger(num)) {
+            console.error(`Invalid input: ${num}. All elements must be integers.`);
+            return null;
+        }
+    }
+
+    // Compute GCF using absolute values
+    return array.map(Math.abs).reduce((acc, num) => gcf(acc, num));
+}
+
+export function listFactors(positive_int) {
+    if (!Number.isInteger(positive_int) || positive_int <= 0) {
+        console.error("Input must be a positive integer.");
+        return [];
+    }
+
+    let factor_list = new Set(); // Using a set to avoid duplicates
+    let sqrt = Math.floor(Math.sqrt(positive_int));
+
+    for (let i = 1; i <= sqrt; i++) {
+        if (positive_int % i === 0) {
+            factor_list.add(i);               // First factor
+            factor_list.add(positive_int / i); // Pair factor
+        }
+    }
+
+    return [...factor_list].sort((a, b) => a - b); // Convert set to sorted array
+}
+
+export function factorPolynomial(poly_template) {
+    let factor_list = []; // the list of factors [[1,2],[1,1]...] (these are poly templates, so there zeros are -b/a)
+    
+    // remove any '(x-0)' factors first (because they break the rational root theorem logic)
+    while (poly_template[poly_template.length - 1] === 0) {
+        factor_list.push([1, 0]);
+        poly_template.pop(); // 'divide' out the zero factor by removing the last element of the poly template
+    }
+
+    // if we already are at length = 1 at this point, all of the factors have been found and we can return
+    if (poly_template.length === 1) return factor_list;
+
+    // helper function that can see if decimal numbers are roots of the polynomial
+    function isRoot(poly, x) {
+        const EPSILON = 1e-9; // Standard tolerance for floating-point precision
+    
+        let result = 0;
+        let power = 1;
+    
+        for (let i = poly.length - 1; i >= 0; i--) {
+            result += poly[i] * power;
+            power *= x;
+        }
+    
+        return Math.abs(result) < EPSILON; // Accept as root if close enough to zero
+    }
+
+    // get all of the P,Q possibilities
+    let const_coef_facts = listFactors(Math.abs(poly_template[poly_template.length - 1])); // P
+    let lead_coef_facts = listFactors(poly_template[0]); // Q
+    const_coef_facts = const_coef_facts.concat(multiplyArray(const_coef_facts, (-1))); // combine with all the negative factors to get (+ or -)
+    lead_coef_facts = lead_coef_facts.concat(multiplyArray(lead_coef_facts, (-1))); // combine with all the negative factors to get (+ or -)
+    
+    // keep track of every P/Q that zeroed the polynomial (not necessarily distint -> the are likely repeats)
+    let P_Q_pairs = [];
+    for (let i = 0; i < const_coef_facts.length; i++) {
+        for (let j = 0; j < lead_coef_facts.length; i++) {
+            if (isRoot(poly_template, const_coef_facts[i] / lead_coef_facts[j])) P_Q_pairs.push([const_coef_facts[i],lead_coef_facts[j]]);
+        }
+    }
+
+    // if we didn't find a single rational root, return null to indicate this
+    if (P_Q_pairs.length === 0) return null;
+
+    let current_frac;
+    let factor_set = new Set();
+    for (let i = 0; i < P_Q_pairs.length; i++) {
+        current_frac = simplifyFraction((-1)*P_Q_pairs[i][0], P_Q_pairs[i][1]);
+        current_frac = current_frac.numer + '/' + current_frac.denom;
+        
+        factor_set.add(current_frac); // ensures no repeat factors
+    }
+    
+    // store all the factors and use the while-loop to account for multiplicity
+    factor_set = [...factor_set]; // convert back to an array
+    let current_a, current_b;
+    for (let i = 0; i < factor_set.length; i++) {
+        [current_a, current_b] = factor_set[i].split('/');
+        current_a = Number(current_a);
+        current_b = Number(current_b);
+
+        while (longDivision(poly_template, [current_a, current_b]) !== null) {
+            factor_list.push([current_a, current_b]);
+            poly_template = longDivision(poly_template, [current_a, current_b]).quotient;
+        }
+    }
+
+    return factor_list;
+} // if you know a polynomial is completely made of of integer binomial factors (ax+b), you can use this to factor it (built for genRatEx)
+
+export function expandPolyFactors(factor_array) {
+    let running_product = factor_array[0];
+
+    for (let i = 1; i < factor_array.length; i++) {
+        running_product = multiplyPolynomials(running_product, factor_array[i]);
+    }
+
+    return running_product;
+} // function to expand factors like [[1,2],[3,1],[1,-1]] into a polynomial
+
+export function factorListToMath(factor_array) {
+    // first extract any 0 factors x^n(ax+b)(bx+c)...
+    let zero_factors = factor_array.filter(factor => factor[1] === 0);
+    let leading_x_n_factor = ''; // the x^n at the front (if it exists)
+    if (zero_factors.length === 1) {
+        leading_x_n_factor = 'x';
+    }
+    else if (zero_factors.length > 1) {
+        leading_x_n_factor = 'x^{' + zero_factors.length + '}';
+    }
+
+    let running_string = '';
+    for (let i = 0; i < factor_array.length; i++) {
+        if (factor_array[i][1] !== 0) { // add the factor as long as it's not zero (in which case we already dealt with it)
+            running_string += '(' + polyTemplateToMath(factor_array[i]) + ')';
+        }
+    }
+
+    return leading_x_n_factor + running_string;
+} // function to turn factors like [[1,2],[3,1],[1,-1]] into a math expression like (x+2)(3x+1)(x-1) {must be degree 2 or higher}
