@@ -26,6 +26,15 @@ export default function genRatEx(formObj) {
     let {ratex_add_sub_form, ratex_mul_div_form, numer_form, denom_form, give_excluded_values} = settings;
     let operation_type = H.randFromList(settings.general_operation_types);
 
+    // deal with 'all' from add-sub or mul-div
+    if (ratex_add_sub_form === 'all_add_sub') {
+        ratex_add_sub_form = H.randFromList(['as_1','as_2','as_3','as_4','as_5','as_6','as_7','as_8','as_9','as_10','as_11','as_12','as_13','as_14','as_15']);
+    }
+    if (ratex_mul_div_form === 'all_mul_div') {
+        ratex_mul_div_form = H.randFromList(['md_1','md_2','md_3','md_4','md_5','md_6','md_7','md_8','md_9','md_10','md_11','md_12','md_13','md_14','md_15']);
+    }
+
+
     const max_fact_size = 7; // (+ or -), defined globally instead of using a dynamic setting for ease of use
     const nz_arr = H.removeFromArray(0, H.integerArray((-1)*max_fact_size, max_fact_size));
 
@@ -194,7 +203,8 @@ export default function genRatEx(formObj) {
             global_reqs(a,b,c,d,e,f) {
                 return (
                     c > 0 &&
-                    f > 0
+                    f > 0 &&
+                    f !== 1
                 );
             },
             add_reqs(a,b,c,d,e,f) {
@@ -245,22 +255,22 @@ export default function genRatEx(formObj) {
             transformed_coefs: ['b','c']
         },
         as_9: {
-            global_reqs(a,b,c) {
+            global_reqs(a,b,c,d) {
                 return (
                     b > 0
                 );
             },
-            add_reqs(a,b,c) {
+            add_reqs(a,b,c,d) {
                 return (
                     true
                 );
             },
-            sub_reqs(a,b,c) {
+            sub_reqs(a,b,c,d) {
                 return (
                     true
                 );
             },
-            structure(a,b,c) {
+            structure(a,b,c,d) {
                 return {
                     num_A: [1, a],
                     den_A: [b, c, 0],
@@ -268,7 +278,7 @@ export default function genRatEx(formObj) {
                     den_B: [b, c]
                 }
             },
-            number_of_coefs: 3
+            number_of_coefs: 4
         },
         as_10: {
             global_reqs(a,b,c,d,e) {
@@ -325,30 +335,32 @@ export default function genRatEx(formObj) {
             transformed_coefs: ['b','c']
         },
         as_12: {
-            global_reqs(a,b,c,d,e) {
+            global_reqs(a,d,e,A,B) {
                 return (
-                    e > 0
+                    e > 0 &&
+                    e !== 1
                 );
             },
-            add_reqs(a,b,c,d,e) {
-                return (
-                    true
-                );
-            },
-            sub_reqs(a,b,c,d,e) {
+            add_reqs(a,d,e,A,B) {
                 return (
                     true
                 );
             },
-            structure(a,b,c,d,e) {
+            sub_reqs(a,d,e,A,B) {
+                return (
+                    true
+                );
+            },
+            structure(a,d,e,A,B) {
                 return {
                     num_A: [1, a],
-                    den_A: [1, b, c],
+                    den_A: [1, A + B, A*B],
                     num_B: [d],
                     den_B: [e]
                 }
             },
-            number_of_coefs: 5
+            number_of_coefs: 5,
+            transformed_coefs: ['b','c']
         },
         as_13: {
             global_reqs(a,b,c,d) {
@@ -380,8 +392,7 @@ export default function genRatEx(formObj) {
         as_14: {
             global_reqs(a,b,c) {
                 return (
-                    b > 0 &&
-                    d > 0
+                    true
                 );
             },
             add_reqs(a,b,c) {
@@ -436,7 +447,8 @@ export default function genRatEx(formObj) {
         md_1: {
             global_reqs(a,b,c,d) {
                 return (
-                    d > 0
+                    d > 0 &&
+                    d !== 1
                 );
             },
             mul_reqs(a,b,c,d) {
@@ -488,7 +500,8 @@ export default function genRatEx(formObj) {
         md_3: {
             global_reqs(a,b,c,d) {
                 return (
-                    b > 0
+                    b > 0 &&
+                    b !== 1
                 );
             },
             mul_reqs(a,b,c,d) {
@@ -500,7 +513,7 @@ export default function genRatEx(formObj) {
             div_reqs(a,b,c,d) {
                 return (
                     c !== a &&
-                    d !== d
+                    c !== d
                 );
             },
             structure(a,b,c,d) {
@@ -516,7 +529,8 @@ export default function genRatEx(formObj) {
         md_4: {
             global_reqs(a,b,c,d) {
                 return (
-                    d > 0
+                    d > 0 &&
+                    d !== 1
                 );
             },
             mul_reqs(a,b,c,d) {
@@ -570,7 +584,8 @@ export default function genRatEx(formObj) {
             global_reqs(a,b,c,d) {
                 return (
                     b > 0 &&
-                    d > 0
+                    d > 0 &&
+                    b !== 1
                 );
             },
             mul_reqs(a,b,c,d) {
@@ -650,7 +665,8 @@ export default function genRatEx(formObj) {
         md_9: {
             global_reqs(a,d,e,A,B) {
                 return (
-                    e > 0
+                    e > 0 &&
+                    e !== 1
                 );
             },
             mul_reqs(a,d,e,A,B) {
@@ -668,7 +684,7 @@ export default function genRatEx(formObj) {
                     num_A: [1, a],
                     den_A: [1, e + A, e*A],
                     num_B: [1, d],
-                    den_B: [1, e]
+                    den_B: [e]
                 }
             },
             number_of_coefs: 5,
@@ -695,7 +711,7 @@ export default function genRatEx(formObj) {
                     num_A: [1, a],
                     den_A: [1, e + A, e*A],
                     num_B: [1, d],
-                    den_B: [e]
+                    den_B: [1, e]
                 }
             },
             number_of_coefs: 5,
@@ -793,7 +809,7 @@ export default function genRatEx(formObj) {
                 );
             },
             mul_reqs(A,B,C,D,E,F,G,H) {
-                let switcher = H.randInt(0,3);
+                let switcher = Math.floor(Math.random() * (3 - 0 + 1)) + 0;
     
                 if (switcher === 0) return (A == C && E === G);
                 else if (switcher === 1) return (A === C && B === G);
@@ -801,7 +817,7 @@ export default function genRatEx(formObj) {
                 else return (E === C && A === G);
             },
             div_reqs(A,B,C,D,E,F,G,H) {
-                let switcher = H.randInt(0,3);
+                let switcher = Math.floor(Math.random() * (3 - 0 + 1)) + 0;
     
                 if (switcher === 0) return (A === C && G === E);
                 else if (switcher === 1) return (A === C && B === E);
@@ -932,12 +948,30 @@ export default function genRatEx(formObj) {
         if (poly_template.length === 3) { // quadratic (use QF)
             let [a, b, c] = poly_template;
 
-            return [(-b + Math.sqrt(b**2 - 4*a*c))/2*a, (-b - Math.sqrt(b**2 - 4*a*c))/2*a];
+            if (poly_template[poly_template.length - 1] === 0) { // in our case, one type of quad (ax^2+b) might give fractional sols and we need to handle that here
+                let poly_template_copy = poly_template.slice(0, -1);
+
+                let [a, b] = poly_template_copy;
+
+                if (Number.isInteger((-b)/a)) return [0, (-b)/a];
+                else {
+                    let frac = PH.simplifyFraction((-b) , a);
+                    if (frac.numer > 0) return [0, '\\frac{' + frac.numer + '}{' + frac.denom + '}'];
+                    else if (frac.numer < 0) return [0, '-\\frac{' + (-1)*frac.numer + '}{' + frac.denom + '}'];
+                }
+            }
+
+            return [(-b + Math.sqrt(b**2 - 4*a*c))/(2*a), (-b - Math.sqrt(b**2 - 4*a*c))/(2*a)];
         }
         else if (poly_template.length === 2) { // binomial (solve equation)
             let [a, b] = poly_template;
 
-            return [(-b)/a];
+            if (Number.isInteger((-b)/a)) return [(-b)/a];
+            else {
+                let frac = PH.simplifyFraction((-b) , a);
+                if (frac.numer > 0) return ['\\frac{' + frac.numer + '}{' + frac.denom + '}'];
+                else if (frac.numer < 0) return ['-\\frac{' + (-1)*frac.numer + '}{' + frac.denom + '}'];
+            }  
         }
         else if (poly_template.length === 1) { // constant (not possible to have zeros (besides y=0, but that's not possible here))
             return [];
@@ -978,7 +1012,7 @@ export default function genRatEx(formObj) {
     inter_numer = PH.divideArray(inter_numer, num_GCF);
 
     if (inter_denom[0] > 0) den_gcf_sign = 1;
-    else if (inter_denom < 0) den_gcf_sign = -1;
+    else if (inter_denom[0] < 0) den_gcf_sign = -1;
     den_GCF = PH.gcfOfArray(inter_denom) * den_gcf_sign;
     inter_denom = PH.divideArray(inter_denom, den_GCF);
 
@@ -994,10 +1028,10 @@ export default function genRatEx(formObj) {
     if (den_GCF === 1) den_GCF_string = '';
     else if (den_GCF === -1) den_GCF_string = '-';
     else den_GCF_string = den_GCF + '';
-
+    
     // now we need to remove any common factors between the numer and denom
     let denom_factors = PH.factorPolynomial(inter_denom);
-    let final_denom_factors = []; // the factors of the denom that DID NOT divide out
+    let final_denom_factors = [[1]]; // the factors of the denom that DID NOT divide out (we add [1] here to make sure this list isn't empty when all the denom factors divide out)
     for (let i = 0; i < denom_factors.length; i++) {
         if (PH.longDivision(inter_numer, denom_factors[i]) !== null) { // factor divides out
             inter_numer = PH.longDivision(inter_numer, denom_factors[i]);
@@ -1012,7 +1046,7 @@ export default function genRatEx(formObj) {
     let final_numer; // currently the numer is an unfactored template
     if (numer_form === 'factored') {
         if (inter_numer.length >= 3) { // quadratic or higher 
-            if (PH.factorPolynomial(inter_numer) !== null) { // it factors
+            if (Number.isInteger(Math.sqrt(inter_numer[1]**2 - 4*inter_numer[0]*inter_numer[2]))) { // it factors
                 final_numer = num_GCF_string + PH.factorListToMath(PH.factorPolynomial(inter_numer));
             }
             else { // it does NOT factor (we still pull out a GCF if possible)
@@ -1024,7 +1058,12 @@ export default function genRatEx(formObj) {
         }
         else if (inter_numer.length === 2) { // binomial (linear)
             if (num_GCF_string !== '') { // make sure the gcf isn't =to 1 (in which case we wouldn't factor it out)
-                final_numer = num_GCF_string + '(' + PH.polyTemplateToMath(inter_numer) + ')';
+                if (inter_numer[0] !== 1 || !inter_numer.slice(1).every(num => num === 0)) { // normal numer -> C(ax^n+bx^n-1+...)
+                    final_numer = num_GCF_string + '(' + PH.polyTemplateToMath(inter_numer) + ')';
+                }
+                else { // special case where there is only one term x^n term -> ax^n (no parenthesis needed)
+                    final_numer = num_GCF_string + PH.polyTemplateToMath(inter_numer);
+                }
             }
             else final_numer = PH.polyTemplateToMath(inter_numer);
         }
@@ -1047,7 +1086,7 @@ export default function genRatEx(formObj) {
     let final_denom; // currently the denom is also an unfactored template (like the numer)
     if (denom_form === 'factored') {
         if (inter_denom.length >= 3) { // quadratic or higher 
-            if (PH.factorPolynomial(inter_denom) !== null) { // it factors
+            if (Number.isInteger(Math.sqrt(inter_denom[1]**2 - 4*inter_denom[0]*inter_denom[2]))) { // it factors
                 final_denom = den_GCF_string + PH.factorListToMath(PH.factorPolynomial(inter_denom));
             }
             else { // it does NOT factor (we still pull out a GCF if possible)
@@ -1059,7 +1098,12 @@ export default function genRatEx(formObj) {
         }
         else if (inter_denom.length === 2) { // binomial (linear)
             if (den_GCF_string !== '') { // make sure the gcf isn't =to 1 (in which case we wouldn't factor it out)
-                final_denom = den_GCF_string + '(' + PH.polyTemplateToMath(inter_denom) + ')';
+                if (inter_denom[0] !== 1 || !inter_denom.slice(1).every(num => num === 0)) { // normal numer -> C(ax^n+bx^n-1+...)
+                    final_denom = den_GCF_string + '(' + PH.polyTemplateToMath(inter_denom) + ')';
+                }
+                else { // special case where there is only one term x^n term -> ax^n (no parenthesis needed)
+                    final_denom = den_GCF_string + PH.polyTemplateToMath(inter_denom);
+                }
             }
             else final_denom = PH.polyTemplateToMath(inter_denom);
         }
@@ -1078,12 +1122,35 @@ export default function genRatEx(formObj) {
             final_denom = inter_denom[0] * den_GCF;
         }
     }
+    
+    // here we check if there are two indentical factors (a perfect square), in which case we 'collapse' it (x+a)(x+a) -> (x+a)^2
+    if ((final_numer + '').includes(')(')) { // for the numer
+        let num_fact_1 = (final_numer + '').substring(0, (final_numer + '').indexOf(')') + 1); // everything up to the first ')'
+        num_fact_1 = num_fact_1.substring(num_fact_1.indexOf('(')); // everything after the first '('
+        let num_fact_2 = (final_numer + '').substring((final_numer + '').lastIndexOf('('));
+
+        if (num_fact_1 === num_fact_2) {
+            final_numer = final_numer.replace(num_fact_1 + num_fact_2, num_fact_1 + '^2');
+        }
+    }
+    if ((final_denom + '').includes(')(')) { // for the denom
+        let den_fact_1 = (final_denom + '').substring(0, (final_denom + '').indexOf(')') + 1); // everything up to the first ')'
+        den_fact_1 = den_fact_1.substring(den_fact_1.indexOf('(')); // everything after the first '('
+        let den_fact_2 = (final_denom + '').substring((final_denom + '').lastIndexOf('('));
+    
+        if (den_fact_1 === den_fact_2) {
+            final_denom = final_denom.replace(den_fact_1 + den_fact_2, den_fact_1 + '^2');
+        }
+    }
+    
     // combine the final numer and denom into the fraction
     let final_answer = MH.fraction(final_numer, final_denom);
+
+    if ((final_denom + '') === '1') final_answer = final_numer; // case when numer is 1
     
     // there's a small chance that both the numer and denom are numbers; in this case, we need to check if the expression reduces to a whole number
-    numerical_numer = Number(final_numer);
-    numerical_denom = Number(final_denom);
+    let numerical_numer = Number(final_numer);
+    let numerical_denom = Number(final_denom);
     if (!Number.isNaN(numerical_numer) && !Number.isNaN(Number(numerical_denom))) {
         let num_over_den = PH.simplifyFraction(numerical_numer, numerical_denom);
 
@@ -1092,10 +1159,15 @@ export default function genRatEx(formObj) {
 
     // give the excluded values if specified (and there actually are any)
     let excluded_value_string = '';
+    let TeX_excluded_value = '';
     if (give_excluded_values === 'yes' && excluded_values.length !== 0) {
-        excluded_value_string = '; \\quad x \\neq ' + excluded_values.join(',');
+        excluded_value_string = '{\\scriptscriptstyle ' + ';\\;x \\neq ' + excluded_values.join(',') + '}';
+        TeX_excluded_value = ';\\;x \\neq ' + excluded_values.join(',');
     }
+    let TeX_answer = final_answer + TeX_excluded_value;
     final_answer += excluded_value_string; // the string will be empty if we don't give excluded values 
+
+    // '; \\quad x \\neq ' + excluded_values.join(',')
 
     // don't need to actually get any error locations because no 'free response' fields
     let error_locations = []; // but still ensure it's not undefined
@@ -1103,6 +1175,7 @@ export default function genRatEx(formObj) {
     return {
         question: final_prompt,
         answer: final_answer,
+        TeXanswer: TeX_answer,
         settings: settings,
         error_locations: error_locations
     };
@@ -1117,10 +1190,12 @@ export const settings_fields = [
     'give_excluded_values'
 ];
 
+// Note: remember to set a iteration limit on the while loop and set up a backup json like genLinEq
+
 export function get_presets() {
     return {
-        ratex_add_sub_form: 'as_1', // need a way to select all
-        ratex_mul_div_form: 'md_1', // need a way to select all
+        ratex_add_sub_form: 'all_add_sub', 
+        ratex_mul_div_form: 'all_mul_div', 
         general_operation_types: ['add','multiply'],
         numer_form: 'factored',
         denom_form: 'factored',
@@ -1128,16 +1203,17 @@ export function get_presets() {
     };
 }
 
-// Note: remember to set a iteration limit on the while loop and set up a backup json like genLinEq
-
-const settings = {
-    ratex_add_sub_form: 'as_5',
-    ratex_mul_div_form: 'md_8',
-    general_operation_types: ['add','subtract','multiply','divide'],
-    numer_form: H.randFromList(['factored','expanded']),
-    denom_form: H.randFromList(['factored','expanded']),
-    give_excluded_values: 'yes'
+export function get_rand_settings() {
+    return {
+        ratex_add_sub_form: H.randFromList(['all_add_sub','as_1','as_2','as_3','as_4','as_5','as_6','as_7','as_8','as_9','as_10','as_11','as_12','as_13','as_14','as_15']), 
+        ratex_mul_div_form: H.randFromList(['all_mul_div','md_1','md_2','md_3','md_4','md_5','md_6','md_7','md_8','md_9','md_10','md_11','md_12','md_13','md_14','md_15']), 
+        general_operation_types: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
+        numer_form: 'factored',
+        denom_form: 'factored',
+        give_excluded_values: 'no'
+    }; 
 }
+
 
 
 
