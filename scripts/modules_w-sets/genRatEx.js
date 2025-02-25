@@ -921,7 +921,9 @@ export default function genRatEx(formObj) {
     let sol_is_found = false;
     let current_coef_arr; // the coef array of the current iteration
     let final_coef_arr; // the first valid coef array we can find
-    while (!sol_is_found) { {}{}{}{}{}{}{}{}{}{} // !!!!!!IMPORTANT!!!!!!!: you should add a max number of iterations here to be safe
+    const max_runs = 1200000; // maximum number of times the solution search loop is allowed to run
+    let current_runs = 0;
+    while (!sol_is_found && current_runs < max_runs) { 
         current_coef_arr = [];
 
         for (let i = 0; i < number_of_coefs; i++) {
@@ -932,8 +934,22 @@ export default function genRatEx(formObj) {
             final_coef_arr = [...current_coef_arr];
             sol_is_found = true;
         }
+
+        current_runs++;
     }
 
+    // test
+    return final_coef_arr;
+    // test
+
+
+
+    if (!sol_is_found) {
+        console.log('-------------------------------------------------')
+        console.log('sol wasnt found')
+        console.log('iterations done: ',current_runs)
+        console.log('-------------------------------------------------')
+    }
 
     // Next, we can use the valid coefs we got to get a prompt in math and calculate a template for the answer
     let prompt_template = current_Q_obj.structure(...final_coef_arr);
