@@ -371,7 +371,6 @@ export function multiplyPolynomials(p1, p2) {
 export function longDivision(p1, p2) {
     // Condition (b): Ensure degree of p2 <= degree of p1
     if (p2.length > p1.length) {
-        console.error("Error: The degree of the divisor (p2) must be less than or equal to the degree of the dividend (p1).");
         return null;
     }
 
@@ -550,6 +549,7 @@ export function factorPolynomial(poly_template) {
 
     // if we already are at length = 1 at this point, all of the factors have been found and we can return
     if (poly_template.length === 1) return factor_list;
+    else if (poly_template.length === 2) return factor_list.concat([poly_template]); // polytemplate is just binomial at this point [a,b] and the logic below won't work
 
     // helper function that can see if decimal numbers are roots of the polynomial
     function isRoot(poly, x) {
@@ -580,8 +580,8 @@ export function factorPolynomial(poly_template) {
         }
     }
 
-    // if we didn't find a single rational root, return null to indicate this
-    if (P_Q_pairs.length === 0) return null;
+    // if we didn't find a single rational root, return the initial polynomial as is
+    if (P_Q_pairs.length === 0) return [poly_template];
 
     let current_frac;
     let factor_set = new Set();
@@ -600,9 +600,9 @@ export function factorPolynomial(poly_template) {
         current_a = Number(current_a);
         current_b = Number(current_b);
 
-        while (longDivision(poly_template, [current_a, current_b]) !== null) {
-            factor_list.push([current_a, current_b]);
-            poly_template = longDivision(poly_template, [current_a, current_b]).quotient;
+        while (longDivision(poly_template, [current_b, current_a]) !== null) {
+            factor_list.push([current_b, current_a]);
+            poly_template = longDivision(poly_template, [current_b, current_a]);
         }
     }
 
