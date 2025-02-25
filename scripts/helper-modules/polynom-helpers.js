@@ -575,7 +575,7 @@ export function factorPolynomial(poly_template) {
     // keep track of every P/Q that zeroed the polynomial (not necessarily distint -> the are likely repeats)
     let P_Q_pairs = [];
     for (let i = 0; i < const_coef_facts.length; i++) {
-        for (let j = 0; j < lead_coef_facts.length; i++) {
+        for (let j = 0; j < lead_coef_facts.length; j++) {
             if (isRoot(poly_template, const_coef_facts[i] / lead_coef_facts[j])) P_Q_pairs.push([const_coef_facts[i],lead_coef_facts[j]]);
         }
     }

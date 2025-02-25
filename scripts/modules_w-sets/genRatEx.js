@@ -875,7 +875,6 @@ export default function genRatEx(formObj) {
 
     // pull out the object for the prompt that is being used and the apropriate check function
     let current_Q_obj; // current question object ('as_1: {}', 'md_5: {}', etc)
-    let global_reqs = current_Q_obj.global_reqs; // check the reqs for the prompt (which are needed regaurdless of the operation)
     let operation_reqs; // check the reqs specific to the operation (whether add, sub, mul, or div)
     let operation_symbol;
     if (operation_type === 'add') {
@@ -898,6 +897,7 @@ export default function genRatEx(formObj) {
         operation_reqs = current_Q_obj.div_reqs;
         operation_symbol = '\\div';
     }
+    let global_reqs = current_Q_obj.global_reqs; // check the reqs for the prompt (which are needed regaurdless of the operation)
 
     
     // first, we need to find a set of coefs that is valid for the given template and operation
@@ -995,13 +995,12 @@ export default function genRatEx(formObj) {
     else if (den_GCF === -1) den_GCF_string = '-';
     else den_GCF_string = den_GCF + '';
 
-
     // now we need to remove any common factors between the numer and denom
     let denom_factors = PH.factorPolynomial(inter_denom);
     let final_denom_factors = []; // the factors of the denom that DID NOT divide out
     for (let i = 0; i < denom_factors.length; i++) {
         if (PH.longDivision(inter_numer, denom_factors[i]) !== null) { // factor divides out
-            inter_numer = PH.longDivision(inter_numer, denom_factors[i]).quotient;
+            inter_numer = PH.longDivision(inter_numer, denom_factors[i]);
         }
         else { // factor does NOT divide out
             final_denom_factors.push(denom_factors[i]);
