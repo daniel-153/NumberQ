@@ -472,7 +472,7 @@ async function insertSettings(settings_names) {
                 // add a special class to the radio button if specified (in the settings template)
                 if (radio_buttons[i][2] !== undefined) current_class = radio_buttons[i][2];
                 else current_class = '';
-                if (current_class === 'radio-math') current_label = '\\(' + current_label + '\\)'; // make it renderable for MathJax
+                if (current_class.includes('radio-math')) current_label = '\\(' + current_label + '\\)'; // make it renderable for MathJax
                 
                 output_html = output_html + `
                     <div class="inner-radio-button-wrapper" style="margin-bottom: ${marginBottom};">
@@ -494,7 +494,7 @@ async function insertSettings(settings_names) {
             current_label = radio_buttons[radio_buttons.length - 1][1];
             if (radio_buttons[radio_buttons.length - 1][2] !== undefined) current_class = radio_buttons[radio_buttons.length - 1][2];
             else current_class = '';
-            if (current_class === 'radio-math') current_label = '\\(' + current_label + '\\)';
+            if (current_class.includes('radio-math')) current_label = '\\(' + current_label + '\\)';
 
             output_html = output_html + `
                 <div class="inner-radio-button-wrapper last-radio-option">
