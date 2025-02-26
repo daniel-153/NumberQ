@@ -250,4 +250,14 @@
     margin-bottom: 1.2vw;
 }
 
+#fullscreen-question[data-special-styles='genRatEx'] {
+    height: 15%;
+}
+
+#fullscreen-answer[data-special-styles='genRatEx'] {
+    width: 24vw;
+    height: 7vw;
+    margin-bottom: 2.9vw;
+}
+
 
