@@ -90,7 +90,8 @@ export const number_of_terms = {
     type: 'single_textbox',
     code_name: 'number_of_terms',
     display_name: 'Number of Terms',
-    tooltip: 'How many terms should be in the expression? (enter an integer from 2 to 10)'
+    tooltip: 'How many terms should be in the expression? (enter an integer from 2 to 10)',
+    range: [ 2, 10 ]
 };
 
 export const term_range = {
@@ -104,42 +105,48 @@ export const root_number = {
     type: 'single_textbox',
     code_name: 'root_number',
     display_name: 'Number Under Roots',
-    tooltip: "What common number should be under the roots? (enter a non-square integer from 2 to 10)"
+    tooltip: "What common number should be under the roots? (enter a non-square integer from 2 to 10)",
+    range: [ 2, 10 ]
 };
 
 export const coef_number_size = {
     type: 'single_textbox',
     code_name: 'coef_number_size',
     display_name: 'Numbers Before Roots',
-    tooltip: "How big should the numbers in front of the roots get? (enter an integer from 2 to 20)"
+    tooltip: "How big should the numbers in front of the roots get? (enter an integer from 2 to 20)",
+    range: [ 2, 20 ]
 };
 
 export const polynomial_A_degree = {
     type: 'single_textbox',
     code_name: 'polynomial_A_degree',
     display_name: "Degree of Polynomial-A",
-    tooltip: "What degree should the first polynomial in the operation have? (enter an integer from 1 to 10)"
+    tooltip: "What degree should the first polynomial in the operation have? (enter an integer from 1 to 10)",
+    range: [ 1, 10 ]
 };
 
 export const polynomial_B_degree = {
     type: 'single_textbox',
     code_name: 'polynomial_B_degree',
     display_name: "Degree of Polynomial-B",
-    tooltip: "What degree should the second polynomial in the operation have? (enter an integer from 1 to 10)"
+    tooltip: "What degree should the second polynomial in the operation have? (enter an integer from 1 to 10)",
+    range: [ 1, 10 ]
 };
 
 export const coef_size = {
     type: 'single_textbox',
     code_name: 'coef_size',
     display_name: "Size of Coefficients",
-    tooltip: "How large should the coefficients (&plusmn;ax^n) in the polynomials be? (enter an integer from 2 to 20)"
+    tooltip: "How large should the coefficients (&plusmn;ax^n) in the polynomials be? (enter an integer from 2 to 20)",
+    range: [ 2, 20 ]
 };
 
 export const factor_size = {
     type: 'single_textbox',
     code_name: 'factor_size',
     display_name: "Size of Factors",
-    tooltip: "How large should the factors (x&plusmn;a) be? (enter an integer from 1 to 10)"
+    tooltip: "How large should the factors (x&plusmn;a) be? (enter an integer from 1 to 10)",
+    range: [ 1, 10 ]
 };
 
 export const division_result = {
@@ -162,7 +169,9 @@ export const leading_coef = {
     type: 'single_textbox',
     code_name: 'leading_coef',
     display_name: "Common Factor",
-    tooltip: "What should the common factor of the terms C(ax^2+bx+c) be? (enter a non-zero integer from -10 to 10)"
+    tooltip: "What should the common factor of the terms C(ax^2+bx+c) be? (enter a non-zero integer from -10 to 10)",
+    range: [ -10, 10 ],
+    excluded_values: [0]
 };
 
 export const quadratic_prompt_type = {
@@ -192,7 +201,8 @@ export const sys_eqs_coef_size = {
     type: 'single_textbox',
     code_name: 'sys_eqs_coef_size',
     display_name: "Size of Coefficients",
-    tooltip: "How large should the coefficients (&plusmn;ax &  &plusmn;by) in the equations be? (enter an integer from 1 to 20)"
+    tooltip: "How large should the coefficients (&plusmn;ax &  &plusmn;by) in the equations be? (enter an integer from 1 to 20)",
+    range: [ 1, 20 ]
 };
 
 export const linear_equation_form = {
@@ -285,7 +295,11 @@ export const variable_letter = {
     type: 'single_textbox',
     code_name: 'variable_letter',
     display_name: 'Variable Letter',
-    tooltip: 'What letter should represent the unknown? (enter a capital or lowercase alphabet letter)'
+    tooltip: 'What letter should represent the unknown? (enter a capital or lowercase alphabet letter)',
+    possible_values: [
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    ]
 };
 
 export const flip_equation = {
