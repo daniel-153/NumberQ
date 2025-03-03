@@ -28,7 +28,7 @@ const nameValueMakers = {
                 return this.valid_input_list[this.current_index];
             },
             get_next_value() {
-                this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                 return this.valid_input_list[this.current_index]; // return the code name for the current radio button 
             }
         };
@@ -44,7 +44,7 @@ const nameValueMakers = {
                 return this.valid_input_list[this.current_index];
             },
             get_next_value() {
-                this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                 return this.valid_input_list[this.current_index]; // return the code name for the current check box (it will come in an array [name])
             }
         };
@@ -94,7 +94,7 @@ const nameValueMakers = {
                 return this.valid_input_list[this.current_index];
             },
             get_next_value() {
-                this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                 return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
             }
         };
@@ -121,7 +121,7 @@ const nameValueMakers = {
                     return this.valid_input_list[this.current_index];
                 },
                 get_next_value() {
-                    this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                     return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
                 }
             },
@@ -133,7 +133,7 @@ const nameValueMakers = {
                     return this.valid_input_list[this.current_index];
                 },
                 get_next_value() {
-                    this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                     return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
                 }
             },
@@ -161,7 +161,7 @@ const nameValueMakers = {
                     return this.valid_input_list[this.current_index];
                 },
                 get_next_value() {
-                    this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                     return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
                 }
             },
@@ -173,7 +173,7 @@ const nameValueMakers = {
                     return this.valid_input_list[this.current_index];
                 },
                 get_next_value() {
-                    this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                     return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
                 }
             },
@@ -185,7 +185,7 @@ const nameValueMakers = {
                     return this.valid_input_list[this.current_index];
                 },
                 get_next_value() {
-                    this.current_index = (this.current_index++) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
+                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
                     return this.valid_input_list[this.current_index]; // return the code name for the current check box (it will come in an array [name])
                 }
             }
@@ -224,6 +224,91 @@ function createSettingsArray(current_module) {
 
     return settings_array;
 } // NOTE: settings_obj is the output of nameValueMakers and has the valid_input_list, current_index, and methods for dealing with these
+
+function* generateCombinations(settingsArray) {
+    while (true) {
+        // Step 1: Create a settings array with current values
+        let combination = Object.fromEntries(
+            settingsArray.map(([name, settingObj]) => [name, settingObj.get_current_value()])
+        );
+        yield combination; // Yield the current combination
+
+        // Step 2: Advance to the next setting option (like an odometer)
+        let carry = true; // Track if we need to keep incrementing (like an odometer rollover)
+        for (let i = settingsArray.length - 1; i >= 0 && carry; i--) {
+            let [, settingObj] = settingsArray[i];
+
+            let prevIndex = settingObj.current_index;
+            settingObj.get_next_value();
+            carry = (settingObj.current_index === 0 && prevIndex !== 0); // If it wrapped, continue
+        }
+    }
+}
+
+
+
+
+// temp/testing ___________________________________________________________________________________________
+
+const settings_array = createSettingsArray(gens['genTrigEx']);
+
+let num_combinations = 1;
+let list_of_set_arrays = []; // [[name, possiblity_list], [name, possiblity_list], ...]
+for (let i = 0; i < settings_array.length; i++) {
+    num_combinations *= settings_array[i][1].valid_input_list.length;
+    list_of_set_arrays.push([settings_array[i][1].name, [...settings_array[i][1].valid_input_list]])
+}
+
+let test_list_of_objs = []; // list of settings objects created by the tempGen function
+function tempGenCombinations(list_of_set_arrays) {
+    // string to hold the eval code
+    let final_eval = `        `;    
+
+    // add the tops of all the for loops
+    for (let i = 0; i < list_of_set_arrays.length; i++) {
+        final_eval += `for (let i${i}=0; i${i} < ${list_of_set_arrays[i][1].length}; i${i}++) {
+        `;
+    }
+
+    // code to create and store the settings objects
+    let middle_code = `
+        let array_to_obj = [];
+        for (let j = 0; j < list_of_set_arrays.length; j++) {
+            array_to_obj.push([list_of_set_arrays[j][0], eval(\`list_of_set_arrays[j][1][i\${j}]\`)]);
+        }
+        test_list_of_objs.push(Object.fromEntries(array_to_obj));
+    `;
+
+    // closing brackets at the bottom of all the loops
+    let closing_brackets = '}'.repeat(list_of_set_arrays.length);
+
+    
+    final_eval = final_eval + middle_code + closing_brackets;
+
+    return final_eval;
+}
+eval(tempGenCombinations(list_of_set_arrays));
+
+console.log('test list length: ',test_list_of_objs.length)
+
+for (let i = 0; i < test_list_of_objs.length; i++) {
+    console.log(test_list_of_objs[i]);
+}
+
+
+console.log('-------------------------------------------------------------------------')
+
+let actual_list_of_sols = []
+const newGenerator = generateCombinations(settings_array);
+for (let i = 0; i < num_combinations; i++) {
+    actual_list_of_sols.push(newGenerator.next().value);
+}
+
+console.log('actual list length: ',actual_list_of_sols.length)
+for (let i = 0; i < actual_list_of_sols.length; i++) {
+    console.log(actual_list_of_sols[i]);
+}
+
 
 
 
