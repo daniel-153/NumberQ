@@ -1,4 +1,4 @@
-import * as ST from '../settings/setting_templates.js';
+import * as ST from '../../settings/setting_templates.js';
 import * as G from '../scripts/modules_w-sets/genLinEq.js';
 
 // Note: you need to paste this code just before the return statement in the genLinEq function for all this to work

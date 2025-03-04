@@ -1,17 +1,17 @@
-import * as settings_templates from '../settings/setting_templates.js';
+import * as settings_templates from '../../settings/setting_templates.js';
 
 const gens = Object.fromEntries(
     await Promise.all([
-        import('../scripts/gen-modules/genAddSub.js').then(m => ['genAddSub', m]),
-        import('../scripts/gen-modules/genMulDiv.js').then(m => ['genMulDiv', m]),
-        import('../scripts/gen-modules/genLinEq.js').then(m => ['genLinEq', m]),
-        import('../scripts/gen-modules/genFacQuad.js').then(m => ['genFacQuad', m]),
-        import('../scripts/gen-modules/genSysEqs.js').then(m => ['genSysEqs', m]),
-        import('../scripts/gen-modules/genSimRad.js').then(m => ['genSimRad', m]),
-        import('../scripts/gen-modules/genTrigEx.js').then(m => ['genTrigEx', m]),
-        import('../scripts/gen-modules/genRatEx.js').then(m => ['genRatEx', m]),
-        import('../scripts/gen-modules/genPolArith.js').then(m => ['genPolArith', m]),
-        import('../scripts/gen-modules/genComArith.js').then(m => ['genComArith', m])
+        import('../../scripts/gen-modules/genAddSub.js').then(m => ['genAddSub', m]),
+        import('../../scripts/gen-modules/genMulDiv.js').then(m => ['genMulDiv', m]),
+        import('../../scripts/gen-modules/genLinEq.js').then(m => ['genLinEq', m]),
+        import('../../scripts/gen-modules/genFacQuad.js').then(m => ['genFacQuad', m]),
+        import('../../scripts/gen-modules/genSysEqs.js').then(m => ['genSysEqs', m]),
+        import('../../scripts/gen-modules/genSimRad.js').then(m => ['genSimRad', m]),
+        import('../../scripts/gen-modules/genTrigEx.js').then(m => ['genTrigEx', m]),
+        import('../../scripts/gen-modules/genRatEx.js').then(m => ['genRatEx', m]),
+        import('../../scripts/gen-modules/genPolArith.js').then(m => ['genPolArith', m]),
+        import('../../scripts/gen-modules/genComArith.js').then(m => ['genComArith', m])
     ])
 );
 
@@ -246,101 +246,6 @@ function* generateCombinations(settingsArray) {
 }
 
 
-
-
-// temp/testing ___________________________________________________________________________________________
-
-const settings_array = createSettingsArray(gens['genTrigEx']);
-
-
-function deepEqual(obj1, obj2) {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-}
-
-let num_combinations = 1;
-let list_of_set_arrays = []; // [[name, possiblity_list], [name, possiblity_list], ...]
-for (let i = 0; i < settings_array.length; i++) {
-    num_combinations *= settings_array[i][1].valid_input_list.length;
-    list_of_set_arrays.push([settings_array[i][1].name, [...settings_array[i][1].valid_input_list]])
-}
-
-const newGenerator = generateCombinations(settings_array);
-
-let test_list_of_objs = []; // list of settings objects created by the tempGen function
-function tempGenCombinations(list_of_set_arrays) {
-    // string to hold the eval code
-    let final_eval = `        `;    
-
-    // add the tops of all the for loops
-    for (let i = 0; i < list_of_set_arrays.length; i++) {
-        final_eval += `for (let i${i}=0; i${i} < ${list_of_set_arrays[i][1].length}; i${i}++) {
-        `;
-    }
-
-    // code to create and store the settings objects
-    let middle_code = `
-        let array_to_obj = [];
-        for (let j = 0; j < list_of_set_arrays.length; j++) {
-            array_to_obj.push([list_of_set_arrays[j][0], eval(\`list_of_set_arrays[j][1][i\${j}]\`)]);
-        }
-        let current_obj = Object.fromEntries(array_to_obj);
-        let real_obj = newGenerator.next().value
-        if (!deepEqual(current_obj, real_obj)) {
-            console.error('objects were not equal')
-        }
-    `;
-
-    // closing brackets at the bottom of all the loops
-    let closing_brackets = '}'.repeat(list_of_set_arrays.length);
-
-    
-    final_eval = final_eval + middle_code + closing_brackets;
-
-    return final_eval;
-}
-eval(tempGenCombinations(list_of_set_arrays));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// console.log('test list length: ',test_list_of_objs.length)
-
-// for (let i = 0; i < test_list_of_objs.length; i++) {
-//     console.log(test_list_of_objs[i]);
-// }
-
-
-// console.log('-------------------------------------------------------------------------')
-
-// let actual_list_of_sols = []
-
-// for (let i = 0; i < num_combinations; i++) {
-//     actual_list_of_sols.push(newGenerator.next().value);
-// }
-
-// console.log('actual list length: ',actual_list_of_sols.length)
-// for (let i = 0; i < actual_list_of_sols.length; i++) {
-//     console.log(actual_list_of_sols[i]);
-// }
-
-
-
-
-// Next step is to create the permutation logic for all the settings based on the length of valid_input_list in each case
-// (by calling get_current_value or get_next_value (based on some algo), you can repeatedly loop through every permutation of the settings)
-// and the idea is to reduce the [name, settings_obj] array to a [name, value] array (and finally send this to the gen)
 
 
 
