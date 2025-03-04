@@ -252,12 +252,19 @@ function* generateCombinations(settingsArray) {
 
 const settings_array = createSettingsArray(gens['genTrigEx']);
 
+
+function deepEqual(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+}
+
 let num_combinations = 1;
 let list_of_set_arrays = []; // [[name, possiblity_list], [name, possiblity_list], ...]
 for (let i = 0; i < settings_array.length; i++) {
     num_combinations *= settings_array[i][1].valid_input_list.length;
     list_of_set_arrays.push([settings_array[i][1].name, [...settings_array[i][1].valid_input_list]])
 }
+
+const newGenerator = generateCombinations(settings_array);
 
 let test_list_of_objs = []; // list of settings objects created by the tempGen function
 function tempGenCombinations(list_of_set_arrays) {
@@ -276,7 +283,11 @@ function tempGenCombinations(list_of_set_arrays) {
         for (let j = 0; j < list_of_set_arrays.length; j++) {
             array_to_obj.push([list_of_set_arrays[j][0], eval(\`list_of_set_arrays[j][1][i\${j}]\`)]);
         }
-        test_list_of_objs.push(Object.fromEntries(array_to_obj));
+        let current_obj = Object.fromEntries(array_to_obj);
+        let real_obj = newGenerator.next().value
+        if (!deepEqual(current_obj, real_obj)) {
+            console.error('objects were not equal')
+        }
     `;
 
     // closing brackets at the bottom of all the loops
@@ -289,25 +300,40 @@ function tempGenCombinations(list_of_set_arrays) {
 }
 eval(tempGenCombinations(list_of_set_arrays));
 
-console.log('test list length: ',test_list_of_objs.length)
-
-for (let i = 0; i < test_list_of_objs.length; i++) {
-    console.log(test_list_of_objs[i]);
-}
 
 
-console.log('-------------------------------------------------------------------------')
 
-let actual_list_of_sols = []
-const newGenerator = generateCombinations(settings_array);
-for (let i = 0; i < num_combinations; i++) {
-    actual_list_of_sols.push(newGenerator.next().value);
-}
 
-console.log('actual list length: ',actual_list_of_sols.length)
-for (let i = 0; i < actual_list_of_sols.length; i++) {
-    console.log(actual_list_of_sols[i]);
-}
+
+
+
+
+
+
+
+
+
+
+
+// console.log('test list length: ',test_list_of_objs.length)
+
+// for (let i = 0; i < test_list_of_objs.length; i++) {
+//     console.log(test_list_of_objs[i]);
+// }
+
+
+// console.log('-------------------------------------------------------------------------')
+
+// let actual_list_of_sols = []
+
+// for (let i = 0; i < num_combinations; i++) {
+//     actual_list_of_sols.push(newGenerator.next().value);
+// }
+
+// console.log('actual list length: ',actual_list_of_sols.length)
+// for (let i = 0; i < actual_list_of_sols.length; i++) {
+//     console.log(actual_list_of_sols[i]);
+// }
 
 
 
