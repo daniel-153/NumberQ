@@ -225,6 +225,7 @@ function createSettingsArray(current_module) {
     return settings_array;
 } // NOTE: settings_obj is the output of nameValueMakers and has the valid_input_list, current_index, and methods for dealing with these
 
+// generator function to get one settings permutation at a time without pre-storing all of them
 function* generateCombinations(settingsArray) {
     while (true) {
         // Step 1: Create a settings array with current values
@@ -245,7 +246,37 @@ function* generateCombinations(settingsArray) {
     }
 }
 
+async function beginTest(gen_name) {
+    const currentGen = gens[gen_name].default; // get the actual question generator function from the current module
+    const current_settings = generateCombinations(createSettingsArray(gens[gen_name])); // get a new generator object to iterate through settings
+    
+    // handle errors in sending/recieving
+    try {
+        while (true) { // keep sending/recieiving from python app until an error happens
+            const new_settings = current_settings.next().value; // get the next permuation of settings
+            const new_question = currentGen(new_settings); // give the next permuation of settings to the gen
 
+            // send the question object to python (triggerring it's processing)
+            const response = await fetch('http://127.0.0.1:5000/receive-string', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    question: new_question.question,
+                    answer: new_question.answer,
+                    settings: new_settings,
+                    gen_name: gen_name
+                }),
+            });
+
+            // wait for python to respond (which indicates it has processed the question) before sending the next question 
+            await response.json(); 
+        }
+    } catch (error) {
+        console.error('Error in sending or recieving from python:', error);
+    }
+}
+
+beginTest('genAddSub');
 
 
 
