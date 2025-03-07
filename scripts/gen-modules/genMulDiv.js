@@ -3,7 +3,7 @@ import * as PH from"../helper-modules/polynom-helpers.js";
 import * as SH from '../helper-modules/settings-helpers.js';
 
 function processSettings(formObj) {
-    let { number_of_terms, term_range_min, term_range_max, operation_type, number_type, multiply_symbol, answer_form } = formObj;
+    let { number_of_terms, term_range_min, term_range_max, muldiv_operation_type, number_type, multiply_symbol, answer_form } = formObj;
     let error_locations = []; // stores a list of input fields where errors occures (same field can appear multiple times)
     
     // validate number_of_terms and keep track of error locations
@@ -19,7 +19,7 @@ function processSettings(formObj) {
         number_of_terms: number_of_terms,
         term_range_min: term_range_min,
         term_range_max: term_range_max,
-        operation_type: operation_type,
+        muldiv_operation_type: muldiv_operation_type,
         number_type: number_type,
         multiply_symbol: multiply_symbol,
         answer_form: answer_form,
@@ -34,9 +34,9 @@ export default function genMulDiv(formObj) {
 
     // extra pre-processing to make loops simpler
     let possible_operation_types;
-    if (settings.operation_type === 'multiply') possible_operation_types = ['multiply'];
-    else if (settings.operation_type === 'divide') possible_operation_types = ['divide'];
-    else if (settings.operation_type === 'both') possible_operation_types = ['multiply', 'divide'];
+    if (settings.muldiv_operation_type === 'multiply') possible_operation_types = ['multiply'];
+    else if (settings.muldiv_operation_type === 'divide') possible_operation_types = ['divide'];
+    else if (settings.muldiv_operation_type === 'both') possible_operation_types = ['multiply', 'divide'];
 
     let possible_number_types;
     if (settings.number_type === 'integers') possible_number_types = ['integers'];
@@ -171,7 +171,7 @@ export function get_presets() {
         number_of_terms: 2,
         term_range_min: term_range_min,
         term_range_max: H.randInt(3, 20),
-        operation_type: operation_type,
+        muldiv_operation_type: operation_type,
         number_type: 'integers',
         multiply_symbol: ' \\times ',
         answer_form: answer_form
@@ -186,7 +186,7 @@ export function get_rand_settings() {
         number_of_terms: H.randInt(2,4),
         term_range_min: H.randInt(-20, -1),
         term_range_max: H.randInt(1, 20),
-        operation_type: operation_type,
+        muldiv_operation_type: operation_type,
         number_type: H.randFromList(['integers','fractions','both']),
         multiply_symbol: H.randFromList([' \\cdot ', ' \\times ']),
         answer_form: answer_form

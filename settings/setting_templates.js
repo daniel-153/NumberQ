@@ -1,6 +1,6 @@
 export const addsub_operation_type = {
     type: 'radio_buttons',
-    code_name: 'operation_type',
+    code_name: 'addsub_operation_type',
     display_name: 'Operation',
     radio_buttons: [['add','Addition'],['subtract','Subtraction'],['both','Both']], 
     tooltip: 'What operation should be between the numbers?'
@@ -8,7 +8,7 @@ export const addsub_operation_type = {
 
 export const muldiv_operation_type = {
     type: 'radio_buttons',
-    code_name: 'operation_type',
+    code_name: 'muldiv_operation_type',
     display_name: 'Operation',
     radio_buttons: [['multiply','Multiplication'],['divide','Division'],['both','Both']], 
     tooltip: 'What operation should be between the numbers?'

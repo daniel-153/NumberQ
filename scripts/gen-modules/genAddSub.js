@@ -2,7 +2,7 @@ import * as H from '../helper-modules/gen-helpers.js';
 import * as SH from '../helper-modules/settings-helpers.js';
 
 function processSettings(formObj) {
-    let { number_of_terms, term_range_min, term_range_max, operation_type } = formObj;
+    let { number_of_terms, term_range_min, term_range_max, addsub_operation_type } = formObj;
     let error_locations = []; // stores a list of input fields where errors occures (same field can appear multiple times)
 
     // validate number_of_terms and keep track of error locations
@@ -18,7 +18,7 @@ function processSettings(formObj) {
         number_of_terms: number_of_terms,
         term_range_min: term_range_min,
         term_range_max: term_range_max,
-        operation_type: operation_type,
+        addsub_operation_type: addsub_operation_type,
         error_locations: error_locations
     };
 } 
@@ -41,19 +41,19 @@ export default function genAddSub(formObj) {
     // creating the sum string and calculating the value of the sum
     sumString = sumString + sumElements_inMath[0];
     let valueOfSum = sumElements[0];
-    if (settings.operation_type === 'add') {
+    if (settings.addsub_operation_type === 'add') {
         for (let i = 1; i < sumElements.length; i++) {
             sumString = sumString + '+' + sumElements_inMath[i];
             valueOfSum = valueOfSum + sumElements[i];
         }
     }
-    else if (settings.operation_type === 'subtract') {
+    else if (settings.addsub_operation_type === 'subtract') {
         for (let i = 1; i < sumElements.length; i++) {
             sumString = sumString + '-' + sumElements_inMath[i];
             valueOfSum = valueOfSum - sumElements[i];
         }
     }
-    else if (settings.operation_type === 'both') {
+    else if (settings.addsub_operation_type === 'both') {
         for (let i = 1; i < sumElements.length; i++) {
             let switcher = H.randInt(0,1);
 
@@ -97,7 +97,7 @@ export function get_presets() {
         number_of_terms: 2,
         term_range_min: H.randInt(-20, -1),
         term_range_max: H.randInt(1, 20),
-        operation_type: 'both'
+        addsub_operation_type: 'both'
     };
 }
 
@@ -106,7 +106,7 @@ export function get_rand_settings() {
         number_of_terms: H.randInt(2,4),
         term_range_min: H.randInt(-20, -1),
         term_range_max: H.randInt(1, 20),
-        operation_type: H.randFromList(['add','subtract','both'])
+        addsub_operation_type: H.randFromList(['add','subtract','both'])
     }; 
 }
 
