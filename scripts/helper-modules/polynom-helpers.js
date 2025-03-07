@@ -304,12 +304,13 @@ export function simplifyFraction(numer, denom) {
 }
 
 export function remainderDivision(a, b) {
+    // if (a < 0 && b < 0) {
+    //     a = -a;
+    //     b = -b;
+    // }
+    
     let q = Math.floor(a / b);
     let r = a - b * q;
-    if (r < 0) {
-        q += 1;
-        r = a - b * q;
-    }
     return { quotient: q, remainder: r };
 } // returns the quotient and remainder of a division of positive or negative integers
 
