@@ -15,6 +15,11 @@ function processSettings(formObj) {
     term_range_min = validatedMinMax.term_range_min;
     term_range_max = validatedMinMax.term_range_max;
 
+    // only allow the Quotient + Rem form where it makes sense (a division of 2 integers)
+    if (number_of_terms !== 2 || number_type !== 'integers' || muldiv_operation_type !== 'divide') {
+        answer_form = 'factions & integers';
+    }
+
     return {
         number_of_terms: number_of_terms,
         term_range_min: term_range_min,
