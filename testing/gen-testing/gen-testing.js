@@ -272,7 +272,7 @@ async function beginTest(gen_name) {
             await response.json(); 
         }
     } catch (error) {
-        console.error('Error in sending or recieving from python:', error);
+        console.error('Error in sending or recieving from test-server.py:', error);
     }
 }
 
