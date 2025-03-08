@@ -2,7 +2,7 @@ import * as H from '../helper-modules/gen-helpers.js';
 import * as SH from '../helper-modules/settings-helpers.js';
 
 function processSettings(formObj) {
-    let { number_of_terms, root_number, coef_number_size, operation_type } = formObj;
+    let { number_of_terms, root_number, coef_number_size, addsub_operation_type } = formObj;
     let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
 
     // validate number_of_terms and keep track of error locations
@@ -18,7 +18,7 @@ function processSettings(formObj) {
         number_of_terms: number_of_terms,
         root_number: root_number,
         coef_number_size: coef_number_size,
-        operation_type: operation_type,
+        addsub_operation_type: addsub_operation_type,
         error_locations: error_locations
     };
 }
@@ -35,9 +35,9 @@ export default function genSimRad(formObj) {
 
     // determine which operations are possible (addition, subtraction, or both)
     let rootSwitches = [];
-    if (settings.operation_type === 'add') rootSwitches = [0];
-    else if (settings.operation_type === 'subtract') rootSwitches = [1];
-    else if (settings.operation_type === 'both') rootSwitches = [0, 1];
+    if (settings.addsub_operation_type === 'add') rootSwitches = [0];
+    else if (settings.addsub_operation_type === 'subtract') rootSwitches = [1];
+    else if (settings.addsub_operation_type === 'both') rootSwitches = [0, 1];
 
     let rootSwitch = H.randFromList(rootSwitches); // assign rootSwitch based on which operations are possible
 
@@ -93,7 +93,7 @@ export function get_presets() {
         number_of_terms: 3,
         root_number: H.randFromList(H.nonPerfectSquares(6)),
         coef_number_size: 9,
-        operation_type: 'both'
+        addsub_operation_type: 'both'
     };
 }
 
@@ -102,6 +102,6 @@ export function get_rand_settings() {
         number_of_terms: H.randInt(2,4),
         root_number: H.randFromList(H.nonPerfectSquares(6)),
         coef_number_size: H.randInt(9,15),
-        operation_type: H.randFromList(['add','subtract','both'])
+        addsub_operation_type: H.randFromList(['add','subtract','both'])
     }; 
 }
