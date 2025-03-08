@@ -56,7 +56,8 @@ def receive_string():
                 ["gens-answer", str(recieved_json["answer"])],
                 ["sympy-answer", str(test_result)],
                 ["settings", recieved_json["settings"]], 
-                ["gen-name", current_gen_name]
+                ["gen-name", current_gen_name],
+                ["_", "____________________________________________________________________________________"]
             ]
         )
 
