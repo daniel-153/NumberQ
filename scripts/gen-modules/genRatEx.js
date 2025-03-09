@@ -208,12 +208,12 @@ export default function genRatEx(formObj) {
             },
             add_reqs(a,b,c,d,e,f) {
                 return (
-                    (a !== ((-1)*c*e) || b !== ((-1)*d*e))
+                    ((a*f) !== ((-1)*c*e) || (b*f) !== ((-1)*d*e))
                 );
             },
             sub_reqs(a,b,c,d,e,f) {
                 return (
-                    (a !== (c*e) || b !== (d*e))
+                    ((a*f) !== (c*e) || (b*f) !== (d*e))
                 );
             },
             structure(a,b,c,d,e,f) {
@@ -1183,7 +1183,17 @@ export default function genRatEx(formObj) {
     let TeX_answer = final_answer + TeX_excluded_value;
     final_answer += excluded_value_string; // the string will be empty if we don't give excluded values 
 
-    // '; \\quad x \\neq ' + excluded_values.join(',')
+    {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+    // First, create a backup json that certainly does NOT have any of the below, then modify ratEx to use a backup when a form has 
+    // any of the below to avoid recursion
+    {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+    // if (
+    //     final_answer.includes('NaN') || 
+    //     final_answer.includes('Infinity') || 
+    //     final_answer.includes('e') ||
+    //     final_answer.includes('999999') ||
+    //     final_answer.includes('000000')
+    // ) use a back up here        
 
     // don't need to actually get any error locations because no 'free response' fields
     let error_locations = []; // but still ensure it's not undefined
