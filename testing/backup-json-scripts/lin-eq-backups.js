@@ -1,13 +1,13 @@
 import * as ST from '../../settings/setting_templates.js';
-import * as G from '../scripts/modules_w-sets/genLinEq.js';
+import * as G from '../../scripts/gen-modules/genLinEq.js';
 
-// Note: you need to paste this code just before the return statement in the genLinEq function for all this to work
+// Note: you need to paste this code just before the back-up selection block in the genLinEq function for all this to work
 // (since we need to get either a coef array or an error from genLinEq, not a prompt object):
 //
 // if (!sol_is_found) return "Error: no sol found";
-// else return final_coef_array;
+// else return coef_arr;
 //
-// Also you should remove the if-else's in the 'final checks' section at the beginning of genLinEq (to catch cases with no sols)
+// Also you need to remove the if-else's in the 'final checks' section at the beginning of genLinEq (to catch cases with no sols)
 
 // The three settings fields that create the 8 possible forms for each equation (2*2*2)
 // the first and second entry are the code names of the radio buttons in the actual settings form (so we can prompt genLinEq below)
@@ -44,7 +44,7 @@ let current_EQ; // the name of the template we are currently on (like 'inter_5')
 let current_coef_arr;
 let current_settings; // the permuation of the settings we are currently using (an 'official' settings object for genLinEq)
 let number_of_backups = 20; // how many backups we'll store for each form
-let max_attempts = 10000; // How many times to try a form before we assume it's impossible (if we get a single success in 15 attempts, we try until we have 10 forms, otherwise move on)
+let max_attempts = 1000; // How many times to try a form before we assume it's impossible (if we get a single success in 15 attempts, we try until we have 10 forms, otherwise move on)
 let final_json; 
 // package all the json generation in a function (all this code is valid outside the function)
 function createBackUps() {
