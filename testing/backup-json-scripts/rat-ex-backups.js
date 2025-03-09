@@ -1,6 +1,6 @@
-import * as G from '../scripts/modules_w-sets/genRatEx.js';
+import * as G from '../../scripts/gen-modules/genRatEx.js';
 
-// Note: in order to use this code to generate the json, you need to pase the following right after the sol-search while-loop in genRatEx:
+// Note: in order to use this code to generate the json, you need to paste the following right after the sol-search while-loop in genRatEx:
 // return final_coef_arr;
 
 
