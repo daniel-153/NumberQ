@@ -282,11 +282,10 @@ export default function genFacQuad(formObj) {
         // conversion to math
         b = (-1)*b;
         if (b > 0) b = '+' + b;
-        a = a * leading_coef; // multiply (a) by the leading coefficient
         if (a === 1) a = '';
 
         // not using lead_coef_in_math here because it's already included in (a) (above^)
-        global_factored_form = a + 'x(x' + b + ')'
+        global_factored_form = leading_coef_in_math + 'x(' + a + 'x' + b + ')'
     }
     else if (type_of_quadratic === 'not_factorable' || type_of_quadratic === 'complex_roots') { // combine cases to avoid repeated code
         let a,b,c;
