@@ -285,6 +285,7 @@ async function beginTest(gen_name, start_number = 1, max_tests = undefined) {
         }
     } catch (error) {
         console.error('Error in sending or recieving from test-server.py:', error);
+        throw error
     }
 
     const total_time = ((performance.now() - start_time) / 1000) / 60;
@@ -322,7 +323,13 @@ async function testGens(test_schedule) {
     const start_time = performance.now();
     
     for (let i = 0; i < test_schedule.length; i++) { // run the tests for each gen
-        await beginTest(test_schedule[i][0], 1, test_schedule[i][1])
+        try {
+            await beginTest(test_schedule[i][0], 1, test_schedule[i][1])
+        }
+        catch (error) {
+            console.error('beginTest error: ',error)
+            return;
+        }   
     }
 
     const total_time = ((performance.now() - start_time) / 1000) / 3600
