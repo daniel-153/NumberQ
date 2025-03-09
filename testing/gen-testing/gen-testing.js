@@ -246,7 +246,7 @@ function* generateCombinations(settingsArray) {
     }
 }
 
-async function beginTest(gen_name, start_number = 1) {
+async function beginTest(gen_name, start_number = 1, max_tests = undefined) {
     const currentGen = gens[gen_name].default; // get the actual question generator function from the current module
     const current_settings = generateCombinations(createSettingsArray(gens[gen_name])); // get a new generator object to iterate through settings
     
@@ -254,9 +254,17 @@ async function beginTest(gen_name, start_number = 1) {
         current_settings.next();
     }
 
+    // if a max number of tests was provided, stop at that number
+    let loop_condition; 
+    if (max_tests === undefined) loop_condition = true;
+    else loop_condition = false;
+    let number_of_tests = 0;
+
+    const start_time = performance.now();
+
     // handle errors in sending/recieving
     try {
-        while (true) { // keep sending/recieiving from python app until an error happens
+        while (loop_condition || ++number_of_tests <= max_tests) { // keep sending/recieiving from python app until an error happens, or we reach the number of tests
             const new_settings = current_settings.next().value; // get the next permuation of settings
             const new_question = currentGen(new_settings); // give the next permuation of settings to the gen
 
@@ -278,15 +286,61 @@ async function beginTest(gen_name, start_number = 1) {
     } catch (error) {
         console.error('Error in sending or recieving from test-server.py:', error);
     }
+
+    const total_time = ((performance.now() - start_time) / 1000) / 60;
+
+    if (--number_of_tests === max_tests) console.log(number_of_tests + ' tests with ' + gen_name + ' were sent successfully in ' + total_time.toFixed(7) + ' minutes')
 }
 
-beginTest('genRatEx');
+async function testGens(test_schedule) {
+    const sampled_rates = { // (questions per minute) -> meant to provide a very rough estimate (since time is dependent on conditions)
+        'genAddSub': 4895.3533,
+        'genMulDiv': 6474.7218,
+        'genLinEq': 5458.6253,
+        'genFacQuad': 2512.4370,
+        'genSysEqs': 3192.3215,
+        'genSimRad': 2220.0389,
+        'genTrigEx': 7845.2897,
+        'genRatEx': 1188,
+        'genPolArith': 1050.6033,
+        'genComArith': 3827.2142
+    }
 
+    let running_sum = 0;
+    for (let i = 0; i < test_schedule.length; i++) {
+        if (sampled_rates[test_schedule[i][0]] !== undefined) { // we could find the rate
+            running_sum += (test_schedule[i][1] / sampled_rates[test_schedule[i][0]]) / 60; // add the time for the gen (in hours)
+        }
+        else { // we couldn't find the rate (it hasn't been logged yet)
+            running_sum = undefined;
+            console.log(`can't determine test time because no rate has been logged for ${sampled_rates[test_schedule[i][0]]}`);
+            break;
+        }
+    }
+    if (running_sum !== undefined) console.log(`Estimated Total Testing Time: ${running_sum} hours`);
+    
+    const start_time = performance.now();
+    
+    for (let i = 0; i < test_schedule.length; i++) { // run the tests for each gen
+        await beginTest(test_schedule[i][0], 1, test_schedule[i][1])
+    }
 
+    const total_time = ((performance.now() - start_time) / 1000) / 3600
 
+    console.log(`All tests from test_schedule were sent successfully in ${total_time.toFixed(7)} hours`)
+}
 
+const test_schedule = [ // ['gen_name', # of tests]
+    ['genAddSub', 1],
+    ['genMulDiv', 1],
+    ['genLinEq', 1],
+    ['genFacQuad', 1],
+    ['genSysEqs', 1],
+    ['genSimRad', 1],
+    ['genTrigEx', 1],
+    ['genRatEx', 1],
+    ['genPolArith', 1],
+    ['genComArith', 1]
+]
 
-
-
-
-
+testGens(test_schedule);
