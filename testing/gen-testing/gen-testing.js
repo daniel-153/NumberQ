@@ -115,7 +115,7 @@ const nameValueMakers = {
         return [
             {
                 name: box_1_ID,
-                valid_input_list: integerArray(-25, 25),
+                valid_input_list: integerArray(-10, 10),
                 current_index: 0,
                 get_current_value() {
                     return this.valid_input_list[this.current_index];
@@ -127,7 +127,7 @@ const nameValueMakers = {
             },
             {
                 name: box_2_ID,
-                valid_input_list: integerArray(-25, 25),
+                valid_input_list: integerArray(-10, 10),
                 current_index: 0,
                 get_current_value() {
                     return this.valid_input_list[this.current_index];
@@ -155,7 +155,7 @@ const nameValueMakers = {
         return [
             {
                 name: box_1_ID,
-                valid_input_list: integerArray(-20, 20),
+                valid_input_list: integerArray(-10, 10),
                 current_index: 0,
                 get_current_value() {
                     return this.valid_input_list[this.current_index];
@@ -167,7 +167,7 @@ const nameValueMakers = {
             },
             {
                 name: box_2_ID,
-                valid_input_list: integerArray(-20, 20),
+                valid_input_list: integerArray(-10, 10),
                 current_index: 0,
                 get_current_value() {
                     return this.valid_input_list[this.current_index];
@@ -246,10 +246,14 @@ function* generateCombinations(settingsArray) {
     }
 }
 
-async function beginTest(gen_name) {
+async function beginTest(gen_name, start_number = 1) {
     const currentGen = gens[gen_name].default; // get the actual question generator function from the current module
     const current_settings = generateCombinations(createSettingsArray(gens[gen_name])); // get a new generator object to iterate through settings
     
+    for (let i = 1; i < start_number; i++) { // 'fast foward' to the permutation we want to start at (start_number)
+        current_settings.next();
+    }
+
     // handle errors in sending/recieving
     try {
         while (true) { // keep sending/recieiving from python app until an error happens
@@ -276,7 +280,7 @@ async function beginTest(gen_name) {
     }
 }
 
-beginTest('genAddSub');
+beginTest('genRatEx');
 
 
 
