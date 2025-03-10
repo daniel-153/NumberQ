@@ -966,7 +966,7 @@ export default function genLinEq(formObj) {
                 return !(
                     c === 1 ||
                     d === 1 ||
-                    c > 0 ||
+                    c < 0 ||
                     a === (c*d*e) 
                 );
             },
@@ -1252,22 +1252,22 @@ export default function genLinEq(formObj) {
     const current_EQ_obj = equations[lin_eq_equation_form]; 
 
     // pick a starting range for the absorber term based on a pre-set probability distribution
-    // 35% 1-20 | 25% 21-36 | 20% 37-54 | 20% 55-72
+    // 43% 1-20 | 31% 21-36 | 15% 37-54 | 11% 55-72
     let absorber_coef_range; // range for the absorber term
     let absorber_range_options = [[1,20],[21,36],[37,54],[55,72]]; 
     if (current_EQ_obj.absorber.length === 0) absorber_range_options = [[1,9],[1,9],[1,9],[1,9]]; // case when there's no absorber (any coef set results in an int sol like x+a=b)
     const normal_coef_range = [1,9]; // range for normal terms
     let rangePicker = H.randInt(1, 100);
     let absorber_range_index; // the index of whichever range will be picked from the array above
-    if (rangePicker <= 35) {
+    if (rangePicker <= 43) {
         absorber_coef_range = absorber_range_options[0];
         absorber_range_index = 0;
     }
-    else if (rangePicker <= 60) {
+    else if (rangePicker <= 74) {
         absorber_coef_range = absorber_range_options[1];
         absorber_range_index = 1;
     }
-    else if (rangePicker <= 80) {
+    else if (rangePicker <= 89) {
         absorber_coef_range = absorber_range_options[2];
         absorber_range_index = 2;
     }
