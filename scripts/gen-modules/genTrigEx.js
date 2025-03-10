@@ -56,7 +56,6 @@ export default function genTrigEx(formObj) {
                 '\\sin\\left(315^\\circ\\right)', 
                 '\\sin\\left(330^\\circ\\right)', 
                 '\\sin\\left(360^\\circ\\right)', // negatives after here
-                '\\sin\\left(-0\\right)',
                 '\\sin\\left(-\\frac{\\pi}{6}\\right)',
                 '\\sin\\left(-\\frac{\\pi}{4}\\right)',
                 '\\sin\\left(-\\frac{\\pi}{3}\\right)',
@@ -73,7 +72,6 @@ export default function genTrigEx(formObj) {
                 '\\sin\\left(-\\frac{7\\pi}{4}\\right)',
                 '\\sin\\left(-\\frac{11\\pi}{6}\\right)',
                 '\\sin\\left(-2\\pi\\right)',
-                '\\sin\\left(-0^\\circ\\right)', 
                 '\\sin\\left(-30^\\circ\\right)', 
                 '\\sin\\left(-45^\\circ\\right)', 
                 '\\sin\\left(-60^\\circ\\right)', 
@@ -126,7 +124,6 @@ export default function genTrigEx(formObj) {
                 '-\\frac{\\sqrt{2}}{2}', 
                 '-\\frac{1}{2}', 
                 '0', // answers for negatives ((-1) * positive answers)
-                '0', 
                 '-\\frac{1}{2}', 
                 '-\\frac{\\sqrt{2}}{2}', 
                 '-\\frac{\\sqrt{3}}{2}', 
@@ -143,7 +140,6 @@ export default function genTrigEx(formObj) {
                 '\\frac{\\sqrt{2}}{2}', 
                 '\\frac{1}{2}', 
                 '0',
-                '0', 
                 '-\\frac{1}{2}', 
                 '-\\frac{\\sqrt{2}}{2}', 
                 '-\\frac{\\sqrt{3}}{2}', 
@@ -198,7 +194,6 @@ export default function genTrigEx(formObj) {
                 '\\cos\\left(315^\\circ\\right)', 
                 '\\cos\\left(330^\\circ\\right)', 
                 '\\cos\\left(360^\\circ\\right)', // negatives after here
-                '\\cos\\left(-0\\right)',
                 '\\cos\\left(-\\frac{\\pi}{6}\\right)',
                 '\\cos\\left(-\\frac{\\pi}{4}\\right)',
                 '\\cos\\left(-\\frac{\\pi}{3}\\right)',
@@ -215,7 +210,6 @@ export default function genTrigEx(formObj) {
                 '\\cos\\left(-\\frac{7\\pi}{4}\\right)',
                 '\\cos\\left(-\\frac{11\\pi}{6}\\right)',
                 '\\cos\\left(-2\\pi\\right)',
-                '\\cos\\left(-0^\\circ\\right)', 
                 '\\cos\\left(-30^\\circ\\right)', 
                 '\\cos\\left(-45^\\circ\\right)', 
                 '\\cos\\left(-60^\\circ\\right)', 
@@ -268,7 +262,6 @@ export default function genTrigEx(formObj) {
                 '\\frac{\\sqrt{2}}{2}', 
                 '\\frac{\\sqrt{3}}{2}', 
                 '1', // answers for negatives (same as positives for cosine)
-                '1', 
                 '\\frac{\\sqrt{3}}{2}', 
                 '\\frac{\\sqrt{2}}{2}', 
                 '\\frac{1}{2}', 
@@ -285,7 +278,6 @@ export default function genTrigEx(formObj) {
                 '\\frac{\\sqrt{2}}{2}', 
                 '\\frac{\\sqrt{3}}{2}', 
                 '1',
-                '1', 
                 '\\frac{\\sqrt{3}}{2}', 
                 '\\frac{\\sqrt{2}}{2}', 
                 '\\frac{1}{2}', 
@@ -340,7 +332,6 @@ export default function genTrigEx(formObj) {
                 '\\tan\\left(315^\\circ\\right)', 
                 '\\tan\\left(330^\\circ\\right)', 
                 '\\tan\\left(360^\\circ\\right)', // negatives after here
-                '\\tan\\left(-0\\right)',
                 '\\tan\\left(-\\frac{\\pi}{6}\\right)',
                 '\\tan\\left(-\\frac{\\pi}{4}\\right)',
                 '\\tan\\left(-\\frac{\\pi}{3}\\right)',
@@ -357,7 +348,6 @@ export default function genTrigEx(formObj) {
                 '\\tan\\left(-\\frac{7\\pi}{4}\\right)',
                 '\\tan\\left(-\\frac{11\\pi}{6}\\right)',
                 '\\tan\\left(-2\\pi\\right)',
-                '\\tan\\left(-0^\\circ\\right)', 
                 '\\tan\\left(-30^\\circ\\right)', 
                 '\\tan\\left(-45^\\circ\\right)', 
                 '\\tan\\left(-60^\\circ\\right)', 
@@ -410,7 +400,6 @@ export default function genTrigEx(formObj) {
                 '-1',
                 '-\\frac{\\sqrt{3}}{3}',
                 '0', // negatives after here ((-1) * positive answers)
-                '0',
                 '-\\frac{\\sqrt{3}}{3}',
                 '-1',
                 '-\\sqrt{3}',
@@ -426,7 +415,6 @@ export default function genTrigEx(formObj) {
                 '\\sqrt{3}',
                 '1',
                 '\\frac{\\sqrt{3}}{3}',
-                '0',
                 '0',
                 '-\\frac{\\sqrt{3}}{3}',
                 '-1',
@@ -464,9 +452,9 @@ export default function genTrigEx(formObj) {
 
     let promptIndex; // the index (in the prompts array) of the prompt that will be used 
     if (angleType === 'radians' && argumentSign === 'positive') promptIndex = H.randInt(0,16);
-    else if (angleType === 'radians' && argumentSign === 'negative') promptIndex = H.randInt(34,50);
+    else if (angleType === 'radians' && argumentSign === 'negative') promptIndex = H.randInt(34,49);
     else if (angleType === 'degrees' && argumentSign === 'positive') promptIndex = H.randInt(17,33);
-    else if (angleType === 'degrees' && argumentSign === 'negative') promptIndex = H.randInt(51,67);
+    else if (angleType === 'degrees' && argumentSign === 'negative') promptIndex = H.randInt(50,65);
 
     const selectedPrompt = trigFunctions[currentTrigFunction].prompts[promptIndex];
     const selectedAnswer = trigFunctions[currentTrigFunction].answers[promptIndex]; 
