@@ -311,5 +311,69 @@
   font-size: 1.1vw;
 }
 
+@media (max-width: 1700px) { /* Ipads and Small Laptops */
+#settings-container {
+    height: 21.5vw;
+    border-width: 0.4vw;
+    border-radius: 0.6vw;
+}
+  
+#settings-form {
+    grid-template-columns: repeat(2, 1fr); /* Three columns per row */
+    gap: 4vw;
+}
 
+.setting-box {
+    width: 21vw;
+    height: 21vw;
+    border-width: 0.2vw;
+    border-radius: calc(0.05 * 21vw);
+}
 
+.settings-label {
+  font-size: 2.1vw;
+}
+
+#randomize-all-tab {
+  width: 12vw;
+  height: 2vw;
+  font-size: 1.4vw;
+}
+
+#randomize-all-checkbox {
+  margin-right: 0.15vw;
+  width: 1vw;
+  height: 1vw;
+  min-width: 18.5px;
+  min-height: 18.5px;
+}
+
+.radio-buttons {
+  width: 2.2vw;
+  height: 2.2vw;
+}
+
+.radio-button-label {
+  font-size: 1.7vw;
+}
+
+.settings-text-box {
+  width: 5vw;
+  height: 5vw;
+  font-size: 3.15vw;
+  border-width: 0.1vw;
+}
+
+.settings-text-box:focus {
+  border-width: 0.25vw;
+}
+
+.settings-info-button {
+  width: 2vw;
+  height: 2vw;
+  font-size: 1.8vw;
+  margin-bottom: 0.2vw;
+  border-radius: 0.1vw;
+}
+
+}

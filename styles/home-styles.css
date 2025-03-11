@@ -93,14 +93,9 @@ body::-webkit-scrollbar-thumb:hover {
     font-weight: 500;
     justify-content: center;
     align-items: center;
-
-    /* color: #8ee536; */
-
     color: whitesmoke;
-
     margin: 0;
     text-align: center;
-
     border: 0.2vw solid rgba(27, 58, 129, 0.505);
     border-radius: 0.5vw;
     padding-top: 0.1vw;
@@ -561,7 +556,7 @@ body::-webkit-scrollbar-thumb:hover {
     #generator-list {
         grid-template-columns: repeat(3,25vw); 
         grid-template-rows: calc(12.5vw);
-        grid-gap: 2vw 5vw;
+        grid-gap: 3vw 5vw;
         width: 85vw;
     }
     
@@ -618,6 +613,27 @@ body::-webkit-scrollbar-thumb:hover {
 
     #generator-info-examples {
         font-size: 1.2vw;
+    }
+
+    #generate-button {
+        width: 13vw;
+        height: 4.3vw;
+        font-size: 2.1vw;
+    }
+
+    #regen-circle {
+        font-size: 2.2vw;
+    }
+
+    #generate-button:hover, #generate-button:focus {
+        background-color: rgb(65, 168, 68);
+        border-width: 0.17vw;
+        font-size: 2.1vw;
+
+    }
+
+    #generator-name {
+        font-size: 2vw;
     }
 
 }
@@ -722,8 +738,6 @@ on smaller tablets */
     #coming-soon-problems {
         font-size: 5vw;
     }
-    
-    /* dfbhsaolaaaaaaalalaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaiaaa */
 
     #generation-content-wrapper {
         display: flex;
