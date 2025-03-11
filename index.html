@@ -186,9 +186,9 @@
             <h1 class="gen-title">Info about the Generators</h1>
           </div>
           <div class="example-problem" id="generator-info-examples">
-            How are the answers verified? <br />
             How many problems are possible? <br />
-            How will settings work?
+            How are the answers verified? <br />
+            How do the settings work?
           </div>
           <button id="see-info-button">See Info & FAQ</button>
         </div>
@@ -262,48 +262,53 @@
         <h1 id="FAQ-header">Info & FAQ</h1>
         <div id="question-container">
           <h2 class="FAQ-question">
-            How are the answers to the problems verified?
-          </h2>
-          <p class="FAQ-answer">
-            For many of the problem types, the answer to the question is
-            actually determined first and is used to build the rest of the
-            problem. In linear equations for instance, the x value that solves
-            the equation is 'built-in' to the coefficients; so we can have
-            random values for the coefficients and still always have a
-            particular solution. Despite this, all of the generators have been
-            tested extensively using a computer algebra system (CAS) by matching
-            the answer supplied by the generator to the one calculated by the
-            CAS. Each generator has been tested over 100,000 times.
-          </p>
-          <h2 class="FAQ-question">
             How many different problems are possible in each generator?
           </h2>
           <p class="FAQ-answer">
-            The number of possible problems varies widely by the type of
-            generator. As an example, up to 100,000 different combinations of
-            numbers are possible with the linear equation generator, but only
-            around 500 are possible with the polynomial division generator. It's
-            hard to get the exact number of possible configurations for some of
-            the generators (since they can take on so many different forms), but
-            a conservative estimate can be obtained by multiplying the number of
-            possible coefficients by the number of possible forms and ensuring
-            cases like 2+3 and 3+2 are only counted as one problem. Generally
-            speaking, the numerical generators have several hundred possible
-            problems and the expression/equation generators have anywhere from a
-            few thousand to a hundred thousand possible problems. One notable
-            exception is the trig expression generator, which only has 68
-            possibilities (to ensure the values always have an exact form).
+            The number of different problems for most generators is well in the
+            thousands, and some are even in the tens or hundreds of thousands.
+            However, these large numbers primarily result from the fact that
+            each coefficient is a randomly selected number within a given range.
+            So in linear equations, for instance, even though there are only 42
+            base forms, the possibilities for each of the coefficients in these
+            equations multiply to produce large numbers like these.
+            Additionally, the number of possible problems depends heavily on the
+            settings. Certain settings configurations can result in only a few
+            hundred possible problems, while others (although not necessarily
+            practical for teaching purposes) can result in many more.
           </p>
-          <h2 class="FAQ-question">How will settings work?</h2>
+          <h2 class="FAQ-question">
+            How are the answers to the problems verified?
+          </h2>
           <p class="FAQ-answer">
-            The goal with settings will be to make the generators completely
-            customizable. In quadratics and factoring for instance, the settings
-            will allow you to specify a range for the numbers and pick the form
-            (perfect square, no constant term, etc). In polynomial division,
-            settings will allow you to pick the degree of the polynomial, which
-            factors it has, and whether or not it will divide evenly. In other
-            words, everything that is random now will be controllable by
-            settings soon.
+            For many of the generators, the answer to the question is actually
+            determined first and is used to build the rest of the problem. These
+            all follow a process of finding the generalized solution to the
+            problem, then using that solution with specific constraints. So if
+            we find the general solution to a particular linear equation (for
+            example), we can then put constraints on that solution (maybe
+            forcing it to be an integer), and use that to figure out what the
+            coefficients must be. However, for generators that don’t follow this
+            pattern, the answer is calculated dynamically as the problem is
+            generated. Also, all of the problem types have been verified
+            extensively with a computer algebra system (CAS) by matching the
+            answer supplied by the generator to the one calculated by the CAS.
+            Each generator has been tested over 150,000 times.
+          </p>
+          <h2 class="FAQ-question">How do the settings work?</h2>
+          <p class="FAQ-answer">
+            The settings mainly work by limiting particular random aspects of
+            problem generation. To give an example, before settings, all of the
+            numbers in addition and subtraction were integers between -10 and
+            10. However, with settings, one can now create their own range with
+            integers anywhere from -999 to 999 (for example, [-999, 999], [0,
+            5], [10, 20], and even [1, 1] are all valid ranges), and the
+            coefficients will be selected from <em>that</em> range. Similarly,
+            you can choose a specific form (or multiple) in factoring and
+            quadratics, and the generator will randomly create a problem within
+            that form. As a whole, the purpose of the settings is to enable
+            users to generate problems with specific mathematical properties
+            while maintaining as much randomness as possible.
           </p>
         </div>
       </div>
