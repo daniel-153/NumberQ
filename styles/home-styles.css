@@ -557,15 +557,81 @@ body::-webkit-scrollbar-thumb:hover {
     line-height: 1.4;
 }
 
-/* Resize for smaller devices */
+@media (max-width: 1700px) { /* Ipads and Small Laptops */
+    #generator-list {
+        grid-template-columns: repeat(3,25vw); 
+        grid-template-rows: calc(12.5vw);
+        grid-gap: 2vw 5vw;
+        width: 85vw;
+    }
+    
+    .generator {
+        width: 25vw;
+        height: 12.5vw;
+    }
 
-@media (max-width: 1150px) {
+    .start-button {
+        width: 8.5vw;
+        height: 3vw;
+        font-size: 1.5vw;
+    }
+
+    .start-button:hover, .start-button:focus {
+        font-size: 1.475vw;
+    }
+
+    #numberQ-description {
+        font-size: 1.7vw;
+    }
+
+    .gen-title {
+        font-size: 1.9vw;
+    }
+    
+    .shrunk-title {
+        font-size: 1.65vw;
+    }
+    
+    .gen-topic {
+        font-size: 1.2vw;
+    }
+
+    #feedback-button {
+        width: 17vw;
+        height: 3vw;
+        font-size: 1.23vw;
+    }
+    
+    #feedback-button:hover, #feedback-button:focus {
+        font-size: 1.2vw;
+    }
+
+    #see-info-button {
+        width: 12.5vw;
+        height: 3vw;
+        font-size: 1.35vw;
+    }
+    
+    #see-info-button:hover, #see-info-button:focus {
+        font-size: 1.3vw;
+    }
+
+    #generator-info-examples {
+        font-size: 1.2vw;
+    }
+
+}
+
+/* NOTE: now that you have this second query^, you might be able to shrink the widht of the one below so it doesn't collapse so fast
+on smaller tablets */
+
+@media (max-width: 900px) { /* Phones */
     #outer-title-container {
         margin-bottom: 5.5vh;
     }
     
     #inner-title-container {
-        width: calc(var(--numberQ-width) * 1.3);
+        width: calc(var(--numberQ-width) * 1.4);
         height: calc(var(--numberQ-width) * 0.24 * 1.54);
         border-radius: calc(0.05 * var(--numberQ-width) * 0.3);
     }
@@ -573,12 +639,6 @@ body::-webkit-scrollbar-thumb:hover {
     #numberQ-header {
         font-size: 11vw;
         margin-top: 1vw;
-    }
-    
-    #teacher-edition-header {
-        font-size: 4vw;
-        margin-bottom: 0.4vw;
-        font-weight: 400;
     }
     
     #numberQ-description {
