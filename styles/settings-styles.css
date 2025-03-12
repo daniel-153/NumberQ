@@ -196,7 +196,7 @@
   max-width: 100%;
 }
 
-/* Scroll bar if the settings overflow a settings box */
+/* Scroll bar if the settings overflow a settings box vertically */
 .outer-radio-button-wrapper::-webkit-scrollbar {
   width: 0.4vw; /* Scrollbar width */
 }
@@ -216,7 +216,7 @@
   margin: 0.4vw 0; /* Prevents the track from extending fully */
 }
 
-/* Scroll bar if the settings overflow a settings box */
+/* Scroll bar if the settings overflow a settings box horizontally */
 .radio-button-label::-webkit-scrollbar {
   height: 0.4vw; /* Scrollbar width */
   min-height: 7.5px;
@@ -312,68 +312,252 @@
 }
 
 @media (max-width: 1700px) { /* Ipads and Small Laptops */
-#settings-container {
-    height: 21.5vw;
+  #settings-container {
+      height: 21.5vw;
+      border-width: 0.4vw;
+      border-radius: 0.6vw;
+  }
+    
+  #settings-form {
+      grid-template-columns: repeat(2, 1fr); /* Three columns per row */
+      gap: 4vw;
+  }
+
+  .setting-box {
+      width: 21vw;
+      height: 21vw;
+      border-width: 0.2vw;
+      border-radius: calc(0.05 * 21vw);
+  }
+
+  .settings-label {
+    font-size: 2.1vw;
+  }
+
+  #randomize-all-tab {
+    width: 12vw;
+    height: 2vw;
+    font-size: 1.4vw;
+  }
+
+  #randomize-all-checkbox {
+    margin-right: 0.15vw;
+    width: 1.5vw;
+    height: 1.5vw;
+  }
+
+  .radio-buttons {
+    width: 1.8vw;
+    height: 1.8vw;
+    min-width: 1.8vw;
+    min-height: 1.8vw;
+  }
+
+  .radio-button-label {
+    font-size: 1.7vw;
+  }
+
+  .settings-text-box {
+    width: 5vw;
+    height: 5vw;
+    font-size: 3.1vw;
+    border-width: 0.1vw;
+  }
+
+  .settings-text-box:focus {
+    border-width: 0.25vw;
+  }
+
+  .settings-info-button {
+    width: 2.3vw;
+    height: 2.3vw;
+    font-size: 2.1vw;
+    margin-bottom: 0.3vw;
+    border-radius: 0.15vw;
+  }
+
+  .settings-info-button::before {
+    bottom: calc(100% + 0.85vw); /* Position tooltip above the button and arrow */
+    width: 18vw; /* Fixed width, allows height to grow dynamically */
+    padding: 0.5vw;
+    border-radius: 0.5vw;
+    font-size: 1.75vw;
+  }
+
+  .settings-info-button::after {
+    bottom: calc(100% + 0.2vw); /* Place arrow just below the tooltip box */
+    border-left: 0.8vw solid transparent;
+    border-right: 0.8vw solid transparent;
+    border-top: 0.8vw solid #333; /* Matches tooltip background */
+  }
+
+  .radio-math {
+    font-size: 2vw;
+  }
+
+  .radio-math-big {
+    font-size: 2.6vw;
+  }
+
+  .radio-sub-label {
+    font-size: 1.85vw;
+    padding-bottom: 0.17vw;
+  }
+
+  #number-range-wrapper {
+    font-size: 1.2vw;
+  }
+
+  .settings-checkbox-tab {
+    width: 9.5vw;
+    height: 1.8vw;
+    font-size: 1.4vw;
+  }
+
+  .single-settings-checkbox {
+    width: 1.3vw;
+    height: 1.3vw;
+  }
+}
+
+@media (max-width: 900px) {
+  #settings-container {
+    height: 110vw;
     border-width: 0.4vw;
-    border-radius: 0.6vw;
+    border-radius: 1.5vw;
 }
   
 #settings-form {
-    grid-template-columns: repeat(2, 1fr); /* Three columns per row */
+    grid-template-columns: repeat(1, 1fr); /* Three columns per row */
     gap: 4vw;
 }
 
 .setting-box {
-    width: 21vw;
-    height: 21vw;
+    width: 81vw;
+    height: 81vw;
     border-width: 0.2vw;
-    border-radius: calc(0.05 * 21vw);
+    border-radius: calc(0.05 * 81vw);
+    margin: 2vw;
+    margin-top: 2.5vw;
+    margin-bottom: 2.5vw;
 }
 
 .settings-label {
-  font-size: 2.1vw;
+  margin-top: 0.5vw;
+  font-size: 8vw;
+  margin-bottom: 2.5vw;
 }
 
 #randomize-all-tab {
-  width: 12vw;
-  height: 2vw;
-  font-size: 1.4vw;
+  width: 35.5vw;
+  height: 4.7vw;
+  font-size: 4vw;
+  border-radius: 0.5vw;
 }
 
 #randomize-all-checkbox {
-  margin-right: 0.15vw;
-  width: 1vw;
-  height: 1vw;
-  min-width: 18.5px;
-  min-height: 18.5px;
+  margin-right: 0.75vw;
+  width: 3.8vw;
+  height: 3.8vw;
 }
 
 .radio-buttons {
-  width: 2.2vw;
-  height: 2.2vw;
+  width: 7vw;
+  height: 7vw;
+  min-width: 7vw;
+  min-height: 7vw;
+  margin-bottom: 4.5vw;
+  margin-right: 1.5vw;
 }
 
 .radio-button-label {
-  font-size: 1.7vw;
+  margin-bottom: 4.5vw;
+  font-size: 6vw;
 }
 
 .settings-text-box {
-  width: 5vw;
-  height: 5vw;
-  font-size: 3.15vw;
-  border-width: 0.1vw;
+  width: 20vw;
+  height: 20vw;
+  font-size: 12.3vw;
+  border-width: 0.6vw;
 }
 
 .settings-text-box:focus {
-  border-width: 0.25vw;
+  border-width: 1vw;
 }
 
 .settings-info-button {
-  width: 2vw;
-  height: 2vw;
-  font-size: 1.8vw;
-  margin-bottom: 0.2vw;
-  border-radius: 0.1vw;
+  width: 7.5vw;
+  height: 7.5vw;
+  font-size: 7vw;
+  margin-bottom: 1vw;
+  border-radius: 0.5vw;
 }
 
+.settings-info-button::before {
+  bottom: calc(100% + 3.85vw); /* Position tooltip above the button and arrow */
+  width: 70vw; /* Fixed width, allows height to grow dynamically */
+  padding: 2.5vw;
+  border-radius: 2.2vw;
+  font-size: 6vw;
+}
+
+.settings-info-button::after {
+  bottom: calc(100% + 0.75vw); /* Place arrow just below the tooltip box */
+  border-left: 4vw solid transparent;
+  border-right: 4vw solid transparent;
+  border-top: 4vw solid #333; /* Matches tooltip background */
+}
+
+.radio-math {
+  font-size: 7.5vw;
+}
+
+.radio-math-big {
+  font-size: 9.5vw;
+}
+
+.radio-sub-label {
+  font-size: 7vw;
+  padding-bottom: 0.7vw;
+}
+
+#number-range-wrapper {
+  font-size: 5vw;
+}
+
+#solution-point-wrapper {
+  font-size: 15vw;
+}
+
+.settings-checkbox-tab {
+  width: 32vw;
+  height: 5.4vw;
+  font-size: 4.5vw;
+}
+
+.single-settings-checkbox {
+  width: 4.5vw;
+  height: 4.5vw;
+  margin-right: 0.75vw;
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar {
+  width: 2.4vw; /* Scrollbar width */
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar-thumb {
+  background-color: #555; /* Dark gray thumb */
+  border-radius: 2.2vw;
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #666; /* Slightly lighter on hover */
+}
+
+.outer-radio-button-wrapper::-webkit-scrollbar-track {
+  background: #2222223d; /* Dark background for contrast */
+  border-radius: 2.4vw; /* Round the track ends */
+  margin: 2.4vw 0; /* Prevents the track from extending fully */
+}
 }

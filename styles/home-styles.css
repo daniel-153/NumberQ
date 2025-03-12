@@ -47,7 +47,6 @@ body::-webkit-scrollbar-thumb:hover {
     margin-top: 3vh;
     margin-bottom: 7vh;
     gap: 2vw;
-    /* border: 3px solid blue; */
 }
 
 #inner-title-container {
@@ -60,7 +59,6 @@ body::-webkit-scrollbar-thumb:hover {
     background-color: #3A3A3A;
     border-radius: calc(0.05 * var(--numberQ-width) * 0.2);
     border: 0.1vw solid rgba(22, 21, 21, 0.368);
-    /* border: 3px solid red; */
 }
 
 #numberQ-header {
@@ -72,12 +70,8 @@ body::-webkit-scrollbar-thumb:hover {
     font-family: 'Times New Roman', Times, serif;
     margin: 0;
     font-weight: 600;
-
     line-height: 0.9;
     margin-bottom: 0.3vw;
-
-
-    /* border: 3px solid purple; */
 }
 
 #numberQ-N {
@@ -619,6 +613,8 @@ body::-webkit-scrollbar-thumb:hover {
         width: 13vw;
         height: 4.3vw;
         font-size: 2.1vw;
+        border-width: 0.25vw;
+        border-radius: 0.38vw;
     }
 
     #regen-circle {
@@ -627,7 +623,7 @@ body::-webkit-scrollbar-thumb:hover {
 
     #generate-button:hover, #generate-button:focus {
         background-color: rgb(65, 168, 68);
-        border-width: 0.17vw;
+        border-width: 0.25vw;
         font-size: 2.1vw;
 
     }
@@ -636,10 +632,19 @@ body::-webkit-scrollbar-thumb:hover {
         font-size: 2vw;
     }
 
-}
+    #back-arrow-p-modes {
+        width: 3.7vw;
+        height: 3.7vw;
+        border-width: 0.17vw;
+    }
+    
+    #back-arrow-p-modes:hover, 
+    #back-arrow-p-modes:focus {
+        width: 3.75vw;
+        border-width: 0.2vw;
+    }
 
-/* NOTE: now that you have this second query^, you might be able to shrink the widht of the one below so it doesn't collapse so fast
-on smaller tablets */
+}
 
 @media (max-width: 900px) { /* Phones */
     #outer-title-container {
@@ -649,7 +654,7 @@ on smaller tablets */
     #inner-title-container {
         width: calc(var(--numberQ-width) * 1.4);
         height: calc(var(--numberQ-width) * 0.24 * 1.54);
-        border-radius: calc(0.05 * var(--numberQ-width) * 0.3);
+        border-radius: 1vw;
     }
     
     #numberQ-header {
@@ -659,7 +664,9 @@ on smaller tablets */
     
     #numberQ-description {
         font-size: 4vw;
-        width: 70vw;
+        width: 75vw;
+        border-width: 0.5vw;
+        border-radius: 1vw;
     }
     
     #generator-list {
@@ -749,6 +756,7 @@ on smaller tablets */
     
     #back-arrow-p-modes {
         width: 7vw;
+        height: 7vw;
         left: 0.7vw;
         top: 1vw;
         border-width: 0.3vw;
@@ -757,8 +765,7 @@ on smaller tablets */
     #back-arrow-p-modes:hover, 
     #back-arrow-p-modes:focus {
         width: 7vw;
-        border: 0..3vw solid black; 
-        cursor: default;
+        height: 7vw;
     }
     
     #generation-container {
@@ -769,9 +776,10 @@ on smaller tablets */
         align-items: center;
         justify-content: space-between;
         width: 90vw;
-        height: 176.5vw;
+        height: fit-content;
         border-radius: calc(0.025 * var(--gen-container-width));
         border-width: 0.6vw;
+        margin-bottom: 5vw;
     }
     
     #gen-type-header {
@@ -784,6 +792,7 @@ on smaller tablets */
     #generator-name {
         font-size: 6vw;
         margin-top: 0.75vw;
+        margin-bottom: 4vw;
     }
     
     #Q-A-container {
@@ -811,16 +820,21 @@ on smaller tablets */
         width: 73vw;
         height: 15vw;
         margin: 2vw;
+        margin-bottom: 0.1vw;
         border-radius: calc(0.25 * 5vw);
+    }
+
+    .latex-box {
+        height: 4vw;
     }
     
     .copy-button {
-        width: 27vw;
+        width: 20vw;
         height: 9vw;
         font-size: 4vw;
         border: 0.6vw solid rgb(42, 74, 181);
         border-radius: calc(0.2 * 3.5vw);
-        margin-top: 2vw;
+        margin-top: 4vw;
     }
     
     .copy-button:hover, .copy-button:focus {
@@ -838,7 +852,8 @@ on smaller tablets */
         width: 33vw;
         height: 12vw;
         font-size: 5vw;
-        margin-bottom: 1.5vw;
+        margin-top: 5vw;
+        margin-bottom: 14vw;
         border-radius: calc(0.2 * 3.8vw);
         border-width: 0.6vw;
     }
@@ -853,8 +868,6 @@ on smaller tablets */
     #regen-circle {
         font-size: 6vw;
     }
-
-    /* ahjfgdsddsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdsdd */
 
     #feedback-button {
         width: 42vw;
