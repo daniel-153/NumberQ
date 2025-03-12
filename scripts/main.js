@@ -316,7 +316,8 @@ function flashElements(element_name_array) {
 }
 
 function observeTextChanges(element, initial_font_size, method) {
-    const originalFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Define your original font size
+    let originalFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Define your original font size
+    if (window.innerWidth <= 900) originalFontSize = "10vw";
     method = method || 'set'; // Default method is 'set'
 
     // Function to adjust font size dynamically
@@ -369,10 +370,20 @@ function observeTextChanges(element, initial_font_size, method) {
 
 function updateElementMath(elementID, latexCode, initial_font_size) {
     const element = document.getElementById(elementID);
-    const defaultFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Default font size
+    let defaultFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Default font size
+    if (window.innerWidth <= 900) defaultFontSize = "10vw";
 
     // Determine if the LaTeX code contains a fraction
-    const adjustedFontSize = String(latexCode).includes("\\frac") ? "4.2vw" : defaultFontSize;
+    let adjustedFontSize;
+    if (String(latexCode).includes("\\frac") && window.innerWidth > 900) {
+        adjustedFontSize = "4.2vw";
+    }
+    else if (String(latexCode).includes("\\frac") && window.innerWidth <= 900) {
+        adjustedFontSize = "13vw";
+    }
+    else {
+        adjustedFontSize = defaultFontSize;
+    }
 
     // Automatically insert delimiters around the LaTeX code
     const wrappedLatexCode = '\\(' + latexCode + '\\)';
