@@ -745,14 +745,6 @@ body::-webkit-scrollbar-thumb:hover {
     #coming-soon-problems {
         font-size: 5vw;
     }
-
-    #generation-content-wrapper {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-        overflow-y: visible;
-    }
     
     #back-arrow-p-modes {
         width: 7vw;
@@ -767,10 +759,18 @@ body::-webkit-scrollbar-thumb:hover {
         width: 7vw;
         height: 7vw;
     }
+
+    #generation-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        overflow-y: visible;
+    }
     
     #generation-container {
-        margin-top: 9.5vw;
-        position: inherit;
+        margin-top: 10vw;
+        position: static;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -780,6 +780,11 @@ body::-webkit-scrollbar-thumb:hover {
         border-radius: calc(0.025 * var(--gen-container-width));
         border-width: 0.6vw;
         margin-bottom: 5vw;
+
+        position: fixed;
+        top: 10vw;
+        margin-top: 0;
+        left: 5vw;
     }
     
     #gen-type-header {
