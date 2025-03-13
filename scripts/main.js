@@ -1,9 +1,6 @@
 function createEventListeners() {
     preloadModules();
 
-    // This is the auto text-fitter
-    // NOTE: when you go to the other gens/mobile, you need to somehow supply the initial font size specific to each gen 
-    // (right now, 3vw is the global default). And you'll probably also need to put this on the rendered and un-rendered answer boxes
     observeTextChanges(document.getElementById('un-rendered-Q'), '1.2vw');
     observeTextChanges(document.getElementById('un-rendered-A'), '1.2vw');
 
@@ -27,12 +24,14 @@ function createEventListeners() {
         document.getElementById('home-page-content').classList.remove('hidden-content');
         document.getElementById('generation-content').classList.add('hidden-content');
         document.getElementById('FAQ-page').classList.add('hidden-content');
+        document.body.style.overflowY = 'visible';
         history.pushState({ page: 'generator' }, '', '');
     });
 
     document.getElementById('back-arrow-p-modes').addEventListener('click', () => {
         document.getElementById('home-page-content').classList.toggle('hidden-content');
         document.getElementById('generation-content').classList.toggle('hidden-content'); 
+        document.body.style.overflowY = 'visible';
     });
 
     document.getElementById('feedback-button').addEventListener('click', () => {
@@ -98,6 +97,9 @@ function createEventListeners() {
         observeTextChanges(document.getElementById('fullscreen-question'), '3.75vw','run_once');
         observeTextChanges(document.getElementById('fullscreen-answer'),'3.3vw');
 
+        // don't allow scrolling the generation content while in the presentation banner (by hiding it) (mostly for mobile)
+        document.body.style.overflowY = 'hidden'; // the three ways out of here (where you need to set this back) are back-arrow, exit, and browser-back
+
         // Same as else{} just above^ (hackfix)
         document.getElementById('fullscreen-answer').style.background = '';
         document.getElementById('fullscreen-answer').style.color = '';
@@ -108,6 +110,7 @@ function createEventListeners() {
 
     document.getElementById('fullscreen-exit-button').addEventListener('click', () => {
         document.getElementById('presenation-content').classList.toggle('hidden-content');
+        document.body.style.overflowY = 'visible';
     });
 }
 
