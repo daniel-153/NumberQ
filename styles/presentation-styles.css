@@ -35,7 +35,8 @@
 /* Presentation banner styles */
 
 #presenation-content {
-    position: relative;
+    position: fixed;
+    top: 0vw;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,7 +54,7 @@
     height: 95vh;
     background-color: whitesmoke;
     border-radius: 1vw;
-    border: 0.1vw solid rgb(35, 34, 34)
+    border: 0.1vw solid rgb(35, 34, 34);
 }
 
 #fullscreen-Q-A-wrapper {
@@ -344,5 +345,103 @@
     #fullscreen-mode-button:hover {
         font-size: 3.6vw;
         background-color: rgb(60, 80, 147);
+    }
+
+    #presenation-content {
+        position: fixed;
+        z-index: 9999;
+        top: 0vw;
+    }
+
+    #presenation-banner {
+        --banner-width: 90vw;
+    }
+
+    #fullscreen-question {
+        margin-top: 18vw;
+        border-top: 0.1vw solid black;
+        width: 140%;
+    }
+
+    #fullscreen-regen-button {
+        width: 14vw;
+        height: 14vw;
+        top: 2vw;
+        left: calc(0.5 * 90vw - 14vw * 0.5);
+        font-size: 12vw;
+        border-radius: 1.6vw;
+        border-width: 0.65vw;
+        z-index: 99999;
+    }
+
+    #fullscreen-regen-button:hover {
+        background-color: rgb(65, 168, 68);
+        font-size: 12vw;
+        border-width: 0.65vw;
+    }
+
+    #fullscreen-Q-A-wrapper {
+        left: calc((90vw - 0.65 * 90vw) * 0.5);
+    }
+
+    #fullscreen-exit-button {
+        top: 1.5vw;
+        right: 1.5vw;
+        width: 18vw;
+        height: 8.3vw;
+        font-size: 6vw;
+        border-radius: 1.5vw;
+        border-width: 0.65vw;
+    }
+    
+    #fullscreen-exit-button:hover {
+        font-size: 6vw;
+        border-width: 0.65vw;
+        background-color: rgb(154, 51, 51);
+    }
+
+    #fullscreen-answer-wrapper {
+        width: 140%;
+        height: 23%;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        border: 3px solid red;
+    }
+
+    #answer-label {
+        font-size: 6.5vw;
+        line-height: 0.9;
+    }
+    
+    #fullscreen-answer {
+        width: 65vw;
+        height: 24vw;
+    }
+
+    #fullscreen-answer[data-special-styles] { /* target all the mode-based style adjustments (reset them all to the same thing) */
+        width: 65vw;
+        height: 24vw;
+    }
+    
+    #show-hide-button {
+        width: 15vw;
+        height: 7.5vw;
+    }
+    
+    #show-hide-button:hover {
+        cursor: pointer;
+        background-color: rgb(58, 135, 58);
+        border-width: 0.15vw;
+        font-size: 1.225vw;
+    } 
+    
+    #show-hide-button[data-status="hide"] {
+        background-color: rgb(204, 87, 44);
+        border-color: rgb(200, 59, 8);
+    }
+    
+    #show-hide-button[data-status="hide"]:hover {
+        background-color: rgb(215, 97, 54);
     }
 }
