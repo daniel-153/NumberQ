@@ -355,6 +355,7 @@
 
     #presenation-banner {
         --banner-width: 90vw;
+        overflow-y: scroll;
     }
 
     #fullscreen-question {
@@ -402,10 +403,11 @@
 
     #fullscreen-answer-wrapper {
         width: 140%;
-        height: 23%;
+        height: 27.1vw;
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
+        margin-bottom: 2vw;
         border: 3px solid red;
     }
 
@@ -417,6 +419,7 @@
     #fullscreen-answer {
         width: 65vw;
         height: 24vw;
+        margin-top: 1vw;
     }
 
     #fullscreen-answer[data-special-styles] { /* target all the mode-based style adjustments (reset them all to the same thing) */
@@ -425,15 +428,19 @@
     }
     
     #show-hide-button {
-        width: 15vw;
-        height: 7.5vw;
+        margin-top: 4vw;
+        width: 19vw;
+        height: 10.5vw;
+        font-size: 5vw;
     }
     
     #show-hide-button:hover {
-        cursor: pointer;
-        background-color: rgb(58, 135, 58);
-        border-width: 0.15vw;
-        font-size: 1.225vw;
+        margin-top: 4vw;
+        width: 19vw;
+        height: 10.5vw;
+        font-size: 5vw;
+        border-radius: 1vw;
+        border-width: 0.65vw;
     } 
     
     #show-hide-button[data-status="hide"] {
