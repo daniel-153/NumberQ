@@ -81,6 +81,7 @@ function createEventListeners() {
             document.getElementById('fullscreen-answer').style.color = 'rgb(11, 5, 5)';
             document.getElementById('show-hide-button').innerHTML = 'Hide';
             document.getElementById('show-hide-button').setAttribute('data-status','hide');
+            document.getElementById('fullscreen-answer').style.overflowX = 'auto';
             answerIsShown = true;
         }
         else {
@@ -88,14 +89,18 @@ function createEventListeners() {
             document.getElementById('fullscreen-answer').style.color = '';
             document.getElementById('show-hide-button').innerHTML = 'Show';
             document.getElementById('show-hide-button').removeAttribute('data-status');
+            document.getElementById('show-hide-button').setAttribute('data-status','show');
+            document.getElementById('fullscreen-answer').style.overflowX = 'hidden';
             answerIsShown = false;
         }
     });
 
     document.getElementById('fullscreen-mode-button').addEventListener('click', () => {
         document.getElementById('presenation-content').classList.toggle('hidden-content');
-        observeTextChanges(document.getElementById('fullscreen-question'), '3.75vw','run_once');
-        observeTextChanges(document.getElementById('fullscreen-answer'),'3.3vw');
+        
+        // fit the TeX on the Q and A when the presentation window is first opened
+        updateElementMath('fullscreen-question');
+        updateElementMath('fullscreen-answer');
 
         // don't allow scrolling the generation content while in the presentation banner (by hiding it) (mostly for mobile)
         document.body.style.overflowY = 'hidden'; // the three ways out of here (where you need to set this back) are back-arrow, exit, and browser-back
@@ -105,6 +110,7 @@ function createEventListeners() {
         document.getElementById('fullscreen-answer').style.color = '';
         document.getElementById('show-hide-button').innerHTML = 'Show';
         document.getElementById('show-hide-button').removeAttribute('data-status');
+        document.getElementById('show-hide-button').setAttribute('data-status','show');
         answerIsShown = false;
     });
 
@@ -212,9 +218,8 @@ function switchToNewQuestion(newQuestion) {
 
 
     // Presentation mode updates
-
-    updateElementMath('fullscreen-question',question,'3.75vw')
-    document.getElementById('fullscreen-answer').innerHTML = '\\(' + answer + '\\)';
+    updateElementMath('fullscreen-question', question, '3.75vw');
+    updateElementMath('fullscreen-answer', answer, '3.3vw');
 
     MathJax.typesetPromise([document.getElementById('fullscreen-Q-A-wrapper')]);
 } 
@@ -340,11 +345,15 @@ function observeTextChanges(element, initial_font_size, method) {
 
             // Apply scale factor
             const newFontSize = parseFloat(getComputedStyle(container).fontSize) * scaleFactor;
-            container.style.fontSize = newFontSize + "px";
+            container.style.fontSize = newFontSize + "px"; // modify font here
+            // container.style.fontSize = (newFontSize / Window.innerWidth) * 100 + 'vw';
 
-            // Break loop if scale factor is minimal
+            // Break loop if scale factor is 1 (the text isn't overflowing anymore)
             if (scaleFactor >= 1) break;
         }
+
+        // make sure the final font size we set is in vw, not px
+        container.style.fontSize = (parseFloat(getComputedStyle(container).fontSize) / window.innerWidth) * 100 + 'vw';
     }
 
     // Function to clean the element from existing MutationObservers
@@ -372,7 +381,26 @@ function observeTextChanges(element, initial_font_size, method) {
 }
 
 function updateElementMath(elementID, latexCode, initial_font_size) {
+    /*
+     This function can be used in three different ways: 
+     (1) All three args passed -> insert new TeX in a certain element and start at a specific max font size
+     (2) Only elementID and latexCode passed -> insert new TeX in a certain element and start at 3vw (10vw on mobile) max font size
+     (3) Only elementID is passed -> downsize the pre-existing TeX (must be inserted by this function) and start at 3vw (10vw on mobile)
+     */
+    
     const element = document.getElementById(elementID);
+
+    // re-set any style that may have been changed to accomodate overflow in the last run of this function
+    element.style.overflowX = 'hidden';
+    element.style.justifyContent = 'center';
+
+    // use newly provided TeX or previously inserted TeX
+    latexCode = latexCode !== undefined ? latexCode : element.getAttribute('data-latexcode'); // previously inserted LaTeX
+    if (latexCode === null) {
+        console.error('updateElementMath error: provided element does not have a data-latexcode attribute');
+        return;
+    }
+
     let defaultFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Default font size
     if (window.innerWidth <= 900) defaultFontSize = "10vw";
 
@@ -397,6 +425,9 @@ function updateElementMath(elementID, latexCode, initial_font_size) {
     // Insert the LaTeX code into the element
     element.innerHTML = wrappedLatexCode;
 
+    // expose the LaTeX so it's still accessible after rendering
+    element.setAttribute('data-latexcode', latexCode);
+
     // Render the content with MathJax
     MathJax.typesetPromise([element]).then(() => {
         // After rendering, adjust font size to fit the container
@@ -420,10 +451,76 @@ function updateElementMath(elementID, latexCode, initial_font_size) {
             // Apply scale factor
             const currentFontSize = parseFloat(getComputedStyle(container).fontSize);
             const newFontSize = currentFontSize * scaleFactor;
-            container.style.fontSize = newFontSize + "px";
+            container.style.fontSize = newFontSize + "px"; // modify font here
+            // container.style.fontSize = (newFontSize / Window.innerWidth) * 100 + 'vw';
 
-            // Break loop if scale factor is minimal
-            if (scaleFactor >= 1 || newFontSize < 12) break;
+            // Break loop if scale factor is 1 (the text isn't overflowing anymore), or we shrunk the text too small (below 16px)
+            if (scaleFactor >= 1 || newFontSize < 16) break; 
+        }
+
+        // ensure font size is >= 16px
+        if (parseFloat(getComputedStyle(container).fontSize) < 16) container.style.fontSize = 16 + 'px';
+
+        if (isOverflowing()) {
+            container.style.overflowX = 'auto';
+            container.style.display = 'flex';
+            container.style.justifyContent = 'left';
+            
+            container.innerHTML = `
+            <div class="clipped-tex-container"> 
+                <div class="clipped-tex-wrapper">
+                    \\[${latexCode}\\]
+                </div>    
+            </div>
+            <style>
+                .clipped-tex-container {
+                    width: calc(100% + fit-content);
+                    border-right: 4mm solid rgba(0,0,0,0);
+                }
+                
+                .clipped-tex-wrapper {
+                    border-left: 4mm solid rgba(0,0,0,0);
+                }
+
+                :root {
+                --scrollbar-size: max(0.52vw, 7.5px);
+                --scrollbar-radius: max(0.26vw, 4px);
+                }
+
+                #${elementID}::-webkit-scrollbar {
+                    height: var(--scrollbar-size);
+                }
+
+                #${elementID}::-webkit-scrollbar-thumb {
+                    background-color: #555;
+                    border-radius: var(--scrollbar-radius);
+                }
+
+                #${elementID}::-webkit-scrollbar-thumb:hover {
+                    background-color: #666; 
+                }
+
+                #${elementID}::-webkit-scrollbar-track {
+                    background: #2222223d;
+                    border-radius: var(--scrollbar-radius); 
+                }
+            </style>
+            `;
+            MathJax.typesetPromise(document.querySelectorAll(".clipped-tex-container"));
+        }
+
+        // make sure the final font size we set is in vw, not px
+        container.style.fontSize = (parseFloat(getComputedStyle(container).fontSize) / window.innerWidth) * 100 + 'vw';
+
+        // make sure the scroll is reset every time (all the way back to the left)
+        container.scrollLeft = 0;
+
+        // special case for the fullscreen answer (which shouldn't have a scrollbar when hidden)
+        if (
+            elementID === 'fullscreen-answer' && 
+            document.getElementById('show-hide-button').getAttribute('data-status') === 'show'
+        ) {
+            container.style.overflowX = 'hidden';
         }
     }
 }
