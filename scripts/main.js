@@ -1,9 +1,6 @@
 function createEventListeners() {
-    preloadModules();
-
     observeTextChanges(document.getElementById('un-rendered-Q'), '1.2vw');
     observeTextChanges(document.getElementById('un-rendered-A'), '1.2vw');
-
 
     [...document.getElementsByClassName('start-button')].forEach((element) => {
         element.addEventListener(
@@ -105,7 +102,7 @@ function createEventListeners() {
         // don't allow scrolling the generation content while in the presentation banner (by hiding it) (mostly for mobile)
         document.body.style.overflowY = 'hidden'; // the three ways out of here (where you need to set this back) are back-arrow, exit, and browser-back
 
-        // Same as else{} just above^ (hackfix)
+        // Same as else{} just above^
         document.getElementById('fullscreen-answer').style.background = '';
         document.getElementById('fullscreen-answer').style.color = '';
         document.getElementById('show-hide-button').innerHTML = 'Show';
