@@ -362,6 +362,8 @@ body::-webkit-scrollbar-thumb:hover {
     border-radius: calc(0.08 * 5vw);
     border: 0.13vw solid darkblue;
     font-family: 'Source Code Pro', monospace;
+    overflow-y: hidden;
+    overflow-x: hidden;
 }
 
 .latex-box {
