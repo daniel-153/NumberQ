@@ -360,6 +360,8 @@
         overflow-y: scroll;
         border-width: 0.75vw;
         border-radius: 2.3vw;
+        height: 86vh;
+        margin-bottom: 14vw;
     }
 
     #fullscreen-question {
@@ -374,15 +376,18 @@
         height: 14vw;
         top: 2vw;
         left: calc(0.5 * 90vw - 14vw * 0.5);
-        font-size: 12vw;
+        font-size: 14vw;
         border-radius: 1.6vw;
         border-width: 0.65vw;
         z-index: 99999;
+        padding-bottom: 1.3vw;
+        font-weight: bolder;
+        line-height: 0.7;
     }
 
     #fullscreen-regen-button:hover {
         background-color: rgb(65, 168, 68);
-        font-size: 12vw;
+        font-size: 14vw;
         border-width: 0.65vw;
     }
 

@@ -482,6 +482,10 @@
   border-width: 0.6vw;
 }
 
+.number-range-box {
+  font-size: 11.5vw;
+}
+
 .settings-text-box:focus {
   border-width: 1vw;
 }

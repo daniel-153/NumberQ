@@ -138,6 +138,10 @@ body::-webkit-scrollbar-thumb:hover {
     font-size: 1.9vw;
 }
 
+.shrunk-shrunk-question {
+    font-size: 1.9vw;
+}
+
 .start-button {
     width: 7vw;
     height: 2.5vw;
@@ -654,7 +658,7 @@ body::-webkit-scrollbar-thumb:hover {
     }
     
     #inner-title-container {
-        width: calc(var(--numberQ-width) * 1.4);
+        width: calc(var(--numberQ-width) * 1.65);
         height: calc(var(--numberQ-width) * 0.24 * 1.54);
         border-radius: 1vw;
     }
@@ -734,6 +738,10 @@ body::-webkit-scrollbar-thumb:hover {
     
     .shrunk-question {
         font-size: 6.5vw;
+    }
+
+    .shrunk-shrunk-question {
+        font-size: 6vw;
     }
 
     #lin-eq-example-problem {
