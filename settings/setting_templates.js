@@ -313,7 +313,7 @@ export const flip_equation = {
 export const force_positive_coefs = {
     type: 'radio_buttons',
     code_name: 'force_positive_coefs',
-    display_name: 'Force Postive Coefficients',
+    display_name: 'Force Positive Coefficients',
     radio_buttons: [['yes','Yes'],['no','No']], 
     tooltip: 'Should all the coefficients in the equation be positive? (some equations may take up less space with this enabled)'
 };
