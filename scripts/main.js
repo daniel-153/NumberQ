@@ -519,6 +519,14 @@ function updateElementMath(elementID, latexCode, initial_font_size) {
         ) {
             container.style.overflowX = 'hidden';
         }
+        
+        // if we overflowed in the y-direction but not the x-direction, don't pull the text to the left
+        if (container.scrollHeight > container.clientHeight && !(container.scrollWidth > container.clientWidth)) {
+            container.style.justifyContent = "center";
+            
+            // since real y-direction overflows only seem to happen on mobile (& possibly small ipads), add this special case to deal with this 
+            if (window.innerWidth <= 1200) observeTextChanges(container, '13vw', 'run_once');
+        }
     }
 }
 
