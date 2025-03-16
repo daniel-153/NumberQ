@@ -78,6 +78,7 @@
     border-bottom: 0.1vw solid black;
     font-size: 3.75vw;
     margin-top: 0.3vw;
+    overflow-y: hidden;
 }
 
 #fullscreen-answer-wrapper {
@@ -112,6 +113,7 @@
     text-align: center;
     color: rgba(11, 5, 5, 0);
     font-size: 3.3vw;
+    overflow-y: hidden;
 
     background: repeating-linear-gradient(
     45deg,
@@ -356,12 +358,15 @@
     #presenation-banner {
         --banner-width: 90vw;
         overflow-y: scroll;
+        border-width: 0.75vw;
+        border-radius: 2.3vw;
     }
 
     #fullscreen-question {
         margin-top: 18vw;
         border-top: 0.1vw solid black;
         width: 140%;
+        min-height: 35px; /* mainly set for zoom purposes (so the prompt doesn't shrink too small at very high zoom) */
     }
 
     #fullscreen-regen-button {
@@ -403,12 +408,11 @@
 
     #fullscreen-answer-wrapper {
         width: 140%;
-        height: 27.1vw;
+        height: fit-content;
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 2vw;
-        border: 3px solid red;
     }
 
     #answer-label {
@@ -420,6 +424,8 @@
         width: 65vw;
         height: 24vw;
         margin-top: 1vw;
+        border-radius: 2vw;
+        border-width: 0.55vw;
     }
 
     #fullscreen-answer[data-special-styles] { /* target all the mode-based style adjustments (reset them all to the same thing) */
@@ -430,25 +436,14 @@
     #show-hide-button {
         margin-top: 4vw;
         width: 19vw;
-        height: 10.5vw;
-        font-size: 5vw;
-    }
-    
-    #show-hide-button:hover {
-        margin-top: 4vw;
-        width: 19vw;
-        height: 10.5vw;
+        height: 8.5vw;
         font-size: 5vw;
         border-radius: 1vw;
         border-width: 0.65vw;
+    }
+    
+    #show-hide-button:hover {
+        font-size: 5vw;
+        border-width: 0.65vw;
     } 
-    
-    #show-hide-button[data-status="hide"] {
-        background-color: rgb(204, 87, 44);
-        border-color: rgb(200, 59, 8);
-    }
-    
-    #show-hide-button[data-status="hide"]:hover {
-        background-color: rgb(215, 97, 54);
-    }
 }
