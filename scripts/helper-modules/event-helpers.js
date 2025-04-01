@@ -3,6 +3,10 @@ import * as UH from './ui-helpers.js';
 
 const event_listeners = [
     function homePage() {
+        document.getElementById('create-worksheets-button').addEventListener('click', () => {
+            UH.toggleVisibility(['worksheet-page'],['home-page-content']);
+        });
+        
         [...document.getElementsByClassName('start-button')].forEach((element) => {
             element.addEventListener(
                 'click',
@@ -17,7 +21,7 @@ const event_listeners = [
         });
 
         window.addEventListener('popstate',() => {
-            UH.toggleVisibility(['home-page-content'], ['generation-content', 'FAQ-page']);
+            UH.toggleVisibility(['home-page-content'], ['generation-content', 'FAQ-page','worksheet-page']);
             document.body.style.overflowY = 'visible';
             history.pushState({ page: 'generator' }, '', '');
         });
@@ -80,9 +84,13 @@ const event_listeners = [
         document.getElementById('back-arrow-FAQ').addEventListener('click', () => {
             UH.toggleVisibility(['home-page-content'], ['FAQ-page']);
         });
+    },
+
+    function worksheetPage() {
+        
     }
 ];
 
 export function registerEventListeners() {
-    event_listeners.forEach(setupFunction => setupFunction());
+    event_listeners.forEach(addListeners => addListeners());
 }
