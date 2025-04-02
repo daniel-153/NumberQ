@@ -27,12 +27,15 @@
     border-top-width: 0;
     border-bottom-width: 0;
     background-color: #2e2e2e;
+    overflow-y: auto;
 }
 
 .worksheet-page {
     background-color: white;
     height: 87vh;
     width: calc(87vh * 8.5 / 11);
+    min-height: 87vh;
+    min-width: calc(87vh * 8.5 / 11);
     margin-top: 1vw;
     margin-bottom: 1vw;
 }

@@ -1,10 +1,12 @@
 import * as GH from './prob-gen-ui-helpers.js';
 import * as UH from './ui-helpers.js';
+import { worksheetEditor as worksheet }  from '../worksheet/worksheet.js';
 
 const event_listeners = [
     function homePage() {
         document.getElementById('create-worksheets-button').addEventListener('click', () => {
             UH.toggleVisibility(['worksheet-page'],['home-page-content']);
+            worksheet.createAsDefault();
         });
         
         [...document.getElementsByClassName('start-button')].forEach((element) => {
@@ -87,7 +89,9 @@ const event_listeners = [
     },
 
     function worksheetPage() {
-        
+        document.getElementById('special-test-item').addEventListener('click', () => {
+            worksheet.appendNewPage();
+        });
     }
 ];
 
