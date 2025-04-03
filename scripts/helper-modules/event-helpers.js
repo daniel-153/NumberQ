@@ -118,6 +118,14 @@ const event_listeners = [
                 }
             }
         });
+
+        document.getElementById('worksheet-print-button').addEventListener('click', () => {
+            const page_column = document.getElementById('worksheet-page-column');
+            document.body.innerHTML = '';
+            document.body.appendChild(page_column);
+
+            window.print();
+        });
     }
 ];
 

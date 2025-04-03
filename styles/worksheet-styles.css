@@ -8,6 +8,22 @@
     background-color: rgb(29, 28, 28);
 }
 
+@media print {
+    #worksheet-page-column {
+        width: 100vw;
+        height: 100vh;
+        overflow: visible;
+        border: 3px solid red;
+    }
+
+    .worksheet-page {
+        min-width: 1000px;
+        border: 3px solid rgb(0, 166, 255);
+        overflow: visible;
+    }
+    
+}
+
 #worksheet-content-wrapper {
     display: flex;
     height: 95vh;
