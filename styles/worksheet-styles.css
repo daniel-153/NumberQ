@@ -38,6 +38,7 @@
     min-width: calc(87vh * 8.5 / 11);
     margin-top: 1vw;
     margin-bottom: 1vw;
+    overflow: hidden;
 }
 
 .worksheet-side-panel {
@@ -68,6 +69,10 @@
 }
 
 .outline-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
     height: 5vh;
     border-radius: 1%;
     border-width: 0.1vw;
@@ -82,12 +87,43 @@
 }
 
 .outline-page {
-    width: 70%;
+    width: 93%;
     background-color: green;
 }
 
 .outline-content {
-    width: 50%;
+    width: 80%;
     background-color: red;
 }
+
+.outline-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 50%;
+
+    text-align: center;
+    color: white;
+    font-size: 1.5vw;
+}
+
+.outline-nav-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 50%;
+}
+
+.outline-button {
+    width: 1.5vw;
+    height: 1.5vw;
+    font-size: 0.7vw;
+    margin-left: 1.5vw;
+    font-size: 1vw;
+}
+
+
 

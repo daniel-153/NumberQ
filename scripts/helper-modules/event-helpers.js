@@ -89,8 +89,34 @@ const event_listeners = [
     },
 
     function worksheetPage() {
-        document.getElementById('special-test-item').addEventListener('click', () => {
-            worksheet.appendNewPage();
+        document.getElementById('outline-container').addEventListener('click', (event) => {
+            if (event.target.closest('.outline-item').classList.contains('outline-document')) {
+                if (event.target.matches('.outline-options-button')) {
+
+                }
+                else if (event.target.matches('.outline-plus-button')) {
+                    worksheet.appendNewPage();
+                }
+            }
+            else if (event.target.closest('.outline-item').classList.contains('outline-page')) {
+                if (event.target.matches('.outline-delete-button')) {
+                    worksheet.deletePageAt(event.target.closest('.outline-item').getAttribute('data-page-number'))
+                }
+                else if (event.target.matches('.outline-options-button')) {
+                    
+                }
+                else if (event.target.matches('.outline-plus-button')) {
+                    worksheet.appendContentToPage(event.target.closest('.outline-item').getAttribute('data-page-number'))
+                }
+            }
+            else if (event.target.closest('.outline-item').classList.contains('outline-content')) {
+                if (event.target.matches('.outline-delete-button')) {
+                    worksheet.deleteContentAt(event.target.closest('.outline-item').getAttribute('data-content-id'))
+                }
+                else if (event.target.matches('.outline-options-button')) {
+                    
+                }
+            }
         });
     }
 ];
