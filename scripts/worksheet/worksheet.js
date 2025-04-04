@@ -6,7 +6,8 @@ const _editorFunctions = {
     appendNewPage,
     deletePageAt,
     appendContentToPage,
-    deleteContentAt
+    deleteContentAt,
+    print
 }
 
 export const worksheetEditor = {
@@ -15,7 +16,7 @@ export const worksheetEditor = {
         _editorFunctions, 
         {
             get: function(target_obj, property) { 
-                if (Object.prototype.hasOwnProperty.call(target_obj, property)) { 
+                if (Object.prototype.hasOwnProperty.call(target_obj, property) && property !== 'print') { 
                     return function(...args) { 
                         target_obj[property](...args); 
                         render(); 
@@ -138,6 +139,60 @@ function updateOutline() {
         }
     }
     document.getElementById('outline-container').innerHTML = updated_html;
+}
+
+function print() {
+    // hide all body elements (but mark ones that were already hidden)
+    Array.from(document.body.children).forEach(element => {
+        if (element.classList.contains('hidden-content')) element.setAttribute('previously-hidden', 'true');
+        element.classList.add('hidden-content');
+    });
+
+    // copy the html for all the worksheet pages
+    const worksheet_page_array = [...document.getElementsByClassName('worksheet-page')];
+    let running_html = '';
+    for (let i = 0; i < worksheet_page_array.length; i++) {
+        let page_element = worksheet_page_array[i];
+        page_element.classList.add('print-worksheet-page');
+        running_html += page_element.outerHTML;
+        page_element.classList.remove('print-worksheet-page');
+    }
+    
+    // insert the copied worksheet pages at the end of the body
+    document.body.insertAdjacentHTML('beforeend', running_html);
+
+    // scale the content of the pages 
+    document.querySelectorAll('.print-worksheet-page').forEach(element => {
+        const pre_print_width = element.offsetWidth;
+        console.log('pre-print: ',pre_print_width)
+        
+        const post_print_width = element.offsetWidth;
+        console.log('post-print: ',post_print_width)
+        const print_scale_factor = post_print_width / pre_print_width;
+
+
+        console.log('scale factor: ',print_scale_factor)
+        element.style.transform = `scale(${print_scale_factor})`;
+        element.style.transformOrigin = 'top left';
+
+        // ! problem ! : this doesn't work because the pre and post print sizes are coming out exactly the same here
+        
+    });
+
+    window.print();
+
+    // remove the copies worksheet pages
+    document.querySelectorAll('.print-worksheet-page').forEach(element => element.remove());
+
+    // show all the elements that we hid at the start (Except for the ones that were already hidden)
+    Array.from(document.body.children).forEach(element => {
+        if (element.getAttribute('previously-hidden') === 'true') {
+            element.removeAttribute('previously-hidden');
+        }
+        else {
+            element.classList.remove('hidden-content');
+        }
+    });
 }
 
 
