@@ -77,7 +77,10 @@ function deleteContentAt(content_id) {
 function render() {
     let updated_html = '';
     for (let i = 0; i < worksheet.pages.length; i++) {
-        updated_html += '<div class="worksheet-page">';
+        updated_html += `
+            <div class="worksheet-page-wrapper">
+                <div class="worksheet-page">
+            `;
         
         for (let j = 0; j < worksheet.pages[i].content.length; j++) {
             updated_html += `
@@ -86,8 +89,10 @@ function render() {
 
         }
         
-        updated_html += '</div>';
+        updated_html += '</div></div>';
     }
+
+    updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'
     document.getElementById('worksheet-page-column').innerHTML = updated_html;
 }
 
@@ -141,7 +146,7 @@ function updateOutline() {
     document.getElementById('outline-container').innerHTML = updated_html;
 }
 
-function print() {
+function print() {    
     // hide all body elements (but mark ones that were already hidden)
     Array.from(document.body.children).forEach(element => {
         if (element.classList.contains('hidden-content')) element.setAttribute('previously-hidden', 'true');
@@ -161,24 +166,6 @@ function print() {
     // insert the copied worksheet pages at the end of the body
     document.body.insertAdjacentHTML('beforeend', running_html);
 
-    // scale the content of the pages 
-    document.querySelectorAll('.print-worksheet-page').forEach(element => {
-        const pre_print_width = element.offsetWidth;
-        console.log('pre-print: ',pre_print_width)
-        
-        const post_print_width = element.offsetWidth;
-        console.log('post-print: ',post_print_width)
-        const print_scale_factor = post_print_width / pre_print_width;
-
-
-        console.log('scale factor: ',print_scale_factor)
-        element.style.transform = `scale(${print_scale_factor})`;
-        element.style.transformOrigin = 'top left';
-
-        // ! problem ! : this doesn't work because the pre and post print sizes are coming out exactly the same here
-        
-    });
-
     window.print();
 
     // remove the copies worksheet pages
@@ -192,7 +179,7 @@ function print() {
         else {
             element.classList.remove('hidden-content');
         }
-    });
+    });   
 }
 
 

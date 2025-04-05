@@ -28,17 +28,26 @@
     border-bottom-width: 0;
     background-color: #2e2e2e;
     overflow-y: auto;
+    overflow-x: hidden;
+    gap: 1.1vw;
+}
+
+.worksheet-page-wrapper {
+    margin-top: 1vw;
+    height: calc(11in * var(--worksheet-preview-scale));
 }
 
 .worksheet-page {
     background-color: white;
-    height: 87vh;
-    width: calc(87vh * 8.5 / 11);
-    min-height: 87vh;
-    min-width: calc(87vh * 8.5 / 11);
-    margin-top: 1vw;
+    width: 8.5in;
+    height: 11in;
+    min-width: 8.5in;
+    min-height: 11in;
+    margin-top: 0;
     margin-bottom: 1vw;
     overflow: hidden;
+    scale: var(--worksheet-preview-scale);
+    transform-origin: top;
 }
 
 .worksheet-side-panel {
@@ -139,15 +148,11 @@
         margin: 0;
     }
     
-    .worksheet-page {
-        width: 8.5in;
-        height: 11in;
-        min-height: 11in;
+    .worksheet-page {        
         margin: 0;
         page-break-after: always; 
-        break-after: page;
-        transform: scale(var(--scale-factor));
-        transform-origin: top left;
+        break-after: page; 
+        scale: 1;
     }
 
     .worksheet-page:last-child {

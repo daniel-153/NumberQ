@@ -119,6 +119,14 @@ const event_listeners = [
             }
         });
 
+        window.addEventListener('DOMContentLoaded',() => {
+            document.documentElement.style.setProperty('--worksheet-preview-scale', `${1.05 * window.innerWidth / 2560}`);
+        });
+
+        window.addEventListener('resize',() => {
+            document.documentElement.style.setProperty('--worksheet-preview-scale', `${1.05 * window.innerWidth / 2560}`);
+        });
+
         document.getElementById('worksheet-print-button').addEventListener('click', () => {
             worksheet.print();
         });
