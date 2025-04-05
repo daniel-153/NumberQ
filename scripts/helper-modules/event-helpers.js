@@ -1,9 +1,12 @@
 import * as GH from './prob-gen-ui-helpers.js';
 import * as UH from './ui-helpers.js';
+import * as WH from './worksheet-helpers.js';
 import { worksheetEditor as worksheet }  from '../worksheet/worksheet.js';
 
 const event_listeners = [
     function homePage() {
+        GH.insertModeBanners();
+        
         document.getElementById('create-worksheets-button').addEventListener('click', () => {
             UH.toggleVisibility(['worksheet-page'],['home-page-content']);
             worksheet.createAsDefault();
@@ -100,18 +103,27 @@ const event_listeners = [
             }
             else if (event.target.closest('.outline-item').classList.contains('outline-page')) {
                 if (event.target.matches('.outline-delete-button')) {
-                    worksheet.deletePageAt(event.target.closest('.outline-item').getAttribute('data-page-number'))
+                    worksheet.deletePageAt(event.target.closest('.outline-item').getAttribute('data-page-number'));
                 }
                 else if (event.target.matches('.outline-options-button')) {
                     
                 }
                 else if (event.target.matches('.outline-plus-button')) {
-                    worksheet.appendContentToPage(event.target.closest('.outline-item').getAttribute('data-page-number'))
+                    worksheet.appendContentToPage(event.target.closest('.outline-item').getAttribute('data-page-number'));
+                    WH.insertModeBanners();
+
+                    [...document.getElementsByClassName('gen-select-button')].forEach((element) => {
+                        element.addEventListener(
+                            'click',
+                            () => {
+                               WH.insertModeSettings(element.getAttribute('data-gen-func-name'));
+                        });
+                    });
                 }
             }
             else if (event.target.closest('.outline-item').classList.contains('outline-content')) {
                 if (event.target.matches('.outline-delete-button')) {
-                    worksheet.deleteContentAt(event.target.closest('.outline-item').getAttribute('data-content-id'))
+                    worksheet.deleteContentAt(event.target.closest('.outline-item').getAttribute('data-content-id'));
                 }
                 else if (event.target.matches('.outline-options-button')) {
                     

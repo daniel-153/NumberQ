@@ -1,5 +1,6 @@
 import * as UH from './ui-helpers.js';
 import * as FH from './form-helpers.js';
+import * as TB from '../templates/topic-banners.js';
 
 export async function initiateGenerator(type, funcName) {
     document.getElementById("generator-name").innerHTML = type;
@@ -11,7 +12,7 @@ export async function initiateGenerator(type, funcName) {
     const currentGen = currentModule.default;
     const pre_settings = currentModule.get_presets();
 
-    FH.createSettingsFields(currentModule.settings_fields, await import('../../settings/setting_templates.js'), 'settings-form').then(() => {
+    FH.createSettingsFields(currentModule.settings_fields, await import('../templates/gen-settings.js'), 'settings-form').then(() => {
         // This will run after all settings have been inserted
         FH.updateFormValues(pre_settings, 'settings-form');
         // moved this into the .then because pre-sets might not actually match the first generation (due to a change in validation or as in sysEqs)
@@ -105,3 +106,32 @@ export function toggleFullScreenAns(method = 'toggle') {
         document.getElementById('fullscreen-answer').style.overflowX = 'hidden';
     }
 } // method => 'show', 'hide', or 'toggle' the fullscreen answer 
+
+export function insertModeBanners() {
+    let output_html = '';
+    TB.templates.forEach(banner_template => {
+        let example_problem_class;
+        if (banner_template.example_problem_class === undefined) example_problem_class = '';
+        else example_problem_class = banner_template.example_problem_class;
+             
+        output_html += `
+            <div class="generator ${banner_template.category_class_name}">
+            <div class="gen-title-container">
+                <h1 class="gen-title">${banner_template.display_name}</h1>
+                <h2 class="gen-topic">(${banner_template.display_category})</h2>
+            </div>
+            <div class="example-problem ${example_problem_class}">\\(${banner_template.example_problem}\\)</div>
+            <button
+                class="start-button"
+                data-gen-type="${banner_template.display_name}"
+                data-gen-func-name="${banner_template.function_name}"
+            >
+                Generate
+            </button>
+            </div>
+        `;
+    })
+
+    document.getElementById('generator-list').insertAdjacentHTML('afterbegin',output_html);
+    MathJax.typesetPromise(['#generator-list']);
+}
