@@ -3,10 +3,6 @@ let worksheet = null;
 const _editorFunctions = {
     createAsEmptyDoc,
     createAsDefault,
-    appendNewPage,
-    deletePageAt,
-    appendContentToPage,
-    deleteContentAt,
     print,
     appendItemAt,
     deleteItemAt
@@ -50,31 +46,7 @@ function createAsEmptyDoc() {
 
 function createAsDefault() { 
     createAsEmptyDoc();
-    appendNewPage();
-}
-
-function appendNewPage() {
-    worksheet.pages.push(
-        {
-            content: [],
-            settings: {}
-        }
-    );
-}
-
-function deletePageAt(index) {
-    worksheet.pages.splice(index, 1);
-}
-
-function appendContentToPage(page_index) { // just a test
-    worksheet.pages[Number(page_index)].content.push({
-        text_content: '\\frac{x^{2}-9x+18}{x+5}\\cdot\\frac{x^{2}-2x-35}{x^{2}-8x+15}'
-    });
-}
-
-function deleteContentAt(content_id) {
-    let [ page_index, content_index ] = content_id.split('.');
-    worksheet.pages[page_index].content.splice(content_index, 1);
+    appendItemAt('document');
 }
 
 function appendItemAt(item_ID) {

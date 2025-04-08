@@ -27,24 +27,24 @@ export function insertModeBanners(filter = []) {
         `;
     });
 
-    document.getElementById('worksheet-mode-selector').innerHTML = output_html;
+    document.getElementById('pe-mode-selector').innerHTML = output_html;
 
     // add the event listener to get the specificied mode settings on each 'select' button
     [...document.getElementsByClassName('gen-select-button')].forEach(button_element => {
         button_element.addEventListener('click',() => {
-            _insertProblemGenSettings(button_element.getAttribute('data-gen-func-name'));
+            _insertPGSettings(button_element.getAttribute('data-gen-func-name'));
         });
     });
 
     MathJax.typesetPromise(['#worksheet-mode-selector']);
 }
 
-async function _insertProblemGenSettings(gen_func_name) {
+async function _insertPGSettings(gen_func_name) {
     const current_gen_module = await import(`../gen-modules/${gen_func_name}.js`);
     const pre_settings = current_gen_module.get_presets();
 
-    FH.createSettingsFields(current_gen_module.settings_fields, await import('../templates/gen-settings.js'), 'worksheet-mode-settings').then(() => {
-        FH.updateFormValues(pre_settings,'worksheet-mode-settings')
+    FH.createSettingsFields(current_gen_module.settings_fields, await import('../templates/gen-settings.js'), 'pe-settings-form').then(() => {
+        FH.updateFormValues(pre_settings,'pe-settings-form')
     })
 
 }
@@ -90,8 +90,8 @@ function _openItemSettings(item_ID, settings_obj) {
     const [ item_type, item_number ] = item_ID.split('-');
 
     // temp (need some way to clear settings that were already there from the last item)
-    document.getElementById('worksheet-mode-selector').innerHTML = '';
-    document.getElementById('worksheet-mode-settings').innerHTML = '';
+    // document.getElementById('worksheet-mode-selector').innerHTML = '';
+    // document.getElementById('worksheet-mode-settings').innerHTML = '';
     // temp
 
     if (item_type === 'document') {

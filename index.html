@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="styles/settings-styles.css" />
     <link rel="stylesheet" href="styles/presentation-styles.css" />
     <link rel="stylesheet" href="styles/worksheet-styles.css" />
+    <link rel="stylesheet" href="styles/problem-editor-styles.css">
   </head>
   <body>
     <div id="home-page-content">
@@ -184,7 +185,17 @@
         </div>
       </div>
       <div id="problem-editor-content" class="hidden-content">
-        <div id="problem-editor-banner"></div>
+        <div id="problem-editor-banner">
+          <div id="pe-top-bar"></div>
+          <div id="pe-Q-A-wrapper"></div>
+          <div id="pe-settings-wrapper">
+            <div id="pe-randomize-all-tab">
+              <input type="checkbox" id="pe-randomize-all-checkbox" />Randomize All
+            </div>
+            <form id="pe-settings-form"></form>
+            <div id="pe-mode-selector"></div>
+          </div>
+        </div>
       </div>
     </div>
     <script
