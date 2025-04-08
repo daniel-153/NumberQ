@@ -65,6 +65,8 @@
     align-items: center;
     width: 12.5vw;
     height: 12.5vw;
+    min-width: 12.5vw;
+    min-height: 12.5vw;
     background-color: rgb(236, 236, 236);
     border: 0.1vw solid grey;
     border-radius: calc(0.05 * 12.5vw);
@@ -326,6 +328,8 @@
   .setting-box {
       width: 21vw;
       height: 21vw;
+      min-width: 21vw;
+      min-height: 21vw;
       border-width: 0.2vw;
       border-radius: calc(0.05 * 21vw);
   }
@@ -436,6 +440,8 @@
 .setting-box {
     width: 81vw;
     height: 81vw;
+    min-width: 81vw;
+    min-height: 81vw;
     border-width: 0.2vw;
     border-radius: calc(0.05 * 81vw);
     margin: 2vw;

@@ -10,6 +10,8 @@ const event_listeners = [
         document.getElementById('create-worksheets-button').addEventListener('click', () => {
             UH.toggleVisibility(['worksheet-page'],['home-page-content']);
             worksheet.createAsDefault();
+            worksheet.focused_item = 'page-0';
+            WH.focusItemAt(worksheet.focused_item);
         });
         
         [...document.getElementsByClassName('start-button')].forEach((element) => {
@@ -93,42 +95,19 @@ const event_listeners = [
 
     function worksheetPage() {
         document.getElementById('outline-container').addEventListener('click', (event) => {
-            if (event.target.closest('.outline-item').classList.contains('outline-document')) {
-                if (event.target.matches('.outline-options-button')) {
+            const targeted_item_ID = event.target.closest('.outline-item').getAttribute('data-item-ID'); 
 
-                }
-                else if (event.target.matches('.outline-plus-button')) {
-                    worksheet.appendNewPage();
-                }
+            if (event.target.matches('.outline-plus-button')) { // append and focus the item that was appended
+                worksheet.focused_item = worksheet.appendItemAt(targeted_item_ID);
             }
-            else if (event.target.closest('.outline-item').classList.contains('outline-page')) {
-                if (event.target.matches('.outline-delete-button')) {
-                    worksheet.deletePageAt(event.target.closest('.outline-item').getAttribute('data-page-number'));
-                }
-                else if (event.target.matches('.outline-options-button')) {
-                    
-                }
-                else if (event.target.matches('.outline-plus-button')) {
-                    worksheet.appendContentToPage(event.target.closest('.outline-item').getAttribute('data-page-number'));
-                    WH.insertModeBanners();
+            else if (event.target.matches('.outline-delete-button')) { // delete and focus the parent of the item that was deleted
+                worksheet.focused_item = worksheet.deleteItemAt(targeted_item_ID);
+            }
+            else { // just focus the targeted item (because no specific action was specified)
+                worksheet.focused_item = targeted_item_ID;    
+            }
 
-                    [...document.getElementsByClassName('gen-select-button')].forEach((element) => {
-                        element.addEventListener(
-                            'click',
-                            () => {
-                               WH.insertModeSettings(element.getAttribute('data-gen-func-name'));
-                        });
-                    });
-                }
-            }
-            else if (event.target.closest('.outline-item').classList.contains('outline-content')) {
-                if (event.target.matches('.outline-delete-button')) {
-                    worksheet.deleteContentAt(event.target.closest('.outline-item').getAttribute('data-content-id'));
-                }
-                else if (event.target.matches('.outline-options-button')) {
-                    
-                }
-            }
+            WH.focusItemAt(worksheet.focused_item);
         });
 
         window.addEventListener('DOMContentLoaded',() => {
@@ -141,6 +120,10 @@ const event_listeners = [
 
         document.getElementById('worksheet-print-button').addEventListener('click', () => {
             worksheet.print();
+        });
+
+        document.getElementById('worksheet-generate-problem-button').addEventListener('click', () => {
+            UH.toggleVisibility(['problem-editor-content'],[]);
         });
     }
 ];

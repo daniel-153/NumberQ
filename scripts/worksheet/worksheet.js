@@ -7,7 +7,9 @@ const _editorFunctions = {
     deletePageAt,
     appendContentToPage,
     deleteContentAt,
-    print
+    print,
+    appendItemAt,
+    deleteItemAt
 }
 
 export const worksheetEditor = {
@@ -18,9 +20,10 @@ export const worksheetEditor = {
             get: function(target_obj, property) { 
                 if (Object.prototype.hasOwnProperty.call(target_obj, property) && property !== 'print') { 
                     return function(...args) { 
-                        target_obj[property](...args); 
+                        const return_value = target_obj[property](...args); 
                         render(); 
                         updateOutline();
+                        return return_value;
                     }
                 }
                 else return target_obj[property];
@@ -28,7 +31,8 @@ export const worksheetEditor = {
         }
     )),
     render: render,
-    updateOutline: updateOutline
+    updateOutline: updateOutline,
+    focused_item: null 
 };
 
 // TODO (next step): make it so you can add AND remove pages from the worksheet, then make it so can add and remove 'content'
@@ -73,6 +77,51 @@ function deleteContentAt(content_id) {
     worksheet.pages[page_index].content.splice(content_index, 1);
 }
 
+function appendItemAt(item_ID) {
+    const [ item_type, item_number ] = item_ID.split('-');
+
+    if (item_type === 'document') {
+        // add a page to the document
+        worksheet.pages.push(
+            {
+                content: [],
+                settings: {}
+            }
+        );
+
+        return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
+    }
+    else if (item_type === 'page') {
+        worksheet.pages[Number(item_number)].content.push({
+            settings: {
+                text_content: '\\frac{x^{2}-9x+18}{x+5}\\cdot\\frac{x^{2}-2x-35}{x^{2}-8x+15}'
+            }
+        });
+
+        return 'content-' + item_number + '.' + (worksheet.pages[Number(item_number)].content.length - 1); // return the item_ID of the content that got added
+    }
+}
+
+function deleteItemAt(item_ID) {
+    const [ item_type, item_number ] = item_ID.split('-');
+
+    if (item_type === 'document') {
+        worksheet = null;
+    }
+    else if (item_type === 'page') {
+        worksheet.pages.splice(Number(item_number), 1);
+
+        return 'document'; // indicate the focus should be "moved" to the docuement
+    }
+    else if (item_type === 'content') {
+        const [ page_index, content_index ] = item_number.split('.');
+        worksheet.pages[page_index].content.splice(content_index, 1);
+
+        return 'page-' + page_index; // indicate the focus should be "moved" to the page where the content got deleted
+    }
+}
+
+
 // Rendering Functions:
 function render() {
     let updated_html = '';
@@ -84,7 +133,7 @@ function render() {
         
         for (let j = 0; j < worksheet.pages[i].content.length; j++) {
             updated_html += `
-                <div class="worksheet-page-content">${worksheet.pages[i].content[j].text_content}</div>
+                <div class="worksheet-page-content">${worksheet.pages[i].content[j].settings.text_content}</div>
             `;
 
         }
@@ -98,12 +147,9 @@ function render() {
 
 function updateOutline() {
     let updated_html = `
-        <div class="outline-item outline-document">
+        <div class="outline-item outline-document" data-item-ID="document">
             <div class="outline-label outline-document-label">Document</div>
             <div class="outline-nav-wrapper">
-                <button 
-                    class="outline-button outline-options-button"
-                >#</button>
                 <button 
                     class="outline-button outline-plus-button"
                 >+</button>
@@ -112,15 +158,12 @@ function updateOutline() {
     `;
     for (let i = 0; i < worksheet.pages.length; i++) {
         updated_html += `
-            <div class="outline-item outline-page" data-page-number="${i}">
+            <div class="outline-item outline-page" data-item-ID="page-${i}">
                 <div class="outline-label outline-page-label">Page ${i + 1}</div>
                 <div class="outline-nav-wrapper">
                     <button 
                         class="outline-button outline-delete-button"
                     >X</button>    
-                    <button 
-                        class="outline-button outline-options-button"
-                    >#</button>
                     <button 
                         class="outline-button outline-plus-button"
                     >+</button>
@@ -129,15 +172,12 @@ function updateOutline() {
         `;
         for (let j = 0; j < worksheet.pages[i].content.length; j++) {
             updated_html += `
-                <div class="outline-item outline-content" data-content-id="${i}.${j}">
+                <div class="outline-item outline-content" data-item-ID="content-${i}.${j}">
                     <div class="outline-label outline-content-label">Content ${i + 1}.${j + 1}</div>
                     <div class="outline-nav-wrapper">
                         <button 
                             class="outline-button outline-delete-button"
                         >X</button>    
-                        <button 
-                            class="outline-button outline-options-button"
-                        >#</button>
                     </div>
                 </div>
             `;
