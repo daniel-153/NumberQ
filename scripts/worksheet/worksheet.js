@@ -5,7 +5,8 @@ const _editorFunctions = {
     createAsDefault,
     print,
     appendItemAt,
-    deleteItemAt
+    deleteItemAt,
+    editTextContent
 }
 
 export const worksheetEditor = {
@@ -28,7 +29,8 @@ export const worksheetEditor = {
     )),
     render: render,
     updateOutline: updateOutline,
-    focused_item: null 
+    getItemById: getItemById,
+    focused_item_ID: null 
 };
 
 // TODO (next step): make it so you can add AND remove pages from the worksheet, then make it so can add and remove 'content'
@@ -40,13 +42,33 @@ export const worksheetEditor = {
 function createAsEmptyDoc() {
     worksheet = {
         pages: [],
-        settings: {}
+        settings: {},
     };
 }
 
 function createAsDefault() { 
     createAsEmptyDoc();
     appendItemAt('document');
+}
+
+function getItemById(item_ID) {
+    const [ item_type, item_number ] = item_ID.split('-');
+
+    if (item_type === 'document') {
+        return worksheet;
+    }
+    else if (item_type === 'page') {
+        return worksheet.pages[item_number];
+    }
+    else if (item_type === 'content') {
+        const [ page_index, content_index ] = item_number.split('.');
+        
+        return worksheet.pages[page_index].content[content_index];
+    }
+    else {
+        console.error(`Cannot get item with ID="${item_ID}".`);
+        return null;
+    }
 }
 
 function appendItemAt(item_ID) {
@@ -57,7 +79,7 @@ function appendItemAt(item_ID) {
         worksheet.pages.push(
             {
                 content: [],
-                settings: {}
+                settings: {},
             }
         );
 
@@ -66,8 +88,8 @@ function appendItemAt(item_ID) {
     else if (item_type === 'page') {
         worksheet.pages[Number(item_number)].content.push({
             settings: {
-                text_content: '\\frac{x^{2}-9x+18}{x+5}\\cdot\\frac{x^{2}-2x-35}{x^{2}-8x+15}'
-            }
+                text_content: '[insert text content]'
+            },
         });
 
         return 'content-' + item_number + '.' + (worksheet.pages[Number(item_number)].content.length - 1); // return the item_ID of the content that got added
@@ -91,6 +113,17 @@ function deleteItemAt(item_ID) {
 
         return 'page-' + page_index; // indicate the focus should be "moved" to the page where the content got deleted
     }
+}
+
+function editTextContent(item_ID, value) {
+    if (item_ID.split('-')[0] !== 'content') {
+        console.error("Cannot call 'editTextContent()' on docuement or page");
+        return;
+    }
+
+    const content_item = getItemById(item_ID);
+
+    content_item.settings.text_content = value;
 }
 
 

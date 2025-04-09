@@ -1,4 +1,5 @@
 import * as TB from '../templates/topic-banners.js';
+import * as UH from '../helper-modules/ui-helpers.js';
 import * as FH from './form-helpers.js';
 
 export function insertModeBanners(filter = []) {
@@ -29,10 +30,14 @@ export function insertModeBanners(filter = []) {
 
     document.getElementById('pe-mode-selector').innerHTML = output_html;
 
-    // add the event listener to get the specificied mode settings on each 'select' button
+    // add the event listener to each start button to insert the settings for whichever mode it refers to when clicked
     [...document.getElementsByClassName('gen-select-button')].forEach(button_element => {
         button_element.addEventListener('click',() => {
+            // insert correct mode settings
             _insertPGSettings(button_element.getAttribute('data-gen-func-name'));
+
+            // initiate generator
+            initiatePEGenerator(button_element.getAttribute('data-gen-type'),button_element.getAttribute('data-gen-func-name'));
         });
     });
 
@@ -103,5 +108,48 @@ function _openItemSettings(item_ID, settings_obj) {
     else if (item_type === 'content') {
         // TODO
         insertModeBanners();
+    }
+}
+
+export async function initiatePEGenerator(display_name, func_name) {
+    const currentModule = await import(`../gen-modules/${func_name}.js`); 
+    const currentGen = currentModule.default;
+    const pre_settings = currentModule.get_presets();
+
+    FH.createSettingsFields(currentModule.settings_fields, await import('../templates/gen-settings.js'), 'pe-settings-form').then(() => {
+        // This will run after all settings have been inserted
+        FH.updateFormValues(pre_settings, 'pe-settings-form');
+        // moved this into the .then because pre-sets might not actually match the first generation (due to a change in validation or as in sysEqs)
+        switchPEToNewQuestion(currentGen(pre_settings));
+    });
+
+    UH.cleanedFromListeners(document.getElementById("pe-generate-button")).addEventListener("click", async () => {
+        if (!document.getElementById('pe-randomize-all-checkbox').checked) {
+            const currentSettings = FH.getFormObject('pe-settings-form');
+            switchPEToNewQuestion(currentGen(currentSettings)); 
+        } // randomize_all isn't checked -> use provided settings
+        else {
+            const currentSettings = currentModule.get_rand_settings();
+            switchPEToNewQuestion(currentGen(currentSettings));
+        } // randomize_all is checked -> use random (pre-set) settings
+    });
+}
+
+export function switchPEToNewQuestion(question_obj) {
+    const question = question_obj.question;
+    const answer = question_obj.answer;
+
+    UH.updateElementMath('pe-question',question,'3vw')
+    UH.updateElementMath('pe-answer',answer,'2.5vw')
+
+    MathJax.typesetPromise([document.getElementById('Q-A-container')]);
+
+    // Change settings if needed here
+    FH.updateFormValues(question_obj.settings, 'pe-settings-form');
+
+    // flash any elements with errors here
+    const error_locations = question_obj.error_locations;
+    if (error_locations.length > 0) {
+        FH.flashFormElements(error_locations, 'pe-settings-form');
     }
 }

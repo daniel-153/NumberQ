@@ -10,8 +10,8 @@ const event_listeners = [
         document.getElementById('create-worksheets-button').addEventListener('click', () => {
             UH.toggleVisibility(['worksheet-page'],['home-page-content']);
             worksheet.createAsDefault();
-            worksheet.focused_item = 'page-0';
-            WH.focusItemAt(worksheet.focused_item);
+            worksheet.focused_item_ID = 'page-0';
+            WH.focusItemAt(worksheet.focused_item_ID);
         });
         
         [...document.getElementsByClassName('start-button')].forEach((element) => {
@@ -98,16 +98,16 @@ const event_listeners = [
             const targeted_item_ID = event.target.closest('.outline-item').getAttribute('data-item-ID'); 
 
             if (event.target.matches('.outline-plus-button')) { // append and focus the item that was appended
-                worksheet.focused_item = worksheet.appendItemAt(targeted_item_ID);
+                worksheet.focused_item_ID = worksheet.appendItemAt(targeted_item_ID);
             }
             else if (event.target.matches('.outline-delete-button')) { // delete and focus the parent of the item that was deleted
-                worksheet.focused_item = worksheet.deleteItemAt(targeted_item_ID);
+                worksheet.focused_item_ID = worksheet.deleteItemAt(targeted_item_ID);
             }
             else { // just focus the targeted item (because no specific action was specified)
-                worksheet.focused_item = targeted_item_ID;    
+                worksheet.focused_item_ID = targeted_item_ID;    
             }
 
-            WH.focusItemAt(worksheet.focused_item);
+            WH.focusItemAt(worksheet.focused_item_ID);
         });
 
         window.addEventListener('DOMContentLoaded',() => {
@@ -124,6 +124,18 @@ const event_listeners = [
 
         document.getElementById('worksheet-generate-problem-button').addEventListener('click', () => {
             UH.toggleVisibility(['problem-editor-content'],[]);
+        });
+
+        document.getElementById('pe-exit-button').addEventListener('click', () => {
+            UH.toggleVisibility([],['problem-editor-content']);
+        });
+        
+        document.getElementById('use-problem-button').addEventListener('click', () => {
+            worksheet.editTextContent(
+                worksheet.focused_item_ID,
+                document.getElementById('pe-question').getAttribute('data-latexcode')
+            );
+            document.getElementById('pe-exit-button').click();
         });
     }
 ];

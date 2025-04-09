@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles/settings-styles.css" />
     <link rel="stylesheet" href="styles/presentation-styles.css" />
     <link rel="stylesheet" href="styles/worksheet-styles.css" />
-    <link rel="stylesheet" href="styles/problem-editor-styles.css">
+    <link rel="stylesheet" href="styles/problem-editor-styles.css" />
   </head>
   <body>
     <div id="home-page-content">
@@ -186,14 +186,30 @@
       </div>
       <div id="problem-editor-content" class="hidden-content">
         <div id="problem-editor-banner">
-          <div id="pe-top-bar"></div>
-          <div id="pe-Q-A-wrapper"></div>
+          <div id="pe-top-bar">
+            <button id="pe-exit-button">Exit</button>
+          </div>
+          <div id="pe-Q-A-wrapper">
+            <div id="pe-question" class="pe-output-box"></div>
+            <div id="pe-answer" class="pe-output-box"></div>
+          </div>
           <div id="pe-settings-wrapper">
-            <div id="pe-randomize-all-tab">
-              <input type="checkbox" id="pe-randomize-all-checkbox" />Randomize All
+            <div id="pe-settings-left" class="pe-settings-column">
+              <div id="pe-mode-selector"></div>
             </div>
-            <form id="pe-settings-form"></form>
-            <div id="pe-mode-selector"></div>
+            <div id="pe-settings-center" class="pe-settings-column">
+              <button id="pe-generate-button">Generate</button>
+              <div id="pe-randomize-all-tab">
+                <input
+                  type="checkbox"
+                  id="pe-randomize-all-checkbox"
+                />Randomize All
+              </div>
+              <form id="pe-settings-form"></form>
+            </div>
+            <div id="pe-settings-right" class="pe-settings-column">
+              <button id="use-problem-button">Use Problem =></button>
+            </div>
           </div>
         </div>
       </div>
