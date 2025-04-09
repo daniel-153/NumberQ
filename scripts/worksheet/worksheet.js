@@ -88,7 +88,7 @@ function appendItemAt(item_ID) {
     else if (item_type === 'page') {
         worksheet.pages[Number(item_number)].content.push({
             settings: {
-                text_content: '[insert text content]'
+                text_content: '[insert]'
             },
         });
 
@@ -126,28 +126,55 @@ function editTextContent(item_ID, value) {
     content_item.settings.text_content = value;
 }
 
-
 // Rendering Functions:
 function render() {
+    function createProblemBoxHtml(problem_tex, problem_number,box_width) {
+        return `
+            <div class="content-box ${box_width}-width-box">
+                <div class="problem-number">${problem_number}.</div>
+                <div class="problem-tex">
+                    \\(${problem_tex}\\)
+                </div>
+            </div>
+        `;
+    }
+
     let updated_html = '';
     for (let i = 0; i < worksheet.pages.length; i++) {
         updated_html += `
             <div class="worksheet-page-wrapper">
-                <div class="worksheet-page">
-            `;
+                <div 
+                    class="worksheet-page"
+                    style="
+                        padding: 1in 1in 1in 1in;
+                    "
+                >
+                    <div class="worksheet-page-content-area">
+        `;
         
-        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-            updated_html += `
-                <div class="worksheet-page-content">${worksheet.pages[i].content[j].settings.text_content}</div>
-            `;
-
+        let items_left = worksheet.pages[i].content.length;
+        let current_item = 0;
+        while (items_left > 0) {
+            updated_html += `<div class="full-width-bounding-box">`;
+            if (items_left > 1) {
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item].settings.text_content, current_item + 1, 'half');
+                items_left--; current_item++;
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item].settings.text_content, current_item + 1, 'half');
+                items_left--; current_item++;
+            }
+            else if (items_left === 1) {
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item].settings.text_content, current_item + 1, 'half');
+                items_left--; current_item++;
+            }
+            updated_html += `</div>`
         }
         
-        updated_html += '</div></div>';
+        updated_html += '</div></div></div>';
     }
 
     updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'
     document.getElementById('worksheet-page-column').innerHTML = updated_html;
+    MathJax.typesetPromise(['#worksheet-page-column']);
 }
 
 function updateOutline() {
