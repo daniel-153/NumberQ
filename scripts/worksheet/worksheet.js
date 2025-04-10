@@ -55,20 +55,23 @@ function getItemById(item_ID) {
     const [ item_type, item_number ] = item_ID.split('-');
 
     if (item_type === 'document') {
-        return worksheet;
+        if (worksheet !== null) return worksheet;
     }
     else if (item_type === 'page') {
-        return worksheet.pages[item_number];
+        if (worksheet.pages[item_number] !== undefined) return worksheet.pages[item_number];
     }
     else if (item_type === 'content') {
         const [ page_index, content_index ] = item_number.split('.');
         
-        return worksheet.pages[page_index].content[content_index];
+        if (
+            worksheet.pages[page_index] !== undefined &&
+            worksheet.pages[page_index].content[content_index] !== undefined
+        ) {
+            return worksheet.pages[page_index].content[content_index];
+        }
     }
-    else {
-        console.error(`Cannot get item with ID="${item_ID}".`);
-        return null;
-    }
+    
+    return null;
 }
 
 function getIdByItem(item_obj) {
@@ -102,16 +105,15 @@ function getIdByItem(item_obj) {
         }
     }
 
-    // if we made it past the if-else above, no item matching item_obj was found
-    console.error(`item_object=${item_obj} was not found.`);
+    return null;
 }
 
-function appendItemAt(item_ID) {
+function appendItemAt(item_ID, method = 'push') {
     const [ item_type, item_number ] = item_ID.split('-');
 
     if (item_type === 'document') {
         // add a page to the document
-        worksheet.pages.push(
+        worksheet.pages[method](
             {
                 content: [],
                 settings: {},
@@ -121,7 +123,7 @@ function appendItemAt(item_ID) {
         return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
     }
     else if (item_type === 'page') {
-        worksheet.pages[Number(item_number)].content.push({
+        worksheet.pages[Number(item_number)].content[method]({
             settings: {
                 text_content: '[insert]',
                 font_size: '1cm',
@@ -164,10 +166,25 @@ function editTextContent(item_ID, value) {
 
 // Rendering Functions:
 function render() {
-    function createProblemBoxHtml(content_item, problem_number, box_width) {        
+    insertWorksheetHtml(); // super quick
+    MathJax.typesetPromise(['#worksheet-page-column']); // extremely costly when there's lots of problems
+    fitMathOverflow(); // decently quick
+    let overflow_found;
+    do {
+        overflow_found = pushContentOverflow(); // super quick
+        if (overflow_found) {
+            insertWorksheetHtml(); // super quick
+            MathJax.typesetPromise(['#worksheet-page-column']); // extremely costly when there's lots of problems
+            fitMathOverflow(); // decently quick
+        }
+    } while (overflow_found);
+}
+
+function insertWorksheetHtml() {
+    function createProblemBoxHtml(content_item, box_width) {        
         return `
             <div class="content-box ${box_width}-width-box" data-item-ID="${getIdByItem(content_item)}">
-                <div class="problem-number">${problem_number})</div>
+                <div class="problem-number">${getProblemNumber(content_item)})</div>
                 <div class="problem-tex" data-math-container="true" style="font-size: ${content_item.settings.font_size};">
                     \\(${content_item.settings.text_content}\\)
                 </div>
@@ -193,16 +210,66 @@ function render() {
         while (items_left > 0) {
             updated_html += `<div class="full-width-bounding-box">`;
             if (items_left > 1) {
-                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], current_item + 1, 'half');
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
                 items_left--; current_item++;
-                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], current_item + 1, 'half');
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
                 items_left--; current_item++;
             }
             else if (items_left === 1) {
-                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], current_item + 1, 'half');
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
                 items_left--; current_item++;
             }
-            updated_html += `</div>`
+            updated_html += `</div>`;
+        }
+        
+        updated_html += '</div></div></div>';
+    }
+
+    updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'
+    document.getElementById('worksheet-page-column').innerHTML = updated_html;
+}
+
+
+function Render() {
+    function createProblemBoxHtml(content_item, box_width) {        
+        return `
+            <div class="content-box ${box_width}-width-box" data-item-ID="${getIdByItem(content_item)}">
+                <div class="problem-number">${getProblemNumber(content_item)})</div>
+                <div class="problem-tex" data-math-container="true" style="font-size: ${content_item.settings.font_size};">
+                    \\(${content_item.settings.text_content}\\)
+                </div>
+            </div>
+        `;
+    }
+
+    let updated_html = '';
+    for (let i = 0; i < worksheet.pages.length; i++) {
+        updated_html += `
+            <div class="worksheet-page-wrapper">
+                <div 
+                    class="worksheet-page"
+                    style="
+                        padding: 1in 1in 1in 1in;
+                    "
+                >
+                    <div class="worksheet-page-content-area">
+        `;
+        
+        let items_left = worksheet.pages[i].content.length;
+        let current_item = 0;
+        while (items_left > 0) {
+            updated_html += `<div class="full-width-bounding-box">`;
+            if (items_left > 1) {
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
+                items_left--; current_item++;
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
+                items_left--; current_item++;
+            }
+            else if (items_left === 1) {
+                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
+                items_left--; current_item++;
+            }
+            updated_html += `</div>`;
         }
         
         updated_html += '</div></div></div>';
@@ -212,6 +279,36 @@ function render() {
     document.getElementById('worksheet-page-column').innerHTML = updated_html;
     MathJax.typesetPromise(['#worksheet-page-column']);
     fitMathOverflow();
+}
+
+function pushContentOverflow() {
+    // define this here to avoid re-creating (re-iterating) it every time
+    const page_element_list = [...document.getElementsByClassName('worksheet-page-content-area')];
+    
+    let overflow_found = false;
+    for (let page_index = 0; page_index < worksheet.pages.length; page_index++) {
+        let current_content_area = page_element_list[page_index];
+
+        if (current_content_area.scrollHeight > current_content_area.clientHeight) {
+            overflow_found = true;
+
+            const fwbb_array = [...current_content_area.children]; // fwbb -> 'full-width-bounding-box
+            if (fwbb_array.length <= 1) return; // return forEach callback (move to next element), not return pushContentOverflow
+            
+            const last_fwbb = fwbb_array[fwbb_array.length - 1];
+            
+            [...last_fwbb.children].forEach(content_box => {
+                if (getItemById(`page-${page_index + 1}`) === null) {
+                    appendItemAt('document'); // add a page if there is no next page to overflow content onto
+                }
+
+                appendItemAt(`page-${page_index + 1}`,'unshift');
+                deleteItemAt(content_box.getAttribute('data-item-ID'));
+            });
+            break;
+        }
+    }
+    return overflow_found;  
 }
 
 function fitMathOverflow() {
@@ -232,6 +329,23 @@ function fitMathOverflow() {
             });
         });
     });
+}
+
+function getProblemNumber(item) {
+    let problem_number = 0;
+    let item_found = false;
+    for (let i = 0; i < worksheet.pages.length; i++) {
+        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
+            problem_number++;
+            if (item === worksheet.pages[i].content[j]) {
+                item_found = true;
+                break;
+            }
+        }
+        if (item_found) break;
+    }
+    
+    return problem_number;
 }
 
 
