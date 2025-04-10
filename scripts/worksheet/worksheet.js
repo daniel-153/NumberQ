@@ -1,6 +1,6 @@
 let worksheet = null;
 
-const _editorFunctions = {
+const _editor_functions = {
     createAsEmptyDoc,
     createAsDefault,
     print,
@@ -9,10 +9,10 @@ const _editorFunctions = {
     editTextContent
 }
 
-export const worksheetEditor = {
-    static_update: _editorFunctions,
+export const worksheet_editor = {
+    static_update: _editor_functions,
     ...(new Proxy(
-        _editorFunctions, 
+        _editor_functions, 
         {
             get: function(target_obj, property) { 
                 if (Object.prototype.hasOwnProperty.call(target_obj, property) && property !== 'print') { 
@@ -124,7 +124,7 @@ function appendItemAt(item_ID) {
         worksheet.pages[Number(item_number)].content.push({
             settings: {
                 text_content: '[insert]',
-                font_size: '1cm'
+                font_size: '1cm',
             },
         });
 
@@ -164,10 +164,10 @@ function editTextContent(item_ID, value) {
 
 // Rendering Functions:
 function render() {
-    function createProblemBoxHtml(content_item, problem_number, box_width) {
+    function createProblemBoxHtml(content_item, problem_number, box_width) {        
         return `
             <div class="content-box ${box_width}-width-box" data-item-ID="${getIdByItem(content_item)}">
-                <div class="problem-number">${problem_number}.</div>
+                <div class="problem-number">${problem_number})</div>
                 <div class="problem-tex" data-math-container="true" style="font-size: ${content_item.settings.font_size};">
                     \\(${content_item.settings.text_content}\\)
                 </div>
@@ -211,29 +211,36 @@ function render() {
     updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'
     document.getElementById('worksheet-page-column').innerHTML = updated_html;
     MathJax.typesetPromise(['#worksheet-page-column']);
+    fitMathOverflow();
 }
 
-function fitWorksheetOverflow() {
-    function fitMathToElementCM(element) {
-        let scale_factor = element.clientWidth / element.scrollWidth;
+function fitMathOverflow() {
+    [...document.getElementsByClassName('worksheet-page-content-area')].forEach(content_area => {
+        [...content_area.children].forEach(block_bounding_box => {
+            [...block_bounding_box.children].forEach(content_box => {
+                const math_div = [...content_box.children][1];
 
+                let scale_factor = math_div.clientWidth / math_div.scrollWidth;
+                const worksheet_item = getItemById(content_box.getAttribute('data-item-ID'));
+                let current_font_size = Number(worksheet_item.settings.font_size.split('c')[0]);
+                while (Math.abs(scale_factor - 1) > 0.001) {
+                    current_font_size = current_font_size * scale_factor; 
+                    math_div.style.fontSize = current_font_size + 'cm';
 
-
-
-    }
-    
-    
-    [...document.getElementById('worksheet-page-content-area').children].forEach(block_bounding_box => {
-        [...block_bounding_box.children].forEach(content_box => {
-            const math_div = content_box.lastChild;
-
+                    scale_factor = math_div.clientWidth / math_div.scrollWidth;
+                }
+            });
         });
     });
 }
 
+
 function updateOutline() {
+    let current_item_ID = 'document';
+    let item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';   
+    
     let updated_html = `
-        <div class="outline-item outline-document" data-item-ID="document">
+        <div class="outline-item outline-document" data-item-ID="${current_item_ID}" ${item_is_focused}>
             <div class="outline-label outline-document-label">Document</div>
             <div class="outline-nav-wrapper">
                 <button 
@@ -243,8 +250,11 @@ function updateOutline() {
         </div>
     `;
     for (let i = 0; i < worksheet.pages.length; i++) {
+        current_item_ID = `page-${i}`;
+        item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';
+        
         updated_html += `
-            <div class="outline-item outline-page" data-item-ID="page-${i}">
+            <div class="outline-item outline-page" data-item-ID="${current_item_ID}" ${item_is_focused}>
                 <div class="outline-label outline-page-label">Page ${i + 1}</div>
                 <div class="outline-nav-wrapper">
                     <button 
@@ -257,8 +267,11 @@ function updateOutline() {
             </div>
         `;
         for (let j = 0; j < worksheet.pages[i].content.length; j++) {
+            current_item_ID = `content-${i}.${j}`;
+            item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';
+            
             updated_html += `
-                <div class="outline-item outline-content" data-item-ID="content-${i}.${j}">
+                <div class="outline-item outline-content" data-item-ID="${current_item_ID}" ${item_is_focused}>
                     <div class="outline-label outline-content-label">Content ${i + 1}.${j + 1}</div>
                     <div class="outline-nav-wrapper">
                         <button 

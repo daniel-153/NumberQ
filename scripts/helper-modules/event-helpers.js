@@ -1,7 +1,7 @@
 import * as GH from './prob-gen-ui-helpers.js';
 import * as UH from './ui-helpers.js';
 import * as WH from './worksheet-helpers.js';
-import { worksheetEditor as worksheet }  from '../worksheet/worksheet.js';
+import { worksheet_editor as worksheet }  from '../worksheet/worksheet.js';
 
 const event_listeners = [
     function homePage() {
