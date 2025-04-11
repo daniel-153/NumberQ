@@ -1,7 +1,7 @@
 import * as GH from './prob-gen-ui-helpers.js';
 import * as UH from './ui-helpers.js';
-import * as WH from './worksheet-helpers.js';
-import { worksheet_editor as worksheet }  from '../worksheet/worksheet.js';
+import * as WH from '../worksheet/helpers/ui-helpers.js';
+import { worksheet_editor }  from '../worksheet/worksheet.js';
 
 const event_listeners = [
     function homePage() {
@@ -9,9 +9,9 @@ const event_listeners = [
         
         document.getElementById('create-worksheets-button').addEventListener('click', () => {
             UH.toggleVisibility(['worksheet-page'],['home-page-content']);
-            worksheet.createAsDefault();
-            worksheet.focused_item_ID = 'page-0';
-            WH.focusItemAt(worksheet.focused_item_ID);
+            worksheet_editor.createAsDefault();
+            worksheet_editor.focused_item_ID = 'page-0';
+            WH.focusItemAt(worksheet_editor.focused_item_ID);
         });
         
         [...document.getElementsByClassName('start-button')].forEach((element) => {
@@ -98,16 +98,16 @@ const event_listeners = [
             const targeted_item_ID = event.target.closest('.outline-item').getAttribute('data-item-ID'); 
 
             if (event.target.matches('.outline-plus-button')) { // append and focus the item that was appended
-                worksheet.focused_item_ID = worksheet.appendItemAt(targeted_item_ID);
+                worksheet_editor.focused_item_ID = worksheet_editor.appendItemAt(targeted_item_ID);
             }
             else if (event.target.matches('.outline-delete-button')) { // delete and focus the parent of the item that was deleted
-                worksheet.focused_item_ID = worksheet.deleteItemAt(targeted_item_ID);
+                worksheet_editor.focused_item_ID = worksheet_editor.deleteItemAt(targeted_item_ID);
             }
             else { // just focus the targeted item (because no specific action was specified)
-                worksheet.focused_item_ID = targeted_item_ID;    
+                worksheet_editor.focused_item_ID = targeted_item_ID;    
             }
 
-            WH.focusItemAt(worksheet.focused_item_ID);
+            WH.focusItemAt(worksheet_editor.focused_item_ID);
         });
 
         window.addEventListener('DOMContentLoaded',() => {
@@ -131,8 +131,8 @@ const event_listeners = [
         });
         
         document.getElementById('use-problem-button').addEventListener('click', () => {
-            worksheet.editTextContent(
-                worksheet.focused_item_ID,
+            worksheet_editor.editTextContent(
+                worksheet_editor.focused_item_ID,
                 document.getElementById('pe-question').getAttribute('data-latexcode')
             );
             document.getElementById('pe-exit-button').click();

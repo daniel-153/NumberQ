@@ -1,6 +1,7 @@
-import * as TB from '../templates/topic-banners.js';
-import * as UH from '../helper-modules/ui-helpers.js';
-import * as FH from './form-helpers.js';
+import * as TB from '../../templates/topic-banners.js';
+import * as UH from '../../helper-modules/ui-helpers.js';
+import * as FH from '../../helper-modules/form-helpers.js';
+import { worksheet_editor, worksheet } from '../worksheet.js';
 
 export function insertModeBanners(filter = []) {
     // TODO: add ability to filter which modes show up
@@ -45,10 +46,10 @@ export function insertModeBanners(filter = []) {
 }
 
 async function _insertPGSettings(gen_func_name) {
-    const current_gen_module = await import(`../gen-modules/${gen_func_name}.js`);
+    const current_gen_module = await import(`../../gen-modules/${gen_func_name}.js`);
     const pre_settings = current_gen_module.get_presets();
 
-    FH.createSettingsFields(current_gen_module.settings_fields, await import('../templates/gen-settings.js'), 'pe-settings-form').then(() => {
+    FH.createSettingsFields(current_gen_module.settings_fields, await import('../../templates/gen-settings.js'), 'pe-settings-form').then(() => {
         FH.updateFormValues(pre_settings,'pe-settings-form')
     })
 
@@ -112,11 +113,11 @@ function _openItemSettings(item_ID, settings_obj) {
 }
 
 export async function initiatePEGenerator(display_name, func_name) {
-    const currentModule = await import(`../gen-modules/${func_name}.js`); 
+    const currentModule = await import(`../../gen-modules/${func_name}.js`); 
     const currentGen = currentModule.default;
     const pre_settings = currentModule.get_presets();
 
-    FH.createSettingsFields(currentModule.settings_fields, await import('../templates/gen-settings.js'), 'pe-settings-form').then(() => {
+    FH.createSettingsFields(currentModule.settings_fields, await import('../../templates/gen-settings.js'), 'pe-settings-form').then(() => {
         // This will run after all settings have been inserted
         FH.updateFormValues(pre_settings, 'pe-settings-form');
         // moved this into the .then because pre-sets might not actually match the first generation (due to a change in validation or as in sysEqs)
@@ -152,4 +153,54 @@ export function switchPEToNewQuestion(question_obj) {
     if (error_locations.length > 0) {
         FH.flashFormElements(error_locations, 'pe-settings-form');
     }
+}
+
+export function updateOutline() {
+    let current_item_ID = 'document';
+    let item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';   
+    
+    let updated_html = `
+        <div class="outline-item outline-document" data-item-ID="${current_item_ID}" ${item_is_focused}>
+            <div class="outline-label outline-document-label">Document</div>
+            <div class="outline-nav-wrapper">
+                <button 
+                    class="outline-button outline-plus-button"
+                >+</button>
+            </div>
+        </div>
+    `;
+    for (let i = 0; i < worksheet.pages.length; i++) {
+        current_item_ID = `page-${i}`;
+        item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';
+        
+        updated_html += `
+            <div class="outline-item outline-page" data-item-ID="${current_item_ID}" ${item_is_focused}>
+                <div class="outline-label outline-page-label">Page ${i + 1}</div>
+                <div class="outline-nav-wrapper">
+                    <button 
+                        class="outline-button outline-delete-button"
+                    >X</button>    
+                    <button 
+                        class="outline-button outline-plus-button"
+                    >+</button>
+                </div>
+            </div>
+        `;
+        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
+            current_item_ID = `content-${i}.${j}`;
+            item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';
+            
+            updated_html += `
+                <div class="outline-item outline-content" data-item-ID="${current_item_ID}" ${item_is_focused}>
+                    <div class="outline-label outline-content-label">Content ${i + 1}.${j + 1}</div>
+                    <div class="outline-nav-wrapper">
+                        <button 
+                            class="outline-button outline-delete-button"
+                        >X</button>    
+                    </div>
+                </div>
+            `;
+        }
+    }
+    document.getElementById('outline-container').innerHTML = updated_html;
 }
