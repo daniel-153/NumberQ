@@ -9,7 +9,8 @@ const _editor_functions = {
     createAsDefault,
     appendItemAt,
     deleteItemAt,
-    editTextContent
+    editTextContent,
+    addContentToPage
 }
 
 export const worksheet_editor = {
@@ -70,9 +71,9 @@ function appendItemAt(item_ID, method = 'push') {
     else if (item_type === 'page') {
         worksheet.pages[Number(item_number)].content[method]({
             settings: {
-                text_content: '[insert]',
+                text_content: '[insert~~problem]',
                 font_size: '1cm',
-                type: 'question',
+                type: 'problem',
                 mjx_status: 'not-rendered',
                 mjx_content: null
             },
@@ -80,6 +81,34 @@ function appendItemAt(item_ID, method = 'push') {
 
         return 'content-' + item_number + '.' + (worksheet.pages[Number(item_number)].content.length - 1); // return the item_ID of the content that got added
     }
+}
+
+function addPageToDoc(method = 'push') {
+    // add a page to the document
+    worksheet.pages[method](
+        {
+            content: [],
+            settings: {},
+        }
+    );
+
+    return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
+}
+
+function addContentToPage(page_item_ID, type='problem', method = 'push') {
+    const [ item_type, item_number ] = page_item_ID.split('-');
+    
+    worksheet.pages[Number(item_number)].content[method]({
+        settings: {
+            text_content: (type === 'problem')? '[insert~~problem]' : 'Add problem directions here.',
+            font_size: (type === 'problem')? '1cm' : '0.5cm',
+            type: type,
+            mjx_status: 'not-rendered',
+            mjx_content: null
+        },
+    });
+
+    return 'content-' + item_number + '.' + (worksheet.pages[Number(item_number)].content.length - 1); // return the item_ID of the content that got added
 }
 
 function deleteItemAt(item_ID) {
@@ -177,7 +206,9 @@ function getProblemNumber(item) {
     let item_found = false;
     for (let i = 0; i < worksheet.pages.length; i++) {
         for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-            problem_number++;
+            // make sure we only incremenet the counter for problems (not directions)
+            if (worksheet.pages[i].content[j].settings.type === 'problem') problem_number++;
+            
             if (item === worksheet.pages[i].content[j]) {
                 item_found = true;
                 break;

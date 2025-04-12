@@ -1,15 +1,57 @@
 import { worksheet_editor, worksheet }  from '../worksheet.js';
 
-export function insertWorksheetHtml() {
-    function createProblemBoxHtml(content_item, box_width) {        
-        return `
-            <div class="content-box ${box_width}-width-box" data-item-ID="${worksheet_editor.getIdByItem(content_item)}">
-                <div class="problem-number">${worksheet_editor.getProblemNumber(content_item)})</div>
-                <div class="problem-tex" data-math-container="true" style="font-size: ${content_item.settings.font_size};"></div>
-            </div>
-        `;
+function _addContentToPage(content_item_array) {
+    let output_html = '';
+    for (let i = 0; i < content_item_array.length; i++) {
+        const current_item = content_item_array[i];
+        if (current_item.settings.type === 'directions') {
+            output_html += `
+                <div class="full-width-bounding-box">
+                    <div 
+                        class="directions-box" data-item-ID=""${worksheet_editor.getIdByItem(current_item)}"
+                        style="font-size: ${current_item.settings.font_size};"
+                    >
+                        ${current_item.settings.text_content}   
+                    </div>
+                </div>
+            `;
+        }
+        else if (current_item.settings.type === 'problem') {
+            const next_item = content_item_array[i + 1];
+            
+            if (next_item === undefined || next_item.settings.type === 'directions') { // next content item is also a problem (two in a row)
+                output_html += `
+                    <div class="full-width-bounding-box">
+                        <div class="content-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}">
+                            <div class="problem-number">${worksheet_editor.getProblemNumber(current_item)})</div>
+                            <div class="problem-tex" data-math-container="true" style="font-size: ${current_item.settings.font_size};"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (next_item.settings.type === 'problem') { // next content item is either directions or nothing (this is the last item)
+                output_html += `
+                    <div class="full-width-bounding-box">
+                        <div class="content-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}">
+                            <div class="problem-number">${worksheet_editor.getProblemNumber(current_item)})</div>
+                            <div class="problem-tex" data-math-container="true" style="font-size: ${current_item.settings.font_size};"></div>
+                        </div>
+                        <div class="content-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(next_item)}">
+                            <div class="problem-number">${worksheet_editor.getProblemNumber(next_item)})</div>
+                            <div class="problem-tex" data-math-container="true" style="font-size: ${next_item.settings.font_size};"></div>
+                        </div>  
+                    </div>
+                `;
+
+                i++;
+            }
+        }
     }
 
+    return output_html;
+}
+
+export function insertWorksheetHtml() {
     let updated_html = '';
     for (let i = 0; i < worksheet.pages.length; i++) {
         updated_html += `
@@ -22,23 +64,8 @@ export function insertWorksheetHtml() {
                 >
                     <div class="worksheet-page-content-area">
         `;
-        
-        let items_left = worksheet.pages[i].content.length;
-        let current_item = 0;
-        while (items_left > 0) {
-            updated_html += `<div class="full-width-bounding-box">`;
-            if (items_left > 1) {
-                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
-                items_left--; current_item++;
-                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
-                items_left--; current_item++;
-            }
-            else if (items_left === 1) {
-                updated_html += createProblemBoxHtml(worksheet.pages[i].content[current_item], 'half');
-                items_left--; current_item++;
-            }
-            updated_html += `</div>`;
-        }
+
+        updated_html += _addContentToPage(worksheet.pages[i].content);
         
         updated_html += '</div></div></div>';
     }
@@ -51,7 +78,7 @@ export function handleTexUpdates() {
     [...document.getElementsByClassName('content-box')].forEach(content_box => {
         // make sure we filter out any content that isn't a question
         const current_item = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID'));
-        if (current_item.settings.type !== 'question') return;
+        if (current_item.settings.type !== 'problem') return;
 
         const tex_container = content_box.lastElementChild;
         
@@ -102,12 +129,12 @@ export function pushContentOverflow() {
             const last_fwbb = fwbb_element_list[fwbb_element_list.length - 1];
             [...last_fwbb.children].forEach(content_box => {
                 if (worksheet_editor.getItemById(`page-${page_index + 1}`) === null) {
-                    worksheet_editor.appendItemAt('document'); // add a page if there is no next page to overflow content onto
-                    fwbb_height_series.push([]); // add another array to the height series
+                    worksheet_editor.static_update.appendItemAt('document'); // add a page if there is no next page to overflow content onto
+                    fwbb_height_series.push([]); // add another array to the height series // add another array to the height series
                 }
 
-                worksheet_editor.appendItemAt(`page-${page_index + 1}`,'unshift');
-                worksheet_editor.deleteItemAt(content_box.getAttribute('data-item-ID'));
+                worksheet_editor.static_update.appendItemAt(`page-${page_index + 1}`,'unshift');
+                worksheet_editor.static_update.deleteItemAt(content_box.getAttribute('data-item-ID'));
             });
 
             // push the height of the fwbb we moved to the next array
@@ -121,6 +148,7 @@ export function fitMathOverflow() {
     [...document.getElementsByClassName('worksheet-page-content-area')].forEach(content_area => {
         [...content_area.children].forEach(block_bounding_box => {
             [...block_bounding_box.children].forEach(content_box => {
+                if (content_box.classList.contains('directions-box')) return; // skip directions boxes
                 const math_div = [...content_box.children][1];
 
                 let scale_factor = math_div.clientWidth / math_div.scrollWidth;

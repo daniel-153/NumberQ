@@ -122,6 +122,12 @@
     font-size: 1vw;
 }
 
+.page-plus-button {
+    text-align: center;
+    background-color: white;
+    border: 1px solid black;
+}
+
 #worksheet-right-panel {
     display: flex;
     flex-direction: column;

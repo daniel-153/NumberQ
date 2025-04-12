@@ -28,6 +28,7 @@
 
 .content-box {
    height: 1.5in;
+   /* border: 1px solid red; */
 }
 
 .half-width-box {
@@ -37,16 +38,6 @@
     justify-content: flex-start;
     /* border: 3px solid rosybrown; */
 }
-
-/* .number-and-tex-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-start;
-    height: fit-content;
-    width: fit-content;
-    border: 1px solid red;
-} */
 
 .problem-number {
     display: inline;
@@ -70,6 +61,13 @@
     /* border: 1px solid green; */
 }
 
+.directions-box {
+    font-weight: bold;
+    box-sizing: border-box;
+    padding-left: 0.3cm;
+    margin-bottom: 0.3cm;
+    /* border: 1px solid green; */
+}
 
 @media print {
     body {

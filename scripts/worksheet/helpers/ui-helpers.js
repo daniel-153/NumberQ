@@ -164,7 +164,7 @@ export function updateOutline() {
             <div class="outline-label outline-document-label">Document</div>
             <div class="outline-nav-wrapper">
                 <button 
-                    class="outline-button outline-plus-button"
+                    class="outline-button outline-plus-button document-plus-button"
                 >+</button>
             </div>
         </div>
@@ -180,9 +180,13 @@ export function updateOutline() {
                     <button 
                         class="outline-button outline-delete-button"
                     >X</button>    
-                    <button 
-                        class="outline-button outline-plus-button"
-                    >+</button>
+                    <div class="outline-button outline-plus-button page-plus-button"> 
+                        +
+                        <div class="page-plus-options-wrapper hidden-content">  
+                            <button class="add-directions-button">Add Directions</button>
+                            <button class="add-problem-button">Add Problem</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;

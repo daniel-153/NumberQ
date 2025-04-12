@@ -97,7 +97,27 @@ const event_listeners = [
         document.getElementById('outline-container').addEventListener('click', (event) => {
             const targeted_item_ID = event.target.closest('.outline-item').getAttribute('data-item-ID'); 
 
-            if (event.target.matches('.outline-plus-button')) { // append and focus the item that was appended
+            if (event.target.matches('.outline-plus-button') && event.target.matches('.document-plus-button')) { // append and focus the item that was appended
+                worksheet_editor.focused_item_ID = worksheet_editor.appendItemAt(targeted_item_ID);
+            }
+            else if (event.target.matches('.outline-plus-button') && event.target.matches('.page-plus-button')) {
+                const button_wrapper = event.target.lastElementChild;
+                button_wrapper.classList.remove('hidden-content');
+
+                setTimeout(() => { // necessary to avoid conflicting events
+                    const handleOutsideClick = (e) => {
+                        if (!event.target.contains(e.target)) {
+                            button_wrapper.classList.add('hidden-content');
+                            document.removeEventListener('click', handleOutsideClick);
+                        }
+                    };
+                    document.addEventListener('click', handleOutsideClick);
+                }, 0);
+            }
+            else if (event.target.matches('.add-directions-button')) {
+                worksheet_editor.focused_item_ID = worksheet_editor.addContentToPage(targeted_item_ID, 'directions');
+            }
+            else if (event.target.matches('.add-problem-button')) {
                 worksheet_editor.focused_item_ID = worksheet_editor.appendItemAt(targeted_item_ID);
             }
             else if (event.target.matches('.outline-delete-button')) { // delete and focus the parent of the item that was deleted
@@ -119,7 +139,7 @@ const event_listeners = [
         });
 
         document.getElementById('worksheet-print-button').addEventListener('click', () => {
-            worksheet.print();
+            worksheet_editor.print();
         });
 
         document.getElementById('worksheet-generate-problem-button').addEventListener('click', () => {
