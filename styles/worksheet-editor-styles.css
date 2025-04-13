@@ -93,6 +93,14 @@
     border: 0.3vw solid gold;
 }
 
+.outline-item[data-outline-item-subtype="directions"] {
+    background-color: blueviolet;
+}
+
+.outline-item[data-outline-item-subtype="problem"] {
+    background-color: rgb(163, 59, 59);
+}
+
 .outline-label {
     display: flex;
     align-items: center;
@@ -102,7 +110,7 @@
 
     text-align: center;
     color: white;
-    font-size: 1.5vw;
+    font-size: 1.4vw;
 }
 
 .outline-nav-wrapper {
@@ -126,6 +134,7 @@
     text-align: center;
     background-color: white;
     border: 1px solid black;
+    z-index: 99;
 }
 
 #worksheet-right-panel {
@@ -146,6 +155,15 @@
     color: white;
     font-size: 1.7vw;
     margin-bottom: 3vw;
+}
+
+.outline-item-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    width: 100%;
+    height: 100%;
 }
 
 #worksheet-mode-selector {

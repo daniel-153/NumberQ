@@ -38,7 +38,8 @@ export const worksheet_editor = {
     updateUi: updateUi,
     getItemById: getItemById,
     getIdByItem: getIdByItem,
-    getProblemNumber: getProblemNumber
+    getProblemNumber: getProblemNumber,
+    getDirectionsNumber: getDirectionsNumber
 };
 
 // Editor Functions:
@@ -217,5 +218,38 @@ function getProblemNumber(item) {
         if (item_found) break;
     }
     
+    if (!item_found) {
+        console.error(`Item=${item} is not a problem item, or no matching problem item could be found.`);
+        return null;
+    }
+
     return problem_number;
+}
+
+function getDirectionsNumber(item) {
+    let directions_item_found = false;
+    let directions_number;
+    while (!directions_item_found) {
+        for (let i = 0; i < worksheet.pages.length; i++) {
+            let directions_counter = 0
+
+            for (let j = 0; j < worksheet.pages[i].content.length; j++) {
+                if (worksheet.pages[i].content[j].settings.type === 'directions') {
+                    directions_counter++;
+
+                    if (worksheet.pages[i].content[j] === item) {
+                        directions_number = `${i + 1}.${directions_counter}`;
+                        directions_item_found = true;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!directions_item_found) {
+        console.error(`Item=${item} is not a directions item, or no matching directions item could be found.`);
+        return null;
+    }
+
+    return directions_number;
 }

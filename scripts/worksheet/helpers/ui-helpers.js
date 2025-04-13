@@ -63,32 +63,24 @@ export function focusItemAt(item_ID) {
         element.removeAttribute('data-currently-focused');
     });
 
-    // add focus to the specified item
+    // find the specified item and add focus to it (and determine kind of outline item it was)
+    let element_label, element_class, element_subtype;
     [...document.getElementById('outline-container').children].forEach(element => {
         if (element.getAttribute('data-item-ID') === item_ID) {
             element.setAttribute('data-currently-focused', 'true');
+            element_label = [...element.querySelectorAll('.outline-label')][0].textContent;
+            element_class = element.classList[1];
+            element_subtype = element.getAttribute('data-outline-item-subtype');
         }
     });
 
-    let item_dispay_name, background_color;
-    if (item_type === 'document') {
-        item_dispay_name = 'Document';
-        background_color = 'blue';
-    }
-    else if (item_type === 'page') {
-        item_dispay_name = 'Page ' + (Number(item_number) + 1);
-        background_color = 'green';
-    }
-    else if (item_type === 'content') {
-        const [ page_index, content_index ] = item_number.split('.');
+    document.getElementById('current-focused-item').innerHTML = `
+        <div class="outline-item ${element_class} outline-item-indicator" data-outline-item-subtype="${element_subtype}">
+            ${element_label}
+        </div>
+    `;
 
-        item_dispay_name = 'Content ' + (Number(page_index) + 1) + '.' + (Number(content_index) + 1);
-        background_color = 'red';
-    }
-
-    document.getElementById('current-focused-item').textContent = item_dispay_name;
-    document.getElementById('current-focused-item').style.backgroundColor = background_color;
-
+    // !!!!!!!!!!!! I definetly think you should restructure this to look more like the render sequence, look like creating a big call stack again
     _openItemSettings(item_ID);
 }
 
@@ -157,10 +149,10 @@ export function switchPEToNewQuestion(question_obj) {
 
 export function updateOutline() {
     let current_item_ID = 'document';
-    let item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';   
+    let item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? "true" : '';
     
     let updated_html = `
-        <div class="outline-item outline-document" data-item-ID="${current_item_ID}" ${item_is_focused}>
+        <div class="outline-item outline-document" data-item-ID="${current_item_ID}" data-currently-focused="${item_is_focused}">
             <div class="outline-label outline-document-label">Document</div>
             <div class="outline-nav-wrapper">
                 <button 
@@ -171,10 +163,10 @@ export function updateOutline() {
     `;
     for (let i = 0; i < worksheet.pages.length; i++) {
         current_item_ID = `page-${i}`;
-        item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';
+        item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? "true" : '';
         
         updated_html += `
-            <div class="outline-item outline-page" data-item-ID="${current_item_ID}" ${item_is_focused}>
+            <div class="outline-item outline-page" data-item-ID="${current_item_ID}" data-currently-focused="${item_is_focused}">
                 <div class="outline-label outline-page-label">Page ${i + 1}</div>
                 <div class="outline-nav-wrapper">
                     <button 
@@ -192,11 +184,18 @@ export function updateOutline() {
         `;
         for (let j = 0; j < worksheet.pages[i].content.length; j++) {
             current_item_ID = `content-${i}.${j}`;
-            item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? 'data-currently-focused="true"' : '';
+            item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? "true" : '';
+            const content_type = worksheet.pages[i].content[j].settings.type;
+            const content_name = (content_type === 'problem')? 
+                `Problem ${worksheet_editor.getProblemNumber(worksheet.pages[i].content[j])}` : 
+                `Directions ${worksheet_editor.getDirectionsNumber(worksheet.pages[i].content[j])}
+            `;
             
             updated_html += `
-                <div class="outline-item outline-content" data-item-ID="${current_item_ID}" ${item_is_focused}>
-                    <div class="outline-label outline-content-label">Content ${i + 1}.${j + 1}</div>
+                <div class="outline-item outline-content" data-item-ID="${current_item_ID}" 
+                data-currently-focused="${item_is_focused}" data-outline-item-subtype="${content_type}"
+                >
+                    <div class="outline-label outline-content-label">${content_name}</div>
                     <div class="outline-nav-wrapper">
                         <button 
                             class="outline-button outline-delete-button"

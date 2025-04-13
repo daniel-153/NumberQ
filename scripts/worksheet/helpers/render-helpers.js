@@ -90,7 +90,7 @@ export function insertWorksheetHtml() {
                 <div 
                     class="worksheet-page"
                     style="
-                        padding: 1in 1in 1in 1in;
+                        padding: 0.5in 0.5in 0.5in 0.5in;
                     "
                 >
                     <div class="worksheet-page-content-area">
