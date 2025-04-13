@@ -5,9 +5,11 @@ export function render() {
     RH.handleTexUpdates();
     RH.fitMathOverflow(); 
     
-    RH.pushContentOverflow(); 
+    if (RH.pushContentOverflow()) {
+        RH.insertWorksheetHtml(); 
+        RH.handleTexUpdates();
+        RH.fitMathOverflow();
+    }
 
-    RH.insertWorksheetHtml(); 
-    RH.handleTexUpdates();
-    RH.fitMathOverflow(); 
+    // handle answer key updates
 }

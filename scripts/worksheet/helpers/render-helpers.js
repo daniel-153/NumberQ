@@ -135,6 +135,7 @@ export function pushContentOverflow() {
         fwbb_height_series.push([]);
     }
 
+    let overflow_detected = false;
     for (let page_index = 0; page_index < worksheet.pages.length; page_index++) {
         // we need the logic below because the current page might not exist in the DOM yet if it was created due to previous overflow
         let fwbb_element_list;
@@ -174,8 +175,12 @@ export function pushContentOverflow() {
             // push the height of the fwbb we moved to the next array
             fwbb_height_series[page_index + 1].push(current_fwbb_heights[current_fwbb_heights.length - 1]);
             current_fwbb_heights.pop();
+
+            overflow_detected = true; // if we entered this while() a single time, that means something overflowed; if not, nothing overflowed
         }
     }
+
+    return overflow_detected;
 }
 
 export function fitMathOverflow() {
