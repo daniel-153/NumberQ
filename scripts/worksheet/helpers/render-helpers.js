@@ -1,5 +1,36 @@
 import { worksheet_editor, worksheet }  from '../worksheet.js';
 
+function _addMainHeader(settings) {
+    return `
+        <div class="full-width-bounding-box">
+            <div class="ws-header-wrapper">
+                <div class="ws-header-top-box">
+                    <div class="ws-course-name">
+                        Algebra 2
+                    </div>
+                    <div class="ws-name-period-wrapper">
+                        <div class="ws-name-period-label">
+                            Name:
+                        </div>
+                        <div class="ws-name-box">
+                        </div>
+                        <div class="ws-name-period-label">
+                            Period:
+                        </div>
+                        <div class="ws-period-box">
+                        </div>
+                    </div>
+                </div>
+                <div class="ws-header-bottom-box">
+                    <div class="ws-assignment-title">
+                        Systems of Equations
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 function _addContentToPage(content_item_array) {
     let output_html = '';
     for (let i = 0; i < content_item_array.length; i++) {
@@ -22,7 +53,7 @@ function _addContentToPage(content_item_array) {
             if (next_item === undefined || next_item.settings.type === 'directions') { // next content item is also a problem (two in a row)
                 output_html += `
                     <div class="full-width-bounding-box">
-                        <div class="content-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}">
+                        <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}">
                             <div class="problem-number">${worksheet_editor.getProblemNumber(current_item)})</div>
                             <div class="problem-tex" data-math-container="true" style="font-size: ${current_item.settings.font_size};"></div>
                         </div>
@@ -32,11 +63,11 @@ function _addContentToPage(content_item_array) {
             else if (next_item.settings.type === 'problem') { // next content item is either directions or nothing (this is the last item)
                 output_html += `
                     <div class="full-width-bounding-box">
-                        <div class="content-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}">
+                        <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}">
                             <div class="problem-number">${worksheet_editor.getProblemNumber(current_item)})</div>
                             <div class="problem-tex" data-math-container="true" style="font-size: ${current_item.settings.font_size};"></div>
                         </div>
-                        <div class="content-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(next_item)}">
+                        <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(next_item)}">
                             <div class="problem-number">${worksheet_editor.getProblemNumber(next_item)})</div>
                             <div class="problem-tex" data-math-container="true" style="font-size: ${next_item.settings.font_size};"></div>
                         </div>  
@@ -65,6 +96,9 @@ export function insertWorksheetHtml() {
                     <div class="worksheet-page-content-area">
         `;
 
+        // add the header on the first page
+        if (i === 0) updated_html += _addMainHeader();
+
         updated_html += _addContentToPage(worksheet.pages[i].content);
         
         updated_html += '</div></div></div>';
@@ -75,7 +109,7 @@ export function insertWorksheetHtml() {
 }
 
 export function handleTexUpdates() {
-    [...document.getElementsByClassName('content-box')].forEach(content_box => {
+    [...document.getElementsByClassName('problem-box')].forEach(content_box => {
         // make sure we filter out any content that isn't a question
         const current_item = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID'));
         if (current_item.settings.type !== 'problem') return;
@@ -148,7 +182,7 @@ export function fitMathOverflow() {
     [...document.getElementsByClassName('worksheet-page-content-area')].forEach(content_area => {
         [...content_area.children].forEach(block_bounding_box => {
             [...block_bounding_box.children].forEach(content_box => {
-                if (content_box.classList.contains('directions-box')) return; // skip directions boxes
+                if (!content_box.classList.contains('problem-box')) return; // skip all content boxes except for problem boxes
                 const math_div = [...content_box.children][1];
 
                 let scale_factor = math_div.clientWidth / math_div.scrollWidth;
