@@ -1,6 +1,6 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as PH from"../helper-modules/polynom-helpers.js";
-import * as SH from '../helper-modules/settings-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from"../helpers/polynom-helpers.js";
+import * as SH from '../helpers/settings-helpers.js';
 
 function processSettings(formObj) {
     let { term_range_min, term_range_max, general_operation_types, randomize_order, force_ints_in_div} = formObj;

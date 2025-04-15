@@ -1,6 +1,6 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as PH from '../helper-modules/polynom-helpers.js';
-import * as SH from '../helper-modules/settings-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from"../helpers/polynom-helpers.js";
+import * as SH from '../helpers/settings-helpers.js';
 
 function processSettings(formObj) {
     let { sys_eqs_coef_size, linear_equation_form, sys_eqs_term_number, sys_eqs_x_solution, sys_eqs_y_solution, randomize_solutions } = formObj;

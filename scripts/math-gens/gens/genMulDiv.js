@@ -1,6 +1,6 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as PH from"../helper-modules/polynom-helpers.js";
-import * as SH from '../helper-modules/settings-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from"../helpers/polynom-helpers.js";
+import * as SH from '../helpers/settings-helpers.js';
 
 function processSettings(formObj) {
     let { number_of_terms, term_range_min, term_range_max, muldiv_operation_type, number_type, multiply_symbol, answer_form } = formObj;

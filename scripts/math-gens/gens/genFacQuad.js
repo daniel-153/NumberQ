@@ -1,6 +1,6 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as PH from '../helper-modules/polynom-helpers.js';
-import * as SH from '../helper-modules/settings-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from"../helpers/polynom-helpers.js";
+import * as SH from '../helpers/settings-helpers.js';
 
 function processSettings(formObj) {
     let { factor_size, types_of_quadratics, leading_coef, quadratic_prompt_type, qf_answer_type } = formObj;

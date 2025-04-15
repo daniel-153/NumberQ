@@ -1,7 +1,5 @@
-import { registerEventListeners } from "./helper-modules/event-helpers.js";
+import { registerEventListeners } from "./events/handlers.js";
 
-function init() {
+(function init() {
     registerEventListeners();
-}
-
-init();
+})();

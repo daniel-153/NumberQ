@@ -164,11 +164,11 @@ export function pushContentOverflow() {
             const last_fwbb = fwbb_element_list[fwbb_element_list.length - 1];
             [...last_fwbb.children].forEach(content_box => {
                 if (worksheet_editor.getItemById(`page-${page_index + 1}`) === null) {
-                    worksheet_editor.static_update.appendItemAt('document'); // add a page if there is no next page to overflow content onto
+                    worksheet_editor.static_update.addPageToDoc(); // add a page if there is no next page to overflow content onto
                     fwbb_height_series.push([]); // add another array to the height series // add another array to the height series
                 }
 
-                worksheet_editor.static_update.appendItemAt(`page-${page_index + 1}`,'unshift');
+                worksheet_editor.static_update.addContentToPage(`page-${page_index + 1}`,'unshift');
                 worksheet_editor.static_update.deleteItemAt(content_box.getAttribute('data-item-ID'));
             });
 

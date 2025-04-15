@@ -1,5 +1,4 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as SH from '../helper-modules/settings-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
 
 function processSettings(formObj) {
     let { angular_unit, argument_sign, trig_function_types } = formObj;

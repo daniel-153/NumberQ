@@ -1,45 +1,46 @@
-import { render } from "./render.js";
-import { print } from "./print.js";
-import { updateUi } from "./update-ui.js";
+import { render } from "./actions/render.js";
+import { print } from "./actions/print.js";
+import { updateUi } from "./actions/update-ui.js";
 
 export let worksheet = null;
 
 const _editor_functions = {
     createAsEmptyDoc,
     createAsDefault,
-    appendItemAt,
     deleteItemAt,
     editTextContent,
+    addPageToDoc,
     addContentToPage
 }
 
 export const worksheet_editor = {
-    static_update: _editor_functions,
+    worksheet: worksheet,
+    focused_item_ID: null, 
     ...(new Proxy(
         _editor_functions, 
         {
             get: function(target_obj, property) { 
                 if (Object.prototype.hasOwnProperty.call(target_obj, property) && property !== 'print') { 
                     return function(...args) { 
-                        const return_value = target_obj[property](...args); 
+                        const return_value = target_obj[property](...args);
+                        focusItemAt(return_value);
                         render(); 
                         updateUi();
-                        return return_value;
                     }
                 }
                 else return target_obj[property];
             }
         }
     )),
-    worksheet: worksheet,
-    focused_item_ID: null, 
-    render: render,
-    print: print,
-    updateUi: updateUi,
-    getItemById: getItemById,
-    getIdByItem: getIdByItem,
-    getProblemNumber: getProblemNumber,
-    getDirectionsNumber: getDirectionsNumber
+    render,
+    print,
+    updateUi,
+    static_update: _editor_functions,
+    getItemById,
+    getIdByItem,
+    getProblemNumber,
+    getDirectionsNumber,
+    focusItemAt
 };
 
 // Editor Functions:
@@ -53,6 +54,7 @@ function createAsEmptyDoc() {
 function createAsDefault() { 
     createAsEmptyDoc();
     appendItemAt('document');
+    return 'page-0';
 }
 
 function appendItemAt(item_ID, method = 'push') {
@@ -226,6 +228,7 @@ function getProblemNumber(item) {
     return problem_number;
 }
 
+// ***************** The while will create an infinite loop if the item isn't valid, so you need to break when everything is searched
 function getDirectionsNumber(item) {
     let directions_item_found = false;
     let directions_number;
@@ -252,4 +255,9 @@ function getDirectionsNumber(item) {
     }
 
     return directions_number;
+}
+
+// ************************************* // need a way to update the focus in the UI here without nesting a function
+function focusItemAt(item_ID) { 
+    worksheet_editor.focused_item_ID = item_ID;
 }

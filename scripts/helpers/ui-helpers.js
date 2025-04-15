@@ -1,3 +1,5 @@
+import * as TB from '../templates/topic-banners.js';
+
 export function updateElementMath(elementID, latexCode, initial_font_size) {
     /*
      This function can be used in three different ways: 
@@ -218,3 +220,32 @@ export function cleanedFromListeners(element) {
     element.parentNode.replaceChild(clone, element); 
     return clone; 
 } 
+
+export function insertModeBanners() {
+    let output_html = '';
+    TB.templates.forEach(banner_template => {
+        let example_problem_class;
+        if (banner_template.example_problem_class === undefined) example_problem_class = '';
+        else example_problem_class = banner_template.example_problem_class;
+             
+        output_html += `
+            <div class="generator ${banner_template.category_class_name}">
+            <div class="gen-title-container">
+                <h1 class="gen-title">${banner_template.display_name}</h1>
+                <h2 class="gen-topic">(${banner_template.display_category})</h2>
+            </div>
+            <div class="example-problem ${example_problem_class}">\\(${banner_template.example_problem}\\)</div>
+            <button
+                class="start-button"
+                data-gen-type="${banner_template.display_name}"
+                data-gen-func-name="${banner_template.function_name}"
+            >
+                Generate
+            </button>
+            </div>
+        `;
+    })
+
+    document.getElementById('generator-list').insertAdjacentHTML('afterbegin',output_html);
+    MathJax.typesetPromise(['#generator-list']);
+}

@@ -1,7 +1,7 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as PH from '../helper-modules/polynom-helpers.js';
-import * as SH from '../helper-modules/settings-helpers.js';
-import * as MH from '../helper-modules/math-string-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from"../helpers/polynom-helpers.js";
+import * as SH from '../helpers/settings-helpers.js';
+import * as MH from '../helpers/math-string-helpers.js';
 
 function processSettings(formObj) {
     let { solution_size_range, lin_eq_equation_form, solution_form, variable_letter, flip_equation, force_positive_coefs } = formObj;

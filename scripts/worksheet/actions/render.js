@@ -1,4 +1,4 @@
-import * as RH from './helpers/render-helpers.js';
+import * as RH from '../helpers/render-helpers.js';
 
 export function render() {
     RH.insertWorksheetHtml(); 

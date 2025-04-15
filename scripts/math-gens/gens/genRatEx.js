@@ -1,6 +1,6 @@
-import * as H from '../helper-modules/gen-helpers.js';
-import * as PH from '../helper-modules/polynom-helpers.js';
-import * as MH from '../helper-modules/math-string-helpers.js';
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from"../helpers/polynom-helpers.js";
+import * as MH from '../helpers/math-string-helpers.js';
 
 function processSettings(formObj) {
     let { ratex_add_sub_form, ratex_mul_div_form, general_operation_types, numer_form, denom_form, give_excluded_values } = formObj;
