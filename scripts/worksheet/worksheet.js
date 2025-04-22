@@ -10,7 +10,8 @@ const _editor_functions = {
     deleteItemAt,
     editTextContent,
     addPageToDoc,
-    addContentToPage
+    addContentToPage,
+    focusItemAt
 }
 
 export const worksheet_editor = {
@@ -23,7 +24,7 @@ export const worksheet_editor = {
                 if (Object.prototype.hasOwnProperty.call(target_obj, property) && property !== 'print') { 
                     return function(...args) { 
                         const return_value = target_obj[property](...args);
-                        focusItemAt(return_value);
+                        _editor_functions.focusItemAt(return_value);
                         render(); 
                         updateUi();
                     }
@@ -39,8 +40,7 @@ export const worksheet_editor = {
     getItemById,
     getIdByItem,
     getProblemNumber,
-    getDirectionsNumber,
-    focusItemAt
+    getDirectionsNumber
 };
 
 // Editor Functions:
@@ -228,22 +228,19 @@ function getProblemNumber(item) {
     return problem_number;
 }
 
-// ***************** The while will create an infinite loop if the item isn't valid, so you need to break when everything is searched
 function getDirectionsNumber(item) {
     let directions_item_found = false;
     let directions_number;
-    while (!directions_item_found) {
-        for (let i = 0; i < worksheet.pages.length; i++) {
-            let directions_counter = 0
+    for (let i = 0; (i < worksheet.pages.length) && (!directions_item_found); i++) {
+        let directions_counter = 0
 
-            for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-                if (worksheet.pages[i].content[j].settings.type === 'directions') {
-                    directions_counter++;
+        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
+            if (worksheet.pages[i].content[j].settings.type === 'directions') {
+                directions_counter++;
 
-                    if (worksheet.pages[i].content[j] === item) {
-                        directions_number = `${i + 1}.${directions_counter}`;
-                        directions_item_found = true;
-                    }
+                if (worksheet.pages[i].content[j] === item) {
+                    directions_number = `${i + 1}.${directions_counter}`;
+                    directions_item_found = true;
                 }
             }
         }
@@ -257,7 +254,7 @@ function getDirectionsNumber(item) {
     return directions_number;
 }
 
-// ************************************* // need a way to update the focus in the UI here without nesting a function
 function focusItemAt(item_ID) { 
     worksheet_editor.focused_item_ID = item_ID;
+    return item_ID;
 }
