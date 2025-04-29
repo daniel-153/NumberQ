@@ -52,37 +52,10 @@ function createAsEmptyDoc() {
 
 function createAsDefault() { 
     createAsEmptyDoc();
-    appendItemAt('document');
-    return 'page-0';
-}
-
-function appendItemAt(item_ID, method = 'push') {
-    const [ item_type, item_number ] = item_ID.split('-');
-
-    if (item_type === 'document') {
-        // add a page to the document
-        worksheet.pages[method](
-            {
-                content: [],
-                settings: {},
-            }
-        );
-
-        return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
-    }
-    else if (item_type === 'page') {
-        worksheet.pages[Number(item_number)].content[method]({
-            settings: {
-                text_content: '[insert~~problem]',
-                font_size: '1cm',
-                type: 'problem',
-                mjx_status: 'not-rendered',
-                mjx_content: null
-            },
-        });
-
-        return 'content-' + item_number + '.' + (worksheet.pages[Number(item_number)].content.length - 1); // return the item_ID of the content that got added
-    }
+    addPageToDoc();
+    addSectToPage('page-0');
+    addContentToSect('sect-0');
+    return 'content-0.0';
 }
 
 function addPageToDoc(method = 'push') {
@@ -95,6 +68,21 @@ function addPageToDoc(method = 'push') {
     );
 
     return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
+}
+
+function addSectToPage(page_item_ID, method = 'push') {
+    worksheet.pages[Number(page_item_ID.split('-')[1])][method]({
+        sects: [],
+        settings: {}
+    });
+}
+
+function addContentToSect(sec_item_ID, method = 'push') {
+    const [ page_index , sect_index ] = sec_item_ID.split('-').split('.');
+
+    worksheet.pages[Number(page_index)][sect_index][method]({
+        settings: {}
+    })
 }
 
 function addContentToPage(page_item_ID, type, starting_settings = 'default', method = 'push') {
