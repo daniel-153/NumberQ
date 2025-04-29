@@ -15,7 +15,6 @@ const _editor_functions = {
 }
 
 export const worksheet_editor = {
-    worksheet: worksheet,
     focused_item_ID: null, 
     ...(new Proxy(
         _editor_functions, 
@@ -98,20 +97,42 @@ function addPageToDoc(method = 'push') {
     return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
 }
 
-function addContentToPage(page_item_ID, type='problem', method = 'push') {
-    const [ item_type, item_number ] = page_item_ID.split('-');
+function addContentToPage(page_item_ID, type, starting_settings = 'default', method = 'push') {
+    const page_index = page_item_ID.split('-')[1];
+    let new_content_obj; // the content obj that will be added to the specified page
     
-    worksheet.pages[Number(item_number)].content[method]({
-        settings: {
-            text_content: (type === 'problem')? '[insert~~problem]' : 'Add problem directions here.',
-            font_size: (type === 'problem')? '1cm' : '0.5cm',
-            type: type,
-            mjx_status: 'not-rendered',
-            mjx_content: null
-        },
-    });
+    if (starting_settings !== 'default') { // settings for new content were supplied (either problem or directions) 
+        new_content_obj = {
+            settings: starting_settings
+        }
+    }
+    else if (type === 'problem') { // add a default (empty) problem
+        new_content_obj = {
+            settings: {
+                text_content: '[insert~~problem]',
+                font_size: '1cm',
+                type: 'problem',
+                mjx_status: 'not-rendered',
+                mjx_content: null
+            }
+        }
+    }
+    else if (type === 'directions') { // add a default (empty) directions
+        new_content_obj = {
+            settings: {
+                text_content: 'Add problem directions here.',
+                font_size: '0.5cm',
+                type: 'directions',
+                mjx_status: 'not-rendered',
+                mjx_content: null
+            }
+        }
+    }
 
-    return 'content-' + item_number + '.' + (worksheet.pages[Number(item_number)].content.length - 1); // return the item_ID of the content that got added
+    // push or unshift the new content onto the page
+    worksheet.pages[Number(page_index)].content[method](new_content_obj);
+
+    return 'content-' + page_index + '.' + (worksheet.pages[Number(page_index)].content.length - 1); // return the item_ID of the content that got added
 }
 
 function deleteItemAt(item_ID) {

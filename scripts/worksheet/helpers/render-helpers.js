@@ -39,7 +39,7 @@ function _addContentToPage(content_item_array) {
             output_html += `
                 <div class="full-width-bounding-box">
                     <div 
-                        class="directions-box" data-item-ID=""${worksheet_editor.getIdByItem(current_item)}"
+                        class="directions-box" data-item-ID="${worksheet_editor.getIdByItem(current_item)}"
                         style="font-size: ${current_item.settings.font_size};"
                     >
                         ${current_item.settings.text_content}   
@@ -165,11 +165,21 @@ export function pushContentOverflow() {
             [...last_fwbb.children].forEach(content_box => {
                 if (worksheet_editor.getItemById(`page-${page_index + 1}`) === null) {
                     worksheet_editor.static_update.addPageToDoc(); // add a page if there is no next page to overflow content onto
-                    fwbb_height_series.push([]); // add another array to the height series // add another array to the height series
+                    fwbb_height_series.push([]); // add another array to the height series 
                 }
 
-                worksheet_editor.static_update.addContentToPage(`page-${page_index + 1}`,'unshift');
+                // save the overflowing item's settings before deleting it
+                const item_settings = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID')).settings; 
+                console.log(item_settings)
+
+                // delete the overflowing item and add it to the next page
                 worksheet_editor.static_update.deleteItemAt(content_box.getAttribute('data-item-ID'));
+                worksheet_editor.static_update.addContentToPage(
+                    `page-${page_index + 1}`,
+                    '_', 
+                    item_settings,
+                    'unshift'
+                );
             });
 
             // push the height of the fwbb we moved to the next array
@@ -179,6 +189,7 @@ export function pushContentOverflow() {
             overflow_detected = true; // if we entered this while() a single time, that means something overflowed; if not, nothing overflowed
         }
     }
+    
 
     return overflow_detected;
 }
