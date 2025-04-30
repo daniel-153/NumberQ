@@ -5,7 +5,6 @@ import { worksheet_editor, worksheet } from '../worksheet.js';
 
 export function focusCurrentItem() {
     const item_ID = worksheet_editor.focused_item_ID;
-    const [ item_type, item_number ] = item_ID.split('-');
 
     // ensure the last item that was focused gets unfocused
     [...document.getElementById('outline-container').children].filter(element => element.classList.contains('outline-item')).forEach(element => {
@@ -25,7 +24,7 @@ export function focusCurrentItem() {
 
     // put (a copy of) the item in the 'focus-indicator' box on the right panel
     document.getElementById('current-focused-item').innerHTML = `
-        <div class="outline-item ${element_class} outline-item-indicator" data-outline-item-subtype="${element_subtype}">
+        <div class="outline-item ${element_class} outline-item-indicator">
             ${element_label}
         </div>
     `;
@@ -71,37 +70,52 @@ export function updateOutline() {
                     <button 
                         class="outline-button outline-delete-button"
                     >X</button>    
-                    <div class="outline-button outline-plus-button page-plus-button"> 
-                        +
-                        <div class="page-plus-options-wrapper hidden-content">  
-                            <button class="add-directions-button">Add Directions</button>
-                            <button class="add-problem-button">Add Problem</button>
-                        </div>
-                    </div>
+                    <button 
+                        class="outline-button outline-plus-button page-plus-button"
+                    >+</button>
                 </div>
             </div>
         `;
-        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-            current_item_ID = `content-${i}.${j}`;
+        for (let j = 0; j < worksheet.pages[i].sects.length; j++) {
+            current_item_ID = `sect-${i}.${j}`;
             item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? "true" : '';
-            const content_type = worksheet.pages[i].content[j].settings.type;
-            const content_name = (content_type === 'problem')? 
-                `Problem ${worksheet_editor.getProblemNumber(worksheet.pages[i].content[j])}` : 
-                `Directions ${worksheet_editor.getDirectionsNumber(worksheet.pages[i].content[j])}
-            `;
             
             updated_html += `
+                <div class="outline-item outline-sect" data-item-ID="${current_item_ID}" 
+                data-currently-focused="${item_is_focused}">
+                    <div class="outline-label outline-sect-label">Section ${i + 1}.${j + 1}</div>
+                    <div class="outline-nav-wrapper">
+                        <button 
+                            class="outline-button outline-delete-button"
+                        >X</button>  
+                        <button 
+                            class="outline-button outline-plus-button sect-plus-button"
+                        >+</button>   
+                    </div>
+                </div>
+            `;
+            for (let k = 0; k < worksheet.pages[i].sects[j].content.length; k++) {
+                current_item_ID = `content-${i}.${j}.${k}`;
+                item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? "true" : '';
+
+                const content_item = worksheet.pages[i].sects[j].content[k];
+                const content_type_name  = content_item.settings.type_display_name;
+                // line below is temporary (if the type is not a problem (maybe its a figure), you cant use getProblemNumber)
+                const content_number = worksheet_editor.getProblemNumber(content_item);
+
+
+                updated_html += `
                 <div class="outline-item outline-content" data-item-ID="${current_item_ID}" 
-                data-currently-focused="${item_is_focused}" data-outline-item-subtype="${content_type}"
-                >
-                    <div class="outline-label outline-content-label">${content_name}</div>
+                data-currently-focused="${item_is_focused}">
+                    <div class="outline-label outline-content-label">${content_type_name} ${content_number}</div>
                     <div class="outline-nav-wrapper">
                         <button 
                             class="outline-button outline-delete-button"
                         >X</button>    
                     </div>
                 </div>
-            `;
+                `;
+            }
         }
     }
     document.getElementById('outline-container').innerHTML = updated_html;

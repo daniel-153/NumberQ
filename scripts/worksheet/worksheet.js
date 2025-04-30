@@ -2,7 +2,7 @@ import { render } from "./actions/render.js";
 import { print } from "./actions/print.js";
 import { updateUi } from "./actions/update-ui.js";
 
-export let worksheet = null;
+export let worksheet = {};
 
 const _editor_functions = {
     createAsEmptyDoc,
@@ -10,8 +10,9 @@ const _editor_functions = {
     deleteItemAt,
     editTextContent,
     addPageToDoc,
-    addContentToPage,
-    focusItemAt
+    focusItemAt,
+    addSectToPage,
+    addContentToSect
 }
 
 export const worksheet_editor = {
@@ -38,8 +39,7 @@ export const worksheet_editor = {
     static_update: _editor_functions,
     getItemById,
     getIdByItem,
-    getProblemNumber,
-    getDirectionsNumber
+    getProblemNumber
 };
 
 // Editor Functions:
@@ -54,73 +54,55 @@ function createAsDefault() {
     createAsEmptyDoc();
     addPageToDoc();
     addSectToPage('page-0');
-    addContentToSect('sect-0');
-    return 'content-0.0';
+    addContentToSect('sect-0.0');
+    return 'content-0.0.0';
 }
 
 function addPageToDoc(method = 'push') {
     // add a page to the document
+    // console.log(worksheet.pages[method])
+
     worksheet.pages[method](
         {
-            content: [],
+            sects: [],
             settings: {},
         }
     );
 
+    // console.log(worksheet)
+
     return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
 }
 
-function addSectToPage(page_item_ID, method = 'push') {
-    worksheet.pages[Number(page_item_ID.split('-')[1])][method]({
-        sects: [],
-        settings: {}
+function addSectToPage(page_item_ID, method = 'push') {    
+    worksheet.pages[Number(page_item_ID.split('-')[1])].sects[method]({
+        content: [],
+        settings: {
+            directions_text: 'Add problem directions here.',
+            is_overflow_sect: false,
+            parent_sect: null
+        }
     });
+
+    return `sect-${Number(page_item_ID.split('-')[1])}.${worksheet.pages[Number(page_item_ID.split('-')[1])].sects.length - 1}`;
 }
 
 function addContentToSect(sec_item_ID, method = 'push') {
-    const [ page_index , sect_index ] = sec_item_ID.split('-').split('.');
-
-    worksheet.pages[Number(page_index)][sect_index][method]({
-        settings: {}
-    })
-}
-
-function addContentToPage(page_item_ID, type, starting_settings = 'default', method = 'push') {
-    const page_index = page_item_ID.split('-')[1];
-    let new_content_obj; // the content obj that will be added to the specified page
+    // console.log(sec_item_ID)
+    const [ page_index , sect_index ] = sec_item_ID.split('-')[1].split('.');
     
-    if (starting_settings !== 'default') { // settings for new content were supplied (either problem or directions) 
-        new_content_obj = {
-            settings: starting_settings
+    worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method]({
+        settings: {
+            text_content: '[insert~~problem]',
+            font_size: '1cm',
+            type: 'problem',
+            type_display_name: 'Problem',
+            mjx_status: 'not-rendered',
+            mjx_content: null
         }
-    }
-    else if (type === 'problem') { // add a default (empty) problem
-        new_content_obj = {
-            settings: {
-                text_content: '[insert~~problem]',
-                font_size: '1cm',
-                type: 'problem',
-                mjx_status: 'not-rendered',
-                mjx_content: null
-            }
-        }
-    }
-    else if (type === 'directions') { // add a default (empty) directions
-        new_content_obj = {
-            settings: {
-                text_content: 'Add problem directions here.',
-                font_size: '0.5cm',
-                type: 'directions',
-                mjx_status: 'not-rendered',
-                mjx_content: null
-            }
-        }
-    }
+    });
 
-    // push or unshift the new content onto the page
-    worksheet.pages[Number(page_index)].content[method](new_content_obj);
-
-    return 'content-' + page_index + '.' + (worksheet.pages[Number(page_index)].content.length - 1); // return the item_ID of the content that got added
+    return `content-${page_index}.${sect_index}.${worksheet.pages[Number(page_index)].sects[Number(sect_index)].content.length - 1}`;
 }
 
 function deleteItemAt(item_ID) {
@@ -132,13 +114,20 @@ function deleteItemAt(item_ID) {
     else if (item_type === 'page') {
         worksheet.pages.splice(Number(item_number), 1);
 
-        return 'document'; // indicate the focus should be "moved" to the docuement
+        return 'document'; 
+    }
+    else if (item_type === 'sect') {
+        const [ page_index, sect_index ] = item_number.split('.');
+
+        worksheet.pages[page_index].sects.splice(sect_index, 1);
+
+        return 'page-' + page_index;
     }
     else if (item_type === 'content') {
-        const [ page_index, content_index ] = item_number.split('.');
-        worksheet.pages[page_index].content.splice(content_index, 1);
+        const [ page_index, sect_index, content_index ] = item_number.split('.');
+        worksheet.pages[page_index].sects[sect_index].content.splice(content_index, 1);
 
-        return 'page-' + page_index; // indicate the focus should be "moved" to the page where the content got deleted
+        return 'sect-' + page_index + '.' + sect_index; 
     }
 }
 
@@ -157,22 +146,33 @@ function editTextContent(item_ID, value) {
 
 // Util Functions:
 function getItemById(item_ID) {
-    const [ item_type, item_number ] = item_ID.split('-');
+    const [ item_type, item_number] = item_ID.split('-');
 
     if (item_type === 'document') {
         if (worksheet !== null) return worksheet;
     }
-    else if (item_type === 'page') {
+    else if (item_type === 'page') {       
         if (worksheet.pages[item_number] !== undefined) return worksheet.pages[item_number];
     }
-    else if (item_type === 'content') {
-        const [ page_index, content_index ] = item_number.split('.');
+    else if (item_type === 'sect') {
+        const [ page_index, sect_index ] = item_number.split('.');
         
         if (
             worksheet.pages[page_index] !== undefined &&
-            worksheet.pages[page_index].content[content_index] !== undefined
+            worksheet.pages[page_index].sects[sect_index] !== undefined
         ) {
-            return worksheet.pages[page_index].content[content_index];
+            return worksheet.pages[page_index].sects[sect_index];
+        }
+    }
+    else if (item_type === 'content') {
+        const [ page_index, sect_index, content_index ] = item_number.split('.');
+
+        if (
+            worksheet.pages[page_index] !== undefined &&
+            worksheet.pages[page_index].sects[sect_index] !== undefined &&
+            worksheet.pages[page_index].sects[sect_index].content[content_index] !== undefined
+        ) {
+            return worksheet.pages[page_index].sects[sect_index].content[content_index];
         }
     }
     
@@ -181,13 +181,13 @@ function getItemById(item_ID) {
 
 function getIdByItem(item_obj) {
     let id_found = false;
-    if ('pages' in item_obj) {
+    if ('pages' in item_obj) { // document (probably)
         if (item_obj === worksheet) {
             id_found = true;
             return 'document';
         }
     }
-    else if ('content' in item_obj) {
+    else if ('sects' in item_obj) { // a page (probably)
         while (!id_found) {
             for (let i = 0; i < worksheet.pages.length; i++) {
                 if (item_obj === worksheet.pages[i]) { // check for strict (reference) object equality (same obj)
@@ -197,13 +197,27 @@ function getIdByItem(item_obj) {
             }
         }
     }
-    else {
+    else if ('content' in item_obj) { // a sect (probably)
         while (!id_found) {
             for (let i = 0; i < worksheet.pages.length; i++) {
-                for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-                    if (item_obj === worksheet.pages[i].content[j]) {
+                for (let j = 0; j < worksheet.pages[i].sects.length; j++) {
+                    if (item_obj === worksheet.pages[i].sects[j]) {
                         id_found = true;
-                        return 'content-' + i +'.' + j;
+                        return `sect-${i}.${j}`; 
+                    }
+                }
+            }
+        }
+    }
+    else { // a content (probably)
+        while (!id_found) {
+            for (let i = 0; i < worksheet.pages.length; i++) {
+                for (let j = 0; j < worksheet.pages[i].sects.length; j++) {
+                    for (let k = 0; k < worksheet.pages[i].sects[j].content.length; k++) {
+                        if (item_obj === worksheet.pages[i].sects[j].content[k]) {
+                            id_found = true;
+                            return `content-${i}.${j}.${k}`;
+                        }
                     }
                 }
             }
@@ -213,54 +227,29 @@ function getIdByItem(item_obj) {
     return null;
 }
 
-function getProblemNumber(item) {
+function getProblemNumber(problem_item) {
     let problem_number = 0;
     let item_found = false;
-    for (let i = 0; i < worksheet.pages.length; i++) {
-        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-            // make sure we only incremenet the counter for problems (not directions)
-            if (worksheet.pages[i].content[j].settings.type === 'problem') problem_number++;
-            
-            if (item === worksheet.pages[i].content[j]) {
-                item_found = true;
-                break;
-            }
-        }
-        if (item_found) break;
-    }
-    
-    if (!item_found) {
-        console.error(`Item=${item} is not a problem item, or no matching problem item could be found.`);
-        return null;
-    }
 
-    return problem_number;
-}
-
-function getDirectionsNumber(item) {
-    let directions_item_found = false;
-    let directions_number;
-    for (let i = 0; (i < worksheet.pages.length) && (!directions_item_found); i++) {
-        let directions_counter = 0
-
-        for (let j = 0; j < worksheet.pages[i].content.length; j++) {
-            if (worksheet.pages[i].content[j].settings.type === 'directions') {
-                directions_counter++;
-
-                if (worksheet.pages[i].content[j] === item) {
-                    directions_number = `${i + 1}.${directions_counter}`;
-                    directions_item_found = true;
+    for (let i = 0; (i < worksheet.pages.length) && !item_found; i++) {
+        for (let j = 0; (j < worksheet.pages[i].sects.length) && !item_found; j++) {
+            for (let k = 0; (k < worksheet.pages[i].sects[j].content.length) && !item_found; k++) {
+                // for every content item that has type==='problem', iterate the problem number counter
+                if (worksheet.pages[i].sects[j].content[k].settings.type === 'problem') problem_number++;
+                
+                // if the supplied problem item matches the current item, stop counting and return the number
+                if (problem_item === worksheet.pages[i].sects[j].content[k]) {
+                    item_found = true;
+                    return problem_number;
                 }
             }
         }
     }
 
-    if (!directions_item_found) {
-        console.error(`Item=${item} is not a directions item, or no matching directions item could be found.`);
+    if (!item_found) {
+        console.error('Item=', problem_item, `is not an item of type='problem', or no matching problem item could be found.`);
         return null;
     }
-
-    return directions_number;
 }
 
 function focusItemAt(item_ID) { 

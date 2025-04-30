@@ -84,8 +84,13 @@
     background-color: green;
 }
 
+.outline-sect {
+    width: 84%;
+    background-color: rgb(103, 37, 103);
+}
+
 .outline-content {
-    width: 80%;
+    width: 76%;
     background-color: red;
 }
 

@@ -102,24 +102,10 @@ const event_listeners = [
                 worksheet_editor.addPageToDoc();
             }
             else if (event.target.matches('.outline-plus-button') && event.target.matches('.page-plus-button')) {
-                const button_wrapper = event.target.lastElementChild;
-                button_wrapper.classList.remove('hidden-content');
-
-                setTimeout(() => { // necessary to avoid conflicting events
-                    const handleOutsideClick = (e) => {
-                        if (!event.target.contains(e.target)) {
-                            button_wrapper.classList.add('hidden-content');
-                            document.removeEventListener('click', handleOutsideClick);
-                        }
-                    };
-                    document.addEventListener('click', handleOutsideClick);
-                }, 0);
+                worksheet_editor.addSectToPage(targeted_item_ID);
             }
-            else if (event.target.matches('.add-directions-button')) {
-                worksheet_editor.addContentToPage(targeted_item_ID, 'directions');
-            }
-            else if (event.target.matches('.add-problem-button')) {
-                worksheet_editor.addContentToPage(targeted_item_ID, 'problem');
+            else if (event.target.matches('.outline-plus-button') && event.target.matches('.sect-plus-button')) {
+                worksheet_editor.addContentToSect(targeted_item_ID);
             }
             else if (event.target.matches('.outline-delete-button')) { // delete and focus the parent of the item that was deleted
                 worksheet_editor.deleteItemAt(targeted_item_ID);
