@@ -200,10 +200,23 @@ export function pushContentOverflow() {
 
                 if (current_item_type === 'sect') { // directions overflowed (can just move them)
                     worksheet_editor.static_update.deleteItemAt(current_item_ID);
-                    worksheet_editor.static_update.addSectToPage()
+                    worksheet_editor.static_update.addSectToPage(
+                        `page-${page_index + 1}`,
+                        current_item,
+                        'unshift'
+                    );
                 }
                 else if (current_item_type === 'content') { // content overflowed (need to check if there were directions immidiately before)
+                    if (worksheet_editor.getIdByItem(item_before).split('-')[0] === 'sect') { // item before was sect
+                        // pull the overflowing item over
+                        worksheet_editor.static_update.deleteItemAt(current_item_ID);
+                        worksheet_editor.static_update.addContentToSect()
 
+                        // 
+                    }
+                    else if (worksheet_editor.getIdByItem(item_before).split('-')[0] === 'content') { // content before
+
+                    }
                 }
             }
             else if (last_fwbb_items.length === 2) {

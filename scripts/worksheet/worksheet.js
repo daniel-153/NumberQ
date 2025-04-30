@@ -74,33 +74,42 @@ function addPageToDoc(method = 'push') {
     return 'page-' + (worksheet.pages.length - 1); // return the item_ID of the page that got added
 }
 
-function addSectToPage(page_item_ID, method = 'push') {    
-    worksheet.pages[Number(page_item_ID.split('-')[1])].sects[method]({
-        content: [],
-        settings: {
-            directions_text: 'Add problem directions here.',
-            is_overflow_sect: false,
-            parent_sect: null
-        }
-    });
-
+function addSectToPage(page_item_ID, sect_item = null, method = 'push') {    
+    if (sect_item !== null) { // a sect was provided
+        worksheet.pages[Number(page_item_ID.split('-')[1])].sects[method](sect_item)
+    }
+    else { // no sect was provided (use an empty default)
+        worksheet.pages[Number(page_item_ID.split('-')[1])].sects[method]({
+            content: [],
+            settings: {
+                directions_text: 'Add problem directions here.',
+                is_overflow_sect: false,
+                parent_sect: null
+            }
+        });
+    }
+    
     return `sect-${Number(page_item_ID.split('-')[1])}.${worksheet.pages[Number(page_item_ID.split('-')[1])].sects.length - 1}`;
 }
 
-function addContentToSect(sec_item_ID, method = 'push') {
-    // console.log(sec_item_ID)
+function addContentToSect(sec_item_ID, content_item = null, method = 'push') {
     const [ page_index , sect_index ] = sec_item_ID.split('-')[1].split('.');
     
-    worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method]({
-        settings: {
-            text_content: '[insert~~problem]',
-            font_size: '1cm',
-            type: 'problem',
-            type_display_name: 'Problem',
-            mjx_status: 'not-rendered',
-            mjx_content: null
-        }
-    });
+    if (content_item !== null) {
+        worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method](content_item);
+    }
+    else {
+        worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method]({
+            settings: {
+                text_content: '[insert~~problem]',
+                font_size: '1cm',
+                type: 'problem',
+                type_display_name: 'Problem',
+                mjx_status: 'not-rendered',
+                mjx_content: null
+            }
+        });
+    }
 
     return `content-${page_index}.${sect_index}.${worksheet.pages[Number(page_index)].sects[Number(sect_index)].content.length - 1}`;
 }
