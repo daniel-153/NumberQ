@@ -12,7 +12,8 @@ const _editor_functions = {
     addPageToDoc,
     focusItemAt,
     addSectToPage,
-    addContentToSect
+    addContentToSect,
+    unshiftOverflowSect
 }
 
 export const worksheet_editor = {
@@ -39,7 +40,8 @@ export const worksheet_editor = {
     static_update: _editor_functions,
     getItemById,
     getIdByItem,
-    getProblemNumber
+    getProblemNumber,
+    getItemType
 };
 
 // Editor Functions:
@@ -83,6 +85,9 @@ function addSectToPage(page_item_ID, sect_item = null, method = 'push') {
             content: [],
             settings: {
                 directions_text: 'Add problem directions here.',
+                height: '0.23in',
+                font_size: '0.2in',
+                is_block_level: true,
                 is_overflow_sect: false,
                 parent_sect: null
             }
@@ -103,6 +108,8 @@ function addContentToSect(sec_item_ID, content_item = null, method = 'push') {
             settings: {
                 text_content: '[insert~~problem]',
                 font_size: '1cm',
+                height: '1.5in',
+                is_block_level: false,
                 type: 'problem',
                 type_display_name: 'Problem',
                 mjx_status: 'not-rendered',
@@ -138,6 +145,18 @@ function deleteItemAt(item_ID) {
 
         return 'sect-' + page_index + '.' + sect_index; 
     }
+}
+
+function unshiftOverflowSect(page_ID, base_sect) {
+    getItemById(page_ID).sects.unshift({
+        content: [],
+        settings: {
+            is_overflow_sect: true,
+            base_sect: base_sect
+        }
+    });
+
+    return `sect-${page_ID.split('-')[1]}.0`;
 }
 
 function editTextContent(item_ID, value) {
@@ -259,6 +278,10 @@ function getProblemNumber(problem_item) {
         console.error('Item=', problem_item, `is not an item of type='problem', or no matching problem item could be found.`);
         return null;
     }
+}
+
+function getItemType(item_obj) {
+    return getIdByItem(item_obj).split('-')[0];
 }
 
 function focusItemAt(item_ID) { 

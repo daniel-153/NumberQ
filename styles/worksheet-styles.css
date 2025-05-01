@@ -27,7 +27,8 @@
 }
 
 .problem-box {
-   height: 1.5in;
+   /* height: 1.5in; */
+   /* border: 1px solid blue; */
 }
 
 .half-width-box {
@@ -43,7 +44,7 @@
     width: 1.1cm;
     height: 0.9cm;
     font-size: 0.5cm;
-    /* border: 1px solid purple; */
+    border: 1px solid purple;
     text-align: center;
 }
 
@@ -65,7 +66,7 @@
     box-sizing: border-box;
     padding-left: 0.3cm;
     margin-bottom: 0.3cm;
-    /* border: 1px solid green; */
+    border: 1px solid green;
 }
 
 .ws-header-wrapper {

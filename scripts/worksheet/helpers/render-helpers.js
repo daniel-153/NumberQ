@@ -1,110 +1,108 @@
 import { worksheet_editor, worksheet }  from '../worksheet.js';
 
-function _addMainHeader(settings) {
-    return `
-        <div class="full-width-bounding-box">
-            <div class="ws-header-wrapper">
-                <div class="ws-header-top-box">
-                    <div class="ws-course-name">
-                        Algebra 2
+const IWH = { // insertWorksheetHtml helpers
+    addMainHeader: function(settings) {
+        return `
+            <div class="full-width-bounding-box">
+                <div class="ws-header-wrapper">
+                    <div class="ws-header-top-box">
+                        <div class="ws-course-name">
+                            Algebra 2
+                        </div>
+                        <div class="ws-name-period-wrapper">
+                            <div class="ws-name-period-label">
+                                Name:
+                            </div>
+                            <div class="ws-name-box">
+                            </div>
+                            <div class="ws-name-period-label">
+                                Period:
+                            </div>
+                            <div class="ws-period-box">
+                            </div>
+                        </div>
                     </div>
-                    <div class="ws-name-period-wrapper">
-                        <div class="ws-name-period-label">
-                            Name:
+                    <div class="ws-header-bottom-box">
+                        <div class="ws-assignment-title">
+                            Systems of Equations
                         </div>
-                        <div class="ws-name-box">
-                        </div>
-                        <div class="ws-name-period-label">
-                            Period:
-                        </div>
-                        <div class="ws-period-box">
-                        </div>
-                    </div>
-                </div>
-                <div class="ws-header-bottom-box">
-                    <div class="ws-assignment-title">
-                        Systems of Equations
                     </div>
                 </div>
             </div>
-        </div>
-    `;
-}
+        `;
+    },
+    createProblemBox: function(problem_item) {
+        return `
+            <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(problem_item)}" style="height: ${problem_item.settings.height};">
+                <div class="problem-number">${worksheet_editor.getProblemNumber(problem_item)})</div>
+                <div class="problem-tex" data-math-container="true" style="font-size: ${problem_item.settings.font_size};"></div>
+            </div> 
+        `;
+    },
+    createDirectionsBox: function(sect_item) {
+        return `
+            <div 
+                class="directions-box" data-item-ID="${worksheet_editor.getIdByItem(sect_item)}"
+                style="font-size: ${sect_item.settings.font_size}; height: ${sect_item.settings.height};"
+            >
+                ${sect_item.settings.directions_text}   
+            </div>
+        `;  
+    },
+    createPageFwbbs: function(page_item) {
+        const sect_array = page_item.sects;
+        const page_settings = page_item.settings; // in case there are page settings that may add fwbbs (in the future)
 
-function _createProblemBox(problem_item) {
-    return `
-        <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(problem_item)}">
-            <div class="problem-number">${worksheet_editor.getProblemNumber(problem_item)})</div>
-            <div class="problem-tex" data-math-container="true" style="font-size: ${problem_item.settings.font_size};"></div>
-        </div> 
-    `;
-}
+        let fwbb_html_string = '';
 
-function _createDirectionsBox(sect_item) {
-    return `
-        <div 
-            class="directions-box" data-item-ID="${worksheet_editor.getIdByItem(sect_item)}"
-            style="font-size: ${sect_item.settings.font_size};"
-        >
-            ${sect_item.settings.directions_text}   
-        </div>
-    `;
-}
+        // (for every sect on the current page)
+        for (let sect_index = 0; sect_index < sect_array.length; sect_index++) {
+            const current_sect = sect_array[sect_index];
 
-function _createPageFwbbs(page_item) {
-    const sect_array = page_item.sects;
-    const page_settings = page_item.settings; // in case there are page settings that may add fwbbs (in the future)
-
-    let fwbb_html_string = '';
-
-    // (for every sect on the current page)
-    for (let sect_index = 0; sect_index < sect_array.length; sect_index++) {
-        const current_sect = sect_array[sect_index];
-
-        // create a directions box as long as its not an overflow sect
-        if (!current_sect.settings.is_overflow_sect) {
-            fwbb_html_string += `
-                <div class="full-width-bounding-box">
-                    ${_createDirectionsBox(current_sect)}
-                </div>
-            `;
-        }
-        
-        // (for every content item in the current sect) 
-        for (let content_index = 0; content_index < sect_array[sect_index].content.length; content_index++) {
-            const current_content = sect_array[sect_index].content[content_index];
-            const next_content = sect_array[sect_index].content[content_index + 1];
+            // create a directions box as long as its not an overflow sect
+            if (!current_sect.settings.is_overflow_sect) {
+                fwbb_html_string += `
+                    <div class="full-width-bounding-box">
+                        ${IWH.createDirectionsBox(current_sect)}
+                    </div>
+                `;
+            }
             
-            if (
-                current_content.settings.type === 'problem' && 
-                next_content !== undefined &&
-                next_content.settings.type === 'problem'
-            ) {
-                fwbb_html_string += `
-                    <div class="full-width-bounding-box">
-                        ${_createProblemBox(current_content)}
-                        ${_createProblemBox(next_content)}
-                    </div>
-                `;
+            // (for every content item in the current sect) 
+            for (let content_index = 0; content_index < sect_array[sect_index].content.length; content_index++) {
+                const current_content = sect_array[sect_index].content[content_index];
+                const next_content = sect_array[sect_index].content[content_index + 1];
+                
+                if (
+                    current_content.settings.type === 'problem' && 
+                    next_content !== undefined &&
+                    next_content.settings.type === 'problem'
+                ) {
+                    fwbb_html_string += `
+                        <div class="full-width-bounding-box">
+                            ${IWH.createProblemBox(current_content)}
+                            ${IWH.createProblemBox(next_content)}
+                        </div>
+                    `;
 
-                content_index++; // jump ahead by one content item because we added 2
-            }
-            else if (current_content.settings.type === 'problem') {
-                fwbb_html_string += `
-                    <div class="full-width-bounding-box">
-                        ${_createProblemBox(current_content)}
-                    </div>
-                `;
-            }
-            else {
+                    content_index++; // jump ahead by one content item because we added 2
+                }
+                else if (current_content.settings.type === 'problem') {
+                    fwbb_html_string += `
+                        <div class="full-width-bounding-box">
+                            ${IWH.createProblemBox(current_content)}
+                        </div>
+                    `;
+                }
+                else {
 
+                }
             }
         }
+
+        return fwbb_html_string;   
     }
-
-    return fwbb_html_string;
 }
-
 export function insertWorksheetHtml() {    
     let updated_html = '';
     for (let page_index = 0; page_index < worksheet.pages.length; page_index++) {
@@ -115,10 +113,10 @@ export function insertWorksheetHtml() {
         `;
 
         // add the header on the first page
-        if (page_index === 0) updated_html += _addMainHeader();
+        if (page_index === 0) updated_html += IWH.addMainHeader();
 
         // add the fwbb's on each page
-        updated_html += _createPageFwbbs(worksheet.pages[page_index]);
+        updated_html += IWH.createPageFwbbs(worksheet.pages[page_index]);
         
         updated_html += '</div></div></div>';
     }
@@ -147,111 +145,207 @@ export function handleTexUpdates() {
     });
 }
 
-export function pushContentOverflow() {    
-    const page_element_list = [...document.getElementsByClassName('worksheet-page-content-area')];
-    const fwbb_height_series = []; // array of arrays of heights
-    for (let i = 0; i < page_element_list.length; i++) {
-        fwbb_height_series.push([]);
-    }
+const PCH = { // pushContentOverflow helpers
+    forEachPage: function(callBack) {
+        const page_element_list = [...document.getElementsByClassName('worksheet-page-content-area')];
+        const num_pages = worksheet.pages.length;
 
-    let overflow_detected = false;
-    for (let page_index = 0; page_index < worksheet.pages.length; page_index++) {
-        // we need the logic below because the current page might not exist in the DOM yet if it was created due to previous overflow
-        let fwbb_element_list;
-        let current_page_height;
-        if (page_element_list[page_index] !== undefined) {
-            current_page_height = page_element_list[page_index].clientHeight;
-            fwbb_element_list = [...page_element_list[page_index].children];
-        }
-        else {
-            // !!!!temporary!!!! (obviously you would need to actually find what the real page height would be here)
-            // If there are document-level settings that modify the margins of the content areas this will be wrong
-            // If the screen resolution isn't the same as where I got this px value for 9in, this will be wrong
-            current_page_height = 864;
-            fwbb_element_list = [];
-        }
-
-        const current_fwbb_heights = fwbb_height_series[page_index];
-
-        for (let fwbb_index = 0; fwbb_index < fwbb_element_list.length; fwbb_index++) {
-            current_fwbb_heights.push(fwbb_element_list[fwbb_index].clientHeight);
-        }
-
-        // while (the sum of fwbb heights is greater than the page height) [meaning at least one fwbb is overflowing]
-        while (current_fwbb_heights.reduce((accumulator, current_value) => accumulator + current_value, 0) > current_page_height) {
-            // (if there is no next page to overflow content onto)
-            if (worksheet_editor.getItemById(`page-${page_index + 1}`) === null) {
-                worksheet_editor.static_update.addPageToDoc(); // add a page if there is no next page to overflow content onto
-                fwbb_height_series.push([]); // add another array to the height series 
-            }
+        for (let page_index = 0; page_index < num_pages; page_index++) {
+            // assign all these to the correct values
+            const current_page_item = worksheet.pages[page_index];
+            const next_page_item = worksheet.pages[page_index + 1];
+            const current_page_element = page_element_list[page_index];
+            const next_page_element = page_element_list[page_index + 1];
             
-            // get the last fwbb and its contents + second to last fwbb
-            const last_fwbb = fwbb_element_list[fwbb_element_list.length - 1];
-            const second_last_fwbb = fwbb_element_list[fwbb_element_list.length - 2];
-            const last_fwbb_items = [...last_fwbb.children];
-            const second_fwbb_items = [...second_last_fwbb.children];
+            // pass them to the provided function
+            callBack(current_page_item, next_page_item, current_page_element, next_page_element);
+        }
+    },
+    getInnerPageHeight: function(page_element) { // get the height of the content area on the page (exclude the 'margins' (padding))
+        const page_styles = getComputedStyle(page_element)
+        
+        return parseFloat(page_styles.height) - (parseFloat(page_styles.paddingTop) + parseFloat(page_styles.paddingBottom));
+    },
+    getInToPx: function() {
+        // get a page to find what the px value for 11 in is
+        const test_element = [...document.getElementsByClassName('worksheet-page-content-area')][0];
+        const element_styles = getComputedStyle(test_element);
 
-            // if-else here is responsible for moving everything in the offending fwbb to the next page (and taking anything with it)
-            if (last_fwbb_items.length === 1) {
-                const current_item_ID = last_fwbb_items[0].getAttribute('data-item-ID');
-                const current_item_type = current_item_ID.split('-')[0];
-                const current_item = worksheet_editor.getItemById(current_item_ID); // item in the fwbb that overflowed
-                const item_before = worksheet_editor.getItemById(second_fwbb_items[second_fwbb_items.length - 1].getAttribute('data-item-ID'));
+        return parseFloat(element_styles.height) / 11; // (CSS px per inch on the current screen)
+    },
+    getFwbbHeightArray: function(page_element) {
+        const output_array = [];
 
-                if (current_item_type === 'sect') { // directions overflowed (can just move them)
-                    worksheet_editor.static_update.deleteItemAt(current_item_ID);
+        [...page_element.children].forEach(fwbb_element => {
+            output_array.push(parseFloat(getComputedStyle(fwbb_element).height)); // add the heigh of each fwbb
+        });
+        
+        return output_array;
+    },
+    getArraySum: function(array) {
+        let sum = 0;
+
+        array.forEach(element => sum += element);
+
+        return sum;
+    },
+    getFwbbItems: function(fwbb_element_array) {
+        const output_array = [];
+
+        fwbb_element_array.forEach(content_element => {
+            output_array.push(worksheet_editor.getItemById(content_element.getAttribute('data-item-ID')));
+        });
+
+        return output_array;
+    },
+    moveItemsFoward: function(item_array, current_page_item, next_page_item) {
+        item_array.forEach(item_obj => {
+            if (worksheet_editor.getItemType(item_obj) === 'content') { // logic for moving content foward
+                // add to an overflow sect if existing
+                if (
+                    next_page_item.sects[0] !== undefined && 
+                    next_page_item.sects[0].settings.is_overflow_sect &&
+                    next_page_item.sects[0].settings.base_sect === current_page_item.sects[current_page_item.sects.length - 1]
+                ) {
+                    worksheet_editor.static_update.addContentToSect(
+                        worksheet_editor.getIdByItem(next_page_item.sects[0]),
+                        item_obj,
+                        'unshift'
+                    );
+                } // create an overflow sect if not existing
+                else {
+                    const sect_id = worksheet_editor.static_update.unshiftOverflowSect(
+                        worksheet_editor.getIdByItem(next_page_item),
+                        current_page_item.sects[current_page_item.sects.length - 1]
+                    );
+
+                    worksheet_editor.static_update.addContentToSect(sect_id, item_obj, 'unshift');
+                }
+            }
+            else if (worksheet_editor.getItemType(item_obj) === 'sect') { // logic for moving sects foward
+                // if overflow sect existing, move content into this sect, delete overflow sect, then push sect foward
+                if (
+                    next_page_item.sects[0] !== undefined && 
+                    next_page_item.sects[0].settings.is_overflow_sect &&
+                    next_page_item.sects[0].settings.base_sect === item_obj
+                ) {
                     worksheet_editor.static_update.addSectToPage(
-                        `page-${page_index + 1}`,
-                        current_item,
+                        worksheet_editor.getIdByItem(next_page_item),
+                        {
+                            content: [...next_page_item.sects[0].content],
+                            settings: item_obj.settings
+                        },
+                        'unshift'
+                    );
+
+                    worksheet_editor.static_update.deleteItemAt(worksheet_editor.getIdByItem(next_page_item.sects[1]));
+                } // if not existing, just push this sect foward (means this is a standalone sect with no content)
+                else {
+                    worksheet_editor.static_update.addSectToPage(
+                        worksheet_editor.getIdByItem(next_page_item),
+                        item_obj,
                         'unshift'
                     );
                 }
-                else if (current_item_type === 'content') { // content overflowed (need to check if there were directions immidiately before)
-                    if (worksheet_editor.getIdByItem(item_before).split('-')[0] === 'sect') { // item before was sect
-                        // pull the overflowing item over
-                        worksheet_editor.static_update.deleteItemAt(current_item_ID);
-                        worksheet_editor.static_update.addContentToSect()
-
-                        // 
-                    }
-                    else if (worksheet_editor.getIdByItem(item_before).split('-')[0] === 'content') { // content before
-
-                    }
-                }
-            }
-            else if (last_fwbb_items.length === 2) {
-
             }
 
-            // [...last_fwbb.children].forEach(content_box => {
-            //     // (if there is no next page to overflow content onto)
-            //     if (worksheet_editor.getItemById(`page-${page_index + 1}`) === null) {
-            //         worksheet_editor.static_update.addPageToDoc(); // add a page if there is no next page to overflow content onto
-            //         fwbb_height_series.push([]); // add another array to the height series 
-            //     }
+            // delete the item at the original location of the item we moved
+            worksheet_editor.static_update.deleteItemAt(worksheet_editor.getIdByItem(item_obj));
+        });
+    },
+    createFwbbList: function(unshifted_items, fwbb_element_array) {
+        // create a list of all the worksheet items on the page
+        let page_element_list = [...unshifted_items];
+        fwbb_element_array.forEach(fwbb_element => {
+            const fwbb_children = [...fwbb_element.children];
 
-            //     // save the overflowing item's settings before deleting it
-            //     const item_settings = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID')).settings; 
-            //     console.log(item_settings)
+            fwbb_children.forEach(fwbb_child => {
+                page_element_list.push(
+                    worksheet_editor.getItemById(fwbb_child.getAttribute('data-item-ID'))
+                );
+            })
+        });
 
-            //     // delete the overflowing item and add it to the next page
-            //     worksheet_editor.static_update.deleteItemAt(content_box.getAttribute('data-item-ID'));
-            //     worksheet_editor.static_update.addContentToPage(
-            //         `page-${page_index + 1}`,
-            //         '_', 
-            //         item_settings,
-            //         'unshift'
-            //     );
-            // });
+        // now we re-group them into "fwbb's" based on the items being block-level or inline
+        let fwbb_list = [];
+        for (let item_index = 0; item_index < page_element_list.length; item_index++) {
+            const current_item = page_element_list[item_index];
+            const next_item = page_element_list[item_index + 1];
 
-            // push the height of the fwbb we moved to the next array
-            fwbb_height_series[page_index + 1].push(current_fwbb_heights[current_fwbb_heights.length - 1]);
-            current_fwbb_heights.pop();
-
-            overflow_detected = true; // if we entered this while() a single time, that means something overflowed; if not, nothing overflowed
+            // if the current item is block level or there is no next item => only item item in the fwbb
+            if (current_item.settings.is_block_level || next_item === undefined) {
+                fwbb_list.push({
+                    number_of_items: 1,
+                    first_ws_item: current_item,
+                    second_ws_item: null,
+                    height: Number(current_item.settings.height.split('i')[0]) * this.getInToPx()
+                });
+            } // two items in the fwbb
+            else {
+                fwbb_list.push({
+                    number_of_items: 2,
+                    first_ws_item: current_item,
+                    second_ws_item: next_item,
+                    height: Number(current_item.settings.height.split('i')[0]) * this.getInToPx()
+                });
+                
+                item_index++; // skip foward by one since we added 2 items
+            }
         }
     }
+}
+export function pushContentOverflow() {
+    let overflow_detected = false; // at least one page had overflow (so a re-render is needed)
+    let moved_heights = []; // the heights of the elements we pushed foward (because they are need for the next page's calculations)
     
+    // purpose of this is to clean up code by hiding the place where we get all these params ( PCH.forEachPage)
+    PCH.forEachPage((current_page_item, next_page_item, current_page_element, next_page_element) => {
+        const current_fwbb_heigths = moved_heights.concat(PCH.getFwbbHeightArray(current_page_element));
+        const current_fwbb_array = [...current_page_element.children];
+        moved_heights = []; // clear the moved heights
+
+        // (while the sum of fwbb heights is greater than the page height)
+        while (PCH.getArraySum(current_fwbb_heigths) > PCH.getInnerPageHeight(current_page_element)) {
+            overflow_detected = true;
+
+            if (next_page_item === undefined) { // add another page to overflow content onto if there wasn't one
+                next_page_item = worksheet_editor.getItemById(worksheet_editor.static_update.addPageToDoc());
+            }
+
+            const last_fwbb = current_fwbb_array[current_fwbb_array.length - 1];
+            const secondtl_fwbb = current_fwbb_array[current_fwbb_array.length - 2];
+            const last_fwbb_elements = [...last_fwbb.children];
+            const secondtl_fwbb_elements = [...secondtl_fwbb.children];
+            const last_fwbb_items = PCH.getFwbbItems(last_fwbb_elements);
+            const secondtl_fwbb_items = PCH.getFwbbItems(secondtl_fwbb_elements);
+
+            let num_moved_fwbbs = 1; // at least one fwbb must have been moved
+
+            // the following handle the special rules with moving directions
+            let last_is_content, secondtl_is_directions;
+
+            if (worksheet_editor.getIdByItem(last_fwbb_items[0]).split('-')[0] === 'content') last_is_content = true;
+            else if (worksheet_editor.getIdByItem(last_fwbb_items[0]).split('-')[0] === 'sect') last_is_content = false;
+            if (worksheet_editor.getIdByItem(secondtl_fwbb_items[secondtl_fwbb_items.length - 1]).split('-')[0] === 'sect') secondtl_is_directions = true;
+            else if (worksheet_editor.getIdByItem(secondtl_fwbb_items[secondtl_fwbb_items.length - 1]).split('-')[0] === 'content') secondtl_is_directions = false;
+
+            if (last_is_content && secondtl_is_directions) { // only case where you need to move 2 fwbbs
+                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
+                PCH.moveItemsFoward(secondtl_fwbb_items, current_page_item, next_page_item);
+                num_moved_fwbbs = 2;
+            }
+            else {
+                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
+                num_moved_fwbbs = 1;
+            }
+
+            // pop off the heights for the number of fwbbs we moved foward -> and stage them to be put on the next page
+            for (let i = 0; i < num_moved_fwbbs; i++) {
+                moved_heights.unshift(current_fwbb_heigths.pop());
+                current_fwbb_array.pop();
+            }
+        }
+    }); 
 
     return overflow_detected;
 }

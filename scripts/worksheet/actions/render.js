@@ -5,11 +5,11 @@ export function render() {
     // RH.handleTexUpdates();
     // RH.fitMathOverflow(); 
     
-    // if (RH.pushContentOverflow()) {
-    //     RH.insertWorksheetHtml(); 
-    //     RH.handleTexUpdates();
-    //     RH.fitMathOverflow();
-    // }
+    if (RH.pushContentOverflow()) {
+        RH.insertWorksheetHtml(); 
+        // RH.handleTexUpdates();
+        // RH.fitMathOverflow();
+    }
 
     // handle answer key updates
 }
