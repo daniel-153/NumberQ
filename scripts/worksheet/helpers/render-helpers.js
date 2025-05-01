@@ -33,7 +33,7 @@ const IWH = { // insertWorksheetHtml helpers
     },
     createProblemBox: function(problem_item) {
         return `
-            <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(problem_item)}" style="height: ${problem_item.settings.height};">
+            <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(problem_item)}" style="min-height: ${problem_item.settings.height}; max-height: ${problem_item.settings.height};">
                 <div class="problem-number">${worksheet_editor.getProblemNumber(problem_item)})</div>
                 <div class="problem-tex" data-math-container="true" style="font-size: ${problem_item.settings.font_size};"></div>
             </div> 
@@ -43,7 +43,7 @@ const IWH = { // insertWorksheetHtml helpers
         return `
             <div 
                 class="directions-box" data-item-ID="${worksheet_editor.getIdByItem(sect_item)}"
-                style="font-size: ${sect_item.settings.font_size}; height: ${sect_item.settings.height};"
+                style="font-size: ${sect_item.settings.font_size}; min-height: ${sect_item.settings.height}; max-height: ${sect_item.settings.height};"
             >
                 ${sect_item.settings.directions_text}   
             </div>
@@ -155,10 +155,9 @@ const PCH = { // pushContentOverflow helpers
             const current_page_item = worksheet.pages[page_index];
             const next_page_item = worksheet.pages[page_index + 1];
             const current_page_element = page_element_list[page_index];
-            const next_page_element = page_element_list[page_index + 1];
             
             // pass them to the provided function
-            callBack(current_page_item, next_page_item, current_page_element, next_page_element);
+            callBack(current_page_item, next_page_item, current_page_element);
         }
     },
     getInnerPageHeight: function(page_element) { // get the height of the content area on the page (exclude the 'margins' (padding))
@@ -188,6 +187,15 @@ const PCH = { // pushContentOverflow helpers
         array.forEach(element => sum += element);
 
         return sum;
+    },
+    getFwbbHeightsSum: function(fwbb_list) {
+        let sum_of_heights = 0;
+
+        fwbb_list.forEach(fwbb_obj => {
+            sum_of_heights += fwbb_obj.height;
+        });
+
+        return sum_of_heights;
     },
     getFwbbItems: function(fwbb_element_array) {
         const output_array = [];
@@ -267,14 +275,63 @@ const PCH = { // pushContentOverflow helpers
         });
 
         // now we re-group them into "fwbb's" based on the items being block-level or inline
-        let fwbb_list = [];
+        let fwbb_list = {
+            array: [],
+            getHeightSum: function() {
+                let sum_of_heights = 0;
+
+                this.array.forEach(fwbb_obj => {
+                    sum_of_heights += fwbb_obj.height;
+                });
+
+                return sum_of_heights;
+            },
+            popLastItem: function() {
+                const last_fwbb_obj = this.array[this.array.length - 1];
+
+                let last_ws_item;
+                if (last_fwbb_obj.number_of_items === 1) {
+                    last_ws_item = last_fwbb_obj.first_ws_item;
+
+                    this.array.pop();
+
+                    return last_ws_item;
+                }
+                else if (last_fwbb_obj.number_of_items === 2) {
+                    last_ws_item = last_fwbb_obj.second_ws_item;
+
+                    this.array[this.array.length - 1] = {
+                        number_of_items: 1,
+                        first_ws_item: last_fwbb_obj.first_ws_item,
+                        second_ws_item: null,
+                        height: Number(last_fwbb_obj.first_ws_item.settings.height.split('i')[0]) * this.getInToPx()
+                    };
+
+                    return last_ws_item;
+                }
+            },
+            getLastItem: function() {
+                const last_fwbb = this.array[this.array.length - 1];
+
+                if (last_fwbb.number_of_items === 2) return last_fwbb.second_ws_item;
+                else if (last_fwbb.number_of_items === 1) return last_fwbb.first_ws_item;
+            },
+            getSecondTlFwbbItem: function() {
+                const secondtl_fwbb = this.array[this.array.length - 2];
+
+                if (secondtl_fwbb === undefined) return null;
+
+                if (secondtl_fwbb.number_of_items === 2) return secondtl_fwbb.second_ws_item;
+                else if (secondtl_fwbb.number_of_items === 1) return secondtl_fwbb.first_ws_item;
+            }
+        };
         for (let item_index = 0; item_index < page_element_list.length; item_index++) {
             const current_item = page_element_list[item_index];
             const next_item = page_element_list[item_index + 1];
 
             // if the current item is block level or there is no next item => only item item in the fwbb
             if (current_item.settings.is_block_level || next_item === undefined) {
-                fwbb_list.push({
+                fwbb_list.array.push({
                     number_of_items: 1,
                     first_ws_item: current_item,
                     second_ws_item: null,
@@ -282,11 +339,14 @@ const PCH = { // pushContentOverflow helpers
                 });
             } // two items in the fwbb
             else {
-                fwbb_list.push({
+                const first_item_height = Number(current_item.settings.height.split('i')[0]) * this.getInToPx();
+                const second_item_height = Number(next_item.settings.height.split('i')[0]) * this.getInToPx();
+                
+                fwbb_list.array.push({
                     number_of_items: 2,
                     first_ws_item: current_item,
                     second_ws_item: next_item,
-                    height: Number(current_item.settings.height.split('i')[0]) * this.getInToPx()
+                    height: (first_item_height > second_item_height)? first_item_height : second_item_height // use the greater height
                 });
                 
                 item_index++; // skip foward by one since we added 2 items
@@ -296,10 +356,53 @@ const PCH = { // pushContentOverflow helpers
 }
 export function pushContentOverflow() {
     let overflow_detected = false; // at least one page had overflow (so a re-render is needed)
+    let unshifted_items = [];
+
+    PCH.forEachPage((current_page_item, next_page_item, current_page_element) => {
+        const current_fwbb_list = PCH.createFwbbList(unshifted_items, [...current_page_element.children]);
+        unshifted_items = []; // clear the moved heights
+
+        // (while the sum of fwbb heights is greater than the page height)
+        while (current_fwbb_list.getHeightSum() > PCH.getInnerPageHeight(current_page_element)) {
+            overflow_detected = true;
+
+            if (next_page_item === undefined) { // add another page to overflow content onto if there wasn't one
+                next_page_item = worksheet_editor.getItemById(worksheet_editor.static_update.addPageToDoc());
+            }
+
+            let num_moved_fwbbs = 1; // at least one fwbb must have been moved
+
+            // the following handle the special rules with moving directions
+            let last_is_content, secondtl_is_directions;
+
+            if (worksheet_editor.getIdByItem(current_fwbb_list.getLastItem()).split('-')[0] === 'content') last_is_content = true;
+            else if (worksheet_editor.getIdByItem(current_fwbb_list.getLastItem()).split('-')[0] === 'sect') last_is_content = false;
+            if (worksheet_editor.getIdByItem(current_fwbb_list.getSecondTlFwbbItem()).split('-')[0] === 'sect') secondtl_is_directions = true;
+            else if (worksheet_editor.getIdByItem(current_fwbb_list.getSecondTlFwbbItem()).split('-')[0] === 'content') secondtl_is_directions = false;
+
+            if (last_is_content && secondtl_is_directions) { // only case where you need to move 2 fwbbs
+                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
+                PCH.moveItemsFoward(secondtl_fwbb_items, current_page_item, next_page_item);
+                num_moved_fwbbs = 2;
+            }
+            else {
+                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
+                num_moved_fwbbs = 1;
+            }
+
+            // pop off the heights for the number of fwbbs we moved foward -> and stage them to be put on the next page
+            for (let i = 0; i < num_moved_fwbbs; i++) {
+                unshifted_items.unshift(current_fwbb_list.popLastItem());
+            }
+        }
+    });
+}
+export function _pushContentOverflow() {
+    let overflow_detected = false; // at least one page had overflow (so a re-render is needed)
     let moved_heights = []; // the heights of the elements we pushed foward (because they are need for the next page's calculations)
     
     // purpose of this is to clean up code by hiding the place where we get all these params ( PCH.forEachPage)
-    PCH.forEachPage((current_page_item, next_page_item, current_page_element, next_page_element) => {
+    PCH.forEachPage((current_page_item, next_page_item, current_page_element) => {
         const current_fwbb_heigths = moved_heights.concat(PCH.getFwbbHeightArray(current_page_element));
         const current_fwbb_array = [...current_page_element.children];
         moved_heights = []; // clear the moved heights

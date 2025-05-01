@@ -85,7 +85,7 @@ function addSectToPage(page_item_ID, sect_item = null, method = 'push') {
             content: [],
             settings: {
                 directions_text: 'Add problem directions here.',
-                height: '0.23in',
+                height: '0.3in',
                 font_size: '0.2in',
                 is_block_level: true,
                 is_overflow_sect: false,
