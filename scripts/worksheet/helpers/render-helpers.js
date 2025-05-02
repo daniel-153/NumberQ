@@ -59,8 +59,8 @@ const IWH = { // insertWorksheetHtml helpers
         for (let sect_index = 0; sect_index < sect_array.length; sect_index++) {
             const current_sect = sect_array[sect_index];
 
-            // create a directions box as long as its not an overflow sect
-            if (!current_sect.settings.is_overflow_sect) {
+            // create a directions box as hide_directions is false
+            if (!current_sect.settings.hide_directions) {
                 fwbb_html_string += `
                     <div class="full-width-bounding-box">
                         ${IWH.createDirectionsBox(current_sect)}

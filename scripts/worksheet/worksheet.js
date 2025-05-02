@@ -85,7 +85,10 @@ function addSectToPage(page_item_ID, sect_item = null, method = 'push') {
             content: [],
             settings: {
                 directions_text: 'Add problem directions here.',
-                height: '0.3in',
+                hide_directions: false,
+                get height() {
+                    return (this.hide_directions)? '0in' : '0.3in';
+                },
                 font_size: '0.2in',
                 is_block_level: true,
                 is_overflow_sect: false,
@@ -153,7 +156,10 @@ function unshiftOverflowSect(page_ID, base_sect) {
         settings: {
             is_overflow_sect: true,
             base_sect: base_sect,
-            height: '0in',
+            hide_directions: true,
+            get height() {
+                return (this.hide_directions)? '0in' : '0.3in';
+            },
             is_block_level: true
         }
     });
