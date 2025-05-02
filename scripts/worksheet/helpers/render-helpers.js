@@ -112,9 +112,13 @@ export function insertWorksheetHtml() {
         `;
 
         // add the header on the first page
-        if (page_index === 0) updated_html += IWH.addMainHeader();
+        let page_content_height = '10in'; // temp hackfix (you need to figure out how big the header is or this will break)
+        if (page_index === 0) {
+            updated_html += IWH.addMainHeader();
+            page_content_height = '9in';
+        }
 
-        updated_html += `<div class="worksheet-page-content-area">`;
+        updated_html += `<div class="worksheet-page-content-area" style="height: ${page_content_height}">`;
 
         // add the fwbb's on each page
         updated_html += IWH.createPageFwbbs(worksheet.pages[page_index]);
@@ -166,28 +170,12 @@ const PCH = { // pushContentOverflow helpers
         
         return parseFloat(page_styles.height) - (parseFloat(page_styles.paddingTop) + parseFloat(page_styles.paddingBottom));
     },
-    getInToPx: function() { // will break if the 'worksheet-page-content-area' height changes from 9in
-        // get a page to find what the px value for 11 in is
+    getInToPx: function() { 
+        // use the first page to find out what the current (in) to (px) conversion is 
         const test_element = [...document.getElementsByClassName('worksheet-page-content-area')][0];
         const element_styles = getComputedStyle(test_element);
 
-        return parseFloat(element_styles.height) / 9; // (CSS px per inch on the current screen)
-    },
-    getFwbbHeightArray: function(page_element) {
-        const output_array = [];
-
-        [...page_element.children].forEach(fwbb_element => {
-            output_array.push(parseFloat(getComputedStyle(fwbb_element).height)); // add the heigh of each fwbb
-        });
-        
-        return output_array;
-    },
-    getArraySum: function(array) {
-        let sum = 0;
-
-        array.forEach(element => sum += element);
-
-        return sum;
+        return parseFloat(element_styles.height) / Number(test_element.style.height.split('i')[0]); // (CSS px per inch on the current screen)
     },
     getFwbbHeightsSum: function(fwbb_list) {
         let sum_of_heights = 0;
@@ -197,15 +185,6 @@ const PCH = { // pushContentOverflow helpers
         });
 
         return sum_of_heights;
-    },
-    getFwbbItems: function(fwbb_element_array) {
-        const output_array = [];
-
-        fwbb_element_array.forEach(content_element => {
-            output_array.push(worksheet_editor.getItemById(content_element.getAttribute('data-item-ID')));
-        });
-
-        return output_array;
     },
     moveItemsFoward: function(item_array, current_page_item, next_page_item) {
         item_array.forEach(item_obj => {
@@ -372,9 +351,6 @@ export function pushContentOverflow() {
         unshifted_items = []; // clear the moved heights
 
         // (while the sum of fwbb heights is greater than the page height)
-        console.log('current fwbb list: ',JSON.parse(JSON.stringify(current_fwbb_list)))
-        console.log('actual height: ',current_fwbb_list.getHeightSum())
-        console.log('max safe: ',PCH.getInnerPageHeight(current_page_element))
         while (current_fwbb_list.getHeightSum() > PCH.getInnerPageHeight(current_page_element)) {
             overflow_detected = true;
 
@@ -402,7 +378,7 @@ export function pushContentOverflow() {
                 num_moved_fwbbs = 1;
             }
 
-            // pop off the heights for the number of fwbbs we moved foward -> and stage them to be put on the next page
+            // pop off the heights for the number of fwbbs we moved foward 
             for (let i = 0; i < num_moved_fwbbs; i++) {
                 current_fwbb_list.popLastItem();
             }
