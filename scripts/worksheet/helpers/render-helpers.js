@@ -3,8 +3,8 @@ import { worksheet_editor, worksheet }  from '../worksheet.js';
 const IWH = { // insertWorksheetHtml helpers
     addMainHeader: function(settings) {
         return `
-            <div class="full-width-bounding-box">
-                <div class="ws-header-wrapper">
+            <div class="ws-page-header">
+                <div class="ws-header-wrapper" data-item-id="document">
                     <div class="ws-header-top-box">
                         <div class="ws-course-name">
                             Algebra 2
@@ -109,11 +109,12 @@ export function insertWorksheetHtml() {
         updated_html += `
             <div class="worksheet-page-wrapper">
                 <div class="worksheet-page" style="padding: 0.5in 0.5in 0.5in 0.5in;">
-                    <div class="worksheet-page-content-area">
         `;
 
         // add the header on the first page
         if (page_index === 0) updated_html += IWH.addMainHeader();
+
+        updated_html += `<div class="worksheet-page-content-area">`;
 
         // add the fwbb's on each page
         updated_html += IWH.createPageFwbbs(worksheet.pages[page_index]);
@@ -165,12 +166,12 @@ const PCH = { // pushContentOverflow helpers
         
         return parseFloat(page_styles.height) - (parseFloat(page_styles.paddingTop) + parseFloat(page_styles.paddingBottom));
     },
-    getInToPx: function() {
+    getInToPx: function() { // will break if the 'worksheet-page-content-area' height changes from 9in
         // get a page to find what the px value for 11 in is
         const test_element = [...document.getElementsByClassName('worksheet-page-content-area')][0];
         const element_styles = getComputedStyle(test_element);
 
-        return parseFloat(element_styles.height) / 11; // (CSS px per inch on the current screen)
+        return parseFloat(element_styles.height) / 9; // (CSS px per inch on the current screen)
     },
     getFwbbHeightArray: function(page_element) {
         const output_array = [];
@@ -261,17 +262,17 @@ const PCH = { // pushContentOverflow helpers
             worksheet_editor.static_update.deleteItemAt(worksheet_editor.getIdByItem(item_obj));
         });
     },
-    createFwbbList: function(unshifted_items, fwbb_element_array) {
+    createFwbbList: function(unshifted_items, current_page_item) {        
         // create a list of all the worksheet items on the page
         let page_element_list = [...unshifted_items];
-        fwbb_element_array.forEach(fwbb_element => {
-            const fwbb_children = [...fwbb_element.children];
+        
+        // break down the page into a 'single-file' list of its items
+        current_page_item.sects.forEach(sect_item => {
+            page_element_list.push(sect_item);
 
-            fwbb_children.forEach(fwbb_child => {
-                page_element_list.push(
-                    worksheet_editor.getItemById(fwbb_child.getAttribute('data-item-ID'))
-                );
-            })
+            sect_item.content.forEach(content_item => {
+                page_element_list.push(content_item);
+            });
         });
 
         // now we re-group them into "fwbb's" based on the items being block-level or inline
@@ -304,7 +305,7 @@ const PCH = { // pushContentOverflow helpers
                         number_of_items: 1,
                         first_ws_item: last_fwbb_obj.first_ws_item,
                         second_ws_item: null,
-                        height: Number(last_fwbb_obj.first_ws_item.settings.height.split('i')[0]) * this.getInToPx()
+                        height: Number(last_fwbb_obj.first_ws_item.settings.height.split('i')[0]) * PCH.getInToPx()
                     };
 
                     return last_ws_item;
@@ -323,14 +324,20 @@ const PCH = { // pushContentOverflow helpers
 
                 if (secondtl_fwbb.number_of_items === 2) return secondtl_fwbb.second_ws_item;
                 else if (secondtl_fwbb.number_of_items === 1) return secondtl_fwbb.first_ws_item;
+            },
+            getItemArrayAt: function(fwbb_index) {
+                const fwbb_obj = this.array[fwbb_index];
+
+                if (fwbb_obj.second_ws_item !== null) return [fwbb_obj.first_ws_item, fwbb_obj.second_ws_item];
+                else return [fwbb_obj.first_ws_item];
             }
         };
         for (let item_index = 0; item_index < page_element_list.length; item_index++) {
             const current_item = page_element_list[item_index];
             const next_item = page_element_list[item_index + 1];
 
-            // if the current item is block level or there is no next item => only item item in the fwbb
-            if (current_item.settings.is_block_level || next_item === undefined) {
+            // if the current item is block level or the text item is block level or there is no next item => only item item in the fwbb
+            if (current_item.settings.is_block_level || next_item === undefined || next_item.settings.is_block_level) {
                 fwbb_list.array.push({
                     number_of_items: 1,
                     first_ws_item: current_item,
@@ -352,6 +359,8 @@ const PCH = { // pushContentOverflow helpers
                 item_index++; // skip foward by one since we added 2 items
             }
         }
+
+        return fwbb_list;
     }
 }
 export function pushContentOverflow() {
@@ -359,10 +368,13 @@ export function pushContentOverflow() {
     let unshifted_items = [];
 
     PCH.forEachPage((current_page_item, next_page_item, current_page_element) => {
-        const current_fwbb_list = PCH.createFwbbList(unshifted_items, [...current_page_element.children]);
+        const current_fwbb_list = PCH.createFwbbList(unshifted_items, current_page_item);
         unshifted_items = []; // clear the moved heights
 
         // (while the sum of fwbb heights is greater than the page height)
+        console.log('current fwbb list: ',JSON.parse(JSON.stringify(current_fwbb_list)))
+        console.log('actual height: ',current_fwbb_list.getHeightSum())
+        console.log('max safe: ',PCH.getInnerPageHeight(current_page_element))
         while (current_fwbb_list.getHeightSum() > PCH.getInnerPageHeight(current_page_element)) {
             overflow_detected = true;
 
@@ -381,74 +393,21 @@ export function pushContentOverflow() {
             else if (worksheet_editor.getIdByItem(current_fwbb_list.getSecondTlFwbbItem()).split('-')[0] === 'content') secondtl_is_directions = false;
 
             if (last_is_content && secondtl_is_directions) { // only case where you need to move 2 fwbbs
-                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
-                PCH.moveItemsFoward(secondtl_fwbb_items, current_page_item, next_page_item);
+                PCH.moveItemsFoward(current_fwbb_list.getItemArrayAt(current_fwbb_list.array.length - 1), current_page_item, next_page_item);
+                PCH.moveItemsFoward(current_fwbb_list.getItemArrayAt(current_fwbb_list.array.length - 2), current_page_item, next_page_item);
                 num_moved_fwbbs = 2;
             }
             else {
-                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
+                PCH.moveItemsFoward(current_fwbb_list.getItemArrayAt(current_fwbb_list.array.length - 1), current_page_item, next_page_item);
                 num_moved_fwbbs = 1;
             }
 
             // pop off the heights for the number of fwbbs we moved foward -> and stage them to be put on the next page
             for (let i = 0; i < num_moved_fwbbs; i++) {
-                unshifted_items.unshift(current_fwbb_list.popLastItem());
+                current_fwbb_list.popLastItem();
             }
         }
     });
-}
-export function _pushContentOverflow() {
-    let overflow_detected = false; // at least one page had overflow (so a re-render is needed)
-    let moved_heights = []; // the heights of the elements we pushed foward (because they are need for the next page's calculations)
-    
-    // purpose of this is to clean up code by hiding the place where we get all these params ( PCH.forEachPage)
-    PCH.forEachPage((current_page_item, next_page_item, current_page_element) => {
-        const current_fwbb_heigths = moved_heights.concat(PCH.getFwbbHeightArray(current_page_element));
-        const current_fwbb_array = [...current_page_element.children];
-        moved_heights = []; // clear the moved heights
-
-        // (while the sum of fwbb heights is greater than the page height)
-        while (PCH.getArraySum(current_fwbb_heigths) > PCH.getInnerPageHeight(current_page_element)) {
-            overflow_detected = true;
-
-            if (next_page_item === undefined) { // add another page to overflow content onto if there wasn't one
-                next_page_item = worksheet_editor.getItemById(worksheet_editor.static_update.addPageToDoc());
-            }
-
-            const last_fwbb = current_fwbb_array[current_fwbb_array.length - 1];
-            const secondtl_fwbb = current_fwbb_array[current_fwbb_array.length - 2];
-            const last_fwbb_elements = [...last_fwbb.children];
-            const secondtl_fwbb_elements = [...secondtl_fwbb.children];
-            const last_fwbb_items = PCH.getFwbbItems(last_fwbb_elements);
-            const secondtl_fwbb_items = PCH.getFwbbItems(secondtl_fwbb_elements);
-
-            let num_moved_fwbbs = 1; // at least one fwbb must have been moved
-
-            // the following handle the special rules with moving directions
-            let last_is_content, secondtl_is_directions;
-
-            if (worksheet_editor.getIdByItem(last_fwbb_items[0]).split('-')[0] === 'content') last_is_content = true;
-            else if (worksheet_editor.getIdByItem(last_fwbb_items[0]).split('-')[0] === 'sect') last_is_content = false;
-            if (worksheet_editor.getIdByItem(secondtl_fwbb_items[secondtl_fwbb_items.length - 1]).split('-')[0] === 'sect') secondtl_is_directions = true;
-            else if (worksheet_editor.getIdByItem(secondtl_fwbb_items[secondtl_fwbb_items.length - 1]).split('-')[0] === 'content') secondtl_is_directions = false;
-
-            if (last_is_content && secondtl_is_directions) { // only case where you need to move 2 fwbbs
-                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
-                PCH.moveItemsFoward(secondtl_fwbb_items, current_page_item, next_page_item);
-                num_moved_fwbbs = 2;
-            }
-            else {
-                PCH.moveItemsFoward(last_fwbb_items, current_page_item, next_page_item);
-                num_moved_fwbbs = 1;
-            }
-
-            // pop off the heights for the number of fwbbs we moved foward -> and stage them to be put on the next page
-            for (let i = 0; i < num_moved_fwbbs; i++) {
-                moved_heights.unshift(current_fwbb_heigths.pop());
-                current_fwbb_array.pop();
-            }
-        }
-    }); 
 
     return overflow_detected;
 }

@@ -152,7 +152,9 @@ function unshiftOverflowSect(page_ID, base_sect) {
         content: [],
         settings: {
             is_overflow_sect: true,
-            base_sect: base_sect
+            base_sect: base_sect,
+            height: '0in',
+            is_block_level: true
         }
     });
 
