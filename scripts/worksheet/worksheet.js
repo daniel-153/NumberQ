@@ -17,7 +17,13 @@ const _editor_functions = {
 }
 
 export const worksheet_editor = {
-    focused_item_ID: null, 
+    focused_item_obj: null,
+    get focused_item_ID() {
+        return getIdByItem(this.focused_item_obj);
+    },
+    set focused_item_ID(provided_id) {
+        this.focused_item_obj = getItemById(provided_id);
+    },
     ...(new Proxy(
         _editor_functions, 
         {

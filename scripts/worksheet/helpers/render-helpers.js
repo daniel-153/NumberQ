@@ -217,12 +217,11 @@ const PCH = { // pushContentOverflow helpers
                     next_page_item.sects[0].settings.is_overflow_sect &&
                     next_page_item.sects[0].settings.base_sect === item_obj
                 ) {
+                    item_obj.content = [...next_page_item.sects[0].content];
+                    
                     worksheet_editor.static_update.addSectToPage(
                         worksheet_editor.getIdByItem(next_page_item),
-                        {
-                            content: [...next_page_item.sects[0].content],
-                            settings: item_obj.settings
-                        },
+                        item_obj,
                         'unshift'
                     );
 

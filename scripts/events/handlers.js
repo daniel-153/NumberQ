@@ -96,6 +96,9 @@ const event_listeners = [
 
     function worksheetPage() {
         document.getElementById('outline-container').addEventListener('click', (event) => {
+            // return if none of the outline items were clicked (only the background was clicked)
+            if (event.target.closest('.outline-item') === null) return; 
+
             const targeted_item_ID = event.target.closest('.outline-item').getAttribute('data-item-ID'); 
 
             if (event.target.matches('.outline-plus-button') && event.target.matches('.document-plus-button')) { 
