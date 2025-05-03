@@ -1,6 +1,7 @@
 import * as PG from '../pg-ui/pg-ui.js';
 import * as PGH from '../pg-ui/helpers/ui-actions.js';
 import * as UH from '../helpers/ui-helpers.js';
+import * as WPG from '../worksheet/worksheet-pg-ui/wpg-ui.js';
 import { worksheet_editor }  from '../worksheet/worksheet.js';
 
 const event_listeners = [
@@ -130,12 +131,19 @@ const event_listeners = [
             worksheet_editor.print();
         });
 
-        document.getElementById('worksheet-generate-problem-button').addEventListener('click', () => { // temp
-            UH.toggleVisibility(['problem-editor-content'],[]);
-        });        
+        document.getElementById('item-action-buttons').addEventListener('click', (event) => {
+            if (event.target.matches('.right-panel-generate-button')) {
+                UH.toggleVisibility(['problem-editor-content'],[]);
+                WPG.generate('genAddSub','Addition & Subtraction');
+            }
+        });     
     },
 
     function worksheetPePage() {
+        document.getElementById('pe-generate-button').addEventListener('click', () => {
+            WPG.generate();
+        });
+        
         document.getElementById('pe-exit-button').addEventListener('click', () => {
             UH.toggleVisibility([],['problem-editor-content']);
         });
@@ -146,6 +154,15 @@ const event_listeners = [
                 document.getElementById('pe-question').getAttribute('data-latexcode')
             );
             document.getElementById('pe-exit-button').click();
+        });
+
+        document.getElementById('pe-mode-selector').addEventListener('click', (event) => {
+            if (event.target.matches('.gen-select-button')) {
+                WPG.generate(
+                    event.target.getAttribute('data-gen-func-name'),
+                    event.target.getAttribute('data-gen-type')
+                );
+            }
         });
     }
 ];

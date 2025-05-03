@@ -45,6 +45,21 @@ export function openItemSettings() {
     }
 }
 
+export function insertActionButtons() {
+    const current_item = worksheet_editor.focused_item_obj;
+    let inserted_button_html = '';
+
+    // insert the relevent buttons at the top of the right panel for the current item
+    // (for now, the only item with an action button is a problem)
+    if (current_item.settings.type === 'problem') {
+        inserted_button_html = `
+            <button class="right-panel-generate-button">Generate Problem</button>
+        `;
+    }
+
+    document.getElementById('item-action-buttons').innerHTML = inserted_button_html;
+}
+
 export function updateOutline() {
     let current_item_ID = 'document';
     let item_is_focused = (current_item_ID === worksheet_editor.focused_item_ID)? "true" : '';

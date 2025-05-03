@@ -1,8 +1,8 @@
 import * as UH from '../../helpers/ui-helpers.js';
 import * as FH from '../../helpers/form-helpers.js';
 
-export function insertGenTitle(gen_title) {
-    document.getElementById("generator-name").innerHTML = gen_title;
+export function insertGenTitle(gen_title, element_id) {
+    document.getElementById(element_id).innerHTML = gen_title;
 }
 
 export function adjustOutputBoxSizing(funcName) {

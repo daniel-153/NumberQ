@@ -23,7 +23,7 @@ export async function generate(func_name, display_name = '') {
     await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switches the gen info if needed (does nothing if gen is same)
 
     if (pg_ui_state.first_generation) { // switches to the new title, adjusts output box sizing, inserts new settings fields, gets pre-settings
-        PH.insertGenTitle(display_name);
+        PH.insertGenTitle(display_name, "generator-name");
         PH.adjustOutputBoxSizing(func_name);
         await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
     }
