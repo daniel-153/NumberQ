@@ -139,13 +139,13 @@ export function handleTexUpdates() {
         const tex_container = content_box.lastElementChild;
         
         if (current_item.settings.mjx_status === 'rendered') {
-            tex_container.innerHTML = current_item.settings.mjx_content;
+            tex_container.innerHTML = current_item.settings.problem_mjx;
         }
         else if (current_item.settings.mjx_status === 'not-rendered') {
-            tex_container.innerHTML = `\\(${current_item.settings.text_content}\\)`;
+            tex_container.innerHTML = `\\(${current_item.settings.problem_tex}\\)`;
             MathJax.typesetPromise([tex_container]);
             current_item.settings.mjx_status = 'rendered';
-            current_item.settings.mjx_content = tex_container.innerHTML;
+            current_item.settings.problem_mjx = tex_container.innerHTML;
         }
     });
 }

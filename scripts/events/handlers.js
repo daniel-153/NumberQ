@@ -149,9 +149,10 @@ const event_listeners = [
         });
         
         document.getElementById('use-problem-button').addEventListener('click', () => {
-            worksheet_editor.editTextContent(
+            worksheet_editor.updateProblem(
                 worksheet_editor.focused_item_ID,
-                document.getElementById('pe-question').getAttribute('data-latexcode')
+                document.getElementById('pe-question').getAttribute('data-latexcode'),
+                document.getElementById('pe-answer').getAttribute('data-latexcode')
             );
             document.getElementById('pe-exit-button').click();
         });

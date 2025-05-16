@@ -8,7 +8,7 @@ const _editor_functions = {
     createAsEmptyDoc,
     createAsDefault,
     deleteItemAt,
-    editTextContent,
+    updateProblem,
     addPageToDoc,
     focusItemAt,
     addSectToPage,
@@ -115,14 +115,16 @@ function addContentToSect(sec_item_ID, content_item = null, method = 'push') {
     else {
         worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method]({
             settings: {
-                text_content: '[insert~~problem]',
+                problem_tex: '[insert~~problem]',
+                answer_tex: null,
                 font_size: '1cm',
                 height: '1.5in',
                 is_block_level: false,
                 type: 'problem',
                 type_display_name: 'Problem',
                 mjx_status: 'not-rendered',
-                mjx_content: null
+                problem_mjx: null,
+                answer_mjx: null
             }
         });
     }
@@ -173,17 +175,21 @@ function unshiftOverflowSect(page_ID, base_sect) {
     return `sect-${page_ID.split('-')[1]}.0`;
 }
 
-function editTextContent(item_ID, value) {
-    if (item_ID.split('-')[0] !== 'content') {
-        console.error("Cannot call 'editTextContent()' on docuement or page");
+function updateProblem(item_ID, problem_tex, answer_tex) {
+    const content_item = getItemById(item_ID);
+    
+    if (item_ID.split('-')[0] !== 'content' || content_item.settings.type !== 'problem') {
+        console.error("Cannot call 'updateProblem()' on docuement, page, sect, or a non-problem content item");
         return;
     }
 
-    const content_item = getItemById(item_ID);
-
-    content_item.settings.text_content = value;
+    content_item.settings.problem_tex = problem_tex;
+    content_item.settings.answer_tex = answer_tex;
     content_item.settings.mjx_status = 'not-rendered';
-    content_item.settings.mjx_content = null;
+    content_item.settings.problem_mjx = null;
+    content_item.settings.answer_mjx = null;
+
+    return item_ID;
 }
 
 // Util Functions:
