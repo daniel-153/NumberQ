@@ -44,6 +44,11 @@
    border: none;
 }
 
+.answer-key-box {
+    width: 2.5in;
+    height: 1in;
+}
+
 .half-width-box {
     width: 50%;
     display: flex;

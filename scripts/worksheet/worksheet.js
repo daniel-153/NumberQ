@@ -116,7 +116,7 @@ function addContentToSect(sec_item_ID, content_item = null, method = 'push') {
         worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method]({
             settings: {
                 problem_tex: '[insert~~problem]',
-                answer_tex: null,
+                answer_tex: 'No problem',
                 font_size: '1cm',
                 height: '1.5in',
                 is_block_level: false,

@@ -126,11 +126,11 @@ export function insertWorksheetHtml() {
         updated_html += '</div></div></div>';
     }
 
-    updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'; // add space below very last page
+    // updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'; // add space below very last page
     document.getElementById('worksheet-page-column').innerHTML = updated_html;
 }
 
-export function handleTexUpdates() {
+export function handleProblemUpdates() {
     [...document.getElementsByClassName('problem-box')].forEach(content_box => {
         // make sure we filter out any content that isn't a question
         const current_item = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID'));
@@ -387,22 +387,85 @@ export function pushContentOverflow() {
     return overflow_detected;
 }
 
-export function fitMathOverflow() {
+const AKH = { // createAnswerKey helpers
+    createAnswerBox: function(content_item, problem_number) {
+        return `
+            <div class="answer-key-box">
+                <div class="answer-key-number">
+                    ${problem_number}
+                </div>
+                <div class="answer-key-value ${(content_item.settings.mjx_status === 'not-rendered')? 'unrendered-mjx' : ''}">
+                    ${(content_item.settings.mjx_status === 'not-rendered')? `\\(${content_item.settings.answer_tex}\\)` : content_item.settings.answer_mjx} 
+                </div>
+            </div>
+        `;
+    }
+}
+export function createAnswerKey() {
+    let output_html = '';
+
+    const problem_item_list = []; // all the problem items on the worksheet (excludes non-problem content items)
+    for (let i = 0; i < worksheet.pages.length; i++) {
+        for (let j = 0; j < worksheet.pages[i].sects.length; j++) {
+            for (let k = 0; k < worksheet.pages[i].sects[j].content.length; k++) {
+                const content_item =  worksheet.pages[i].sects[j].content[k];
+                if (content_item.settings.type !== 'problem') continue;
+                else problem_item_list.push(content_item);
+            }
+        }
+    }
+    
+    let total_problem_counter = 0; 
+    for (let i = 0; i < Math.ceil(problem_item_list.length / 30); i++) {
+        output_html += `
+            <div class="worksheet-page-wrapper">
+                <div class="worksheet-page" style="padding: 0.5in 0.5in 0.5in 0.5in;">              
+        `;
+
+        const problems_on_page = Math.min(problem_item_list.length - total_problem_counter, 30);
+        for (let j = 0; j < problems_on_page;) {
+            let answer_row = '';
+
+            const problems_left = problem_item_list.length - total_problem_counter;
+            const problems_in_row = ((problems_left) >= 3)? 3 : (problems_left);
+            for (let k = 1; k <= problems_in_row; k++) {
+                answer_row += AKH.createAnswerBox(problem_item_list[++total_problem_counter - 1], total_problem_counter);
+                j++;
+            } 
+
+            output_html += `
+                <div class="full-width-bounding-box">
+                    ${answer_row}
+                </div>
+            `;
+        }
+
+        output_html += `</div></div>`;
+    }
+
+    document.getElementById('worksheet-page-column').insertAdjacentHTML('beforeend', output_html);
+}
+
+export function fitMathOverflow() { // for both the problems and the answer key
+    function fitMathInCm(element) {
+        if (!element.classList.contains('problem-box')) return; // skip all content boxes except for problem boxes
+        const math_div = [...element.children][1];
+
+        let scale_factor = math_div.clientWidth / math_div.scrollWidth;
+        const worksheet_item = worksheet_editor.getItemById(element.getAttribute('data-item-ID'));
+        let current_font_size = Number(worksheet_item.settings.font_size.split('c')[0]);
+        while (Math.abs(scale_factor - 1) > 0.001) {
+            current_font_size = current_font_size * scale_factor; 
+            math_div.style.fontSize = current_font_size + 'cm';
+
+            scale_factor = math_div.clientWidth / math_div.scrollWidth;
+        }
+    }
+    
     [...document.getElementsByClassName('worksheet-page-content-area')].forEach(content_area => {
         [...content_area.children].forEach(block_bounding_box => {
             [...block_bounding_box.children].forEach(content_box => {
-                if (!content_box.classList.contains('problem-box')) return; // skip all content boxes except for problem boxes
-                const math_div = [...content_box.children][1];
-
-                let scale_factor = math_div.clientWidth / math_div.scrollWidth;
-                const worksheet_item = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID'));
-                let current_font_size = Number(worksheet_item.settings.font_size.split('c')[0]);
-                while (Math.abs(scale_factor - 1) > 0.001) {
-                    current_font_size = current_font_size * scale_factor; 
-                    math_div.style.fontSize = current_font_size + 'cm';
-
-                    scale_factor = math_div.clientWidth / math_div.scrollWidth;
-                }
+                fitMathInCm(content_box)
             });
         });
     });
