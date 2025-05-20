@@ -116,13 +116,15 @@ function addContentToSect(sec_item_ID, content_item = null, method = 'push') {
         worksheet.pages[Number(page_index)].sects[Number(sect_index)].content[method]({
             settings: {
                 problem_tex: '[insert~~problem]',
-                answer_tex: 'No problem',
-                font_size: '1cm',
+                answer_tex: 'No~~problem',
+                problem_font_size: '1cm',
+                answer_font_size: '0.84cm',
                 height: '1.5in',
                 is_block_level: false,
                 type: 'problem',
                 type_display_name: 'Problem',
-                mjx_status: 'not-rendered',
+                problem_mjx_status: 'not-rendered',
+                answer_mjx_status: 'not-rendered',
                 problem_mjx: null,
                 answer_mjx: null
             }
@@ -185,7 +187,8 @@ function updateProblem(item_ID, problem_tex, answer_tex) {
 
     content_item.settings.problem_tex = problem_tex;
     content_item.settings.answer_tex = answer_tex;
-    content_item.settings.mjx_status = 'not-rendered';
+    content_item.settings.problem_mjx_status = 'not-rendered';
+    content_item.settings.answer_mjx_status = 'not-rendered';
     content_item.settings.problem_mjx = null;
     content_item.settings.answer_mjx = null;
 

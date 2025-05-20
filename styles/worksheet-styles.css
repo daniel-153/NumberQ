@@ -44,11 +44,6 @@
    border: none;
 }
 
-.answer-key-box {
-    width: 2.5in;
-    height: 1in;
-}
-
 .half-width-box {
     width: 50%;
     display: flex;
@@ -142,13 +137,10 @@
     border-bottom: 0.01cm solid black;
 }
 
-
-
 .ws-period-box {
     width: 10%;
     border-bottom: 0.01cm solid black;
 }
-
 
 .ws-assignment-title {
     width: fit-content;
@@ -157,6 +149,30 @@
     align-items: center;
     text-align: left;
     font-size: 0.6cm;
+}
+
+.answer-box {
+    display: flex;
+    flex-direction: row;
+    width: 2.5in;
+    height: 1in;
+}
+
+.answer-key-number {
+    box-sizing: border-box;
+    padding-top: 0.05in;
+    width: 10%;
+    font-size: 0.22in;
+    /* border: 1px solid red; */
+}
+
+.answer-key-value {
+    width: 90%;
+    box-sizing: border-box;
+    padding-left: 0.1in;
+    font-size: 0.3in;
+    color: red;
+    /* border: 1px solid blue; */
 }
 
 @media print {

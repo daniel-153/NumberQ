@@ -35,7 +35,7 @@ const IWH = { // insertWorksheetHtml helpers
         return `
             <div class="problem-box half-width-box" data-item-ID="${worksheet_editor.getIdByItem(problem_item)}" style="min-height: ${problem_item.settings.height}; max-height: ${problem_item.settings.height};">
                 <div class="problem-number">${worksheet_editor.getProblemNumber(problem_item)})</div>
-                <div class="problem-tex" data-math-container="true" style="font-size: ${problem_item.settings.font_size};"></div>
+                <div class="problem-tex" data-math-container="true" style="font-size: ${problem_item.settings.problem_font_size};"></div>
             </div> 
         `;
     },
@@ -126,28 +126,7 @@ export function insertWorksheetHtml() {
         updated_html += '</div></div></div>';
     }
 
-    // updated_html += '<div id="worksheet-preview-bottom">&nbsp;</div>'; // add space below very last page
     document.getElementById('worksheet-page-column').innerHTML = updated_html;
-}
-
-export function handleProblemUpdates() {
-    [...document.getElementsByClassName('problem-box')].forEach(content_box => {
-        // make sure we filter out any content that isn't a question
-        const current_item = worksheet_editor.getItemById(content_box.getAttribute('data-item-ID'));
-        if (current_item.settings.type !== 'problem') return;
-
-        const tex_container = content_box.lastElementChild;
-        
-        if (current_item.settings.mjx_status === 'rendered') {
-            tex_container.innerHTML = current_item.settings.problem_mjx;
-        }
-        else if (current_item.settings.mjx_status === 'not-rendered') {
-            tex_container.innerHTML = `\\(${current_item.settings.problem_tex}\\)`;
-            MathJax.typesetPromise([tex_container]);
-            current_item.settings.mjx_status = 'rendered';
-            current_item.settings.problem_mjx = tex_container.innerHTML;
-        }
-    });
 }
 
 const PCH = { // pushContentOverflow helpers
@@ -390,13 +369,11 @@ export function pushContentOverflow() {
 const AKH = { // createAnswerKey helpers
     createAnswerBox: function(content_item, problem_number) {
         return `
-            <div class="answer-key-box">
+            <div class="answer-box" data-item-ID="${worksheet_editor.getIdByItem(content_item)}">
                 <div class="answer-key-number">
-                    ${problem_number}
+                    ${problem_number})
                 </div>
-                <div class="answer-key-value ${(content_item.settings.mjx_status === 'not-rendered')? 'unrendered-mjx' : ''}">
-                    ${(content_item.settings.mjx_status === 'not-rendered')? `\\(${content_item.settings.answer_tex}\\)` : content_item.settings.answer_mjx} 
-                </div>
+                <div class="answer-key-value" style="font-size: ${content_item.settings.answer_font_size};"></div>
             </div>
         `;
     }
@@ -446,27 +423,50 @@ export function createAnswerKey() {
     document.getElementById('worksheet-page-column').insertAdjacentHTML('beforeend', output_html);
 }
 
-export function fitMathOverflow() { // for both the problems and the answer key
-    function fitMathInCm(element) {
-        if (!element.classList.contains('problem-box')) return; // skip all content boxes except for problem boxes
-        const math_div = [...element.children][1];
-
-        let scale_factor = math_div.clientWidth / math_div.scrollWidth;
-        const worksheet_item = worksheet_editor.getItemById(element.getAttribute('data-item-ID'));
-        let current_font_size = Number(worksheet_item.settings.font_size.split('c')[0]);
+const FMH = { // fitMathOverflow helpers
+    fitMathInCm: function(math_element, init_font_size_cm) {
+        let scale_factor = math_element.clientWidth / math_element.scrollWidth;
+        const worksheet_item = worksheet_editor.getItemById(math_element.getAttribute('data-item-ID'));
+        let current_font_size = Number(init_font_size_cm.split('c')[0]);
         while (Math.abs(scale_factor - 1) > 0.001) {
             current_font_size = current_font_size * scale_factor; 
-            math_div.style.fontSize = current_font_size + 'cm';
-
-            scale_factor = math_div.clientWidth / math_div.scrollWidth;
+            math_element.style.fontSize = current_font_size + 'cm';
+            scale_factor = math_element.clientWidth / math_element.scrollWidth;
         }
+
+        return current_font_size + 'cm';
     }
-    
-    [...document.getElementsByClassName('worksheet-page-content-area')].forEach(content_area => {
-        [...content_area.children].forEach(block_bounding_box => {
-            [...block_bounding_box.children].forEach(content_box => {
-                fitMathInCm(content_box)
-            });
-        });
+}
+export function fitMathOverflow() {
+    [...document.getElementsByClassName('new-mjx-container')].forEach(new_mjx_container => {
+        const new_font_size = FMH.fitMathInCm(new_mjx_container, new_mjx_container.getAttribute('data-initial-font-size')); // font size after the downsize (in cm)
+        const worksheet_item = worksheet_editor.getItemById(new_mjx_container.getAttribute('data-item-ID')); // correspoding item on the worksheet
+        worksheet_item.settings[`${new_mjx_container.getAttribute('data-item-type')}_font_size`] = new_font_size;
+
+        new_mjx_container.classList.remove('new-mjx-container'); // remove the 'new-mjx-container' status
+    });
+}
+
+export function handleMathUpdates(element_type) { 
+    // slight adjustment so this func can be more semantic (we can call handleMathUpdates('problems') even though the keyword is 'problem')
+    element_type = (element_type.charAt(0) === 'p') ? 'problem' : 'answer'; 
+
+    [...document.getElementsByClassName(`${element_type}-box`)].forEach(element_box => {
+        const current_item = worksheet_editor.getItemById(element_box.getAttribute('data-item-ID'));
+        const tex_container = element_box.lastElementChild;
+
+        if (current_item.settings[`${element_type}_mjx_status`] === 'rendered') {
+            tex_container.innerHTML = current_item.settings[`${element_type}_mjx`];
+        }
+        else if (current_item.settings[`${element_type}_mjx_status`] === 'not-rendered') {
+            tex_container.innerHTML = `\\(${current_item.settings[`${element_type}_tex`]}\\)`;
+            MathJax.typesetPromise([tex_container]);
+            current_item.settings[`${element_type}_mjx_status`] = 'rendered';
+            current_item.settings[`${element_type}_mjx`] = tex_container.innerHTML;
+            tex_container.classList.add('new-mjx-container'); // for downsizing (if needed)
+            tex_container.setAttribute('data-item-ID',element_box.getAttribute('data-item-ID'));
+            tex_container.setAttribute('data-initial-font-size', current_item.settings[`${element_type}_font_size`]);
+            tex_container.setAttribute('data-item-type', element_type);
+        }
     });
 }
