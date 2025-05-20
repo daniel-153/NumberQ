@@ -136,7 +136,15 @@ const event_listeners = [
                 UH.toggleVisibility(['problem-editor-content'],[]);
                 WPG.generate('genAddSub','Addition & Subtraction');
             }
-        });     
+        }); 
+
+        document.getElementById('ws-json-copy-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(document.getElementById('worksheet-json-box').value);
+        }); 
+        
+        document.getElementById('ws-json-use-btn').addEventListener('click', () => {
+            worksheet_editor.overwriteWorksheet(document.getElementById('worksheet-json-box').value);
+        });
     },
 
     function worksheetPePage() {

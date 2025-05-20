@@ -13,7 +13,8 @@ const _editor_functions = {
     focusItemAt,
     addSectToPage,
     addContentToSect,
-    unshiftOverflowSect
+    unshiftOverflowSect,
+    overwriteWorksheet
 }
 
 export const worksheet_editor = {
@@ -193,6 +194,12 @@ function updateProblem(item_ID, problem_tex, answer_tex) {
     content_item.settings.answer_mjx = null;
 
     return item_ID;
+}
+
+function overwriteWorksheet(new_worksheet_json) {
+    worksheet = JSON.parse(new_worksheet_json);
+
+    return 'document';
 }
 
 // Util Functions:

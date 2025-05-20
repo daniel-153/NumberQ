@@ -136,6 +136,10 @@ export function updateOutline() {
     document.getElementById('outline-container').innerHTML = updated_html;
 }
 
+export function updateWorksheetJson() {
+    document.getElementById('worksheet-json-box').value = JSON.stringify(worksheet);
+}
+
 // ********Need a seperate module for all things related to the problem creator/editor****************(the functions below)********
 // ****************************************************************************************************************************************
 // ****************************************************************************************************************************************

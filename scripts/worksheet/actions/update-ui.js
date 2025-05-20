@@ -5,6 +5,7 @@ export function updateUi() { // should you pass a param here, or make this funct
     UH.focusCurrentItem();
     UH.insertActionButtons();
     UH.openItemSettings(); // does nothing currently
+    UH.updateWorksheetJson();
     // switch focus
     // open correct settings
     //...
