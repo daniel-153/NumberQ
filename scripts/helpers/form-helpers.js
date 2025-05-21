@@ -102,10 +102,13 @@ export async function createSettingsFields(settings_field_names, settings_templa
     // function that generates the html for each settings field
     function createSettingHtml(setting_obj) {
         let output_html; // string that will hold the form element that is created
+        const form_fields = []; // every setting contained in the current box => could be just one (like a single-textbox, or up to three with a point-textbox and a randomize option)
+        const tooltip = setting_obj.tooltip;
 
         // setting is a collection of radio buttons
         if (setting_obj.type === 'radio_buttons') { // setting is a collection of radio buttons
-            let {code_name, display_name, radio_buttons, tooltip } = setting_obj;
+            let {code_name, display_name, radio_buttons } = setting_obj;
+            form_fields.push(code_name);
             let current_class; // the special class of whichever radio button we are currently on (if provided)
 
             // Calculate the number of options and the appropriate margin-bottom value.
@@ -174,19 +177,11 @@ export async function createSettingsFields(settings_field_names, settings_templa
                 >
                 </div>
             </div>
-            <div
-                class="settings-info-button"
-                data-tooltip="${tooltip}"
-            >
-                ?
-            </div>
-            </div>
             `;
-
-            return output_html;
         } 
         else if (setting_obj.type === 'single_textbox') { // setting is a single textbox
-            const {code_name, display_name, tooltip} = setting_obj;
+            const {code_name, display_name} = setting_obj;
+            form_fields.push(code_name);
 
             output_html = `
                 <div class="setting-box">
@@ -197,19 +192,11 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     class="settings-text-box"
                     id="${code_name}-text-box"
                 />
-                <div
-                    class="settings-info-button"
-                    data-tooltip="${tooltip}"
-                >
-                    ?
-                </div>
-                </div>
             `;
-
-            return output_html;
         }
         else if (setting_obj.type === 'range_textboxes') { // setting is a range textbox (two textboxes)
-            const {code_names, display_name, tooltip} = setting_obj;
+            const {code_names, display_name} = setting_obj;
+            form_fields.push(code_names[0], code_names[1]);
 
             output_html = `
                 <div class="setting-box">
@@ -225,19 +212,11 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     class="settings-text-box number-range-box"
                     />
                 </div>
-                <div
-                    class="settings-info-button"
-                    data-tooltip="${tooltip}"
-                >
-                    ?
-                </div>
-                </div>
             `;
-
-            return output_html;
         }
         else if (setting_obj.type === 'check_boxes') { // setting is a collection of checkboxes
-            const {code_name, display_name, check_boxes, tooltip } = setting_obj;
+            const {code_name, display_name, check_boxes } = setting_obj;
+            form_fields.push(code_name);
 
             // Calculate the number of options and the appropriate margin-bottom value.
             const numberOfOptions = check_boxes.length;
@@ -288,19 +267,11 @@ export async function createSettingsFields(settings_field_names, settings_templa
                 >
                 </div>
             </div>
-            <div
-                class="settings-info-button"
-                data-tooltip="${tooltip}"
-            >
-                ?
-            </div>
-            </div>
             `;
-
-            return output_html;
         }
         else if (setting_obj.type === 'point_check_boxes') { // setting is a user-picked point (_,_) (with a radomize option)
-            const {code_names, display_name, tooltip} = setting_obj;
+            const {code_names, display_name} = setting_obj;
+            form_fields.push(code_names[0], code_names[1], code_names[2]);
 
             output_html = `
                 <div class="setting-box">
@@ -323,13 +294,21 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     value="is_checked"
                     class="single-settings-checkbox"
                     />Randomize
-                </div>
-                <div class="settings-info-button" data-tooltip="${tooltip}">?</div>
-                </div>
+                </div>     
             `;
-
-            return output_html;
         }
+
+        output_html += `
+            <div class="setting-control-buttons">
+                <div class="settings-info-button settings-lock" data-status="unlocked" data-values-to-lock="${form_fields.join(',')}">
+                    <img src="images/unlock.png" alt="" class="settings-lock-image"/>
+                </div>
+               <div class="settings-info-button" data-tooltip="${tooltip}">?</div>  
+            </div>
+            </div>
+        `;
+
+        return output_html;
     }
 } // create and insert the settings fields with names in settings_field_names, from settings_templates_module, into form with ID of form_ID
 
@@ -358,3 +337,18 @@ export function getFormObject(form_ID) {
 
     return formObject;
 } // get the {field name: value} object for the form with the provided ID
+
+export function getLockedFormFields(form_ID) {
+    const lock_element_array = Array.from(document.getElementById(form_ID).querySelectorAll('.settings-lock'));
+    const locked_field_names = {};
+
+    lock_element_array.forEach(lock_element => {
+        if (lock_element.getAttribute('data-status') === 'locked') {
+            lock_element.getAttribute('data-values-to-lock').split(',').forEach(locked_field_name => {
+                locked_field_names[locked_field_name] = null; // just using an object instead of an array for O(1) lookup later
+            });
+        }
+    });
+
+    return locked_field_names;
+}
