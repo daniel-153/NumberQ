@@ -9,9 +9,6 @@
     <link rel="stylesheet" href="styles/home-styles.css" />
     <link rel="stylesheet" href="styles/settings-styles.css" />
     <link rel="stylesheet" href="styles/presentation-styles.css" />
-    <link rel="stylesheet" href="styles/worksheet-editor-styles.css" />
-    <link rel="stylesheet" href="styles/worksheet-styles.css" />
-    <link rel="stylesheet" href="styles/problem-editor-styles.css" />
   </head>
   <body>
     <div id="home-page-content">
@@ -25,7 +22,6 @@
           Generate random math problems for your students. NumberQ allows
           teachers to create unique problems in a wide array of subjects.
         </p>
-        <button id="create-worksheets-button">Create Worksheets</button>
       </div>
       <div id="generator-list">
         <div class="generator" id="coming-soon-gen">
@@ -166,57 +162,6 @@
             generate problems with specific mathematical characteristics while
             maintaining as much randomness as possible.
           </p>
-        </div>
-      </div>
-    </div>
-    <div id="worksheet-page" class="hidden-content">
-      <div id="worksheet-top-bar">
-        <button id="worksheet-print-button">Print</button>
-        <input type="text" id="worksheet-json-box" />
-        <button id="ws-json-copy-btn">Copy</button>
-        <button id="ws-json-use-btn">Use</button>
-      </div>
-      <div id="worksheet-content-wrapper">
-        <div id="worksheet-left-panel" class="worksheet-side-panel">
-          <div id="outline-container"></div>
-        </div>
-        <div id="worksheet-page-column"></div>
-        <div id="worksheet-right-panel" class="worksheet-side-panel">
-          <div id="focus-indicator-wrapper">
-            <div id="current-focused-item"></div>
-          </div>
-          <div id="item-action-buttons"></div>
-          <div id="item-settings-wrapper"></div>
-        </div>
-      </div>
-      <div id="problem-editor-content" class="hidden-content">
-        <div id="problem-editor-banner">
-          <div id="pe-top-bar">
-            <div id="ws-gen-title"></div>
-            <button id="pe-exit-button">Exit</button>
-          </div>
-          <div id="pe-Q-A-wrapper">
-            <div id="pe-question" class="pe-output-box"></div>
-            <div id="pe-answer" class="pe-output-box"></div>
-          </div>
-          <div id="pe-settings-wrapper">
-            <div id="pe-settings-left" class="pe-settings-column">
-              <div id="pe-mode-selector"></div>
-            </div>
-            <div id="pe-settings-center" class="pe-settings-column">
-              <button id="pe-generate-button">Generate</button>
-              <div id="pe-randomize-all-tab">
-                <input
-                  type="checkbox"
-                  id="pe-randomize-all-checkbox"
-                />Randomize All
-              </div>
-              <form id="pe-settings-form" autocomplete="off"></form>
-            </div>
-            <div id="pe-settings-right" class="pe-settings-column">
-              <button id="use-problem-button">Use Problem =></button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
