@@ -4,8 +4,6 @@ import * as UH from '../helpers/ui-helpers.js';
 
 const event_listeners = [
     function homePage() {
-        UH.insertModeBanners();
-        
         document.getElementById('generator-list').addEventListener('click', (event) => {
             if (event.target.matches('.start-button')) {
                 UH.toggleVisibility(['generation-content'], ['home-page-content', 'presenation-content']);
