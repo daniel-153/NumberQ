@@ -23,7 +23,6 @@ const pg_ui_state = {
 
 export async function generate(func_name, display_name = '') {
     if (pg_ui_state.first_pg_ui_open) {
-        console.log('adokhfbadkfb')
         UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
         UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
         pg_ui_state.first_pg_ui_open = false;

@@ -17,7 +17,7 @@ const event_listeners = [
         });
 
         window.addEventListener('popstate',() => {
-            UH.toggleVisibility(['home-page-content'], ['generation-content', 'FAQ-page','worksheet-page']);
+            UH.toggleVisibility(['home-page-content'], ['generation-content', 'FAQ-page']);
             document.body.style.overflowY = 'visible';
             history.pushState({ page: 'generator' }, '', '');
         });
