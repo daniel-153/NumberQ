@@ -36,11 +36,13 @@ const event_listeners = [
     },
 
     function problemGenPage() {
-        UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
-        UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
+        document.getElementById('Q-copy-button').addEventListener('click', function() {
+            PGH.copyTextThenReset('un-rendered-Q', this);
+        })
 
-        PGH.setupCopyButton('Q-copy-button', 'un-rendered-Q');
-        PGH.setupCopyButton('A-copy-button', 'un-rendered-A');
+        document.getElementById('A-copy-button').addEventListener('click', function() {
+            PGH.copyTextThenReset('un-rendered-A', this);
+        })
 
         document.getElementById('generate-button').addEventListener('click', () => {
             PG.generate(document.getElementById('generate-button').getAttribute('data-gen-func-name'));

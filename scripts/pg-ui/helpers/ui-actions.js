@@ -1,20 +1,17 @@
-export function setupCopyButton(button_id, text_element_id) {
-    const button = document.getElementById(button_id);
-    button.addEventListener('click', () => {
-        navigator.clipboard.writeText(document.getElementById(text_element_id).textContent);
-        button.innerHTML = 'Copied!';
-        button.setAttribute('data-status', 'text-was-copied');
-        
-        if (button._timeoutId) {
-            clearTimeout(button._timeoutId);
-        }
+export function copyTextThenReset(text_element_id, copy_button_el) {
+    navigator.clipboard.writeText(document.getElementById(text_element_id).textContent);
+    copy_button_el.innerHTML = 'Copied!';
+    copy_button_el.setAttribute('data-status', 'text-was-copied');
     
-        button._timeoutId = setTimeout(() => {
-            button.innerHTML = 'Copy';
-            button.removeAttribute('data-status');
-            button._timeoutId = null; 
-        }, 2000);
-    });
+    if (copy_button_el._timeoutId) {
+        clearTimeout(copy_button_el._timeoutId);
+    }
+
+    copy_button_el._timeoutId = setTimeout(() => {
+        copy_button_el.innerHTML = 'Copy';
+        copy_button_el.removeAttribute('data-status');
+        copy_button_el._timeoutId = null; 
+    }, 2000);
 }
 
 export function toggleFullScreenAns(method = 'toggle') {

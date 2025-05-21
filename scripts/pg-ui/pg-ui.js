@@ -1,5 +1,6 @@
 import * as PH from './helpers/gen-sequence.js';
 import * as FH from '../helpers/form-helpers.js';
+import * as UH from '../helpers/ui-helpers.js';
 
 const pg_ui_state = {
     current_module: null,
@@ -15,11 +16,19 @@ const pg_ui_state = {
         error_locations: null,
         output_settings: null
     },
-    first_generation: true,
-    randomize_all: false
+    first_generation: true, // the first generation with the current mode
+    randomize_all: false,
+    first_pg_ui_open: true // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
 };
 
 export async function generate(func_name, display_name = '') {
+    if (pg_ui_state.first_pg_ui_open) {
+        console.log('adokhfbadkfb')
+        UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
+        UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
+        pg_ui_state.first_pg_ui_open = false;
+    }
+
     await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switches the gen info if needed (does nothing if gen is same)
 
     if (pg_ui_state.first_generation) { // switches to the new title, adjusts output box sizing, inserts new settings fields, gets pre-settings
