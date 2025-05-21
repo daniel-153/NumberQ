@@ -65,6 +65,21 @@ const event_listeners = [
     
             PGH.toggleFullScreenAns('hide');
         });
+
+        document.getElementById('settings-form').addEventListener('click', (event) => {
+            if (event.target.matches('.settings-lock') || event.target.matches('.settings-lock-image')) {
+                const settings_lock = event.target.closest('.settings-lock'); // direct unto the lock-div (if the target was actually the inner image)
+                
+                if (settings_lock.getAttribute('data-status') === 'unlocked') {
+                    settings_lock.innerHTML = '<img src="images/lock.png" alt="" class="settings-lock-image"/>'
+                    settings_lock.setAttribute('data-status', 'locked');
+                }
+                else if (event.target.closest('.settings-lock').getAttribute('data-status') === 'locked') {
+                    settings_lock.innerHTML = '<img src="images/unlock.png" alt="" class="settings-lock-image"/>'
+                    settings_lock.setAttribute('data-status', 'unlocked');
+                }
+            }
+        });
     },
 
     function presentationPage() {
