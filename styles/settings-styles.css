@@ -101,7 +101,21 @@
     border: 0.12vw solid #1A73E8;
 }
 
-/* Settings tooltip styles */
+/* Settings tooltip and lock/unlock styles */
+
+.setting-control-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vw;
+}
+
+.settings-lock-image {
+  max-width: 90%;
+  max-height: 90%;
+  width: auto;
+  height: auto;
+}
 
 .settings-info-button {
   width: 1.3vw;
@@ -117,17 +131,42 @@
   position: relative;
 }
 
+.settings-lock[data-status="unlocked"] {
+  background-color: rgb(59, 111, 59);
+}
+
+.settings-lock[data-status="locked"] {
+  background-color: rgb(155, 45, 45);
+}
+
 .settings-info-button:hover,
 .settings-info-button:focus {
   cursor: default;
   outline: 0.05vw solid darkblue;
 }
 
+.settings-lock:hover,
+.settings-lock:focus {
+  cursor: pointer;
+}
+
+.settings-lock[data-status="unlocked"]:hover,
+.settings-lock[data-status="unlocked"]:focus {
+  outline-color: rgb(17, 255, 0);
+}
+
+.settings-lock[data-status="locked"]:hover,
+.settings-lock[data-status="locked"]:focus {
+  outline-color: rgb(255, 0, 0);
+}
+
+
+
 .settings-info-button::before {
   content: attr(data-tooltip);
   position: absolute;
   bottom: calc(100% + 0.65vw); /* Position tooltip above the button and arrow */
-  left: 50%;
+  left: -40%;
   transform: translateX(-50%);
   width: 11vw; /* Fixed width, allows height to grow dynamically */
   padding: 0.5vw;
@@ -143,6 +182,19 @@
   pointer-events: none;
   transition: opacity 25ms ease-in-out;
   z-index: 10;
+}
+
+.settings-lock::before {
+  left: 50%;
+  width: 5vw;
+}
+
+.settings-lock[data-status="unlocked"]::before {
+  content: "Unlocked";
+}
+
+.settings-lock[data-status="locked"]::before {
+  content: "Locked";
 }
 
 .settings-info-button:hover::before {

@@ -43,8 +43,20 @@ export function getCurrentSettings(pg_ui_state, form_ID) {
         pg_ui_state.input_settings = pg_ui_state.current_module.get_presets();
     }
     else { 
-        if (pg_ui_state.randomize_all) { 
-            pg_ui_state.input_settings = pg_ui_state.current_module.get_rand_settings();
+        if (pg_ui_state.randomize_all) {
+            const current_form_values = FH.getFormObject(form_ID);
+            const rand_form_values = pg_ui_state.current_module.get_rand_settings();
+            const locked_form_values = FH.getLockedFormFields(form_ID);
+            pg_ui_state.input_settings = {}; // need to turn into an object because we are assigning properties one-by-one
+
+            for (const [key, _] of Object.entries(current_form_values)) {
+                if (Object.hasOwn(locked_form_values, key)) { // the current setting is locked => use value in the form
+                    pg_ui_state.input_settings[key] = current_form_values[key]
+                }
+                else { // current settings is unlocked => use the random value from get_rand_settings()
+                    pg_ui_state.input_settings[key] = rand_form_values[key];
+                }
+            }
         }
         else {
             pg_ui_state.input_settings = FH.getFormObject(form_ID)
