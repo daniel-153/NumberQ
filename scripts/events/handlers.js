@@ -1,17 +1,10 @@
 import * as PG from '../pg-ui/pg-ui.js';
 import * as PGH from '../pg-ui/helpers/ui-actions.js';
 import * as UH from '../helpers/ui-helpers.js';
-import * as WPG from '../worksheet/worksheet-pg-ui/wpg-ui.js';
-import { worksheet_editor }  from '../worksheet/worksheet.js';
 
 const event_listeners = [
     function homePage() {
         UH.insertModeBanners();
-        
-        document.getElementById('create-worksheets-button').addEventListener('click', () => {
-            UH.toggleVisibility(['worksheet-page'],['home-page-content']);
-            worksheet_editor.createAsDefault();
-        });
         
         document.getElementById('generator-list').addEventListener('click', (event) => {
             if (event.target.matches('.start-button')) {
@@ -94,86 +87,6 @@ const event_listeners = [
             UH.toggleVisibility(['home-page-content'], ['FAQ-page']);
         });
     },
-
-    function worksheetPage() {
-        document.getElementById('outline-container').addEventListener('click', (event) => {
-            // return if none of the outline items were clicked (only the background was clicked)
-            if (event.target.closest('.outline-item') === null) return; 
-
-            const targeted_item_ID = event.target.closest('.outline-item').getAttribute('data-item-ID'); 
-
-            if (event.target.matches('.outline-plus-button') && event.target.matches('.document-plus-button')) { 
-                worksheet_editor.addPageToDoc();
-            }
-            else if (event.target.matches('.outline-plus-button') && event.target.matches('.page-plus-button')) {
-                worksheet_editor.addSectToPage(targeted_item_ID);
-            }
-            else if (event.target.matches('.outline-plus-button') && event.target.matches('.sect-plus-button')) {
-                worksheet_editor.addContentToSect(targeted_item_ID);
-            }
-            else if (event.target.matches('.outline-delete-button')) { // delete and focus the parent of the item that was deleted
-                worksheet_editor.deleteItemAt(targeted_item_ID);
-            }
-            else { // just focus the targeted item (because no specific action was specified)
-                worksheet_editor.focusItemAt(targeted_item_ID);    
-            }
-        });
-
-        window.addEventListener('DOMContentLoaded',() => {
-            document.getElementById('worksheet-page-column').style.setProperty('--worksheet-preview-scale', `${1.05 * window.innerWidth / 2560}`);
-        });
-
-        window.addEventListener('resize',() => {
-            document.getElementById('worksheet-page-column').style.setProperty('--worksheet-preview-scale', `${1.05 * window.innerWidth / 2560}`);
-        });
-
-        document.getElementById('worksheet-print-button').addEventListener('click', () => {
-            worksheet_editor.print();
-        });
-
-        document.getElementById('item-action-buttons').addEventListener('click', (event) => {
-            if (event.target.matches('.right-panel-generate-button')) {
-                UH.toggleVisibility(['problem-editor-content'],[]);
-                WPG.generate('genAddSub','Addition & Subtraction');
-            }
-        }); 
-
-        document.getElementById('ws-json-copy-btn').addEventListener('click', () => {
-            navigator.clipboard.writeText(document.getElementById('worksheet-json-box').value);
-        }); 
-        
-        document.getElementById('ws-json-use-btn').addEventListener('click', () => {
-            worksheet_editor.overwriteWorksheet(document.getElementById('worksheet-json-box').value);
-        });
-    },
-
-    function worksheetPePage() {
-        document.getElementById('pe-generate-button').addEventListener('click', () => {
-            WPG.generate();
-        });
-        
-        document.getElementById('pe-exit-button').addEventListener('click', () => {
-            UH.toggleVisibility([],['problem-editor-content']);
-        });
-        
-        document.getElementById('use-problem-button').addEventListener('click', () => {
-            worksheet_editor.updateProblem(
-                worksheet_editor.focused_item_ID,
-                document.getElementById('pe-question').getAttribute('data-latexcode'),
-                document.getElementById('pe-answer').getAttribute('data-latexcode')
-            );
-            document.getElementById('pe-exit-button').click();
-        });
-
-        document.getElementById('pe-mode-selector').addEventListener('click', (event) => {
-            if (event.target.matches('.gen-select-button')) {
-                WPG.generate(
-                    event.target.getAttribute('data-gen-func-name'),
-                    event.target.getAttribute('data-gen-type')
-                );
-            }
-        });
-    }
 ];
 
 export function registerEventListeners() {
