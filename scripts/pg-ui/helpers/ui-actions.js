@@ -40,13 +40,14 @@ export function toggleFullScreenAns(method = 'toggle') {
 
 export function toggleSettingsLock(settings_lock_el) {
     const current_status = settings_lock_el.getAttribute('data-status');
+    const lock_image_el = [...settings_lock_el.children][0];
 
     if (current_status === 'unlocked') {
-        settings_lock_el.innerHTML = '<img src="images/lock.png" alt="" class="settings-lock-image"/>'
+        lock_image_el.src = "images/lock.png";
         settings_lock_el.setAttribute('data-status', 'locked');
     }
     else if (current_status === 'locked') {
-        settings_lock_el.innerHTML = '<img src="images/unlock.png" alt="" class="settings-lock-image"/>'
+        lock_image_el.src = "images/unlock.png";
         settings_lock_el.setAttribute('data-status', 'unlocked');
     }
 } // lock if unlocked and unlock if locked
