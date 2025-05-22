@@ -16,19 +16,18 @@ const pg_ui_state = {
         TeXanswer: null,
     },
     error_locations: null,
-    first_generation: true, // the first generation with the current mode
     randomize_all: false,
-    first_pg_ui_open: true // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
+    first_pg_ui_open: true, // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
+    first_with_current_gen: false // first generation with the current module
 };
 
 export async function generate(func_name, display_name = '') {
-    if (pg_ui_state.first_pg_ui_open) {
+    if (pg_ui_state.first_pg_ui_open) { // first generation with any mode
         UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
         UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
-        pg_ui_state.first_pg_ui_open = false;
     }
 
-    if (pg_ui_state.first_generation) { // switches to the new title, adjusts output box sizing, inserts new settings fields, gets pre-settings
+    if (pg_ui_state.first_pg_ui_open || func_name !== pg_ui_state.func_name) { // first generation with any mode Or switched to a new gen
         await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
         PH.insertGenTitle(display_name, "generator-name");
         PH.adjustOutputBoxSizing(func_name);
@@ -48,5 +47,6 @@ export async function generate(func_name, display_name = '') {
 
     FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form');
 
-    pg_ui_state.first_generation = false; // no longer the first generation
+    pg_ui_state.first_pg_ui_open = false; // no longer the first generation
+    pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
 }

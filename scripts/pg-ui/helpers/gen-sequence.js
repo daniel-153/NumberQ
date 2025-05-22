@@ -28,6 +28,8 @@ export function getGenOutput(pg_ui_state, question_obj) {
 }
 
 export async function switchGenInfo(pg_ui_state, func_name, display_name) {
+    if (func_name !== pg_ui_state.func_name) pg_ui_state.first_with_current_gen = true;
+    
     pg_ui_state.func_name = func_name;
     pg_ui_state.display_name = display_name;
     pg_ui_state.current_module = await import(`../../math-gens/gens/${func_name}.js`);
@@ -39,7 +41,7 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
 }
 
 export function getCurrentSettings(pg_ui_state, form_ID) {
-    if (pg_ui_state.first_generation) { 
+    if (pg_ui_state.first_pg_ui_open || pg_ui_state.first_with_current_gen) { 
         pg_ui_state.current_settings = FH.resolveRandSettings(pg_ui_state.current_module.get_presets(), pg_ui_state.possible_settings_log);
     }
     else { 
