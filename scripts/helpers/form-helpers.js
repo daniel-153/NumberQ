@@ -338,17 +338,15 @@ export function getFormObject(form_ID) {
     return formObject;
 } // get the {field name: value} object for the form with the provided ID
 
-export function getLockedFormFields(form_ID) {
+export function getFormFieldStatuses(form_ID) {
     const lock_element_array = Array.from(document.getElementById(form_ID).querySelectorAll('.settings-lock'));
-    const locked_field_names = {};
+    const form_field_statuses = {}; // all the field names and their status (true => locked, false => unlocked)
 
     lock_element_array.forEach(lock_element => {
-        if (lock_element.getAttribute('data-status') === 'locked') {
-            lock_element.getAttribute('data-values-to-lock').split(',').forEach(locked_field_name => {
-                locked_field_names[locked_field_name] = null; // just using an object instead of an array for O(1) lookup later
-            });
-        }
+        lock_element.getAttribute('data-values-to-lock').split(',').forEach(locked_field_name => {
+            form_field_statuses[locked_field_name] = (lock_element.getAttribute('data-status') === 'locked');
+        });
     });
 
-    return locked_field_names;
-}
+    return form_field_statuses;
+} // status of each field in the form => locked or unlocked
