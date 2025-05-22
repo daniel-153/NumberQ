@@ -480,6 +480,7 @@
   }
 
   .settings-lock::before{
+    left: 50%;
     width: 9vw;
   }
 
@@ -639,8 +640,12 @@
     left: -52.5%;
   }
 
-.settings-lock::before{
-  width: 27vw;
+.settings-lock::before {
+  display: none;
+}
+
+.settings-lock::after {
+  display: none;
 }
 
 .setting-control-buttons {
