@@ -486,8 +486,8 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-        angular_unit: H.randFromList(['radians','degrees','both']),
-        argument_sign: H.randFromList(['positive','negative','both']),
-        trig_function_types: H.randFromList([['sine'],['cosine'],['tangent']])
+        angular_unit: '__random__',
+        argument_sign: '__random__',
+        trig_function_types: '__random__'
     }; 
 }

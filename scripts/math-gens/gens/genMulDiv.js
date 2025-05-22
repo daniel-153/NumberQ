@@ -197,8 +197,8 @@ export function get_rand_settings() {
         term_range_min: H.randInt(-20, -1),
         term_range_max: H.randInt(1, 20),
         muldiv_operation_type: operation_type,
-        number_type: H.randFromList(['integers','fractions','both']),
-        multiply_symbol: H.randFromList([' \\cdot ', ' \\times ']),
+        number_type: '__random__',
+        multiply_symbol: '__random__',
         answer_form: answer_form
     }; 
 }

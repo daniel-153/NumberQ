@@ -1239,9 +1239,9 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-        ratex_add_sub_form: H.randFromList(['all_add_sub','as_1','as_2','as_3','as_4','as_5','as_6','as_7','as_8','as_9','as_10','as_11','as_12','as_13','as_14','as_15']), 
-        ratex_mul_div_form: H.randFromList(['all_mul_div','md_1','md_2','md_3','md_4','md_5','md_6','md_7','md_8','md_9','md_10','md_11','md_12','md_13','md_14','md_15','md_16']), 
-        general_operation_types: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
+        ratex_add_sub_form: '__random__', 
+        ratex_mul_div_form: '__random__',
+        general_operation_types: '__random__',
         numer_form: 'factored',
         denom_form: 'factored',
         give_excluded_values: 'no'

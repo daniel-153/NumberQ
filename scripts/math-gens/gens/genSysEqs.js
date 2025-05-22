@@ -408,7 +408,7 @@ export function get_rand_settings() {
     
     return {
         sys_eqs_coef_size: H.randInt(1,10),
-        linear_equation_form: H.randFromList(['standard','equal_to_zero','slope_intercept','randomized']),
+        linear_equation_form: '__random__',
         sys_eqs_x_solution: 1,
         sys_eqs_y_solution: 1,
         randomize_solutions: 'is_checked',

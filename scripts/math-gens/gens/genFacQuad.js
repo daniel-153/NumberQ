@@ -500,18 +500,18 @@ export function get_presets() {
         factor_size: 5, // (+ or -) whatever value is here
         types_of_quadratics: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares'],
         leading_coef: 1,
-        quadratic_prompt_type: H.randFromList(['expression','equation']),
-        qf_answer_type: H.randFromList(['single_expression','comma_seperated_values'])
+        quadratic_prompt_type: '__random__',
+        qf_answer_type: 'single_expression'
     };
 }
 
 export function get_rand_settings() {
     return {
         factor_size: H.randInt(2,8), // (+ or -) whatever value is here
-        types_of_quadratics: H.randFromList([['two_integer_factors'],['two_non_integer_factors'],['perf_square'],['diff_squares'],['not_factorable'],['complex_roots'],['real_solvebyroots'],['complex_solvebyroots']]),
+        types_of_quadratics: '__random__',
         leading_coef: H.randFromList(H.removeFromArray(0, H.integerArray(-3,3))),
-        quadratic_prompt_type: H.randFromList(['expression','equation']),
-        qf_answer_type: H.randFromList(['single_expression','comma_seperated_values'])
+        quadratic_prompt_type: '__random__',
+        qf_answer_type: '__random__'
     }; 
 }
 

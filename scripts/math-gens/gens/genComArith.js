@@ -301,9 +301,9 @@ export function get_rand_settings() {
     return {
         term_range_min: H.randInt(-9, -1),
         term_range_max: H.randInt(1, 9),
-        general_operation_types: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
-        randomize_order: H.randFromList(['yes','no']),
-        force_ints_in_div: H.randFromList(['yes','no'])
+        general_operation_types: '__random__',
+        randomize_order: '__random__',
+        force_ints_in_div: '__random__'
     }; 
 }
 

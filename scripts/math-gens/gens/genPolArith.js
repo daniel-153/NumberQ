@@ -229,9 +229,9 @@ export function get_rand_settings() {
     return {
         polynomial_A_degree: H.randInt(1,3),
         polynomial_B_degree: H.randInt(1,3),
-        general_operation_types: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
+        general_operation_types: '__random__',
         coef_size: H.randInt(5,10),
         factor_size: H.randInt(2,7),
-        division_result: H.randFromList(['divide_evenly','numerical_remainder','quotient_plus_remainder'])
+        division_result: '__random__'
     }; 
 }

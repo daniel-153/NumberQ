@@ -106,7 +106,7 @@ export function get_rand_settings() {
         number_of_terms: H.randInt(2,4),
         term_range_min: H.randInt(-20, -1),
         term_range_max: H.randInt(1, 20),
-        addsub_operation_type: H.randFromList(['add','subtract','both'])
+        addsub_operation_type: '__random__'
     }; 
 }
 

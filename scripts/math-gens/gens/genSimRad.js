@@ -102,6 +102,6 @@ export function get_rand_settings() {
         number_of_terms: H.randInt(2,4),
         root_number: H.randFromList(H.nonPerfectSquares(6)),
         coef_number_size: H.randInt(9,15),
-        addsub_operation_type: H.randFromList(['add','subtract','both'])
+        addsub_operation_type: '__random__'
     }; 
 }

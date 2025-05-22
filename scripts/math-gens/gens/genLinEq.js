@@ -1440,11 +1440,11 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-        solution_size_range: H.randFromList(['single_digit','multi_digit']), 
-        lin_eq_equation_form: H.randFromList(['begin_1', 'begin_2', 'begin_3', 'begin_4', 'begin_5', 'begin_6', 'begin_7', 'begin_8', 'begin_9', 'begin_10', 'begin_11', 'begin_12', 'begin_13', 'inter_1', 'inter_2', 'inter_3', 'inter_4', 'inter_5', 'inter_6', 'inter_7', 'inter_8', 'inter_9', 'inter_10', 'inter_11', 'inter_12', 'inter_13', 'inter_14', 'inter_15', 'inter_16', 'advan_1', 'advan_2', 'advan_3', 'advan_4', 'advan_5', 'advan_6', 'advan_7', 'advan_8', 'advan_9', 'advan_10', 'advan_11', 'advan_12', 'advan_13', 'all_begin', 'all_inter', 'all_advan']),
-        solution_form: H.randFromList(['integers','fractions','both']),
+        solution_size_range: '__random__', 
+        lin_eq_equation_form: '__random__',
+        solution_form: '__random__',
         variable_letter: "abcdfghjkmnpqrstuvwxyz"[Math.floor(Math.random() * 22)], // rand alphabet letter excluding e,i,o,l
-        flip_equation: H.randFromList(['yes','no']),
-        force_positive_coefs: H.randFromList(['yes','no'])
+        flip_equation: '__random__',
+        force_positive_coefs: '__random__'
     }; 
 }
