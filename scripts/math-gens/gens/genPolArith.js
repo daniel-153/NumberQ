@@ -2,42 +2,22 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-function processSettings(formObj) {
-    let { polynomial_A_degree, polynomial_B_degree, general_operation_types, coef_size, factor_size, division_result } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
-
+export function processFormObj(form_obj, error_locations) {
     // make sure coef range is an integer between 1 and 10
-    coef_size = SH.val_restricted_integer(coef_size, error_locations, 1, 20, 'coef_size');
+    form_obj.coef_size = SH.val_restricted_integer(form_obj.coef_size, error_locations, 1, 20, 'coef_size');
 
     // make sure factor size is an integer between 1 and 10
-    factor_size = SH.val_restricted_integer(factor_size, error_locations, 1, 10, 'factor_size');
+    form_obj.factor_size = SH.val_restricted_integer(form_obj.factor_size, error_locations, 1, 10, 'factor_size');
 
     // set the operation types if none were selected
-    if (general_operation_types === undefined) general_operation_types = ['add','multiply','divide'];
+    if (form_obj.general_operation_types === undefined) form_obj.general_operation_types = ['add','multiply','divide'];
 
-    
     // validation for polynomial degrees (make sure they are between 1 and 10) | (validation for division happens in the gen function)
-    polynomial_A_degree = SH.val_restricted_integer(polynomial_A_degree, error_locations, 1, 10, 'polynomial_A_degree');
-    polynomial_B_degree = SH.val_restricted_integer(polynomial_B_degree, error_locations, 1, 10, 'polynomial_B_degree');
-
-    
-
-    return {
-        polynomial_A_degree: polynomial_A_degree,
-        polynomial_B_degree: polynomial_B_degree,
-        general_operation_types: general_operation_types,
-        coef_size: coef_size,
-        factor_size: factor_size,
-        division_result: division_result,
-        error_locations: error_locations
-    };
+    form_obj.polynomial_A_degree = SH.val_restricted_integer(form_obj.polynomial_A_degree, error_locations, 1, 10, 'polynomial_A_degree');
+    form_obj.polynomial_B_degree = SH.val_restricted_integer(form_obj.polynomial_B_degree, error_locations, 1, 10, 'polynomial_B_degree');
 }
 
-// in processing, if the operation is div, you must garuantee that B-degree < A-degree (but note the case where A-deg = 1)
-// I think this means that (in division), polynomial A must have degree 2 or higher
-
-export default function genPolArith(formObj) {
-    const settings = processSettings(formObj);
+export default function genPolArith(settings) {
     let {polynomial_A_degree, polynomial_B_degree, coef_size, factor_size, division_result} = settings;
     const operation_type = H.randFromList(settings.general_operation_types);
 
@@ -184,20 +164,9 @@ export default function genPolArith(formObj) {
         }
     }
 
-    // hackfix to get error_locations back to main
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('polynomial_A_degree') !== -1) error_locations.push('polynomial_A_degree');
-        if (settings.error_locations.indexOf('polynomial_B_degree') !== -1) error_locations.push('polynomial_B_degree');
-        if (settings.error_locations.indexOf('coef_size') !== -1) error_locations.push('coef_size');
-        if (settings.error_locations.indexOf('factor_size') !== -1) error_locations.push('factor_size');
-    }
-
     return {
         question: promptPolynomial,
-        answer: resultPolynomial,
-        settings: settings,
-        error_locations: error_locations
+        answer: resultPolynomial
     };
 }
 

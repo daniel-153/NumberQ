@@ -1,31 +1,18 @@
 import * as H from '../helpers/gen-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 
-function processSettings(formObj) {
-    let { number_of_terms, root_number, coef_number_size, addsub_operation_type } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
-
+export function processFormObj(form_obj, error_locations) {
     // validate number_of_terms and keep track of error locations
-    number_of_terms = SH.val_term_number(number_of_terms, error_locations);
+    form_obj.number_of_terms = SH.val_term_number(form_obj.number_of_terms, error_locations);
     
     // validate coef_number_size 
-    coef_number_size = SH.val_term_number(coef_number_size, error_locations, 20, 'coef_number_size');
+    form_obj.coef_number_size = SH.val_term_number(form_obj.coef_number_size, error_locations, 20, 'coef_number_size');
 
     // validate root_number (make sure it isn't a perfect square)
-    root_number = SH.val_root_number(root_number, error_locations);
-
-    return {
-        number_of_terms: number_of_terms,
-        root_number: root_number,
-        coef_number_size: coef_number_size,
-        addsub_operation_type: addsub_operation_type,
-        error_locations: error_locations
-    };
+    form_obj.root_number = SH.val_root_number(form_obj.root_number, error_locations);
 }
 
-export default function genSimRad(formObj) {
-    const settings = processSettings(formObj);
-
+export default function genSimRad(settings) {
     const numberOfTerms = settings.number_of_terms;
     const nRange = Math.floor(Math.sqrt(settings.coef_number_size)); // How big (a) and (b) can be (the numbers that reduce); the biggest coefficient that can be in front of the root is this^squared
     const c = settings.root_number; // c, which can't be a perfect square
@@ -65,19 +52,9 @@ export default function genSimRad(formObj) {
         answer = sumAccum + '\\sqrt{' + c + '}';
     }
 
-    // shouldn't really be here but is a hackfix to get error_locations back to main and remove repeats
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('number_of_terms') !== -1) error_locations.push('number_of_terms');
-        if (settings.error_locations.indexOf('root_number') !== -1) error_locations.push('root_number');
-        if (settings.error_locations.indexOf('coef_number_size') !== -1) error_locations.push('coef_number_size');
-    }
-
     return {
         question: question,
-        answer: answer,
-        settings: settings,
-        error_locations: error_locations
+        answer: answer
     };
 }
 

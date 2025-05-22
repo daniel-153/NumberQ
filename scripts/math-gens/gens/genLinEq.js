@@ -3,26 +3,12 @@ import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 import * as MH from '../helpers/math-string-helpers.js';
 
-function processSettings(formObj) {
-    let { solution_size_range, lin_eq_equation_form, solution_form, variable_letter, flip_equation, force_positive_coefs } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
-
+export function processFormObj(form_obj, error_locations) {
     // validate the variable letter (default to 'x' if anything was invalid)
-    variable_letter = SH.val_variable_letter(variable_letter, error_locations);
-
-    return {
-        solution_size_range,
-        lin_eq_equation_form,
-        solution_form,
-        variable_letter,
-        flip_equation,
-        force_positive_coefs,
-        error_locations
-    };
+    form_obj.variable_letter = SH.val_variable_letter(form_obj.variable_letter, error_locations);
 }
 
-export default function genLinEq(formObj) {
-    const settings = processSettings(formObj);
+export default function genLinEq(settings) {
     let { solution_size_range, lin_eq_equation_form, solution_form, variable_letter, flip_equation, force_positive_coefs } = settings;
     
     // equation templates, solutions and requirements
@@ -1402,19 +1388,9 @@ export default function genLinEq(formObj) {
         final_prompt = right_side + '=' + left_side;
     }
 
-
-    // hackfix to get error_locations back to main
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('variable_letter') !== -1) error_locations.push('variable_letter');
-    }
-
-
     return {
         question: final_prompt,
-        answer: final_solution,
-        settings: settings,
-        error_locations: error_locations
+        answer: final_solution
     }
 }
 

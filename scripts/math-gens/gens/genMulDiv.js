@@ -2,39 +2,22 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-function processSettings(formObj) {
-    let { number_of_terms, term_range_min, term_range_max, muldiv_operation_type, number_type, multiply_symbol, answer_form } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occures (same field can appear multiple times)
-    
+export function processFormObj(form_obj, error_locations) {    
     // validate number_of_terms and keep track of error locations
-    number_of_terms = SH.val_term_number(number_of_terms, error_locations);
+    form_obj.number_of_terms = SH.val_term_number(form_obj.number_of_terms, error_locations);
     
-
     // validate the term range and keep track of error locations
-    let validatedMinMax = SH.val_min_max_range(term_range_min, term_range_max, error_locations);
-    term_range_min = validatedMinMax.term_range_min;
-    term_range_max = validatedMinMax.term_range_max;
+    let validatedMinMax = SH.val_min_max_range(form_obj.term_range_min, form_obj.term_range_max, error_locations);
+    form_obj.term_range_min = validatedMinMax.term_range_min;
+    form_obj.term_range_max = validatedMinMax.term_range_max;
 
     // only allow the Quotient + Rem form where it makes sense (a division of 2 integers)
-    if (number_of_terms !== 2 || number_type !== 'integers' || muldiv_operation_type !== 'divide') {
-        answer_form = 'factions & integers';
+    if (form_obj.number_of_terms !== 2 || form_obj.number_type !== 'integers' || form_obj.muldiv_operation_type !== 'divide') {
+        form_obj.answer_form = 'factions & integers';
     }
-
-    return {
-        number_of_terms: number_of_terms,
-        term_range_min: term_range_min,
-        term_range_max: term_range_max,
-        muldiv_operation_type: muldiv_operation_type,
-        number_type: number_type,
-        multiply_symbol: multiply_symbol,
-        answer_form: answer_form,
-        error_locations: error_locations
-    };
 }
 
-export default function genMulDiv(formObj) {
-    const settings = processSettings(formObj);
-
+export default function genMulDiv(settings) {
     const termArray = H.removeFromArray(0,H.integerArray(settings.term_range_min,settings.term_range_max));
 
     // extra pre-processing to make loops simpler
@@ -140,23 +123,11 @@ export default function genMulDiv(formObj) {
         answer = whole_part + '\\;\\,R' + remainder;
     }
 
-    // This seems to violate seperation of concerns but so does dealing with processSettings() here, and would there even be any obvious way
-    // to avoid this?...
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('number_of_terms') !== -1) error_locations.push('number_of_terms');
-        if (settings.error_locations.indexOf('term_range_min') !== -1) error_locations.push('term_range_min');
-        if (settings.error_locations.indexOf('term_range_max') !== -1) error_locations.push('term_range_max');
-    }
-
     return {
         question: productString,
-        answer: answer,
-        settings: settings,
-        error_locations: error_locations
+        answer: answer
     };
 }   
-
 
 export const settings_fields = [
     'number_of_terms',

@@ -2,26 +2,12 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as MH from '../helpers/math-string-helpers.js';
 
-function processSettings(formObj) {
-    let { ratex_add_sub_form, ratex_mul_div_form, general_operation_types, numer_form, denom_form, give_excluded_values } = formObj;
-    let error_locations = [];
-
+export function processFormObj(form_obj, error_locations) {
     // set the operation types if none were selected
-    if (general_operation_types === undefined) general_operation_types = ['add','multiply','divide'];
-
-    return {
-        ratex_add_sub_form,
-        ratex_mul_div_form,
-        general_operation_types,
-        numer_form,
-        denom_form,
-        give_excluded_values,
-        error_locations
-    }
+    if (form_obj.general_operation_types === undefined) form_obj.general_operation_types = ['add','multiply','divide'];
 }
 
-export default function genRatEx(formObj) {
-    const settings = processSettings(formObj);
+export default function genRatEx(settings) {
     let {ratex_add_sub_form, ratex_mul_div_form, numer_form, denom_form, give_excluded_values} = settings;
     let operation_type = H.randFromList(settings.general_operation_types);
 
@@ -1198,16 +1184,11 @@ export default function genRatEx(formObj) {
         ) break; 
         else sol_is_found = false; // solution wasn't valid (so we use a backup (which we know was generated to never include the above))
     }
-
-    // don't need to actually get any error locations because no 'free response' fields
-    let error_locations = []; // but still ensure it's not undefined
-
+    
     return {
         question: final_prompt,
         answer: final_answer,
-        TeXanswer: TeX_answer,
-        settings: settings,
-        error_locations: error_locations
+        TeXanswer: TeX_answer
     };
 }
 

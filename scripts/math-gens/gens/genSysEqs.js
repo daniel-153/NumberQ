@@ -2,38 +2,24 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-function processSettings(formObj) {
-    let { sys_eqs_coef_size, linear_equation_form, sys_eqs_term_number, sys_eqs_x_solution, sys_eqs_y_solution, randomize_solutions } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
-
+export function processFormObj(form_obj, error_locations) {
     // make sure coefficient size is an integer from -20 to 20
-    sys_eqs_coef_size = SH.val_restricted_integer(sys_eqs_coef_size, error_locations, 1, 20, 'sys_eqs_coef_size');
+    form_obj.sys_eqs_coef_size = SH.val_restricted_integer(form_obj.sys_eqs_coef_size, error_locations, 1, 20, 'sys_eqs_coef_size');
 
-    if (randomize_solutions === 'is_checked') { // randomize the sol if specified
-        sys_eqs_x_solution = H.randInt(-7, 7);
-        sys_eqs_y_solution = H.randInt(-7, 7);
+    if (form_obj.randomize_solutions === 'is_checked') { // randomize the sol if specified
+        form_obj.sys_eqs_x_solution = H.randInt(-7, 7);
+        form_obj.sys_eqs_y_solution = H.randInt(-7, 7);
     }
 
     // validate the (x,y) solution
-    sys_eqs_x_solution = SH.val_restricted_integer(sys_eqs_x_solution, error_locations, -20, 20, 'sys_eqs_x_solution');
-    sys_eqs_y_solution = SH.val_restricted_integer(sys_eqs_y_solution, error_locations, -20, 20, 'sys_eqs_y_solution');
+    form_obj.sys_eqs_x_solution = SH.val_restricted_integer(form_obj.sys_eqs_x_solution, error_locations, -20, 20, 'sys_eqs_x_solution');
+    form_obj.sys_eqs_y_solution = SH.val_restricted_integer(form_obj.sys_eqs_y_solution, error_locations, -20, 20, 'sys_eqs_y_solution');
 
     // validate term number (make sure its 2_2 if the form is slope-int)
-    if (linear_equation_form === 'slope_intercept') sys_eqs_term_number = '2_x_2_y';
-
-    return {
-        sys_eqs_coef_size: sys_eqs_coef_size,
-        linear_equation_form: linear_equation_form,
-        sys_eqs_term_number: sys_eqs_term_number,
-        sys_eqs_x_solution: sys_eqs_x_solution,
-        sys_eqs_y_solution: sys_eqs_y_solution,
-        randomize_solutions: randomize_solutions,
-        error_locations: error_locations
-    };
+    if (form_obj.linear_equation_form === 'slope_intercept') form_obj.sys_eqs_term_number = '2_x_2_y';
 }
 
-export default function genSysEqs(formObj) {
-    const settings = processSettings(formObj);
+export default function genSysEqs(settings) {
     let { sys_eqs_coef_size, linear_equation_form, sys_eqs_term_number} = settings;
 
     // unpack these sperately for shorter names
@@ -363,22 +349,10 @@ export default function genSysEqs(formObj) {
     prompt_in_TeX = final_eq_1 + ' \\\\\\\\ ' + final_eq_2;
     final_answer = '(' + x_sol + ', ' + y_sol + ')';
 
-
-    // hackfix to get error_locations back to main
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('sys_eqs_coef_size') !== -1) error_locations.push('sys_eqs_coef_size');
-        if (settings.error_locations.indexOf('sys_eqs_x_solution') !== -1) error_locations.push('sys_eqs_x_solution');
-        if (settings.error_locations.indexOf('sys_eqs_y_solution') !== -1) error_locations.push('sys_eqs_y_solution');
-    }
-
-
     return {
         question: final_prompt,
         answer: final_answer,
-        TeXquestion: prompt_in_TeX,
-        settings: settings,
-        error_locations: error_locations
+        TeXquestion: prompt_in_TeX
     };
 }
 

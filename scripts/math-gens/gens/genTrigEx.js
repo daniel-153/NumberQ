@@ -1,23 +1,11 @@
 import * as H from '../helpers/gen-helpers.js';
 
-function processSettings(formObj) {
-    let { angular_unit, argument_sign, trig_function_types } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
-
+export function processFormObj(form_obj, error_locations) {
     // use sine and cosine if nothing was selected
-    if (trig_function_types === undefined) trig_function_types = ['sine','cosine'];
-
-    return {
-        angular_unit: angular_unit,
-        argument_sign: argument_sign,
-        trig_function_types: trig_function_types,
-        error_locations: error_locations
-    };
+    if (form_obj.trig_function_types === undefined) form_obj.trig_function_types = ['sine','cosine'];
 }
 
-export default function genTrigEx(formObj) {
-    const settings = processSettings(formObj);
-
+export default function genTrigEx(settings) {
     const trigFunctions = {
         sine: {
             prompts: [
@@ -458,15 +446,9 @@ export default function genTrigEx(formObj) {
     const selectedPrompt = trigFunctions[currentTrigFunction].prompts[promptIndex];
     const selectedAnswer = trigFunctions[currentTrigFunction].answers[promptIndex]; 
 
-    // ensuring erro locations is present in the return of this fuction (even though it doesn't hold anything at the moment)
-    let error_locations = [];
-    // if you later add error locations in processing settings for trigEx, you need some logic here (see other gen modules)
-
     return {
         question: selectedPrompt,
-        answer: selectedAnswer,
-        settings: settings,
-        error_locations: error_locations
+        answer: selectedAnswer
     };
 } 
 

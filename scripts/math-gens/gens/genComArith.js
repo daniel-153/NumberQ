@@ -2,30 +2,17 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-function processSettings(formObj) {
-    let { term_range_min, term_range_max, general_operation_types, randomize_order, force_ints_in_div} = formObj;
-    let error_locations = []; // stores a list of input fields where errors occures (same field can appear multiple times)
-
+export function processFormObj(form_obj, error_locations) {
     // validate the term range and keep track of error locations
-    let validatedMinMax = SH.val_min_max_range(term_range_min, term_range_max, error_locations);
-    term_range_min = validatedMinMax.term_range_min;
-    term_range_max = validatedMinMax.term_range_max;
+    let validatedMinMax = SH.val_min_max_range(form_obj.term_range_min, form_obj.term_range_max, error_locations);
+    form_obj.term_range_min = validatedMinMax.term_range_min;
+    form_obj.term_range_max = validatedMinMax.term_range_max;
 
     // validate operation types (assign it if it's empty)
-    if (general_operation_types === undefined) general_operation_types = ['multiply','divide'];
-
-    return {
-        term_range_min: term_range_min,
-        term_range_max: term_range_max,
-        general_operation_types: general_operation_types,
-        randomize_order: randomize_order,
-        force_ints_in_div: force_ints_in_div,
-        error_locations: error_locations
-    };
+    if (form_obj.general_operation_types === undefined) form_obj.general_operation_types = ['multiply','divide'];
 }
 
-export default function genComArith(formObj) {
-    const settings = processSettings(formObj);
+export default function genComArith(settings) {
     const { term_range_min, term_range_max, randomize_order, force_ints_in_div} = settings;
     const operation_type = H.randFromList(settings.general_operation_types); // pick a single operation from operation_types array
 
@@ -265,18 +252,9 @@ export default function genComArith(formObj) {
         complexNum_result = frac_A + frac_B;
     }
 
-
-    // hackfix to get error_locations back to main
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('number_of_terms') !== -1) error_locations.push('number_of_terms');
-    }
-
     return {
         question: complexNum_prompt,
-        answer: complexNum_result,
-        settings: settings,
-        error_locations: error_locations
+        answer: complexNum_result
     };
 }
 

@@ -2,36 +2,20 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-function processSettings(formObj) {
-    let { factor_size, types_of_quadratics, leading_coef, quadratic_prompt_type, qf_answer_type } = formObj;
-    let error_locations = []; // stores a list of input fields where errors occured (same field can appear multiple times)
-
-
+export function processFormObj(form_obj, error_locations) {
     // make sure factor size is an integer between 1 and 10
-    factor_size = SH.val_restricted_integer(factor_size, error_locations, 1, 10, 'factor_size');
+    form_obj.factor_size = SH.val_restricted_integer(form_obj.factor_size, error_locations, 1, 10, 'factor_size');
 
     // make sure leading_coef is an integer between -10 and 10 but doesn't include 0
-    leading_coef = SH.val_restricted_integer(leading_coef, error_locations, -10, 10, 'leading_coef');
-    if (leading_coef === 0) leading_coef = 1;
-
+    form_obj.leading_coef = SH.val_restricted_integer(form_obj.leading_coef, error_locations, -10, 10, 'leading_coef');
+    if (form_obj.leading_coef === 0) form_obj.leading_coef = 1;
 
     // make sure that at least one quadratic type is selected (we don't need to combine here: that happens in the gen function)
-    if (types_of_quadratics === undefined) types_of_quadratics = [];
-    if (types_of_quadratics.length === 0) types_of_quadratics = ['two_integer_factors'];
-
-
-    return {
-        factor_size: factor_size,
-        types_of_quadratics: types_of_quadratics,
-        leading_coef: leading_coef,
-        quadratic_prompt_type: quadratic_prompt_type,
-        qf_answer_type: qf_answer_type,
-        error_locations: error_locations
-    };
+    if (form_obj.types_of_quadratics === undefined) form_obj.types_of_quadratics = [];
+    if (form_obj.types_of_quadratics.length === 0) form_obj.types_of_quadratics = ['two_integer_factors'];
 }
 
-export default function genFacQuad(formObj) {
-    const settings = processSettings(formObj);
+export default function genFacQuad(settings) {
     let {factor_size, types_of_quadratics, leading_coef, quadratic_prompt_type, qf_answer_type} = settings;
     const type_of_quadratic = H.randFromList([...types_of_quadratics]); 
     
@@ -466,20 +450,9 @@ export default function genFacQuad(formObj) {
         else if (qf_answer_type === 'comma_seperated_values') final_answer = comma_seperated_values;
     }
 
-
-    // hackfix to get error_locations back to main
-    let error_locations = [];
-    if (settings.error_locations.length > 0) {
-        if (settings.error_locations.indexOf('factor_size') !== -1) error_locations.push('factor_size');
-        if (settings.error_locations.indexOf('leading_coef') !== -1) error_locations.push('leading_coef');
-    }
-
-
     return {
         question: final_prompt,
-        answer: final_answer,
-        settings: settings,
-        error_locations: error_locations
+        answer: final_answer
     };
 }
 
