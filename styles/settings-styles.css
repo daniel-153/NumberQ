@@ -115,6 +115,7 @@
   max-height: 90%;
   width: auto;
   height: auto;
+  user-select: none;
 }
 
 .settings-info-button {
@@ -159,8 +160,6 @@
 .settings-lock[data-status="locked"]:focus {
   outline-color: rgb(255, 0, 0);
 }
-
-
 
 .settings-info-button::before {
   content: attr(data-tooltip);
@@ -475,6 +474,18 @@
     width: 1.3vw;
     height: 1.3vw;
   }
+
+  .settings-info-button::before {
+    left: -47.5%;
+  }
+
+  .settings-lock::before{
+    width: 9vw;
+  }
+
+  .setting-control-buttons {
+    gap: 2.2vw;
+  }
 }
 
 @media (max-width: 900px) {
@@ -622,5 +633,17 @@
   background: #2222223d; /* Dark background for contrast */
   border-radius: 2.4vw; /* Round the track ends */
   margin: 2.4vw 0; /* Prevents the track from extending fully */
+}
+
+  .settings-info-button::before {
+    left: -52.5%;
+  }
+
+.settings-lock::before{
+  width: 27vw;
+}
+
+.setting-control-buttons {
+  gap: 8vw;
 }
 }
