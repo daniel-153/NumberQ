@@ -8,6 +8,7 @@ const pg_ui_state = {
     func_name: null,
     display_name: null,
     input_settings: null,
+    possible_settings_log: null,
     question_obj: {
         question: null,
         answer: null,
@@ -33,7 +34,7 @@ export async function generate(func_name, display_name = '') {
     if (pg_ui_state.first_generation) { // switches to the new title, adjusts output box sizing, inserts new settings fields, gets pre-settings
         PH.insertGenTitle(display_name, "generator-name");
         PH.adjustOutputBoxSizing(func_name);
-        await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
+        pg_ui_state.possible_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
         PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
     }
     

@@ -79,29 +79,10 @@ export function updateFormValues(form_values_object, form_ID) {
     }
 } // used to manually set/preset (autofill) a form; form_values_object is just the names of the form elements and their desired values in an obj
 
-export async function createSettingsFields(settings_field_names, settings_templates_module, form_ID) {
-    const settings_objects = {}; // this is an object of objects instead of an array of objects
-
-    settings_field_names.forEach((setting_name) => {        
-        if (settings_templates_module[setting_name]) {
-          settings_objects[setting_name] = settings_templates_module[setting_name]; // find the settings object and put it in setting_objects {...}
-        }
-        else {
-            console.error(`No setting with name '${setting_name}' was found in the provided module`);
-        }
-    });
-
-    let combined_html = '';
-    Object.values(settings_objects).forEach(setting_obj => {
-        combined_html = combined_html + createSettingHtml(setting_obj);
-    });
-
-    document.getElementById(form_ID).innerHTML = combined_html;
-    MathJax.typesetPromise([`#${form_ID}`]);
-
-    // function that generates the html for each settings field
-    function createSettingHtml(setting_obj) {
+const CSH = { // createSettingsFields helpers
+    createSettingHtml: function(setting_obj) {
         let output_html; // string that will hold the form element that is created
+        const possible_values = []; // list of the current form field's possible values (only built for radio buttons and checkboxes atm)
         const form_fields = []; // every setting contained in the current box => could be just one (like a single-textbox, or up to three with a point-textbox and a randomize option)
         const tooltip = setting_obj.tooltip;
 
@@ -155,6 +136,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     >
                     </div>
                 `;
+
+                possible_values.push(radio_buttons[i][0]);
             }
 
             // create the last radio button
@@ -178,6 +161,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                 </div>
             </div>
             `;
+
+            possible_values.push(radio_buttons[radio_buttons.length - 1][0]);
         } 
         else if (setting_obj.type === 'single_textbox') { // setting is a single textbox
             const {code_name, display_name} = setting_obj;
@@ -193,6 +178,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     id="${code_name}-text-box"
                 />
             `;
+
+            possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
         }
         else if (setting_obj.type === 'range_textboxes') { // setting is a range textbox (two textboxes)
             const {code_names, display_name} = setting_obj;
@@ -213,6 +200,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     />
                 </div>
             `;
+
+            possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
         }
         else if (setting_obj.type === 'check_boxes') { // setting is a collection of checkboxes
             const {code_name, display_name, check_boxes } = setting_obj;
@@ -250,6 +239,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     >
                     </div>
                 `;
+
+                possible_values.push(check_boxes[i][0]);
             }
 
             // create the last checkbox
@@ -268,6 +259,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                 </div>
             </div>
             `;
+
+            possible_values.push(check_boxes[check_boxes.length - 1][0]);
         }
         else if (setting_obj.type === 'point_check_boxes') { // setting is a user-picked point (_,_) (with a radomize option)
             const {code_names, display_name} = setting_obj;
@@ -296,6 +289,8 @@ export async function createSettingsFields(settings_field_names, settings_templa
                     />Randomize
                 </div>     
             `;
+
+            possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
         }
 
         output_html += `
@@ -308,8 +303,37 @@ export async function createSettingsFields(settings_field_names, settings_templa
             </div>
         `;
 
-        return output_html;
+        return {
+            output_html,
+            possible_values
+        };
     }
+}
+export async function createSettingsFields(settings_field_names, settings_templates_module, form_ID) {
+    const settings_objects = {}; // this is an object of objects instead of an array of objects
+
+    settings_field_names.forEach((setting_name) => {        
+        if (settings_templates_module[setting_name]) {
+          settings_objects[setting_name] = settings_templates_module[setting_name]; // find the settings object and put it in setting_objects {...}
+        }
+        else {
+            console.error(`No setting with name '${setting_name}' was found in the provided module`);
+        }
+    });
+
+    let combined_html = '';
+    const possible_values_log = {}; // catalog of possible values for all settings fields (only radio buttons and checkboxes atm)
+    Object.values(settings_objects).forEach(setting_obj => {
+        const { output_html, possible_values } = CSH.createSettingHtml(setting_obj);
+        
+        combined_html = combined_html + output_html;
+        possible_values_log[setting_obj.code_name] = {type: setting_obj.type, possible_values: possible_values};
+    });
+
+    document.getElementById(form_ID).innerHTML = combined_html;
+    MathJax.typesetPromise([`#${form_ID}`]);
+
+    return possible_values_log;
 } // create and insert the settings fields with names in settings_field_names, from settings_templates_module, into form with ID of form_ID
 
 export function getFormObject(form_ID) {
@@ -350,3 +374,24 @@ export function getFormFieldStatuses(form_ID) {
 
     return form_field_statuses;
 } // status of each field in the form => locked or unlocked
+
+export function resolveRandSettings(rand_settings_obj, possible_values_log) {
+    for (const [key, value] of Object.entries(rand_settings_obj)) {
+        if (value === '__random__') {
+            const log_entry = possible_values_log[key];
+
+            if (log_entry.type === 'radio_buttons') {
+                rand_settings_obj[key] = log_entry.possible_values[Math.floor(Math.random() * log_entry.possible_values.length)];
+            }
+            else if (log_entry.type === 'check_boxes') {
+                rand_settings_obj[key] = [log_entry.possible_values[Math.floor(Math.random() * log_entry.possible_values.length)]];
+            } 
+            else {
+                console.error('resolveRandSettings() is currently only built for radio_buttons or check_boxes');
+                return null;
+            }
+        }
+    }
+
+    return rand_settings_obj;
+}

@@ -41,12 +41,12 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
 
 export function getCurrentSettings(pg_ui_state, form_ID) {
     if (pg_ui_state.first_generation) { 
-        pg_ui_state.input_settings = pg_ui_state.current_module.get_presets();
+        pg_ui_state.input_settings = FH.resolveRandSettings(pg_ui_state.current_module.get_presets(), pg_ui_state.possible_settings_log);
     }
     else { 
         if (pg_ui_state.randomize_all) {
             const current_form_values = FH.getFormObject(form_ID);
-            const rand_form_values = pg_ui_state.current_module.get_rand_settings();
+            const rand_form_values = FH.resolveRandSettings(pg_ui_state.current_module.get_rand_settings(), pg_ui_state.possible_settings_log);
             const form_field_statuses = FH.getFormFieldStatuses(form_ID);
             pg_ui_state.input_settings = {}; // need to turn into an object because we are assigning properties one-by-one
 
