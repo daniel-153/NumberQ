@@ -1220,6 +1220,12 @@ export const settings_fields = [
     'give_excluded_values'
 ];
 
+export const prelocked_settings = [
+    'numer_form',
+    'denom_form',
+    'give_excluded_values'
+];
+
 export function get_presets() {
     return {
         ratex_add_sub_form: 'all_add_sub', 

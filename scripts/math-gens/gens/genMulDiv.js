@@ -167,6 +167,11 @@ export const settings_fields = [
     'answer_form'
 ];
 
+export const prelocked_settings = [
+    'multiply_symbol',
+    'answer_form'
+];
+
 export function get_presets() {
     const operation_type = H.randFromList(['multiply','divide']);
     const answer_form = (operation_type === 'multiply') ? 'factions & integers' : 'whole part + remainder';

@@ -491,6 +491,10 @@ export const settings_fields = [
     'leading_coef'
 ];
 
+export const prelocked_settings = [
+    'qf_answer_type'
+];
+
 export function get_presets() {
     return {
         factor_size: 5, // (+ or -) whatever value is here

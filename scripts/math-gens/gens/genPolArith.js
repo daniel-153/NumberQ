@@ -210,6 +210,10 @@ export const settings_fields = [
     'division_result'
 ];
 
+export const prelocked_settings = [
+    'division_result'
+];
+
 export function get_presets() {
     return {
         polynomial_A_degree: H.randInt(1,3),
