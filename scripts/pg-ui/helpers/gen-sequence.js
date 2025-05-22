@@ -1,5 +1,6 @@
 import * as UH from '../../helpers/ui-helpers.js';
 import * as FH from '../../helpers/form-helpers.js';
+import * as UAH from './ui-actions.js'; 
 
 export function insertGenTitle(gen_title, element_id) {
     document.getElementById(element_id).innerHTML = gen_title;
@@ -87,4 +88,17 @@ export function updatePGQABoxes(question_obj) {
 
 export function updateFirstGenStatus(pg_ui_state) {
     pg_ui_state.first_generation = false;
+}
+
+export function prelockSettings(form_ID, gen_module) {
+    if (gen_module['prelocked_settings'] !== undefined) {
+        const lock_element_array = Array.from(document.getElementById(form_ID).querySelectorAll('.settings-lock'));
+
+        lock_element_array.forEach(lock_element => {
+            // (if any prelocked setting is found on the current lock, lock it)
+            if (gen_module['prelocked_settings'].some(element => lock_element.getAttribute('data-values-to-lock').split(',').includes(element))) {
+                UAH.toggleSettingsLock(lock_element);
+            }
+        });
+    }
 }
