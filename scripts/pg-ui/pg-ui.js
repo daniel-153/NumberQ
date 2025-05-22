@@ -7,16 +7,15 @@ const pg_ui_state = {
     current_gen_func: null,
     func_name: null,
     display_name: null,
-    input_settings: null,
+    current_settings: null,
     possible_settings_log: null,
     question_obj: {
         question: null,
         answer: null,
         TeXquestion: null,
         TeXanswer: null,
-        error_locations: null,
-        output_settings: null
     },
+    error_locations: null,
     first_generation: true, // the first generation with the current mode
     randomize_all: false,
     first_pg_ui_open: true // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
@@ -29,9 +28,8 @@ export async function generate(func_name, display_name = '') {
         pg_ui_state.first_pg_ui_open = false;
     }
 
-    await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switches the gen info if needed (does nothing if gen is same)
-
     if (pg_ui_state.first_generation) { // switches to the new title, adjusts output box sizing, inserts new settings fields, gets pre-settings
+        await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
         PH.insertGenTitle(display_name, "generator-name");
         PH.adjustOutputBoxSizing(func_name);
         pg_ui_state.possible_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
@@ -40,13 +38,15 @@ export async function generate(func_name, display_name = '') {
     
     PH.updateRandomizeAll(pg_ui_state, 'randomize-all-checkbox'); // update randomize all to true if it was checked (false if not)
 
-    PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into input_settings
+    PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into current_settings
 
-    PH.getGenOutput(pg_ui_state, pg_ui_state.current_gen_func(pg_ui_state.input_settings)); // get a new question_obj into the ui state
+    PH.getGenOutput(pg_ui_state, pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
 
     PH.updatePGQABoxes(pg_ui_state.question_obj);
 
-    FH.updateFormValues(pg_ui_state.question_obj.output_settings, 'settings-form'); 
+    FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
 
-    PH.updateFirstGenStatus(pg_ui_state);
+    FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form');
+
+    pg_ui_state.first_generation = false; // no longer the first generation
 }
