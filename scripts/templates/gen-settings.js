@@ -392,3 +392,41 @@ export const give_excluded_values = {
     radio_buttons: [['yes','Yes'],['no','No']], 
     tooltip: 'Should the values that make the denominators zero (if any) be stated?'
 };
+
+export const numer_range = {
+    type: 'range_textboxes',
+    code_names: ['numer_range_min','numer_range_max'],
+    display_name: 'Numerator Range',
+    tooltip: 'How big or small should the numerators be? (create a range with integers from 1 to 100)'
+};
+
+export const denom_range = {
+    type: 'range_textboxes',
+    code_names: ['denom_range_min','denom_range_max'],
+    display_name: 'Denominator Range',
+    tooltip: 'How big or small should the denominators be? (create a range with integers from 1 to 100)'
+};
+
+export const allow_improper_fracs = {
+    type: 'radio_buttons',
+    code_name: 'allow_improper_fracs',
+    display_name: 'Allow Improper Fractions',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should fractions with numerator ≥ denominator be allowed? (either in the sum terms or the answer)'
+};
+
+export const add_frac_answer_form = {
+    type: 'radio_buttons',
+    code_name: 'add_frac_answer_form',
+    display_name: 'Answer Form',
+    radio_buttons: [['fractions','Factions'],['mixed_numbers','Mixed Numbers']], 
+    tooltip: 'What form should the answers be in, fractions or mixed numbers (when applicable)?'
+}; 
+
+export const like_denoms = {
+    type: 'radio_buttons',
+    code_name: 'like_denoms',
+    display_name: 'Like Denominators',
+    radio_buttons: [['always','Always'],['sometimes','Sometimes'],['never','Never']], 
+    tooltip: 'Should the denominators always, sometimes, or never be the same?'
+};

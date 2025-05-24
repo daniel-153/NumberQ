@@ -14,6 +14,13 @@ export const templates = [
         example_problem: '4\\cdot\\frac{1}{6}\\cdot3\\cdot\\frac{1}{2}' 
     },
     {
+        function_name: 'genAddFrac',
+        category_class_name: 'arithmetic-gen',
+        display_name: 'Adding Fractions',
+        display_category: 'arithmetic',
+        example_problem: '\\frac{3}{4}+\\frac{2}{5}'
+    },
+    {
         function_name: 'genLinEq',
         category_class_name: 'algebra-gen',
         display_name: 'Linear Equations',
