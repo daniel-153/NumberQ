@@ -59,3 +59,18 @@ export function nonPerfectSquares(integerLimit) {
 
     return result;
 }
+
+export function randIntExcept(min, max, excluded_value) {
+    const rand = function(min, max) {return Math.floor(Math.random() * (max - min + 1)) + min;}
+
+    const initial_rand = rand(min, max);
+
+    if (initial_rand !== excluded_value) return initial_rand;
+    else {
+        if (min === max) {
+            return excluded_value; // *fail silently* (is actually preferrable for the gens, because we don't want an error, and this is checked elsewhere)
+        }
+
+        return ((initial_rand - min + rand(1, max - min)) % (max - min + 1)) + min;
+    }
+}
