@@ -57,7 +57,7 @@ export default function genAddFrac(settings) {
                 den2 = den1;
             }
             else if (settings.like_denoms === 'never') {
-                den2 = H.randFromList(H.removeFromArray(den1, H.integerArray(settings.denom_range_min, settings.denom_range_max)));
+                den2 = H.randIntExcept(settings.denom_range_min, settings.denom_range_max, den1);
             }
             else if (settings.like_denoms === 'sometimes') {
                 den2 = H.randInt(settings.denom_range_min, settings.denom_range_max);
@@ -70,7 +70,7 @@ export default function genAddFrac(settings) {
                 den1 = den2;
             }
             else if (settings.like_denoms === 'never') {
-                den1 = H.randFromList(H.removeFromArray(den2, H.integerArray(settings.denom_range_min, settings.denom_range_max)));
+                den1 = H.randIntExcept(settings.denom_range_min, settings.denom_range_max, den2);
             }
             else if (settings.like_denoms === 'sometimes') {
                 den1 = H.randInt(settings.denom_range_min, settings.denom_range_max);
@@ -78,10 +78,23 @@ export default function genAddFrac(settings) {
         }
     }
     else if (settings.allow_improper_fracs === 'no') { // nums < dens && (num1*den2 + num2 * den1) < (den1 * den2) 
+        const resultIsProper = function() {return ((num1*den2 + num2 * den1) < (den1 * den2));}
         
-        
-        let conditionsMet = function() {
-            return ((num1*den2 + num2 * den1) < (den1 * den2));
+        let conditionsMet;
+        if (settings.like_denoms === 'sometimes') {
+            conditionsMet = function() {
+                return resultIsProper(); 
+            }
+        }
+        else if (settings.like_denoms === 'never') {
+            conditionsMet = function() {
+                return (resultIsProper() && den1 !== den2);
+            }
+        }
+        else if (settings.like_denoms === 'always') {
+            conditionsMet = function() {
+                return (resultIsProper() && den1 === den2);
+            }
         }
 
         let order_to_pick, pick_status;
@@ -97,7 +110,7 @@ export default function genAddFrac(settings) {
                 }
                 den1 = H.randInt(order_to_pick[den1_index].range[0], order_to_pick[den1_index].range[1]);
                 if (settings.like_denoms === 'never' && pick_status.den2) { // force unlike denoms && den2 has been picked
-                    den1 = H.randFromList(H.removeFromArray(den2, H.integerArray(order_to_pick[den1_index].range[0], order_to_pick[den1_index].range[1])));
+                    den1 = H.randIntExcept(order_to_pick[den1_index].range[0], order_to_pick[den1_index].range[1], den2);
                 }
                 pick_status.den1 = true;
 
@@ -113,7 +126,7 @@ export default function genAddFrac(settings) {
                 }
                 den2 = H.randInt(order_to_pick[den2_index].range[0], order_to_pick[den2_index].range[1]);
                 if (settings.like_denoms === 'never' && pick_status.den1) { // force unlike denoms && den1 has been picked
-                    den2 = H.randFromList(H.removeFromArray(den1, H.integerArray(order_to_pick[den2_index].range[0], order_to_pick[den2_index].range[1])));
+                    den2 = H.randIntExcept(order_to_pick[den2_index].range[0], order_to_pick[den2_index].range[1], den1);
                 }
                 pick_status.den2 = true;
 
@@ -122,7 +135,7 @@ export default function genAddFrac(settings) {
             else if (order_to_pick[curr_index].coef === 'den1') {
                 den1 = H.randInt(settings.denom_range_min, settings.denom_range_max);
                 if (settings.like_denoms === 'never' && pick_status.den2) {
-                    den1 = H.randFromList(H.removeFromArray(den2, H.integerArray(settings.denom_range_min, settings.denom_range_max)));
+                    den1 = H.randIntExcept(settings.denom_range_min, settings.denom_range_max, den2);
                 }
                 pick_status.den1 = true;
 
@@ -139,7 +152,7 @@ export default function genAddFrac(settings) {
             else { // den2
                 den2 = H.randInt(settings.denom_range_min, settings.denom_range_max);
                 if (settings.like_denoms === 'never' && pick_status.den1) {
-                    den2 = H.randFromList(H.removeFromArray(den1, H.integerArray(settings.denom_range_min, settings.denom_range_max)));
+                    den2 = H.randIntExcept(settings.denom_range_min, settings.denom_range_max, den1);
                 }
                 pick_status.den2 = true;
 
@@ -174,15 +187,20 @@ export default function genAddFrac(settings) {
 
             if (conditionsMet()) sol_found = true;
         }
-        if (!sol_found) {
-            // use the very minimum value? which we know results in a proper final fraction?
-
-            // somehow traverse up from that value by a random amount?
+        if (!sol_found) { // if a sol is not found in time, use the minimum value (which we know results in a proper fraction)
+            num1 = settings.numer_range_min;
+            num2 = settings.numer_range_min;
+            den1 = settings.denom_range_max;
+            den2 = settings.denom_range_max;
+            
+            if (settings.like_denoms === 'never') {
+                (H.randInt(0, 1) === 0) ? (den1--) : (den2--);
+            }
         }
-
-        console.log('loop runs: ',num_attempts)
     }
 
+    // Note: we can switch to subtraction without having to recheck conditions because 
+    // if N1*D2 + N2*D1 < D1*D2 then |N1*D2 - N2*D1| < D1*D2 where N1,N2,D1,D2 > 0 (the subtraction case is enclosed within the addition case)
     const prompt_type = (settings.addsub_operation_type === 'both') ? H.randFromList(['add','subtract']) : settings.addsub_operation_type;
     let operation_symbol;
     let final_numer, final_denom;
