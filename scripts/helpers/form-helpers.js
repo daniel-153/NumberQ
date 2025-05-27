@@ -292,6 +292,40 @@ const CSH = { // createSettingsFields helpers
 
             possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
         }
+        else if (setting_obj.type === 'textbox_table') {
+            const {code_names, display_names, display_name} = setting_obj;
+            code_names.forEach(code_name => form_fields.push(code_name));
+
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div class="outer-radio-button-wrapper textbox-table-wrapper">
+            `;
+
+            for (let i = 0; i < code_names.length; i++) {
+                output_html += `
+                <div class="textbox-table-entry ${(i === code_names.length - 1)? 'last-textbox-table-entry' : ''}">
+                    <input
+                        type="text"
+                        name="${code_names[i]}"
+                        class="settings-text-box table-textbox"
+                        id="${code_names[i]}-table-textbox"
+                    />
+                    <label 
+                        for="${code_names[i]}-table-textbox"
+                        class="table-textbox-label"
+                    >
+                        ${display_names[i]}
+                    </label>
+                </div>
+                `;
+            }
+
+            output_html += `</div>`
+
+
+            possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
+        }
 
         output_html += `
             <div class="setting-control-buttons">
