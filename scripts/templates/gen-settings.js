@@ -430,3 +430,43 @@ export const like_denoms = {
     radio_buttons: [['always','Always'],['sometimes','Sometimes'],['never','Never']], 
     tooltip: 'Should the denominators always, sometimes, or never be the same?'
 };
+
+export const allow_negatives = {
+    type: 'radio_buttons',
+    code_name: 'allow_negatives',
+    display_name: 'Allow Negative Numbers',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should negative numbers be included in the expression?'
+};
+
+export const operation_counts = {
+    type: 'textbox_table',
+    code_names: ['add_count','subtract_count','multiply_count','divide_count','exponent_count'],
+    display_names: ['Additions','Subtractions','Multiplications','Divisions','Exponents'],
+    display_name: 'Operations',
+    tooltip: "How many times should each operation appear? (enter integers from 0 to 3)"
+};
+
+export const allow_zero = {
+    type: 'radio_buttons',
+    code_name: 'allow_zero',
+    display_name: 'Allow Zero',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should 0 be allowed in the expression?'
+};
+
+export const allow_parentheses = {
+    type: 'radio_buttons',
+    code_name: 'allow_parentheses',
+    display_name: 'Allow Parentheses',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should parenthesis expressions like a&times;(b+c) be allowed?'
+}
+
+export const allow_nesting = {
+    type: 'radio_buttons',
+    code_name: 'allow_nesting',
+    display_name: 'Allow Nesting',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should nested parenthesis expressions like a&times;(b-(c+d)) be allowed?'
+}
