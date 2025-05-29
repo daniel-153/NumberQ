@@ -21,6 +21,14 @@ export const templates = [
         example_problem: '\\frac{3}{4}+\\frac{2}{5}'
     },
     {
+        function_name: 'genOrdOp',
+        category_class_name: 'arithmetic-gen',
+        display_name: 'Order of Operations',
+        display_category: 'arithmetic',
+        example_problem: '3\\times\\left(5+2^{3}\\right)-8\\div4',
+        example_problem_class: 'shrunk-question'
+    },
+    {
         function_name: 'genLinEq',
         category_class_name: 'algebra-gen',
         display_name: 'Linear Equations',
