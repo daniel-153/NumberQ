@@ -1,0 +1,753 @@
+import * as H from '../helpers/gen-helpers.js';
+import * as PH from '../helpers/polynom-helpers.js';
+import * as SH from '../helpers/settings-helpers.js';
+
+export function processFormObj(form_obj, error_locations) {
+    // form_obj.number_size = SH.value_restricted_integer(form_obj.number_size, error_locations, 1, 20, 'number_size');
+
+    // using this to iterate over the '_count' settings without repeated code
+    let all_zero = true;
+    let num_operations = 0;
+    let num_exponents = 0;
+    for (const [key, value] of Object.entries(form_obj)) {
+        if (key.includes('_count')) {
+            form_obj[key] = SH.val_restricted_integer(value, error_locations, 0, 5, key); // ensure each operation count is valid (0 to 5)
+            num_operations += form_obj[key];
+            if (value > 0) all_zero = false; 
+            if (key.includes('exponent')) num_exponents += form_obj[key];
+        }
+    }
+
+    // ensure that the operation counts aren't ALL zero 
+    if (all_zero) form_obj.add_count = 1; // fallback is one addition => a+b
+
+    // ensure there isn't a disproportionate number of exponents (like 3 exponentiations and 0 of any other operation (forcing a power tower))
+    if (!(num_exponents <= (num_operations - num_exponents) + 1)) { // if exponent_operations isn't less than or equal to the number of 'flat' operands
+        // this is how many more 'flat' operands we need
+        const additional_operands = num_exponents - ((num_operations - num_exponents) + 1);
+
+        // make these additional operations 'additions' (the simplest way to add more on)
+        form_obj.add_count += additional_operands;
+    }
+}
+
+// Note: special rule => you can only exponentiate numbers (not expressions) && you can only exponentiate TO numbers (not expressions)
+// (and this is to avoid huge numbers, since both (a+b*c)^d and a^(b+c*d) would likely be massive - and aren't typical for early math)
+
+// Note: after you "flatten" the expression tree, the number of required parenthesis is just the number of nodes/junctions (minus 1)
+// so a tree that can be completely flattened requires no parentheses
+
+// Note: in the "no parenthesis" case, when randomly picking the operations, you could just avoid/skip any that result in a 
+// junction that isn't "flatten"able
+
+// ----------------------------------------------------------
+// New Ideas:
+
+// following order of operations, there is ONLY ONE way to convert the expression template into an abstract call stack like add(multiply(a,b),c)...
+// FURTHERMORE (again following order of operations + left to right rule), there is ONLY ONE way to evaluate that call stack (pretty much by definition)
+// the tricky part is making sure all of the conditions are met:
+// the broadest possible domain of rands is [-max_coef, ..., max_coef] (or [0, ..., max_coef] in the no-negatives case) 
+// divide(a,b) is the only function with domain restrictions => (b !== 0) 
+// subtract(a,b) has a range restriction => subtract(a,b)>0
+// divide(a,b) has a range restriction => divide(a,b) = kn
+// wait a second...now that I look at these, they ALL seem like domain restrictions
+// subtract(a,b) has a domain restriction => a >= b
+// divide(a,b) has two domain restrictions => (b !== 0) && a === k*b
+// now if one of these functions returns a value that isn't valid for the function after it (like the subtract in divide(1,subtract(2,2)))
+// THAT seems like a range restriction, but only because it would be too complicated to bake that into a domain restriction
+// and discovering an output that doesn't work "further down the line" tell us to go back and change the input values
+// BUT WHAT IS THE ALGORITHM/ORDER for doing that?
+
+// ------------------------------------------------------
+// Newer Idea:
+// just use the random search + backup template algo
+// Heres how: have certain restrictions on the selection for each of the initial coefs;
+// keep track of each number that is produced when eval the expression with PEMDAS (ensuring no negatives or fractions);
+// maybe to make things faster + higher odds of success, you start over immidiately when a number is a negative or fraction;
+// to simplify the backups, disallow all settings that are an 'allow' (except for parens)
+// 
+
+
+const OOH = { // genOrdOp helpers
+    conversion_table: {
+        "a": '+',
+        "s": '-',
+        "m": null,
+        "d": '\\div',
+        "e": '^'
+    },
+    getNumExponents: function(settings) {
+        for (const [key, value] of Object.entries(settings)) { // add all the operations **except for exponents**
+            if (key === 'exponent_count') return value;
+        }
+    },
+    clearOperandValues: function(operand_list) {
+        operand_list.forEach(operand_obj => {
+            operand_obj.value = null;
+        });
+    },
+    buildNewOperationsList: function(settings) { // list of operations indicated by letter [a,a,m,d,...]
+        let opreation_list = [];
+        for (const [key, value] of Object.entries(settings)) { // add all the operations **except for exponents**
+            if (key.includes('_count') && !key.includes('exponent')) {
+                for (let i  = 0; i < value; i++) {
+                    opreation_list.push(key.charAt(0));
+                }
+            }
+        }
+        H.randomizeList(opreation_list);
+        return opreation_list;
+    }, // make operation_list indicate which operations to apply, how many times, and in what order (except for exponents)
+    buildExpressionTemplate: function(operation_list, num_exponents) {
+        // now we fill [a,a,m,d,...] with numbers => [_,a,_,a,_,m,_,d,_,...]
+        const number_of_operands = operation_list.length + 1; // number of underscores (above) (exlcudes exponent operations)
+
+        // randomly select the locations for exponent expressions (if there are any)
+        let available_location_list = H.integerArray(1, number_of_operands);
+        let exponent_locations = [];
+        for (let i = 0; i < num_exponents; i++) {
+            const rand_index = H.randInt(0, available_location_list.length - 1);
+            exponent_locations.push(available_location_list[rand_index]);
+            available_location_list.splice(rand_index, 1);
+        }
+
+        const expression_template = []; // operations list but with numbers (or exponent operations) between the operations ([_,a,_,a,_,m,_,d,_,...])
+        const operand_list = []; // list to store references to all the operands (so we can access and clear them later without searching the expression)
+        for (let i  = 1; i <= number_of_operands; i++) {
+            if (exponent_locations.includes(i)) { // current operand is an exponent expression
+                const operand_1 = {value: null};
+                const operand_2 = {value: null};
+                
+                expression_template.push([operand_1, 'e', operand_2]);
+                operand_list.push(operand_1, operand_2);
+            }
+            else { // current operand is a number
+                const operand = {value: null};
+
+                expression_template.push(operand);
+                operand_list.push(operand);
+            }
+
+            // as long as this isn't the very last operand ([_,a,_,a,_,m,_,d,_,...]), insert the next operation letter after it
+            if (i !== number_of_operands) {
+                expression_template.push(operation_list[i - 1]);
+            }
+        }
+
+        // console.log('template before parens: ',expression_template)
+
+        return {expression_template, operand_list};
+    },
+    getNumOperators: function(expression_template) { // number of base-level operators in a template (like 3 in [_,a,_,a,_,m,_] a, a, and m)
+        return ((expression_template.length - 1) / 2);
+    },
+    getMaxParens: function(expression_template) {
+        return ((expression_template.length - 1) / 2) - 1;
+    },
+    getValidParenIndices: function(expression_map) {
+        const valid_paren_indices = [];
+        for (let i = 0; i < expression_map.length; i++) {
+            if (expression_map[i] === 'O-V') valid_paren_indices.push(i);
+        }
+        return valid_paren_indices;
+    },
+    applyParens: function(start_index, end_index, expression_template) {
+        // if the goal is [_,a,[_,a,_,m,_,d,_],d,_a,_]
+        const start_arr = []; // => [_,a]
+        const parens_arr = []; // => [_,a,_,m,_,d,_]
+        const end_arr = []; // => [d,_a,_]
+
+        for (let i = 0; i < start_index; i++) {start_arr.push(expression_template[i]);}
+        for (let i = start_index; i <= end_index; i++) {parens_arr.push(expression_template[i]);}
+        for (let i = end_index + 1; i < expression_template.length; i++) {end_arr.push(expression_template[i]);}
+
+        return [...start_arr, parens_arr, ...end_arr];
+    },
+    getExpressionMap: function(expression_template, settings) {
+        const expression_map = [];
+        for (let i = 0; i < expression_template.length; i++) {
+            if (typeof(expression_template[i]) === 'string') { // current element is an operator
+                expression_map[i] = 'O'; // 'O' for operator
+            }
+            else { // current element is an operand
+                const operand = expression_template[i];
+
+                if (
+                    (typeof(operand) === 'object' && operand.value === null) || // operand is (will be) a number
+                    (operand.length === 3 && operand[1] === 'e') // operand is a single exponenetial a^b (so we treat it like a number)
+                ) expression_map[i] = 'N'; // 'N' for number
+                else expression_map[i] = 'E'; // 'E' for expression
+            }
+        }
+
+        for (let i = 1; i < expression_map.length - 1; i += 2) {
+            if (expression_map[i - 1] === 'N' && expression_map[i + 1] === 'N' && expression_map.length > 3) {
+                expression_map[i] += '-V'; // '-V' for valid => valid operator to place parens on
+            }
+            else {
+                if (settings.allow_nesting === 'no' || expression_map.length === 3) expression_map[i] += '-I'; // '-I' for invalid (when nesting isn't allowed)
+                else if (settings.allow_nesting === 'yes') expression_map[i] += '-V'; // only valid if nesting expressions is allowed
+            }
+        }
+
+        return expression_map;
+    },
+    insertParentheses: function(expression_template, settings) {
+        // console.log('template before parens: ', JSON.parse(JSON.stringify(expression_template)));
+        // exit early if parentheses aren't applicable
+        if (OOH.getMaxParens(expression_template) === 0 || settings.allow_parentheses === 'no') return expression_template;
+        // console.log('did not exit early')
+
+        // randomly (but with a strong minimizing bias) determine how many parens to use
+        let distribution_seed = 2 * (1 - 80 / 100); // 80% chance we use just 1 paren, 20% chance of 2+ (if 2+ is possible after 1)
+        do {
+            let expression_map = OOH.getExpressionMap(expression_template, settings);
+            // console.log('expression map: ', JSON.parse(JSON.stringify(expression_map)))
+            const initial_index = H.randFromList(OOH.getValidParenIndices(expression_map));
+            // console.log('valid paren indices: ', OOH.getValidParenIndices(expression_map))
+            // console.log('first chosen index: ', initial_index);
+
+            let distribution_seed_2 = 2 * (1 - 65 / 100); // 65% chance the paren includes just one operator, 35% of 2+ (if possible)
+            let lower_paren_bound = initial_index - 1;
+            let upper_paren_bound = initial_index + 1;
+            // console.log('expression map len: ',expression_map.length)
+            // console.log('lower_bound_index: ', lower_paren_bound)
+            // console.log('upper bound index: ', upper_paren_bound)
+            // console.log('condition 1: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3))
+            // console.log('condition 2: ', !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
+            while ( // we neither have a+(b+c) NOR (b+c)+a 
+                !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3) &&
+                !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1) && 
+                Math.random() < (distribution_seed_2 *= 0.5)
+            ) {
+                // Goal: make sure no O-I (invalid(s) are enclosed)
+
+                // [n, O-I, n, O-V, n, O-I, n]
+                // [n, O-V, n, O-V, n, O-I, n]
+                // [n, O-I, n, O-V, n, O-V, n]
+                // [n, O-V, n, O-V, n, O-V, n]
+                let expansion_direction;
+                let can_expand_backward = false;
+                let can_expand_foward = false;
+
+                if (
+                    upper_paren_bound !== expression_map.length - 1 && // this isn't the last possible location for a right paren
+                    expression_map[upper_paren_bound + 2] === 'O-V' // the next operator is valid to enclose with parens
+                ) can_expand_foward = true;
+
+                if (
+                    lower_paren_bound !== 0 && // the isn't the first possible location for a left paren
+                    expression_map[lower_paren_bound - 2] === 'O-V' // the previous operator is valid to enclose with parens
+                ) can_expand_backward = true;
+
+                if (can_expand_backward && can_expand_foward) {
+                    expansion_direction = H.randFromList(['-','+']); // either direction is valid (randomly choose one of them)
+                }
+                else if (can_expand_backward) expansion_direction = '-'; // can only expand backward
+                else if (can_expand_foward) expansion_direction = '+'; // can only expand foward
+                else break; // can't expand in any direction (break out of the loop - no expansion happens)
+
+                if (expansion_direction === '+') upper_paren_bound += 2;
+                else if (expansion_direction === '-') lower_paren_bound -= 2;
+
+                // console.log('expression map len: ',expression_map.length)
+                // console.log('lower_bound_index: ', lower_paren_bound)
+                // console.log('upper bound index: ', upper_paren_bound)
+                // console.log('condition 1: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3))
+                // console.log('condition 2: ', !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
+            }
+
+            // console.log('lower paren bound: ', lower_paren_bound)
+            // console.log('upper paren bound: ', upper_paren_bound)
+
+            expression_template = OOH.applyParens(lower_paren_bound, upper_paren_bound, expression_template);
+        } while (
+            OOH.getValidParenIndices(OOH.getExpressionMap(expression_template, settings)).length > 0 
+            && Math.random() < (distribution_seed *= 0.5)
+        );
+
+        return expression_template;
+    },
+    groupOperations: function(expression_template, precendence) {
+        let operator1, operator2;
+
+        if (precendence === 'md') {
+            operator1 = 'm';
+            operator2 = 'd';
+        }
+        else if (precendence === 'as') {
+            operator1 = 'a';
+            operator2 = 's';
+        }
+
+        let expr = expression_template;
+        let final_operand_reached = false;
+
+        while (expr.length !== 3 && !final_operand_reached) {
+            const orig_expr_len = expr.length;
+            let changed = false;
+
+            for (let i = 1; i < orig_expr_len - 1; i += 2) {
+                if (expr[i] === operator1 || expr[i] === operator2) {
+                    expr = OOH.applyParens(i - 1, i + 1, expr);
+                    if (i + 1 === expr.length - 1) final_operand_reached = true;
+                    changed = true;
+                    break;
+                }
+            }
+
+            if (!changed) break; // Avoid infinite loop if no changes made
+        }
+
+        return expr;
+    },
+    convertToAST: function(expression_template) {
+        // for each level, start by simplifying to ensure there are three elements [[...], O, [...]]
+        if (expression_template.length > 3) {
+            expression_template = OOH.groupOperations(expression_template, 'md'); // group mul and div
+            expression_template = OOH.groupOperations(expression_template, 'as'); // group add and sub
+        } // now the length must be 3
+        
+        // If both operands are null at this point (not arrays) the current e.t. is completely simplified
+        if (expression_template[0].value === null && expression_template[2].value === null) return expression_template;
+        else { // otherwise, one or both need to be ran through the grouping algo
+            if (Array.isArray(expression_template[0])) expression_template[0] = OOH.convertToAST(expression_template[0]);
+            if (Array.isArray(expression_template[2])) expression_template[2] = OOH.convertToAST(expression_template[2]);
+        }
+
+        return expression_template;
+    },
+    buildValidRandFunc: function(max_term_size, settings) {
+        max_term_size = Math.floor(max_term_size); // ensure ints
+        
+        let getValidRand;
+        if (settings.allow_negatives === 'yes') {
+            if (settings.allow_zero === 'yes') {
+                getValidRand = function(restiction) {
+                    if (restiction === 'non-zero') return H.randIntExcept((-1)*max_term_size, max_term_size, 0);
+                    else if (restiction === 'non-negative') return (H.randInt(1,50) === 1)? (0) : (H.randInt(1, max_term_size));
+                    return (H.randInt(1,50) === 1)? (0) : (H.randIntExcept((-1)*max_term_size, max_term_size, 0)); // always 2% chance of 0
+                }
+            }
+            else if (settings.allow_zero === 'no') {
+                getValidRand = function(restiction) { 
+                    if (restiction === 'non-negative') H.randInt(1, max_term_size);
+                    return H.randIntExcept((-1)*max_term_size, max_term_size, 0);
+                }
+            }
+        }
+        else if (settings.allow_negatives === 'no') {
+            if (settings.allow_zero === 'yes') {
+                getValidRand = function(restiction) {
+                    if (restiction === 'non-zero') return H.randInt(1, max_term_size);
+                    return (H.randInt(1,50) === 1)? (0) : (H.randInt(1, max_term_size)); // always 2% chance of 0 
+                }
+            }
+            else if (settings.allow_zero === 'no') {
+                getValidRand = function(restiction) { 
+                    return H.randInt(1, max_term_size);
+                }
+            }
+        }
+
+        return getValidRand;
+    },
+    APH: { // assignAndPerform helpers
+        settings: null,
+        max_term_size: null,
+        value: null, // will later become an object of methods to get random values
+        exponentiation: function(operand_1, operand_2) { // by design, both operands will always be null ("unassigned") here
+            operand_2.value = this.value.exponent();
+            if (operand_2.value <= 2) {
+                operand_1.value = this.value.halfSizeRand();
+            }
+            else operand_1.value = this.value.zeroOneOrTwo();
+            
+            return operand_1.value**operand_2.value;
+        },
+        multiplication: function(operand_1, operand_2) {
+            if (H.randInt(0, 1) === 0) {
+                if (operand_1.value === null) operand_1.value = this.value.halfSizeRand('non-zero');
+                if (operand_2.value === null) operand_2.value = this.value.halfSizeRand();
+            }
+            else {
+                if (operand_1.value === null) operand_1.value = this.value.halfSizeRand();
+                if (operand_2.value === null) operand_2.value = this.value.halfSizeRand('non-zero');
+            }
+
+            return operand_1.value * operand_2.value;
+        },
+        division: function(operand_1, operand_2) {
+            // if both unassigned, randomly assign one
+            if (operand_1.value === null && operand_2.value === null) {
+                if (H.randInt(0, 1) === 0) { 
+                    operand_2.value = this.value.halfSizeRand('non-zero');
+                }   
+                else { 
+                    operand_1.value = this.value.generalRand();
+                } 
+            }
+
+            // then attempt to assign the other
+            if (operand_1.value === null) {
+                operand_1.value = this.value.multipleOf(operand_2.value);
+            }
+            else if (operand_2.value === null) { // where NaN is most likely to arise
+                operand_2.value = this.value.divisorOf(operand_1.value);
+            }
+
+            const division_result = operand_1.value / operand_2.value;
+
+            if (Number.isSafeInteger(division_result)) return division_result;
+            else return NaN;
+        },
+        addition: function(operand_1, operand_2) {
+            if (H.randInt(0, 1) === 0) {
+                if (operand_1.value === null) operand_1.value = this.value.generalRand('non-zero');
+                if (operand_2.value === null) operand_2.value = this.value.generalRand();
+            }
+            else {
+                if (operand_1.value === null) operand_1.value = this.value.generalRand();
+                if (operand_2.value === null) operand_2.value = this.value.generalRand('non-zero');
+            }
+
+            return operand_1.value + operand_2.value;
+        },
+        subtraction: function(operand_1, operand_2) {
+            // if both unassigned, randomly assign one
+            if (operand_1.value === null && operand_2.value === null) {
+                if (H.randInt(0, 1) === 0) {
+                    operand_1.value = this.value.generalRand();
+                }
+                else {
+                    if (this.settings.allow_negatives === 'yes') {
+                        operand_2.value = this.value.generalRand();
+                    }
+                    else if (this.settings.allow_negatives === 'no') {
+                        operand_2.value = this.value.halfSizeRand();
+                    }
+                }
+            }
+
+            // then attempt to assign the other
+            if (operand_1.value === null) {
+                if (this.settings.allow_negatives === 'yes') {
+                    if (operand_2.value === 0) operand_1.value = this.value.generalRand('non-zero');
+                    else operand_1.value = this.value.generalRand();
+                }
+                else if (this.settings.allow_negatives === 'no') {
+                    if (operand_2.value === 0) operand_1.value = this.value.greaterOrEqualTo(operand_2, 'non-zero');
+                    else operand_1.value = this.value.greaterOrEqualTo(operand_2);
+                }
+            }
+            else if (operand_2.value === null) { 
+                if (this.settings.allow_negatives === 'yes') {
+                    if (operand_1.value === 0) operand_2.value = this.value.generalRand('non-zero');
+                    else operand_2.value = this.value.generalRand();
+                }
+                else if (this.settings.allow_negatives === 'no') {
+                    if (operand_1.value === 0) operand_2.value = this.value.lesserOrEqualTo(operand_1, 'non-zero');
+                    else operand_2.value = this.value.lesserOrEqualTo(operand_1);
+                }
+            }
+
+            const subtraction_result = operand_1.value - operand_2.value;
+
+            if (this.settings.allow_negatives === 'no' && subtraction_result < 0) return NaN;
+            else return subtraction_result;
+        }
+    },
+    assignAndPerform: function(operand_1, operand_2, operator) {        
+        if (operator === 'e') {
+            return OOH.APH.exponentiation(operand_1, operand_2);
+        }
+        else if (operator === 'm') {
+            return OOH.APH.multiplication(operand_1, operand_2);
+        }
+        else if (operator === 'd') {
+            return OOH.APH.division(operand_1, operand_2);
+        }
+        else if (operator === 'a') {
+            return OOH.APH.addition(operand_1, operand_2);
+        }
+        else if (operator === 's') {
+            return OOH.APH.subtraction(operand_1, operand_2);
+        }
+    },
+    evaluateExpression: function(final_AST) {
+        // we know the final AST looks like [[...], O, [...]] at every level
+        let first_operand = final_AST[0];
+        let second_operand = final_AST[2];
+
+        // evaluate the operands if they are expressions
+        if (Array.isArray(first_operand)) first_operand = OOH.evaluateExpression(first_operand);
+        if (Array.isArray(second_operand)) second_operand = OOH.evaluateExpression(second_operand);
+
+        // past this point, neither operand is an expression, both are either Numbers or null objects => {value: null}
+        return OOH.assignAndPerform(first_operand, second_operand, final_AST[1]);
+    },
+    templateToMath: function(expression_template) {
+        for (let i = 0; i < expression_template.length; i++) {
+            const current_entry = expression_template[i];
+
+            if (typeof(current_entry) === 'string') continue; // do nothing for strings => they are either operators or already parsed expressions/values
+            else if (typeof(current_entry) === 'object' && typeof(current_entry.value) === 'number') { // current entry is a {value: N} object
+                expression_template[i] = current_entry.value + ''; // overrite it with its value as a string
+            }
+            else if (Array.isArray(current_entry)) { // current entry is an expression
+                expression_template[i] = OOH.templateToMath(current_entry); // recurse
+            }
+            
+            // now the expression template (at the current level) must be an array of math strings seperated by operators ('a', 'm', etc) 
+            // first join it together as such
+            let accum_string = '';
+            expression_template.forEach(string_entry => {
+                if (OOH.conversion_table[string_entry] === undefined) { // operand
+                    if (string_entry.charAt(0) === '-') accum_string += ('(' + string_entry + ')'); // negative number
+                    else accum_string += string_entry; // positive number or an expression
+                }
+                else accum_string += OOH.conversion_table[string_entry]; // operator 
+            });
+
+            // then add parens around and return (as long as it isn't a single exponential)
+            if (expression_template.length === 3 && expression_template[1] === 'e') return accum_string;
+            else return '(' + accum_string + ')';
+        }
+    }
+}
+export default function genOrdOp(settings) {
+    const max_term_size = 10; // max size of any single number in the expression 
+    const max_expression_value = 100; // max size (+/- value) of the final expression (when simplified)
+
+    const getNewExpression = function() {
+        const raw_template_obj = OOH.buildExpressionTemplate(OOH.buildNewOperationsList(settings), OOH.getNumExponents(settings))
+        
+        return {
+            expression_template: OOH.insertParentheses(raw_template_obj.expression_template, settings),
+            operand_list: raw_template_obj.operand_list
+        }
+    }
+
+    OOH.APH.settings = settings;
+    OOH.APH.max_term_size = max_term_size;
+    
+    // next step is to create all the value assigning functions in APH (based on the settings)
+    let value_funcs = {};
+    value_funcs.generalRand = OOH.buildValidRandFunc(max_term_size, settings);
+    value_funcs.halfSizeRand = OOH.buildValidRandFunc(max_term_size / 2, settings);
+    value_funcs.zeroOneOrTwo = OOH.buildValidRandFunc(2, settings);
+
+    // these are the functions that need to be manually build below (to condense them as much as possible based on settings)
+    let exponent, multipleOf, divisorOf, greaterOrEqualTo, lesserOrEqualTo; 
+    
+    // assignment to exponent, greaterOrEqualTo, and lesserOrEqualTo => 2 different implementations
+    if (settings.allow_zero === 'yes') {
+        exponent = function() {
+            const switcher = H.randInt(1, 20);
+            if (switcher === 20) return 1; // 5% chance of 1
+            else if (switcher === 19) return 0; // 5% chance of 0
+            else return H.randFromList([2, 3]); // 90% chance of 2 or 3
+        }
+
+        greaterOrEqualTo = function(num, restriction) { // we know this is only called when negatives aren't allowed
+            if (num === 0 && restriction === 'non-zero') return H.randInt(1, 5);
+            else return num + H.randInt(0, 5)
+        }
+
+        lesserOrEqualTo = function(num, restriction) { // we know this is only called when negatives aren't allowed
+            if (restriction === 'non-zero' || H.randInt(1, 50) < 49) { 
+                if (num >= 1) return H.randFromList(H.integerArray(1, num));
+                else return NaN;
+            }
+            else return 0; // 4% chance of 0 (assuming it's allowed)
+        }
+    }
+    else if (settings.allow_zero === 'no') { // zero NOT allowed by settings
+        exponent = function() {
+            if (H.randInt(1, 20) === 20) return 1; // 5% chance of 1
+            else return H.randFromList([2, 3]); // 95% chance of 2 or 3
+        }
+
+        greaterOrEqualTo = function(num, restriction) { // we know this is only called when negatives aren't allowed
+            if (num === 0) return H.randInt(1, 5);
+            else return num + H.randInt(0, 5)
+        }
+
+        lesserOrEqualTo = function(num, restriction) { // we know this is only called when negatives aren't allowed
+            if (num >= 1) return H.randFromList(H.integerArray(1, num));
+            else return NaN;
+        }
+    }
+
+    // assignment to multipleOf => 4 different implementations
+    if (settings.allow_negatives === 'yes' && settings.allow_zero === 'yes') {
+        multipleOf = function(num) {
+            const switcher = H.randInt(1, 50);
+            if (switcher === 50) return 0; // 2% chance of 0
+            else if (switcher >= 47) return (-1)**randInt(0, 1) * num; // 6% chance of +/- num
+            else { // 92% chance +/- n*num where 2<= n <=max_term
+                return (-1)**H.randInt(0, 1) * H.randInt(2, max_term_size) * num;
+            }
+        }
+    }
+    else if (settings.allow_negatives === 'yes' && settings.allow_zero === 'no') {
+        multipleOf = function(num) {
+            if (H.randInt(1, 50) >= 48) return (-1)**randInt(0, 1) * num; // 6% chance of +/- num
+            else { // 94% chance +/- n*num where 2<= n <=max_term
+                return (-1)**H.randInt(0, 1) * H.randInt(2, max_term_size) * num;
+            }
+        }
+    }
+    else if (settings.allow_negatives === 'no' && settings.allow_zero === 'yes') {
+        multipleOf = function(num) {
+            const switcher = H.randInt(1, 50);
+            if (switcher === 50) return 0; // 2% chance of 0
+            else if (switcher >= 47) return num; // 6% chance of num
+            else { // 92% chance n*num where 2<= n <=max_term
+                return H.randInt(2, max_term_size) * num;
+            }
+        }
+    }
+    else if (settings.allow_negatives === 'no' && settings.allow_zero === 'no') {
+        multipleOf = function(num) {
+            if (H.randInt(1, 50) >= 48) num; // 6% chance of num
+            else { // 94% chance n*num where 2<= n <=max_term
+                return H.randInt(2, max_term_size) * num;
+            }
+        }
+    }
+
+    // assignment to divisorOf => 2 different implementations
+    if (settings.allow_negatives === 'yes') {
+        divisorOf = function(num) {
+            const factor_array = []; // *doesn't include 1, on purpose
+            for (let i = Math.abs(num); i > 1; i--) {
+                const quotient = num / i;
+                if (quotient | 0 === quotient) factor_array.push(i);
+            }
+
+            if (H.randInt(1, 20) === 20) return (-1)**H.randInt(0, 1) * 1; // 5% chance of +/- 1
+            else {
+                if(factor_array.length === 0) return NaN; // no non-1 factors
+                return (-1)**H.randInt(0, 1) * H.randFromList(factor_array) // if non-1 factors 95% +/- one of them
+            }
+        }
+
+
+    }
+    else if (settings.allow_negatives === 'no') {
+        divisorOf = function(num) {
+            const factor_array = []; // *doesn't include 1, on purpose
+            for (let i = Math.abs(num); i > 1; i--) {
+                const quotient = num / i;
+                if (quotient | 0 === quotient) factor_array.push(i);
+            }
+
+            if (H.randInt(1, 20) === 20) return 1; // 5% chance of +/- 1
+            else {
+                if(factor_array.length === 0) return NaN; // no non-1 factors
+                return H.randFromList(factor_array) // if non-1 factors 95% +/- one of them
+            }
+        }
+    }
+
+    // collect the funcs we just assigned into value_funcs, then put them on APH.value
+    value_funcs.exponent = exponent;
+    value_funcs.multipleOf = multipleOf;
+    value_funcs.divisorOf = divisorOf;
+    value_funcs.greaterOrEqualTo = greaterOrEqualTo;
+    value_funcs.lesserOrEqualTo = lesserOrEqualTo;
+    OOH.APH.value = value_funcs;
+
+    // function to check the size of the final expression based on settings
+    let validExpressionSize;
+    if (settings.allow_negatives === 'yes') {
+        validExpressionSize = function(value) {
+            return (
+                value <= max_expression_value &&
+                value >= (-1)*max_expression_value
+            );
+        }
+    }
+    else if (settings.allow_negatives === 'no') {
+        validExpressionSize = function(value) {
+            return (
+                value <= max_expression_value &&
+                value >= 0 
+            );
+        }
+    }
+    
+    // Next step is the solution search
+    const attempts_per_template = 500;
+    const max_templates = 10;
+    let sol_found = false;
+    let final_template; 
+    let final_value = Infinity;
+    for (let i = 0; i < max_templates && !sol_found; i++) {
+        const raw_expression_obj = getNewExpression();
+        const expression_template = raw_expression_obj.expression_template;
+        const operand_list = raw_expression_obj.operand_list;
+        const AST = OOH.convertToAST(expression_template);
+
+        for (let j = 0; j < attempts_per_template && !sol_found; j++) {
+            const expression_value = OOH.evaluateExpression(AST);
+
+            if (validExpressionSize(expression_value)) { // a completely valid solution was found
+                sol_found = true;
+                final_value = expression_value;
+                final_template = expression_template;
+                break;
+            }
+            else if (!Number.isNaN(expression_value) && expression_value < final_value) { // expression at least has a numerical value that is less than anything we've seen so far
+                final_value = expression_value;
+                final_template = JSON.parse(JSON.stringify(expression_template)); // deep copy of the template when it has all its values filled in
+            }
+
+            OOH.clearOperandValues(operand_list); // reset all of the coef's values to null
+        }
+    }
+
+    // Next step is the conversion to math
+    OOH.conversion_table["m"] = (settings.multiply_symbol === ' \\cdot ')? '\\cdot' : '\\times';
+    // const final_prompt = OOH.templateToMath(final_template).slice(6).slice(0, -7);
+    const final_prompt = OOH.templateToMath(final_template).slice(1).slice(0, -1);
+
+    return {
+        question: final_prompt,
+        answer: final_value
+    }
+}
+
+export const settings_fields = [
+    'allow_negatives',
+    'operation_counts',
+    'allow_parentheses',
+    'allow_nesting',    
+    'allow_zero',
+    'multiply_symbol'
+];
+
+export const prelocked_settings = [
+    'multiply_symbol',
+    'allow_nesting'
+];
+
+export function get_presets() {
+    return {
+        allow_negatives: 'no',
+        add_count: 1,
+        subtract_count: 1,
+        multiply_count: 1,
+        divide_count: 1,
+        exponent_count: 0,
+        allow_parentheses: 'yes',
+        allow_nesting: 'no',
+        allow_zero: 'no',
+        multiply_symbol: ' \\times ' 
+    };
+}
+
+export function get_rand_settings() {
+
+}
