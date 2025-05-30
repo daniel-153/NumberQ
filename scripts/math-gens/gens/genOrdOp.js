@@ -67,6 +67,7 @@ export function processFormObj(form_obj, error_locations) {
 // to simplify the backups, disallow all settings that are an 'allow' (except for parens)
 // 
 
+let backup_json = null;
 
 const OOH = { // genOrdOp helpers
     conversion_table: {
@@ -75,6 +76,13 @@ const OOH = { // genOrdOp helpers
         "m": null,
         "d": '\\div',
         "e": '^'
+    },
+    js_conversion_table: {
+        "a": (x, y) => x + y,
+        "s": (x, y) => x - y,
+        "m": (x, y) => x * y,
+        "d": (x, y) => x / y,
+        "e": (x, y) => x**y
     },
     getNumExponents: function(settings) {
         for (const [key, value] of Object.entries(settings)) { // add all the operations **except for exponents**
@@ -92,6 +100,16 @@ const OOH = { // genOrdOp helpers
         }
 
         return reference_copy;
+    },
+    findExpressionValue: function(AST) {
+        let operand_1 = AST[0];
+        const operator = AST[1];
+        let operand_2 = AST[2];
+
+        if (Array.isArray(operand_1)) operand_1 = OOH.findExpressionValue(operand_1);
+        if (Array.isArray(operand_2)) operand_2 = OOH.findExpressionValue(operand_2);
+
+        return {value: OOH.js_conversion_table[operator](operand_1.value, operand_2.value)};
     },
     clearOperandValues: function(operand_list) {
         operand_list.forEach(operand_obj => {
@@ -158,8 +176,6 @@ const OOH = { // genOrdOp helpers
             }
         }
 
-        // console.log('template before parens: ',expression_template)
-
         return {expression_template, operand_list};
     },
     getNumOperators: function(expression_template) { // number of base-level operators in a template (like 3 in [_,a,_,a,_,m,_] a, a, and m)
@@ -217,56 +233,31 @@ const OOH = { // genOrdOp helpers
         return expression_map;
     },
     insertParentheses: function(expression_template, settings) {
-        // console.log('template before parens: ', JSON.parse(JSON.stringify(expression_template)));
         // exit early if parentheses aren't applicable
         if (OOH.getMaxParens(expression_template) === 0 || settings.allow_parentheses === 'no') return expression_template;
-        // console.log('did not exit early')
 
         // randomly (but with a strong minimizing bias) determine how many parens to use
         let distribution_seed = 2 * (1 - 80 / 100); // 80% chance we use just 1 paren, 20% chance of 2+ (if 2+ is possible after 1)
         do {
             let expression_map = OOH.getExpressionMap(expression_template, settings);
-            // console.log('expression map: ', JSON.parse(JSON.stringify(expression_map)))
             const initial_index = H.randFromList(OOH.getValidParenIndices(expression_map));
-            // console.log('valid paren indices: ', OOH.getValidParenIndices(expression_map))
-            // console.log('first chosen index: ', initial_index);
 
             let distribution_seed_2 = 2 * (1 - 87.5 / 100); // 85% chance the paren includes just one operator, 15% of 2+ (if possible)
             let lower_paren_bound = initial_index - 1;
             let upper_paren_bound = initial_index + 1;
-            // console.log('expression map len: ',expression_map.length)
-            // console.log('lower_bound_index: ', lower_paren_bound)
-            // console.log('upper bound index: ', upper_paren_bound)
-            // console.log('condition 1: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3))
-            // console.log('condition 2: ', !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
-            console.log('could have expanded: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3) &&
-                !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
             while ( // we neither have a+(b+c) NOR (b+c)+a 
                 !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3) &&
                 !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1) && 
                 Math.random() < (distribution_seed_2 *= 0.5)
             ) {
-                console.log('expansion loop entered')
-                // Goal: make sure no O-I (invalid(s) are enclosed)
-                console.log('expression map: ', expression_map)
-                // [n, O-I, n, O-V, n, O-I, n]
-                // [n, O-V, n, O-V, n, O-I, n]
-                // [n, O-I, n, O-V, n, O-V, n]
-                // [n, O-V, n, O-V, n, O-V, n]
                 let expansion_direction;
                 let can_expand_backward = false;
                 let can_expand_foward = false;
-
-                console.log('upper bound: ', upper_paren_bound)
-                console.log('next operator: ', expression_map[upper_paren_bound + 1])
 
                 if (
                     upper_paren_bound !== expression_map.length - 1 && // this isn't the last possible location for a right paren
                     expression_map[upper_paren_bound + 1] === 'O-V' // the next operator is valid to enclose with parens
                 ) can_expand_foward = true;
-
-                console.log('lower bound: ', lower_paren_bound)
-                console.log('last operator: ', expression_map[lower_paren_bound - 1])
 
                 if (
                     lower_paren_bound !== 0 && // the isn't the first possible location for a left paren
@@ -278,23 +269,11 @@ const OOH = { // genOrdOp helpers
                 }
                 else if (can_expand_backward) expansion_direction = '-'; // can only expand backward
                 else if (can_expand_foward) expansion_direction = '+'; // can only expand foward
-                else {
-                    console.log('broke out')
-                    break; // can't expand in any direction (break out of the loop - no expansion happens)
-                }
+                else break; // can't expand in any direction (break out of the loop - no expansion happens)
 
                 if (expansion_direction === '+') upper_paren_bound += 2;
                 else if (expansion_direction === '-') lower_paren_bound -= 2;
-
-                // console.log('expression map len: ',expression_map.length)
-                // console.log('lower_bound_index: ', lower_paren_bound)
-                // console.log('upper bound index: ', upper_paren_bound)
-                // console.log('condition 1: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3))
-                // console.log('condition 2: ', !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
             }
-
-            // console.log('lower paren bound: ', lower_paren_bound)
-            // console.log('upper paren bound: ', upper_paren_bound)
 
             expression_template = OOH.applyParens(lower_paren_bound, upper_paren_bound, expression_template);
         } while (
@@ -302,7 +281,6 @@ const OOH = { // genOrdOp helpers
             && Math.random() < (distribution_seed *= 0.5)
         );
 
-        console.log('result of paren insertion: ', JSON.parse(JSON.stringify(expression_template)))
         return expression_template;
     },
     groupOperations: function(expression_template, precendence) {
@@ -562,7 +540,7 @@ const OOH = { // genOrdOp helpers
         else return '(' + accum_string + ')';
     }
 }
-export default function genOrdOp(settings) {
+export default async function genOrdOp(settings) {
     const max_term_size = 10; // max size of any single number in the expression 
     const max_expression_value = 100; // max size (+/- value) of the final expression (when simplified)
 
@@ -775,15 +753,18 @@ export default function genOrdOp(settings) {
             OOH.clearOperandValues(operand_list); // reset all of the coef's values to null
         }
     }
-    console.log('total attempts: ',total_attempts);
-    console.log('at least one integer was found: ',at_least_one_int);
+    // **Extremely** unlikely but theoretically possible if s or d is involved: not a single *integer* was found in the 25,000 trial search
+    if (final_template === undefined) { 
+        if (backup_json === null) backup_json = (await import(`../backup-jsons/bkpOrdOp.js`)).default;
+        final_template = JSON.parse(JSON.stringify(backup_json[`${settings.add_count}${settings.subtract_count}${settings.multiply_count}${settings.divide_count}${settings.exponent_count}`]));
+        final_value = OOH.findExpressionValue(OOH.convertToAST(OOH.getReferenceCopy(final_template))).value;
+    }
 
     // Next step is the conversion to math
     OOH.conversion_table["m"] = (settings.multiply_symbol === ' \\cdot ')? '\\cdot' : '\\times';
     // const final_prompt = OOH.templateToMath(final_template).slice(6).slice(0, -7);
 
     // break off the parens around the base expression if they exist (only case when they wouldn't is a single exponential)
-    console.log('template before math: ', JSON.parse(JSON.stringify(final_template)));
     let final_prompt = OOH.templateToMath(final_template);
     if (final_prompt.charAt(0) === '(') final_prompt = final_prompt.slice(1).slice(0, -1);
 
