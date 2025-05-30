@@ -7,14 +7,14 @@ export function processFormObj(form_obj, error_locations) {
 
     // using this to iterate over the '_count' settings without repeated code
     let all_zero = true;
-    let num_operations = 0;
-    let num_exponents = 0;
+    let num_operators = 0; // excludes exponent operators
+    let num_exponents = 0; 
     for (const [key, value] of Object.entries(form_obj)) {
         if (key.includes('_count')) {
             form_obj[key] = SH.val_restricted_integer(value, error_locations, 0, 5, key); // ensure each operation count is valid (0 to 5)
-            num_operations += form_obj[key];
             if (value > 0) all_zero = false; 
             if (key.includes('exponent')) num_exponents += form_obj[key];
+            else num_operators += form_obj[key];
         }
     }
 
@@ -22,12 +22,12 @@ export function processFormObj(form_obj, error_locations) {
     if (all_zero) form_obj.add_count = 1; // fallback is one addition => a+b
 
     // ensure there isn't a disproportionate number of exponents (like 3 exponentiations and 0 of any other operation (forcing a power tower))
-    if (!(num_exponents <= (num_operations - num_exponents) + 1)) { // if exponent_operations isn't less than or equal to the number of 'flat' operands
+    if (num_exponents > num_operators + 1 && !(num_exponents === 1 && num_operators === 0)) {
         // this is how many more 'flat' operands we need
-        const additional_operands = num_exponents - ((num_operations - num_exponents) + 1);
+        const additional_operators = num_exponents - (num_operators + 1);
 
         // make these additional operations 'additions' (the simplest way to add more on)
-        form_obj.add_count += additional_operands;
+        form_obj.add_count += additional_operators;
     }
 }
 
@@ -81,6 +81,18 @@ const OOH = { // genOrdOp helpers
             if (key === 'exponent_count') return value;
         }
     },
+    getReferenceCopy: function(expression_template) { // create a unique copy of the expression_template, but with the same sub-object references
+        const reference_copy = [];
+
+        for (let i = 0; i < expression_template.length; i++) {
+            if (Array.isArray(expression_template[i])) { // recurse for sub-expressions
+                reference_copy[i] = OOH.getReferenceCopy(expression_template[i]);
+            }
+            else reference_copy[i] = expression_template[i];
+        }
+
+        return reference_copy;
+    },
     clearOperandValues: function(operand_list) {
         operand_list.forEach(operand_obj => {
             operand_obj.value = null;
@@ -99,6 +111,18 @@ const OOH = { // genOrdOp helpers
         return opreation_list;
     }, // make operation_list indicate which operations to apply, how many times, and in what order (except for exponents)
     buildExpressionTemplate: function(operation_list, num_exponents) {
+        // list to store references to all the operands (so we can access and clear them later without searching the expression)
+        const operand_list = []; 
+        
+        // first, handle the edge case of the single exponential a^b (and nothing else)
+        if (operation_list.length === 0 && num_exponents === 1) {
+            const operand_1 = {value: null};
+            const operand_2 = {value: null};
+
+            operand_list.push(operand_1, operand_2);
+            return {expression_template: [operand_1, 'e', operand_2], operand_list}; // return expression template here (nothing else is to be added)
+        }
+        
         // now we fill [a,a,m,d,...] with numbers => [_,a,_,a,_,m,_,d,_,...]
         const number_of_operands = operation_list.length + 1; // number of underscores (above) (exlcudes exponent operations)
 
@@ -112,7 +136,7 @@ const OOH = { // genOrdOp helpers
         }
 
         const expression_template = []; // operations list but with numbers (or exponent operations) between the operations ([_,a,_,a,_,m,_,d,_,...])
-        const operand_list = []; // list to store references to all the operands (so we can access and clear them later without searching the expression)
+       
         for (let i  = 1; i <= number_of_operands; i++) {
             if (exponent_locations.includes(i)) { // current operand is an exponent expression
                 const operand_1 = {value: null};
@@ -207,7 +231,7 @@ const OOH = { // genOrdOp helpers
             // console.log('valid paren indices: ', OOH.getValidParenIndices(expression_map))
             // console.log('first chosen index: ', initial_index);
 
-            let distribution_seed_2 = 2 * (1 - 65 / 100); // 65% chance the paren includes just one operator, 35% of 2+ (if possible)
+            let distribution_seed_2 = 2 * (1 - 87.5 / 100); // 85% chance the paren includes just one operator, 15% of 2+ (if possible)
             let lower_paren_bound = initial_index - 1;
             let upper_paren_bound = initial_index + 1;
             // console.log('expression map len: ',expression_map.length)
@@ -215,13 +239,16 @@ const OOH = { // genOrdOp helpers
             // console.log('upper bound index: ', upper_paren_bound)
             // console.log('condition 1: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3))
             // console.log('condition 2: ', !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
+            console.log('could have expanded: ', !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3) &&
+                !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1))
             while ( // we neither have a+(b+c) NOR (b+c)+a 
                 !(lower_paren_bound === 0 && upper_paren_bound === expression_map.length - 3) &&
                 !(lower_paren_bound === 2 && upper_paren_bound === expression_map.length - 1) && 
                 Math.random() < (distribution_seed_2 *= 0.5)
             ) {
+                console.log('expansion loop entered')
                 // Goal: make sure no O-I (invalid(s) are enclosed)
-
+                console.log('expression map: ', expression_map)
                 // [n, O-I, n, O-V, n, O-I, n]
                 // [n, O-V, n, O-V, n, O-I, n]
                 // [n, O-I, n, O-V, n, O-V, n]
@@ -230,14 +257,20 @@ const OOH = { // genOrdOp helpers
                 let can_expand_backward = false;
                 let can_expand_foward = false;
 
+                console.log('upper bound: ', upper_paren_bound)
+                console.log('next operator: ', expression_map[upper_paren_bound + 1])
+
                 if (
                     upper_paren_bound !== expression_map.length - 1 && // this isn't the last possible location for a right paren
-                    expression_map[upper_paren_bound + 2] === 'O-V' // the next operator is valid to enclose with parens
+                    expression_map[upper_paren_bound + 1] === 'O-V' // the next operator is valid to enclose with parens
                 ) can_expand_foward = true;
+
+                console.log('lower bound: ', lower_paren_bound)
+                console.log('last operator: ', expression_map[lower_paren_bound - 1])
 
                 if (
                     lower_paren_bound !== 0 && // the isn't the first possible location for a left paren
-                    expression_map[lower_paren_bound - 2] === 'O-V' // the previous operator is valid to enclose with parens
+                    expression_map[lower_paren_bound - 1] === 'O-V' // the previous operator is valid to enclose with parens
                 ) can_expand_backward = true;
 
                 if (can_expand_backward && can_expand_foward) {
@@ -245,7 +278,10 @@ const OOH = { // genOrdOp helpers
                 }
                 else if (can_expand_backward) expansion_direction = '-'; // can only expand backward
                 else if (can_expand_foward) expansion_direction = '+'; // can only expand foward
-                else break; // can't expand in any direction (break out of the loop - no expansion happens)
+                else {
+                    console.log('broke out')
+                    break; // can't expand in any direction (break out of the loop - no expansion happens)
+                }
 
                 if (expansion_direction === '+') upper_paren_bound += 2;
                 else if (expansion_direction === '-') lower_paren_bound -= 2;
@@ -266,6 +302,7 @@ const OOH = { // genOrdOp helpers
             && Math.random() < (distribution_seed *= 0.5)
         );
 
+        console.log('result of paren insertion: ', JSON.parse(JSON.stringify(expression_template)))
         return expression_template;
     },
     groupOperations: function(expression_template, precendence) {
@@ -357,11 +394,14 @@ const OOH = { // genOrdOp helpers
         max_term_size: null,
         value: null, // will later become an object of methods to get random values
         exponentiation: function(operand_1, operand_2) { // by design, both operands will always be null ("unassigned") here
-            operand_2.value = this.value.exponent();
-            if (operand_2.value <= 2) {
-                operand_1.value = this.value.halfSizeRand();
+            operand_2.value = this.value.exponent(); // exponent() => 0, 2, or 3 (exlcludes 0 if not allowed)
+            if (operand_2.value <= 2 && operand_2 !== 0) {
+                operand_1.value = this.value.halfSizeRand('non-negative');
             }
-            else operand_1.value = this.value.zeroOneOrTwo();
+            else if (operand_2 === 0) {
+                operand_1.value = Math.abs(this.value.halfSizeRand('non-zero'));
+            }
+            else operand_1.value = this.value.zeroOneOrTwo('non-negative');
             
             return operand_1.value**operand_2.value;
         },
@@ -374,6 +414,10 @@ const OOH = { // genOrdOp helpers
                 if (operand_1.value === null) operand_1.value = this.value.halfSizeRand();
                 if (operand_2.value === null) operand_2.value = this.value.halfSizeRand('non-zero');
             }
+
+            // reduce the likelyhood of 1's
+            (operand_1.value === 1 && H.randInt(1, 10) < 9)? (operand_1.value++) : (null); // 80% chance 1 gets flipped to 2
+            (operand_2.value === 1 && H.randInt(1, 10) < 9)? (operand_2.value++) : (null);
 
             return operand_1.value * operand_2.value;
         },
@@ -436,8 +480,8 @@ const OOH = { // genOrdOp helpers
                     else operand_1.value = this.value.generalRand();
                 }
                 else if (this.settings.allow_negatives === 'no') {
-                    if (operand_2.value === 0) operand_1.value = this.value.greaterOrEqualTo(operand_2, 'non-zero');
-                    else operand_1.value = this.value.greaterOrEqualTo(operand_2);
+                    if (operand_2.value === 0) operand_1.value = this.value.greaterOrEqualTo(operand_2.value, 'non-zero');
+                    else operand_1.value = this.value.greaterOrEqualTo(operand_2.value);
                 }
             }
             else if (operand_2.value === null) { 
@@ -446,8 +490,8 @@ const OOH = { // genOrdOp helpers
                     else operand_2.value = this.value.generalRand();
                 }
                 else if (this.settings.allow_negatives === 'no') {
-                    if (operand_1.value === 0) operand_2.value = this.value.lesserOrEqualTo(operand_1, 'non-zero');
-                    else operand_2.value = this.value.lesserOrEqualTo(operand_1);
+                    if (operand_1.value === 0) operand_2.value = this.value.lesserOrEqualTo(operand_1.value, 'non-zero');
+                    else operand_2.value = this.value.lesserOrEqualTo(operand_1.value);
                 }
             }
 
@@ -458,21 +502,24 @@ const OOH = { // genOrdOp helpers
         }
     },
     assignAndPerform: function(operand_1, operand_2, operator) {        
+        let result;
         if (operator === 'e') {
-            return OOH.APH.exponentiation(operand_1, operand_2);
+            result = OOH.APH.exponentiation(operand_1, operand_2);
         }
         else if (operator === 'm') {
-            return OOH.APH.multiplication(operand_1, operand_2);
+            result = OOH.APH.multiplication(operand_1, operand_2);
         }
         else if (operator === 'd') {
-            return OOH.APH.division(operand_1, operand_2);
+            result = OOH.APH.division(operand_1, operand_2);
         }
         else if (operator === 'a') {
-            return OOH.APH.addition(operand_1, operand_2);
+            result = OOH.APH.addition(operand_1, operand_2);
         }
         else if (operator === 's') {
-            return OOH.APH.subtraction(operand_1, operand_2);
+            result = OOH.APH.subtraction(operand_1, operand_2);
         }
+
+        return {value: result};
     },
     evaluateExpression: function(final_AST) {
         // we know the final AST looks like [[...], O, [...]] at every level
@@ -497,22 +544,22 @@ const OOH = { // genOrdOp helpers
             else if (Array.isArray(current_entry)) { // current entry is an expression
                 expression_template[i] = OOH.templateToMath(current_entry); // recurse
             }
-            
-            // now the expression template (at the current level) must be an array of math strings seperated by operators ('a', 'm', etc) 
-            // first join it together as such
-            let accum_string = '';
-            expression_template.forEach(string_entry => {
-                if (OOH.conversion_table[string_entry] === undefined) { // operand
-                    if (string_entry.charAt(0) === '-') accum_string += ('(' + string_entry + ')'); // negative number
-                    else accum_string += string_entry; // positive number or an expression
-                }
-                else accum_string += OOH.conversion_table[string_entry]; // operator 
-            });
-
-            // then add parens around and return (as long as it isn't a single exponential)
-            if (expression_template.length === 3 && expression_template[1] === 'e') return accum_string;
-            else return '(' + accum_string + ')';
         }
+
+        // now the expression template (at the current level) must be an array of math strings seperated by operators ('a', 'm', etc) 
+        // first join it together as such
+        let accum_string = '';
+        expression_template.forEach(string_entry => {
+            if (OOH.conversion_table[string_entry] === undefined) { // operand
+                if (string_entry.charAt(0) === '-') accum_string += ('(' + string_entry + ')'); // negative number
+                else accum_string += string_entry; // positive number or an expression
+            }
+            else accum_string += OOH.conversion_table[string_entry]; // operator 
+        });
+
+        // then add parens around and return (as long as it isn't a single exponential)
+        if (expression_template.length === 3 && expression_template[1] === 'e') return accum_string;
+        else return '(' + accum_string + ')';
     }
 }
 export default function genOrdOp(settings) {
@@ -535,10 +582,9 @@ export default function genOrdOp(settings) {
     let value_funcs = {};
     value_funcs.generalRand = OOH.buildValidRandFunc(max_term_size, settings);
     value_funcs.halfSizeRand = OOH.buildValidRandFunc(max_term_size / 2, settings);
-    value_funcs.zeroOneOrTwo = OOH.buildValidRandFunc(2, settings);
 
     // these are the functions that need to be manually build below (to condense them as much as possible based on settings)
-    let exponent, multipleOf, divisorOf, greaterOrEqualTo, lesserOrEqualTo; 
+    let exponent, multipleOf, divisorOf, greaterOrEqualTo, lesserOrEqualTo, zeroOneOrTwo; 
     
     // assignment to exponent, greaterOrEqualTo, and lesserOrEqualTo => 2 different implementations
     if (settings.allow_zero === 'yes') {
@@ -561,6 +607,13 @@ export default function genOrdOp(settings) {
             }
             else return 0; // 4% chance of 0 (assuming it's allowed)
         }
+
+        zeroOneOrTwo = function() {
+            const switcher = H.randInt(1, 20);
+            if (switcher === 20) return 0; // 5%
+            else if (switcher === 19) return 1; // 5%
+            else return 2; // 90%
+        }
     }
     else if (settings.allow_zero === 'no') { // zero NOT allowed by settings
         exponent = function() {
@@ -577,6 +630,11 @@ export default function genOrdOp(settings) {
             if (num >= 1) return H.randFromList(H.integerArray(1, num));
             else return NaN;
         }
+
+        zeroOneOrTwo = function() {
+            if (H.randInt(1, 20) === 20) return 1; // 5% one
+            else return 2; // 95% 2 
+        }
     }
 
     // assignment to multipleOf => 4 different implementations
@@ -584,17 +642,19 @@ export default function genOrdOp(settings) {
         multipleOf = function(num) {
             const switcher = H.randInt(1, 50);
             if (switcher === 50) return 0; // 2% chance of 0
-            else if (switcher >= 47) return (-1)**randInt(0, 1) * num; // 6% chance of +/- num
+            else if (switcher >= 47) return (-1)**H.randInt(0, 1) * num; // 6% chance of +/- num
             else { // 92% chance +/- n*num where 2<= n <=max_term
-                return (-1)**H.randInt(0, 1) * H.randInt(2, max_term_size) * num;
+                const result = (-1)**H.randInt(0, 1) * H.randInt(2, max_term_size) * num;
+                return (result <= 100 && result >= -100)? result : NaN; 
             }
         }
     }
     else if (settings.allow_negatives === 'yes' && settings.allow_zero === 'no') {
         multipleOf = function(num) {
-            if (H.randInt(1, 50) >= 48) return (-1)**randInt(0, 1) * num; // 6% chance of +/- num
+            if (H.randInt(1, 50) >= 48) return (-1)**H.randInt(0, 1) * num; // 6% chance of +/- num
             else { // 94% chance +/- n*num where 2<= n <=max_term
-                return (-1)**H.randInt(0, 1) * H.randInt(2, max_term_size) * num;
+                const result = (-1)**H.randInt(0, 1) * H.randInt(2, max_term_size) * num;
+                return (result <= 100 && result >= -100)? result : NaN;  
             }
         }
     }
@@ -604,7 +664,8 @@ export default function genOrdOp(settings) {
             if (switcher === 50) return 0; // 2% chance of 0
             else if (switcher >= 47) return num; // 6% chance of num
             else { // 92% chance n*num where 2<= n <=max_term
-                return H.randInt(2, max_term_size) * num;
+                const result = H.randInt(2, max_term_size) * num;
+                return (result <= 100 && result >= -100)? result : NaN;  
             }
         }
     }
@@ -612,7 +673,8 @@ export default function genOrdOp(settings) {
         multipleOf = function(num) {
             if (H.randInt(1, 50) >= 48) num; // 6% chance of num
             else { // 94% chance n*num where 2<= n <=max_term
-                return H.randInt(2, max_term_size) * num;
+                const result = H.randInt(2, max_term_size) * num;
+                return (result <= 100 && result >= -100)? result : NaN;  
             }
         }
     }
@@ -657,6 +719,7 @@ export default function genOrdOp(settings) {
     value_funcs.divisorOf = divisorOf;
     value_funcs.greaterOrEqualTo = greaterOrEqualTo;
     value_funcs.lesserOrEqualTo = lesserOrEqualTo;
+    value_funcs.zeroOneOrTwo = zeroOneOrTwo;
     OOH.APH.value = value_funcs;
 
     // function to check the size of the final expression based on settings
@@ -679,39 +742,50 @@ export default function genOrdOp(settings) {
     }
     
     // Next step is the solution search
-    const attempts_per_template = 500;
-    const max_templates = 10;
+    const attempts_per_template = 100;
+    const max_templates = 250;
     let sol_found = false;
     let final_template; 
     let final_value = Infinity;
+    let total_attempts = 0;
+    let at_least_one_int = false;
     for (let i = 0; i < max_templates && !sol_found; i++) {
         const raw_expression_obj = getNewExpression();
         const expression_template = raw_expression_obj.expression_template;
         const operand_list = raw_expression_obj.operand_list;
-        const AST = OOH.convertToAST(expression_template);
+        const AST = OOH.convertToAST(OOH.getReferenceCopy(expression_template));
 
         for (let j = 0; j < attempts_per_template && !sol_found; j++) {
-            const expression_value = OOH.evaluateExpression(AST);
+            total_attempts++;
+            const expression_value = OOH.evaluateExpression(AST).value;
 
             if (validExpressionSize(expression_value)) { // a completely valid solution was found
                 sol_found = true;
                 final_value = expression_value;
                 final_template = expression_template;
+                at_least_one_int = true;
                 break;
             }
             else if (!Number.isNaN(expression_value) && expression_value < final_value) { // expression at least has a numerical value that is less than anything we've seen so far
                 final_value = expression_value;
                 final_template = JSON.parse(JSON.stringify(expression_template)); // deep copy of the template when it has all its values filled in
+                at_least_one_int = true;
             }
 
             OOH.clearOperandValues(operand_list); // reset all of the coef's values to null
         }
     }
+    console.log('total attempts: ',total_attempts);
+    console.log('at least one integer was found: ',at_least_one_int);
 
     // Next step is the conversion to math
     OOH.conversion_table["m"] = (settings.multiply_symbol === ' \\cdot ')? '\\cdot' : '\\times';
     // const final_prompt = OOH.templateToMath(final_template).slice(6).slice(0, -7);
-    const final_prompt = OOH.templateToMath(final_template).slice(1).slice(0, -1);
+
+    // break off the parens around the base expression if they exist (only case when they wouldn't is a single exponential)
+    console.log('template before math: ', JSON.parse(JSON.stringify(final_template)));
+    let final_prompt = OOH.templateToMath(final_template);
+    if (final_prompt.charAt(0) === '(') final_prompt = final_prompt.slice(1).slice(0, -1);
 
     return {
         question: final_prompt,
@@ -740,13 +814,28 @@ export function get_presets() {
         subtract_count: 1,
         multiply_count: 1,
         divide_count: 1,
-        exponent_count: 0,
+        exponent_count: 1,
         allow_parentheses: 'yes',
         allow_nesting: 'no',
         allow_zero: 'no',
         multiply_symbol: ' \\times ' 
     };
 }
+
+// export function get_presets() {
+//     return {
+//         allow_negatives: 'yes',
+//         add_count: 3,
+//         subtract_count: 3,
+//         multiply_count: 3,
+//         divide_count: 3,
+//         exponent_count: 3,
+//         allow_parentheses: 'yes',
+//         allow_nesting: 'no',
+//         allow_zero: 'yes',
+//         multiply_symbol: ' \\times ' 
+//     };
+// }
 
 export function get_rand_settings() {
 
