@@ -1,17 +1,14 @@
 import * as H from '../helpers/gen-helpers.js';
-import * as PH from '../helpers/polynom-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 
 export function processFormObj(form_obj, error_locations) {
-    // form_obj.number_size = SH.value_restricted_integer(form_obj.number_size, error_locations, 1, 20, 'number_size');
-
     // using this to iterate over the '_count' settings without repeated code
     let all_zero = true;
     let num_operators = 0; // excludes exponent operators
     let num_exponents = 0; 
     for (const [key, value] of Object.entries(form_obj)) {
         if (key.includes('_count')) {
-            form_obj[key] = SH.val_restricted_integer(value, error_locations, 0, 5, key); // ensure each operation count is valid (0 to 5)
+            form_obj[key] = SH.val_restricted_integer(value, error_locations, 0, 3, key); // ensure each operation count is valid (0 to 3)
             if (value > 0) all_zero = false; 
             if (key.includes('exponent')) num_exponents += form_obj[key];
             else num_operators += form_obj[key];
@@ -30,42 +27,6 @@ export function processFormObj(form_obj, error_locations) {
         form_obj.add_count += additional_operators;
     }
 }
-
-// Note: special rule => you can only exponentiate numbers (not expressions) && you can only exponentiate TO numbers (not expressions)
-// (and this is to avoid huge numbers, since both (a+b*c)^d and a^(b+c*d) would likely be massive - and aren't typical for early math)
-
-// Note: after you "flatten" the expression tree, the number of required parenthesis is just the number of nodes/junctions (minus 1)
-// so a tree that can be completely flattened requires no parentheses
-
-// Note: in the "no parenthesis" case, when randomly picking the operations, you could just avoid/skip any that result in a 
-// junction that isn't "flatten"able
-
-// ----------------------------------------------------------
-// New Ideas:
-
-// following order of operations, there is ONLY ONE way to convert the expression template into an abstract call stack like add(multiply(a,b),c)...
-// FURTHERMORE (again following order of operations + left to right rule), there is ONLY ONE way to evaluate that call stack (pretty much by definition)
-// the tricky part is making sure all of the conditions are met:
-// the broadest possible domain of rands is [-max_coef, ..., max_coef] (or [0, ..., max_coef] in the no-negatives case) 
-// divide(a,b) is the only function with domain restrictions => (b !== 0) 
-// subtract(a,b) has a range restriction => subtract(a,b)>0
-// divide(a,b) has a range restriction => divide(a,b) = kn
-// wait a second...now that I look at these, they ALL seem like domain restrictions
-// subtract(a,b) has a domain restriction => a >= b
-// divide(a,b) has two domain restrictions => (b !== 0) && a === k*b
-// now if one of these functions returns a value that isn't valid for the function after it (like the subtract in divide(1,subtract(2,2)))
-// THAT seems like a range restriction, but only because it would be too complicated to bake that into a domain restriction
-// and discovering an output that doesn't work "further down the line" tell us to go back and change the input values
-// BUT WHAT IS THE ALGORITHM/ORDER for doing that?
-
-// ------------------------------------------------------
-// Newer Idea:
-// just use the random search + backup template algo
-// Heres how: have certain restrictions on the selection for each of the initial coefs;
-// keep track of each number that is produced when eval the expression with PEMDAS (ensuring no negatives or fractions);
-// maybe to make things faster + higher odds of success, you start over immidiately when a number is a negative or fraction;
-// to simplify the backups, disallow all settings that are an 'allow' (except for parens)
-// 
 
 let backup_json = null;
 
@@ -726,7 +687,6 @@ export default async function genOrdOp(settings) {
     let final_template; 
     let final_value = Infinity;
     let total_attempts = 0;
-    let at_least_one_int = false;
     for (let i = 0; i < max_templates && !sol_found; i++) {
         const raw_expression_obj = getNewExpression();
         const expression_template = raw_expression_obj.expression_template;
@@ -741,13 +701,11 @@ export default async function genOrdOp(settings) {
                 sol_found = true;
                 final_value = expression_value;
                 final_template = expression_template;
-                at_least_one_int = true;
                 break;
             }
             else if (!Number.isNaN(expression_value) && expression_value < final_value) { // expression at least has a numerical value that is less than anything we've seen so far
                 final_value = expression_value;
                 final_template = JSON.parse(JSON.stringify(expression_template)); // deep copy of the template when it has all its values filled in
-                at_least_one_int = true;
             }
 
             OOH.clearOperandValues(operand_list); // reset all of the coef's values to null
@@ -762,7 +720,6 @@ export default async function genOrdOp(settings) {
 
     // Next step is the conversion to math
     OOH.conversion_table["m"] = (settings.multiply_symbol === ' \\cdot ')? '\\cdot' : '\\times';
-    // const final_prompt = OOH.templateToMath(final_template).slice(6).slice(0, -7);
 
     // break off the parens around the base expression if they exist (only case when they wouldn't is a single exponential)
     let final_prompt = OOH.templateToMath(final_template);
@@ -803,21 +760,23 @@ export function get_presets() {
     };
 }
 
-// export function get_presets() {
-//     return {
-//         allow_negatives: 'yes',
-//         add_count: 3,
-//         subtract_count: 3,
-//         multiply_count: 3,
-//         divide_count: 3,
-//         exponent_count: 3,
-//         allow_parentheses: 'yes',
-//         allow_nesting: 'no',
-//         allow_zero: 'yes',
-//         multiply_symbol: ' \\times ' 
-//     };
-// }
-
 export function get_rand_settings() {
-
+    const counts = [1,1,1,1,1]; // all counts are 1 to start
+    const two_count_index = H.randInt(0, 4); // pick a count to bump to 2
+    const zero_count_index = H.randIntExcept(0, 4, two_count_index); // pick a different count to bump to 0
+    counts[two_count_index]++;
+    counts[zero_count_index]--;
+    
+    return {
+        add_count: counts[0],
+        subtract_count: counts[1],
+        multiply_count: counts[2],
+        divide_count: counts[3],
+        exponent_count: counts[4],
+        allow_negatives: '__random__',
+        allow_parentheses: '__random__',
+        allow_nesting: '__random__',
+        allow_zero: '__random__',
+        multiply_symbol: '__random__' 
+    };
 }
