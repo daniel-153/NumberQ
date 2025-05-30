@@ -5,8 +5,8 @@ export function processFormObj(form_obj, error_locations) {
     if (form_obj.trig_function_types === undefined) form_obj.trig_function_types = ['sine','cosine'];
 }
 
-export default function genTrigEx(settings) {
-    const trigFunctions = {
+const TEH = { // genTrigEx helpers
+    trigFunctions: { // prompts and answers for sine, cosine, and tangent
         sine: {
             prompts: [
                 '\\sin\\left(0\\right)',
@@ -421,8 +421,9 @@ export default function genTrigEx(settings) {
                 '0',
             ]
         }
-    }; // prompts and answers for sine, cosine, and tangent
-    
+    }
+};
+export default function genTrigEx(settings) {
     const currentTrigFunction = H.randFromList(settings.trig_function_types); // pick a trig function -> returns string
 
     // determine which angular units are used 
@@ -443,8 +444,8 @@ export default function genTrigEx(settings) {
     else if (angleType === 'degrees' && argumentSign === 'positive') promptIndex = H.randInt(17,33);
     else if (angleType === 'degrees' && argumentSign === 'negative') promptIndex = H.randInt(50,65);
 
-    const selectedPrompt = trigFunctions[currentTrigFunction].prompts[promptIndex];
-    const selectedAnswer = trigFunctions[currentTrigFunction].answers[promptIndex]; 
+    const selectedPrompt = TEH.trigFunctions[currentTrigFunction].prompts[promptIndex];
+    const selectedAnswer = TEH.trigFunctions[currentTrigFunction].answers[promptIndex]; 
 
     return {
         question: selectedPrompt,
