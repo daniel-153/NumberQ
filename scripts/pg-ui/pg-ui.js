@@ -39,7 +39,7 @@ export async function generate(func_name, display_name = '') {
 
     PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into current_settings
 
-    PH.getGenOutput(pg_ui_state, pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
+    PH.getGenOutput(pg_ui_state, await pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
 
     PH.updatePGQABoxes(pg_ui_state.question_obj);
 

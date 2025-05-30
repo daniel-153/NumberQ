@@ -33,7 +33,7 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
     pg_ui_state.func_name = func_name;
     pg_ui_state.display_name = display_name;
     pg_ui_state.current_module = await import(`../../math-gens/gens/${func_name}.js`);
-    pg_ui_state.current_gen_func = function(form_obj) {
+    pg_ui_state.current_gen_func = async function(form_obj) {
         pg_ui_state.error_locations = new Set(); // create a new *Set* of error locations each generation (instead of an array to avoid repeats)
         pg_ui_state.current_module.processFormObj(form_obj, pg_ui_state.error_locations); // fill in with appropriate values yielded from processing settings
         return pg_ui_state.current_module.default(form_obj); // a processed form_obj (which we created above) is now a valid settings object
