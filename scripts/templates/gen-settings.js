@@ -461,7 +461,7 @@ export const allow_parentheses = {
     display_name: 'Allow Parentheses',
     radio_buttons: [['yes','Yes'],['no','No']], 
     tooltip: 'Should parenthesis expressions like a&times;(b+c) be allowed?'
-}
+};
 
 export const allow_nesting = {
     type: 'radio_buttons',
@@ -469,4 +469,58 @@ export const allow_nesting = {
     display_name: 'Allow Nesting',
     radio_buttons: [['yes','Yes'],['no','No']], 
     tooltip: 'Should nested parenthesis expressions like a&times;(b-(c+d)) be allowed?'
-}
+};
+
+export const entry_range = {
+    type: 'range_textboxes',
+    code_names: ['vec_entry_range_min','vec_entry_range_max'],
+    display_name: 'Vector Entry Range',
+    tooltip: 'How big or small should the vector entries be? (create a range with integers within ±999)'
+};
+
+export const vector_operations = {
+    type: 'radio_buttons',
+    code_name: 'vector_operations',
+    display_name: 'Operation',
+    radio_buttons: [
+        ['add','Addition (u+v)'],
+        ['sub','Subtraction (u-v)'],
+        ['dot','Dot Product (u&middot;v)'],
+        ['cross','Cross Product (u&times;v)'],
+        ['angle','Angle Between (&angle;(u,v)']
+    ], 
+    tooltip: 'Which operation should be performed on the vectors?'
+};
+
+export const vector_dimension = {
+    type: 'single_textbox',
+    code_name: 'vector_dimension',
+    display_name: 'Dimension',
+    tooltip: 'What dimension (how many rows) should the vectors have? (enter an integer from 2 to 10)',
+    range: [ 2, 10 ]
+};
+
+export const vector_notation = {
+    type: 'radio_buttons',
+    code_name: 'vector_notation',
+    display_name: 'Notation',
+    radio_buttons: [['brackets','Brackets [:]'],['angle_brackets','Angle Brackets <..>'],['parens','Parentheses (:)']], 
+    tooltip: 'Which vector notation should be used?'
+};
+
+export const allow_scalars = {
+    type: 'radio_buttons',
+    code_name: 'allow_scalars',
+    display_name: 'Allow Scalars',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should scalars in front of the vectors be allowed (in addition and subtraction)?'
+};
+
+export const angle_unit = {
+    type: 'radio_buttons',
+    code_name: 'angle_unit',
+    display_name: 'Angular Unit',
+    radio_buttons: [['radians','Radians (0&ndash;pi)'],['degrees','Degrees (0&ndash;180)']], 
+    tooltip: 'Should the angle between the vectors be given in radians or degrees?'
+};
+
