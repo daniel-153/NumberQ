@@ -5,8 +5,8 @@ export function processFormObj(form_obj, error_locations) {
     const validated_range = SH.val_restricted_range(
         form_obj.vec_entry_range_min,
         form_obj.vec_entry_range_max,
-        -999,
-        999,
+        -20,
+        20,
         error_locations,
         'vec_entry_range_min',
         'vec_entry_range_max' 
@@ -306,7 +306,15 @@ export function get_presets() {
 }
 
 export function get_rand_settings() {
+    const operation = H.randFromList(['add','sub','dot','cross','angle']);
+    
     return {
-
+        vec_entry_range_min: H.randInt(-7, 0),
+        vec_entry_range_max: H.randInt(1, 7),
+        vector_dimension: (operation === 'cross')? 3 : H.randInt(2, 4),
+        vector_operation: operation,
+        vector_notation: '__random__',
+        allow_scalars: '__random__',
+        angle_unit: '__random__'
     };
 }
