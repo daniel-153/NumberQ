@@ -168,6 +168,10 @@ body::-webkit-scrollbar-thumb:hover {
     font-size: 1.9vw;
 }
 
+.shrunk-3x-question {
+    font-size: 1.6vw;
+}
+
 .start-button {
     width: 7vw;
     height: 2.5vw;
@@ -463,6 +467,11 @@ body::-webkit-scrollbar-thumb:hover {
 
 .rendered-box[data-special-styles='genSysEqs'] {
     height: 8.7vw;
+}
+
+.rendered-box[data-special-styles='genVecArith'] {
+    font-size: 0.7vw;
+    height: 12vw;
 }
 
 .latex-box[data-special-styles='genSysEqs'] {
