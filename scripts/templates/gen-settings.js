@@ -475,7 +475,7 @@ export const entry_range = {
     type: 'range_textboxes',
     code_names: ['vec_entry_range_min','vec_entry_range_max'],
     display_name: 'Vector Entry Range',
-    tooltip: 'How big or small should the vector entries be? (create a range with integers within ±999)'
+    tooltip: 'How big or small should the vector entries be? (create a range with integers within ±20)'
 };
 
 export const vector_operation = {
