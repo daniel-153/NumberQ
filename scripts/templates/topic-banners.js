@@ -92,6 +92,14 @@ export const templates = [
         display_name: 'Complex Arithmetic',
         display_category: 'pre-calculus',
         example_problem: '\\frac{6+8i}{2-4i}'
+    },
+    {
+        function_name: 'genVecArith',
+        category_class_name: 'precalc-gen',
+        display_name: 'Vector Arithmetic',
+        display_category: 'pre-calculus',
+        example_problem: '2\\begin{bmatrix}1\\\\3\\end{bmatrix}+4\\begin{bmatrix}5\\\\2\\end{bmatrix}',
+        example_problem_class: 'shrunk-3x-question'
     }
 ];
 
