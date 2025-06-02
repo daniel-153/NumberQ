@@ -221,6 +221,14 @@ body::-webkit-scrollbar-thumb:hover {
     border: 0.153867vw solid rgb(67, 43, 221);
 }
 
+.linalg-gen {
+    background-color: #a85a31;
+    border: 0.153867vw solid rgb(231, 67, 12);
+}
+
+/* background-color: #79624b;
+    border: 0.153867vw solid rgb(45, 20, 12); */
+
 .calc-gen {
     background-color: #4c7f7f;
     border: 0.153867vw solid rgb(9, 169, 169);
