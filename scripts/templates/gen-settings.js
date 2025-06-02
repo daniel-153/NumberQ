@@ -478,16 +478,16 @@ export const entry_range = {
     tooltip: 'How big or small should the vector entries be? (create a range with integers within ±999)'
 };
 
-export const vector_operations = {
+export const vector_operation = {
     type: 'radio_buttons',
-    code_name: 'vector_operations',
+    code_name: 'vector_operation',
     display_name: 'Operation',
     radio_buttons: [
         ['add','Addition (u+v)'],
         ['sub','Subtraction (u-v)'],
         ['dot','Dot Product (u&middot;v)'],
         ['cross','Cross Product (u&times;v)'],
-        ['angle','Angle Between (&angle;(u,v)']
+        ['angle','Angle &angle;(u,v)']
     ], 
     tooltip: 'Which operation should be performed on the vectors?'
 };
