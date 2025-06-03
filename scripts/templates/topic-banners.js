@@ -98,8 +98,30 @@ export const templates = [
         category_class_name: 'linalg-gen',
         display_name: 'Vector Arithmetic',
         display_category: 'linear algebra',
-        example_problem: '2\\begin{bmatrix}1\\\\3\\end{bmatrix}+4\\begin{bmatrix}5\\\\2\\end{bmatrix}',
+        example_problem: `2\\begin{bmatrix}
+                            1\\\\
+                            3
+                          \\end{bmatrix} + 
+                          4\\begin{bmatrix}
+                            5\\\\
+                            2
+                          \\end{bmatrix}`,
         example_problem_class: 'shrunk-3x-question'
-    }
+    },
+    {
+        function_name: 'genMtrxArith',
+        category_class_name: 'linalg-gen',
+        display_name: 'Matrix Arithmetic',
+        display_category: 'linear algebra',
+        example_problem: `\\begin{bmatrix}
+                            3 & 1 \\\\
+                            2 & 5
+                          \\end{bmatrix} 
+                          \\begin{bmatrix}
+                            2 & 4 \\\\
+                            1 & 6
+                          \\end{bmatrix}`,
+        example_problem_class: 'shrunk-3x-question'
+    },
 ];
 
