@@ -1,4 +1,5 @@
 import * as H from '../helpers/gen-helpers.js';
+import * as LAH from '../helpers/linalg-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 
 export function processFormObj(form_obj, error_locations) {
@@ -70,51 +71,6 @@ const MAH = { // genMtrxArith helpers
 
         return column;
     },
-    matrix_operations: {
-        add: function(matrix_1, matrix_2) {
-            if (matrix_1.length !== matrix_2.length || matrix_1[0].length !== matrix_2[0].length) {
-                console.error('MAH.matrix_operations.add() cannot be called on matrices with different dimensions');
-                return 'undefined';
-            }
-            
-            return MAH.createMatrix(
-                matrix_1.length, matrix_1[0].length, // dimensions
-                function(row, col) { // value provided for each entry
-                    return matrix_1[row][col] + matrix_2[row][col]; 
-                }
-            );
-        },
-        scale: function(scalar, matrix) {
-            return MAH.createMatrix(
-                matrix.length, matrix[0].length,
-                function(row, col) {
-                    return scalar * matrix[row][col];
-                }
-            );
-        },
-        sub: function(matrix_1, matrix_2) {
-            return this.add(matrix_1, this.scale(-1, matrix_2));
-        },
-        mul: function(matrix_1, matrix_2) {
-            if (matrix_1[0].length !== matrix_2.length) {
-                console.error('MAH.matrix_operations.mul() cannot be called on matrices A,B if num-cols-A !== num-rows-B');
-                return 'undefined';
-            }
-
-            return MAH.createMatrix(
-                matrix_1.length, matrix_2[0].length,
-                function(row, col) {
-                    let sum_of_products = 0; // this is a dot product
-
-                    for (let i = 0; i < matrix_2.length; i++) {
-                        sum_of_products += matrix_1[row][i] * matrix_2[i][col]
-                    }
-
-                    return sum_of_products;
-                }
-            );
-        }
-    },
     randScalar: function(restriction) { //hardcoded => (+/-) 2,3,4, or 5
         if (restriction === 'non-negative') {
             return H.randInt(2, 5); // excluding 1 (since a scalar of 1 is unecessary)
@@ -138,8 +94,8 @@ export default function genMtrxArith(settings) {
         return H.randInt(settings.mtrx_entry_range_min, settings.mtrx_entry_range_max);
     }
     
-    const matrix_A = MAH.createMatrix(settings.matrix_A_rows, settings.matrix_A_cols, randValueSupplier);
-    const matrix_B = MAH.createMatrix(settings.matrix_B_rows, settings.matrix_B_cols, randValueSupplier);
+    const matrix_A = LAH.matrix_operations.createMatrix(settings.matrix_A_rows, settings.matrix_A_cols, randValueSupplier);
+    const matrix_B = LAH.matrix_operations.createMatrix(settings.matrix_B_rows, settings.matrix_B_cols, randValueSupplier);
 
     let scalar_A, scalar_B, scalar_A_string, scalar_B_string;
     if (settings.allow_matrix_scalars === 'yes' && settings.matrix_operation === 'add' || settings.matrix_operation === 'sub') { // scalars only applicable in add or sub
@@ -161,9 +117,9 @@ export default function genMtrxArith(settings) {
     }
 
     // perform the specified operation
-    const result_matrix = MAH.matrix_operations[settings.matrix_operation](
-        MAH.matrix_operations.scale(scalar_A, matrix_A), 
-        MAH.matrix_operations.scale(scalar_B, matrix_B)
+    const result_matrix = LAH.matrix_operations[settings.matrix_operation](
+        LAH.matrix_operations.scale(scalar_A, matrix_A), 
+        LAH.matrix_operations.scale(scalar_B, matrix_B)
     );
     
     // conversion to math
