@@ -204,7 +204,7 @@ const VAH = { // genVecArith helpers
         return output_vector;
     }
 }
-export default async function genVecArith(settings) {
+export default function genVecArith(settings) {
     // create the function to get random values into the vector entries (based on the settings)
     VAH.randVectorEntry = VAH.buildValidRandFunc(settings.vec_entry_range_min, settings.vec_entry_range_max);
 
