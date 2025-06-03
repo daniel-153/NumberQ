@@ -45,8 +45,11 @@ export async function generate(func_name, display_name = '') {
 
     FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
 
-    FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form');
-
+    // all settings have the potential to be changed (corrected) by the validator function
+    if (!pg_ui_state.randomize_all) { // don't flash invalid random settings (just correct them) (only flash if randomize_all wasn't used)
+        FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form'); 
+    }
+    
     pg_ui_state.first_pg_ui_open = false; // no longer the first generation
     pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
 }
