@@ -203,6 +203,28 @@ const CSH = { // createSettingsFields helpers
 
             possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
         }
+        else if (setting_obj.type === 'dimension_textboxes') { // setting is a dimension textbox (two textboxes)
+            const {code_names, display_name} = setting_obj;
+            form_fields.push(code_names[0], code_names[1]);
+
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div id="number-range-wrapper">
+                    <input
+                        type="text"
+                        name="${code_names[0]}"
+                        class="settings-text-box number-range-box"
+                    />&thinsp;<span class="dimension-textbox-x">x</span>&thinsp;<input
+                    type="text"
+                    name="${code_names[1]}"
+                    class="settings-text-box number-range-box"
+                    />
+                </div>
+            `;
+
+            possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
+        }
         else if (setting_obj.type === 'check_boxes') { // setting is a collection of checkboxes
             const {code_name, display_name, check_boxes } = setting_obj;
             form_fields.push(code_name);
