@@ -85,6 +85,17 @@
     margin-bottom: 0;
 }
 
+@keyframes flash-red {
+  0%, 40%   { border-color: red; color: red; }
+  41%, 60%  { border-color: rgb(20, 20, 20); color: black; }
+  61%, 99%  { border-color: red; color: red; }
+  100%      { border-color: rgb(20, 20, 20); color: black; }
+}
+
+.flash-red {
+  animation: flash-red 0.5s steps(1);
+}
+
 .settings-text-box {
     width: 3vw;
     height: 3vw;
