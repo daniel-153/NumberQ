@@ -524,3 +524,66 @@ export const angle_unit = {
     tooltip: 'Should the angle between the vectors be given in radians or degrees?'
 };
 
+export const matrix_dimensions = {
+    type: 'dimension_textboxes',
+    code_names: ['matrix_rows','matrix_cols'],
+    display_name: 'Matrix Dimensions',
+    tooltip: 'What should the dimensions of the matrix be? (enter 2 integers from 1 to 10)'
+};
+
+export const matrix_A_dimensions = {
+    type: 'dimension_textboxes',
+    code_names: ['matrix_A_rows','matrix_A_cols'],
+    display_name: 'Matrix A Dimensions',
+    tooltip: 'What should the dimensions of the first matrix be? (enter 2 integers from 1 to 10)'
+};
+
+export const matrix_B_dimensions = {
+    type: 'dimension_textboxes',
+    code_names: ['matrix_B_rows','matrix_B_cols'],
+    display_name: 'Matrix B Dimensions',
+    tooltip: 'What should the dimensions of the second matrix be? (enter 2 integers from 1 to 10)'
+};
+
+export const matrix_operation = {
+    type: 'radio_buttons',
+    code_name: 'matrix_operation',
+    display_name: 'Operation',
+    radio_buttons: [
+        ['add','Addition (A+B)'],
+        ['sub','Subtraction (A-B)'],
+        ['mul','Multiplication (AB)'],
+    ], 
+    tooltip: 'Which operation should be performed on the matrices?'
+};
+
+export const matrix_entry_range = {
+    type: 'range_textboxes',
+    code_names: ['mtrx_entry_range_min','mtrx_entry_range_max'],
+    display_name: 'Matrix Entry Range',
+    tooltip: 'How big or small should the matrix entries be? (create a range with integers within ±20)'
+};
+
+export const allow_matrix_scalars = {
+    type: 'radio_buttons',
+    code_name: 'allow_matrix_scalars',
+    display_name: 'Allow Scalars',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should scalars in front of the matrices be allowed (in addition and subtraction)?'
+};
+
+export const matrix_notation = {
+    type: 'radio_buttons',
+    code_name: 'matrix_notation',
+    display_name: 'Notation',
+    radio_buttons: [['brackets','Brackets [::]'],['parens','Parentheses (::)']], 
+    tooltip: 'Which matrix notation should be used?'
+};
+
+export const matrix_multiply_symbol = {
+    type: 'radio_buttons',
+    code_name: 'matrix_multiply_symbol',
+    display_name: 'Multiply Symbol',
+    radio_buttons: [['no_symbol','No Symbol (AB)'],['\\cdot','Dot (A&middot;B)'],['\\times','Cross (A&times;B)']], 
+    tooltip: 'Which symbol should be used for matrix multiplication?'
+};
