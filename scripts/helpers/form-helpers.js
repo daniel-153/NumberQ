@@ -7,36 +7,19 @@ export function flashFormElements(element_name_array, form_ID) {
 
     element_name_array.forEach(name => {
         const element = form.elements[name];
-
         if (!element) {
             console.warn(`No form element found with the name '${name}'.`);
             return;
         }
 
-        // Store the original styles
-        const originalBorderColor = element.style.borderColor || '';
-        const originalTextColor = element.style.color || '';
+        // Cancel any ongoing animation by forcing a reflow
+        element.classList.remove('flash-red');
+        void element.offsetWidth; // trigger reflow (force styles to be applied/re-rendered)
 
-        // Apply flashing effect
-        element.style.borderColor = 'red';
-        element.style.color = 'red';
-
-        setTimeout(() => {
-            element.style.borderColor = originalBorderColor;
-            element.style.color = originalTextColor;
-
-            setTimeout(() => {
-                element.style.borderColor = 'red';
-                element.style.color = 'red';
-
-                setTimeout(() => {
-                    element.style.borderColor = originalBorderColor;
-                    element.style.color = originalTextColor;
-                }, 200); // End of second red flash
-            }, 100); // Pause before second flash
-        }, 200); // Hold the first red flash
+        // Re-apply animation class
+        element.classList.add('flash-red');
     });
-} // used to flash elements that had invalid inputs (and were changed)
+}
 
 export function updateFormValues(form_values_object, form_ID) {
     const form = document.getElementById(form_ID);
