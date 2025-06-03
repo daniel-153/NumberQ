@@ -477,7 +477,8 @@ body::-webkit-scrollbar-thumb:hover {
     height: 8.7vw;
 }
 
-.rendered-box[data-special-styles='genVecArith'] {
+.rendered-box[data-special-styles='genVecArith'],
+.rendered-box[data-special-styles='genMtrxArith'] {
     font-size: 0.7vw;
     height: 12vw;
 }
