@@ -587,3 +587,27 @@ export const matrix_multiply_symbol = {
     radio_buttons: [['no_symbol','No Symbol (AB)'],['\\cdot','Dot (A&middot;B)'],['\\times','Cross (A&times;B)']], 
     tooltip: 'Which symbol should be used for matrix multiplication?'
 };
+
+export const single_vector_operation = {
+    type: 'radio_buttons',
+    code_name: 'single_vector_operation',
+    display_name: 'Operation',
+    radio_buttons: [
+        ['scale','Scale \\( \\,c\\vec{v} \\)'],
+        ['mag','Magnitude&nbsp;\\( \\left\\lVert \\vec{v}\\right\\rVert \\)', 'radio-no-scroll radio-realigned'],
+        ['unit','Unit Vector \\( \\hat{\\mathbf{v}} \\)']
+    ], 
+    tooltip: 'Which operation should be performed on the vector?'
+};
+
+export const vec_op_answer_form = {
+    type: 'radio_buttons',
+    code_name: 'vec_op_answer_form',
+    display_name: 'Answer Form',
+    radio_buttons: [
+        ['rationalized','Rationalized&nbsp;\\( \\frac{a\\sqrt{b}}{b} \\)', 'radio-realigned'],
+        ['not-rationalized','Not Rationalized&nbsp;\\( \\frac{a}{\\sqrt{b}} \\)', 'radio-realigned'],
+        ['three-decimals','3 Decimals \\( a.bcd \\)']
+    ], 
+    tooltip: 'How should non-integers in the answer be represented?'
+}; 
