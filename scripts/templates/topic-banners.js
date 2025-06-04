@@ -94,6 +94,17 @@ export const templates = [
         example_problem: '\\frac{6+8i}{2-4i}'
     },
     {
+        function_name: 'genVecOp',
+        category_class_name: 'linalg-gen',
+        display_name: 'Vector Operations',
+        display_category: 'linear algebra',
+        example_problem: `
+                            \\left\\lVert \\vec{v} \\right\\rVert \\:\\;\\, 
+                            c\\vec{v} \\:\\;\\, 
+                            \\frac{\\vec{v}}{\\left\\lVert \\vec{v} \\right\\rVert}`,
+        example_problem_class: 'slightly-shrunk-question'
+    },
+    {
         function_name: 'genVecArith',
         category_class_name: 'linalg-gen',
         display_name: 'Vector Arithmetic',
