@@ -31,46 +31,6 @@ const VAH = { // genVecArith helpers
         "dot": "\\cdot",
         "cross": "\\times"
     },
-    round: function(number, places = 0, remove_trailing_zeros = true) {
-        const is_negative = String(number).charAt(0) === '-';
-        if (is_negative && typeof(number) === 'number') number = -number;
-        else if (is_negative && typeof(number) === 'string') number = number.slice(1);
-        
-        let number_as_string = number.toString();
-        if (!number_as_string.includes('.')) return number; // no decimal places at all
-        else if (places === 0) return Math.round(number); // no need for extra logic
-
-        let [before_decimal, after_decimal] = number_as_string.split('.');
-
-        // get an array representing the number
-        const decimal_place_array = Array.from(after_decimal).map(numerical_char => Number(numerical_char)).slice(0, places);
-        const integer_place_array = Array.from(before_decimal).map(numerical_char => Number(numerical_char));
-        const number_as_array = [...integer_place_array, '.', ...decimal_place_array];
-
-        // rounding step (if needed)
-        let first_cut_place = Number(after_decimal.charAt(places)); // the first number outside the provided limit (like 4 in 1.234 rounded to 2 places)
-        let carry_a_one = (first_cut_place >= 5); // number we are carrying back to the previous place 
-
-        for (let i = number_as_array.length - 1; i >= 0; i--) {
-            if (!carry_a_one) break;
-            if (number_as_array[i] === '.') continue;
-            number_as_array[i]++;
-            carry_a_one = false;
-
-            if (number_as_array[i] === 10) {
-                carry_a_one = true;
-                number_as_array[i] = 0;
-            }
-        }
-        if (carry_a_one) { // the very first integer place got bumped up to a 10 -> 0 (need to add a 1 up front)
-            number_as_array.unshift(1);
-        }
-
-        const rounded_result = ((is_negative)? '-' : '') + number_as_array.join('');
-
-        if (remove_trailing_zeros) return Number(rounded_result); // Number() removes trailing zeros
-        else return rounded_result;
-    },
     isZeroVector: function(array) {
         for (let i = 0; i < array.length; i++) {
             if (array[i] !== 0) return false;
@@ -163,10 +123,10 @@ export default function genVecArith(settings) {
             final_answer = `\\theta_{\\scriptscriptstyle\\mathrm{${angle_subscript}}}\\mathrm{~~is~~undefined}`;
         }
         else {
-            const rounded_result = VAH.round(result, 3);
+            const rounded_result = H.round(result, 3);
             const equal_sign = (result === Number(rounded_result))? '=' : '\\approx';
 
-            final_answer = `\\theta_{\\scriptscriptstyle\\mathrm{${angle_subscript}}}${equal_sign}` + VAH.round(result, 3) + angle_symbol;
+            final_answer = `\\theta_{\\scriptscriptstyle\\mathrm{${angle_subscript}}}${equal_sign}` + H.round(result, 3) + angle_symbol;
         }
     }
 
