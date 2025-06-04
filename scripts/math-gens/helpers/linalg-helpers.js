@@ -89,29 +89,30 @@ export const vector_operations = {
     }
 };
 
-export const matrix_operations = {
-    createMatrix: function(rows, cols, valueSupplierCallback = function() {return null;}) { // return of the callback is used for each entry
-        const column = [];
+export function createMatrix(rows, cols, valueSupplierCallback = function() {return null;}) { // return of the callback is used for each entry
+    const column = [];
 
-        for (let row = 0; row < rows; row++) {
-            const nth_row = [];
-            
-            for (let col = 0; col < cols; col++) {
-                nth_row.push(valueSupplierCallback(row, col));
-            }
-
-            column.push(nth_row);
+    for (let row = 0; row < rows; row++) {
+        const nth_row = [];
+        
+        for (let col = 0; col < cols; col++) {
+            nth_row.push(valueSupplierCallback(row, col));
         }
 
-        return column;
-    },
+        column.push(nth_row);
+    }
+
+    return column;
+}
+
+export const matrix_operations = {
     add: function(matrix_1, matrix_2) {
         if (matrix_1.length !== matrix_2.length || matrix_1[0].length !== matrix_2[0].length) {
             console.error('matrix_operations.add() cannot be called on matrices with different dimensions');
             return 'undefined';
         }
         
-        return this.createMatrix(
+        return createMatrix(
             matrix_1.length, matrix_1[0].length, // dimensions
             function(row, col) { // value provided for each entry
                 return matrix_1[row][col] + matrix_2[row][col]; 
@@ -119,7 +120,7 @@ export const matrix_operations = {
         );
     },
     scale: function(scalar, matrix) {
-        return this.createMatrix(
+        return createMatrix(
             matrix.length, matrix[0].length,
             function(row, col) {
                 return scalar * matrix[row][col];
@@ -135,7 +136,7 @@ export const matrix_operations = {
             return 'undefined';
         }
 
-        return this.createMatrix(
+        return createMatrix(
             matrix_1.length, matrix_2[0].length,
             function(row, col) {
                 let sum_of_products = 0; // this is a dot product
@@ -149,3 +150,27 @@ export const matrix_operations = {
         );
     }
 };
+
+export const js_to_tex = {
+    arrayOfArraysToMatrix: function(array_of_arrays, notation) {
+        const matrix_type = notation.charAt(0); // 'b' for 'brackets' and 'p' for 'parens' (the two possible inputs for notation)
+
+        return `
+            \\begin{${matrix_type}matrix}
+                ${JSON.parse(JSON.stringify(array_of_arrays)).map(row => row.join('&')).join('\\\\')}
+            \\end{${matrix_type}matrix} 
+        `;
+    },
+    arrayToVector: function(array, notation) {
+        if (notation === 'brackets') {
+            return '\\begin{bmatrix}' + array.join('\\\\') + '\\end{bmatrix}';
+        }
+        else if (notation === 'angle_brackets') {
+            return '\\left\\langle' + array.join(',') + '\\right\\rangle';
+        }
+        else if (notation === 'parens') {
+            return '\\left(\\begin{array}{c}' + array.join('\\\\') + '\\end{array}\\right)';
+        }
+    }
+}
+

@@ -78,20 +78,6 @@ const VAH = { // genVecArith helpers
 
         return true;
     },
-    ATV: { // arrayToVector functions
-        brackets: function(array) {
-            return '\\begin{bmatrix}' + array.join('\\\\') + '\\end{bmatrix}';
-        },
-        angle_brackets: function(array) {
-            return '\\left\\langle' + array.join(',') + '\\right\\rangle';
-        },
-        parens: function(array) {
-            return '\\left(\\begin{array}{c}' + array.join('\\\\') + '\\end{array}\\right)';
-        }
-    },
-    arrayToVector: function(array, notation) {
-        return this.ATV[notation](array);
-    },
     randScalar: function(restriction) { //hardcoded => 2,3,4, or 5
         if (restriction === 'non-negative') {
             return H.randInt(2, 5); // excluding 1 (since a scalar of 1 is unecessary)
@@ -122,8 +108,8 @@ export default function genVecArith(settings) {
     // create the random vectors in the given dimension
     const vector_1 = VAH.createVector(settings.vector_dimension);
     const vector_2 = VAH.createVector(settings.vector_dimension);
-    const vector_1_string = VAH.arrayToVector(vector_1, settings.vector_notation);
-    const vector_2_string = VAH.arrayToVector(vector_2, settings.vector_notation);
+    const vector_1_string = LAH.js_to_tex.arrayToVector(vector_1, settings.vector_notation);
+    const vector_2_string = LAH.js_to_tex.arrayToVector(vector_2, settings.vector_notation);
 
     // scalars and their strings (based on the operation)
     let scalar_1, scalar_2, scalar_1_string, scalar_2_string;
@@ -151,7 +137,7 @@ export default function genVecArith(settings) {
         final_prompt = scalar_1_string + vector_1_string + VAH.operator_conversions[settings.vector_operation] + scalar_2_string + vector_2_string;
         
         if (settings.vector_operation !== 'dot') { // everything but 'dot' 
-            final_answer = VAH.arrayToVector(
+            final_answer = LAH.js_to_tex.arrayToVector(
                 LAH.vector_operations[settings.vector_operation](
                     LAH.vector_operations.scale(scalar_1, vector_1), LAH.vector_operations.scale(scalar_2, vector_2)
                 ), settings.vector_notation

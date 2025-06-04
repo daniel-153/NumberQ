@@ -56,21 +56,6 @@ const MAH = { // genMtrxArith helpers
         "add": "+",
         "sub": "-"
     },
-    createMatrix: function(rows, cols, valueSupplierCallback = function() {return null;}) { // return of the callback is used for each entry
-        const column = [];
-
-        for (let row = 0; row < rows; row++) {
-            const nth_row = [];
-            
-            for (let col = 0; col < cols; col++) {
-                nth_row.push(valueSupplierCallback(row, col));
-            }
-
-            column.push(nth_row);
-        }
-
-        return column;
-    },
     randScalar: function(restriction) { //hardcoded => (+/-) 2,3,4, or 5
         if (restriction === 'non-negative') {
             return H.randInt(2, 5); // excluding 1 (since a scalar of 1 is unecessary)
@@ -78,15 +63,6 @@ const MAH = { // genMtrxArith helpers
         else {
             return H.randFromList(H.removeFromArray([0, 1], H.integerArray(-5, 5)));
         }
-    },
-    arrayOfArraysToMatrix: function(array_of_arrays, notation) {
-        const matrix_type = notation.charAt(0); // 'b' for 'brackets' and 'p' for 'parens' (the two possible inputs for notation)
-
-        return `
-            \\begin{${matrix_type}matrix}
-                ${JSON.parse(JSON.stringify(array_of_arrays)).map(row => row.join('&')).join('\\\\')}
-            \\end{${matrix_type}matrix} 
-        `;
     }
 }
 export default function genMtrxArith(settings) {
@@ -94,8 +70,8 @@ export default function genMtrxArith(settings) {
         return H.randInt(settings.mtrx_entry_range_min, settings.mtrx_entry_range_max);
     }
     
-    const matrix_A = LAH.matrix_operations.createMatrix(settings.matrix_A_rows, settings.matrix_A_cols, randValueSupplier);
-    const matrix_B = LAH.matrix_operations.createMatrix(settings.matrix_B_rows, settings.matrix_B_cols, randValueSupplier);
+    const matrix_A = LAH.createMatrix(settings.matrix_A_rows, settings.matrix_A_cols, randValueSupplier);
+    const matrix_B = LAH.createMatrix(settings.matrix_B_rows, settings.matrix_B_cols, randValueSupplier);
 
     let scalar_A, scalar_B, scalar_A_string, scalar_B_string;
     if (settings.allow_matrix_scalars === 'yes' && settings.matrix_operation === 'add' || settings.matrix_operation === 'sub') { // scalars only applicable in add or sub
@@ -126,8 +102,8 @@ export default function genMtrxArith(settings) {
     let operation_symbol;
     if (settings.matrix_operation === 'mul') operation_symbol = (settings.matrix_multiply_symbol === 'no_symbol')? '' : settings.matrix_multiply_symbol;
     else operation_symbol = MAH.operation_conversions[settings.matrix_operation];
-    const final_prompt = scalar_A_string + MAH.arrayOfArraysToMatrix(matrix_A, settings.matrix_notation) + operation_symbol + scalar_B_string + MAH.arrayOfArraysToMatrix(matrix_B, settings.matrix_notation);
-    const final_answer = MAH.arrayOfArraysToMatrix(result_matrix, settings.matrix_notation);
+    const final_prompt = scalar_A_string + LAH.js_to_tex.arrayOfArraysToMatrix(matrix_A, settings.matrix_notation) + operation_symbol + scalar_B_string + LAH.js_to_tex.arrayOfArraysToMatrix(matrix_B, settings.matrix_notation);
+    const final_answer = LAH.js_to_tex.arrayOfArraysToMatrix(result_matrix, settings.matrix_notation);
 
     return {
         question: final_prompt,
