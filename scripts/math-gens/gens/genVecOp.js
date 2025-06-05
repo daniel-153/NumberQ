@@ -17,10 +17,12 @@ export function processFormObj(form_obj, error_locations) {
     form_obj.vec_entry_range_max = validated_range.input_max;
 
     form_obj.vector_dimension = SH.val_restricted_integer(form_obj.vector_dimension, error_locations, 2, 10, 'vector_dimension');
+
+    form_obj.decimal_places = SH.val_restricted_integer(form_obj.decimal_places, error_locations, 0, 4, 'decimal_places');
 }
 
 const VOH = { // genVecOp helpers
-    resolveRootQuotient: function(numerator_int, denom_root_expr, answer_form) {
+    resolveRootQuotient: function(numerator_int, denom_root_expr, settings) {
         // first check if the expression simplifies to an integer (in which case, no special handling is needed)
         const raw_denom = denom_root_expr.numberInFront * Math.sqrt(denom_root_expr.numberUnderRoot);
         const raw_value = numerator_int / raw_denom;
@@ -28,10 +30,10 @@ const VOH = { // genVecOp helpers
         if (Number.isSafeInteger(raw_value)) { // result is an integer (form doesn't matter)
             return raw_value + '';
         }
-        else if (Number.isSafeInteger(raw_denom) && answer_form !== 'three-decimals') { // result is a fraction with no roots 
+        else if (Number.isSafeInteger(raw_denom) && settings.vec_op_answer_form !== 'decimals') { // result is a fraction with no roots 
             return PH.simplifiedFracString(numerator_int, raw_denom);
         }
-        else if (answer_form === 'not-rationalized') { 
+        else if (settings.vec_op_answer_form === 'not-rationalized') { 
             const integer_frac = PH.simplifyFraction(numerator_int, denom_root_expr.numberInFront); // integer part of the result fraction
             const final_numer = integer_frac.numer;
             let final_denom = `\\sqrt{${denom_root_expr.numberUnderRoot}}`;
@@ -39,7 +41,7 @@ const VOH = { // genVecOp helpers
 
             return `\\frac{${final_numer}}{${final_denom}}`;
         }
-        else if (answer_form === 'rationalized') {
+        else if (settings.vec_op_answer_form === 'rationalized') {
             const integer_frac = PH.simplifyFraction(numerator_int, denom_root_expr.numberInFront * denom_root_expr.numberUnderRoot); // integer part of the result fraction
             const final_denom = integer_frac.denom;
             let final_numer;
@@ -51,16 +53,16 @@ const VOH = { // genVecOp helpers
             if (integer_frac.denom === 1) return final_numer;
             else return `\\frac{${final_numer}}{${final_denom}}`;
         }
-        else if (answer_form === 'three-decimals') { // only case where the vector might not be exact anymore
-            let rounded_result = H.round(raw_value, 3);
+        else if (settings.vec_op_answer_form === 'decimals') { // only case where the vector might not be exact anymore
+            let rounded_result = H.buildNewRounder(settings.decimal_places, settings.keep_rounded_zeros)(raw_value); // invoke the new rounder immidiately
             if (Number(rounded_result) === raw_value) return rounded_result; // rounding happened to result in no change
             else return 'r' + rounded_result; // indicate the result ins't exact anymore
         }
     },
-    normArrayEntries(array, magnitude_root_obj, answer_form) {
+    normArrayEntries(array, magnitude_root_obj, settings) {
         let result_is_exact = true; // result array is exactly equal to the unit vector it's supposed to represent 
         const result_array = array.map(function(integer_entry) {
-            const resolved_entry = VOH.resolveRootQuotient(integer_entry, magnitude_root_obj, answer_form);
+            const resolved_entry = VOH.resolveRootQuotient(integer_entry, magnitude_root_obj, settings);
             if ((resolved_entry + '').charAt(0) === 'r') {
                 result_is_exact = false;
                 return resolved_entry.slice(1);
@@ -77,6 +79,8 @@ export default function genVecOp(settings) {
         vec_as_array.push(H.randInt(settings.vec_entry_range_min, settings.vec_entry_range_max));
     }
     const vec_in_math = LAH.js_to_tex.arrayToVector(vec_as_array, settings.vector_notation);
+
+    const round = H.buildNewRounder(settings.decimal_places, settings.keep_rounded_zeros);
 
     let final_prompt, final_answer;
     if (settings.single_vector_operation === 'scale') {
@@ -100,11 +104,11 @@ export default function genVecOp(settings) {
             final_answer = 0;
         }
         else { // the root was not a perfect square (could only be reduced to a*sqrt(b) or not at all: sqrt(b))
-            if (settings.vec_op_answer_form !== 'three-decimals') { // final answer should be an exact root expression
+            if (settings.vec_op_answer_form !== 'decimals') { // final answer should be an exact root expression
                 final_answer = ((root_expression.numberInFront === 1)? '' : root_expression.numberInFront) + '\\sqrt{' + root_expression.numberUnderRoot + '}';
             }
             else { // round the final answer to 3 places
-                final_answer = '\\approx' + H.round(root_expression.numberInFront * Math.sqrt(root_expression.numberUnderRoot), 3);
+                final_answer = '\\approx' + round(root_expression.numberInFront * Math.sqrt(root_expression.numberUnderRoot), 3);
             }
         }
     }
@@ -117,7 +121,7 @@ export default function genVecOp(settings) {
         }
         else {
             const root_expression = PH.simplifySQRT(LAH.vector_operations.sum_squared_entries(vec_as_array)); // magnitude as a root expr object
-            const normed_result_obj = VOH.normArrayEntries(vec_as_array, root_expression, settings.vec_op_answer_form);
+            const normed_result_obj = VOH.normArrayEntries(vec_as_array, root_expression, settings);
             const equal_sign = (normed_result_obj.result_is_exact)? '' : '\\approx';
 
             final_answer = equal_sign + LAH.js_to_tex.arrayToVector(normed_result_obj.result_array, settings.vector_notation);
@@ -135,12 +139,14 @@ export const settings_fields = [
     'single_vector_operation',
     'vector_notation',
     'entry_range',
-    'vec_op_answer_form'
+    'vec_op_answer_form',
+    'rounding_rules'
 ];
 
 export const prelocked_settings = [
     'vector_notation',
-    'vec_op_answer_form'
+    'vec_op_answer_form',
+    'decimal_places'
 ];
 
 export function get_presets() {
@@ -150,7 +156,8 @@ export function get_presets() {
         vector_dimension: 2,
         single_vector_operation: 'mag',
         vector_notation: 'brackets',
-        vec_op_answer_form: 'rationalized'
+        vec_op_answer_form: 'rationalized',
+        decimal_places: 3
     }
 }
 
