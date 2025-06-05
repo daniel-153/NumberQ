@@ -171,7 +171,7 @@ const CSH = { // createSettingsFields helpers
             output_html = `
                 <div class="setting-box">
                 <h3 class="settings-label">${display_name}:</h3>
-                <div id="number-range-wrapper">
+                <div class="number-range-wrapper">
                     from:&thinsp;<input
                     type="text"
                     name="${code_names[0]}"
@@ -193,7 +193,7 @@ const CSH = { // createSettingsFields helpers
             output_html = `
                 <div class="setting-box">
                 <h3 class="settings-label">${display_name}:</h3>
-                <div id="number-range-wrapper">
+                <div class="number-range-wrapper">
                     <input
                         type="text"
                         name="${code_names[0]}"
@@ -274,7 +274,7 @@ const CSH = { // createSettingsFields helpers
             output_html = `
                 <div class="setting-box">
                 <h3 class="settings-label">${display_name}:</h3>
-                <div id="solution-point-wrapper">
+                <div class="solution-point-wrapper">
                     (<input
                     type="text"
                     name="${code_names[0]}"
@@ -330,6 +330,33 @@ const CSH = { // createSettingsFields helpers
 
 
             possible_values.push(null); // only built for radio buttons and checkboxes atm (so push null instead of possible values)
+        }
+        else if (setting_obj.type === 'textbox-w-checkbox') {
+            const {code_names, display_names, display_name} = setting_obj;
+            code_names.forEach(code_name => form_fields.push(code_name));
+
+            output_html = `
+                <div class="setting-box">
+                <h3 class="settings-label">${display_name}:</h3>
+                <div class="textbox-w-checkbox-wrapper" data-input-name="${display_names[0]}:">
+                    <input
+                        type="text"
+                        name="${code_names[0]}"
+                        class="settings-text-box textbox-w-checkbox"
+                        id="${code_names[0]}-text-input"
+                    />
+                </div>
+                <div class="settings-checkbox-tab textbox-checkbox-tab">
+                    <input
+                    type="checkbox"
+                    name="${code_names[1]}"
+                    value="is_checked"
+                    class="single-settings-checkbox"
+                    />${display_names[1]}
+                </div>     
+            `;
+
+            possible_values.push(null);
         }
 
         output_html += `
