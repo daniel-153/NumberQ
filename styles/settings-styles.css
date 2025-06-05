@@ -339,7 +339,6 @@
   width: fit-content;
   height: fit-content;
   font-family: monospace;
-  /* border: 1px solid red; */
 }
 
 .textbox-w-checkbox:focus {
