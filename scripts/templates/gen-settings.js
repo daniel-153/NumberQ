@@ -607,7 +607,15 @@ export const vec_op_answer_form = {
     radio_buttons: [
         ['rationalized','Rationalized&nbsp;\\( \\frac{a\\sqrt{b}}{b} \\)', 'radio-realigned'],
         ['not-rationalized','Not Rationalized&nbsp;\\( \\frac{a}{\\sqrt{b}} \\)', 'radio-realigned'],
-        ['three-decimals','3 Decimals \\( a.bcd \\)']
+        ['decimals','Rounded Decimals']
     ], 
     tooltip: 'How should non-integers in the answer be represented?'
-}; 
+};
+
+export const rounding_rules = {
+    type: 'textbox-w-checkbox',
+    code_names: ['decimal_places','keep_rounded_zeros'],
+    display_name: 'Decimal Values',
+    display_names: ['Places','Keep Rounded Zeros'],
+    tooltip: 'How many places should decimal values be rounded to (0-4)? Should rounded zeros be kept? (3.95 &asymp; 4 or 4.0 when rounded to 1 place?)'
+};
