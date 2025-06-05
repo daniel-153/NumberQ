@@ -22,6 +22,8 @@ export function processFormObj(form_obj, error_locations) {
         form_obj.vector_dimension = 3;
         error_locations.add('vector_dimension');
     }
+
+    form_obj.decimal_places = SH.val_restricted_integer(form_obj.decimal_places, error_locations, 0, 4, 'decimal_places');
 }
 
 const VAH = { // genVecArith helpers
@@ -64,6 +66,9 @@ const VAH = { // genVecArith helpers
 export default function genVecArith(settings) {
     // create the function to get random values into the vector entries (based on the settings)
     VAH.randVectorEntry = VAH.buildValidRandFunc(settings.vec_entry_range_min, settings.vec_entry_range_max);
+
+    // get new round function based on settings
+    const round = H.buildNewRounder(settings.decimal_places, settings.keep_rounded_zeros);
 
     // create the random vectors in the given dimension
     const vector_1 = VAH.createVector(settings.vector_dimension);
@@ -123,10 +128,10 @@ export default function genVecArith(settings) {
             final_answer = `\\theta_{\\scriptscriptstyle\\mathrm{${angle_subscript}}}\\mathrm{~~is~~undefined}`;
         }
         else {
-            const rounded_result = H.round(result, 3);
+            const rounded_result = round(result);
             const equal_sign = (result === Number(rounded_result))? '=' : '\\approx';
 
-            final_answer = `\\theta_{\\scriptscriptstyle\\mathrm{${angle_subscript}}}${equal_sign}` + H.round(result, 3) + angle_symbol;
+            final_answer = `\\theta_{\\scriptscriptstyle\\mathrm{${angle_subscript}}}${equal_sign}` + round(result) + angle_symbol;
         }
     }
 
@@ -142,12 +147,14 @@ export const settings_fields = [
     'vector_notation',
     'entry_range',
     'allow_scalars',
-    'angle_unit'
+    'angle_unit',
+    'rounding_rules'
 ];
 
 export const prelocked_settings = [
     'vector_notation',
-    'angle_unit'
+    'angle_unit',
+    'decimal_places'
 ];
 
 export function get_presets() {
@@ -158,7 +165,8 @@ export function get_presets() {
         vector_operation: 'add',
         vector_notation: 'brackets',
         allow_scalars: 'yes',
-        angle_unit: 'radians'
+        angle_unit: 'radians',
+        decimal_places: 3
     };
 }
 

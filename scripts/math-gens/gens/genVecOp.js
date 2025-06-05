@@ -107,8 +107,8 @@ export default function genVecOp(settings) {
             if (settings.vec_op_answer_form !== 'decimals') { // final answer should be an exact root expression
                 final_answer = ((root_expression.numberInFront === 1)? '' : root_expression.numberInFront) + '\\sqrt{' + root_expression.numberUnderRoot + '}';
             }
-            else { // round the final answer to 3 places
-                final_answer = '\\approx' + round(root_expression.numberInFront * Math.sqrt(root_expression.numberUnderRoot), 3);
+            else { // round the final answer to places
+                final_answer = '\\approx' + round(root_expression.numberInFront * Math.sqrt(root_expression.numberUnderRoot));
             }
         }
     }
