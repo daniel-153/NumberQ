@@ -314,14 +314,37 @@
 
 /* number range styles */
 
-#number-range-wrapper {
+.number-range-wrapper {
   font-size: 0.8vw;
   font-family: monospace;
 }
 
-#solution-point-wrapper {
+.solution-point-wrapper {
   font-size: 2.5vw;
   font-family: monospace;
+}
+
+.textbox-w-checkbox-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.textbox-w-checkbox-wrapper::after {
+  content: attr(data-input-name);
+  position: absolute;
+  bottom: 105%;
+  font-size: 0.8vw;
+  width: fit-content;
+  height: fit-content;
+  font-family: monospace;
+  /* border: 1px solid red; */
+}
+
+.textbox-w-checkbox:focus {
+  border-width: 0.1vw;
+  outline: 0.05vw solid #1A73E8;;
 }
 
 .settings-checkbox-tab {
@@ -340,6 +363,15 @@
   background-color:#585858;
   border: 0.1vw solid rgb(68, 67, 67);
   border-radius: 0.1vw;
+}
+
+.textbox-checkbox-tab {
+  width: fit-content;
+  padding-left: 0.3vw;
+  padding-right: 0.3vw;
+  max-width: 85%;
+  height: fit-content;
+  min-height: 1.4vw;
 }
 
 .single-settings-checkbox {
@@ -521,7 +553,7 @@
     padding-bottom: 0.17vw;
   }
 
-  #number-range-wrapper {
+  .number-range-wrapper {
     font-size: 1.2vw;
   }
 
@@ -658,11 +690,11 @@
   padding-bottom: 0.7vw;
 }
 
-#number-range-wrapper {
+.number-range-wrapper {
   font-size: 5vw;
 }
 
-#solution-point-wrapper {
+.solution-point-wrapper {
   font-size: 15vw;
 }
 
