@@ -27,6 +27,9 @@ export function updateFormValues(form_values_object, form_ID) {
     for (const [setting_name, value] of Object.entries(form_values_object)) {
         const elements = form.elements[setting_name];
 
+        // prevent these two fields from being randomized (as long as they aren't listed in get_rand_settings())
+        if ((setting_name === 'decimal_places' || setting_name === 'keep_rounded_zeros') && value === undefined) continue;
+
         // if the element isn't found, don't try to update its value
         if (!elements) {
             continue;
