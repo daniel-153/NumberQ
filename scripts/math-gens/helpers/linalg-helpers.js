@@ -252,6 +252,60 @@ export const matrix_operations = {
             return true;
         }
     },
+    det_helpers: {
+        upperTriangular: function(matrix) { // convert fractionalized matrix to=> upper triangular + return determinant factor
+            let det_factor = 1;
+
+            for (let current_row = 0; current_row < matrix.length; current_row++) {
+                // start searching down columns (below the current row) for a non-zero entry
+                let nz_col_found = false;
+                let first_nz_row, first_nz_col;
+                for (first_nz_col = 0; first_nz_col < matrix[0].length; first_nz_col++) {
+                    for (first_nz_row = current_row; first_nz_row < matrix.length; first_nz_row++) {
+                        if (matrix[first_nz_row][first_nz_col][0] !== 0) {
+                            nz_col_found = true;
+                            break;
+                        }
+                    }
+                    if (nz_col_found) break;
+                }
+
+                // only continue (with the row operations) if a nonzero entry was found
+                if (nz_col_found) {
+                    // if the first nz entry was found below current search row swap it with the row at the top
+                    if (first_nz_row > current_row) {
+                        matrix_operations.row_operations.swap(matrix, first_nz_row, current_row);
+                        det_factor *= -1;
+                    }
+
+                    // zero out the rows below (no effect on determinant factor)
+                    const top_entry = matrix[first_nz_row][first_nz_col]; // not eliminating using 1 anymore (like in ref), so need this
+                    for (let row_below = first_nz_row + 1; row_below < matrix.length; row_below++) {
+                        const current_leading_entry = matrix[row_below][first_nz_col]; // leading entry of the current row
+                        if (current_leading_entry[0] !== 0) {
+                            matrix_operations.row_operations.add_scaled(
+                                matrix, row_below, 
+                                [-current_leading_entry[0] * top_entry[1], current_leading_entry[1] * top_entry[0]],
+                                first_nz_row 
+                            );
+                        }
+                    }
+                }
+            }
+
+            return det_factor;
+        },
+        diagonalProduct: function(matrix) {// product of the diagonal of a fractionalized matrix 
+            let product = [1, 1];
+            for (let i = 0; i < matrix.length; i++) {
+                const current_entry = matrix[i][i];
+                product[0] *= current_entry[0];
+                product[1] *= current_entry[1];
+                product = matrix_operations.rref_helpers.reduceFrac(product); // reduce after each product (to keep numbers as small as possible)
+            }
+            return product;
+        }
+    },
     add: function(matrix_1, matrix_2) {
         if (matrix_1.length !== matrix_2.length || matrix_1[0].length !== matrix_2[0].length) {
             console.error('matrix_operations.add() cannot be called on matrices with different dimensions');
@@ -305,15 +359,13 @@ export const matrix_operations = {
         return minor;
     },
     det: function(matrix) {
-        if (matrix.length === 1 && matrix[0].length === 1) return matrix[0][0]; // determinant of a 1x1 is just the [0][0] entry 
-        
-        let running_sum = 0;
-        
-        for (let j = 0; j <= matrix.length - 1; j++) {
-            running_sum += ((-1)**(j)) * (matrix[0][j]) * this.det(this.minor(matrix, 0, j));
-        }
+        const upper_triangular_matrix = matrix_operations.rref_helpers.getFractionalizedMatrix(matrix);
+        const det_factor = matrix_operations.det_helpers.upperTriangular(upper_triangular_matrix); // convert to triangular matrix + return the determinant change factor
+        console.log('upper triangular: ',upper_triangular_matrix)
+        const diagonal_product = matrix_operations.det_helpers.diagonalProduct(upper_triangular_matrix); // product of the triangular's main diagonal
 
-        return running_sum;
+        // since matrix entries are only integers atm, this quantity is an integer (integer matrices have integer determinants)
+        return (det_factor * diagonal_product[0]) / diagonal_product[1]; 
     },
     transpose: function(matrix) {
         return createMatrix(matrix[0].length, matrix.length,
@@ -376,11 +428,21 @@ export const js_to_tex = {
 
 
 export function tempTestFunc() {
-    const myarr = [1,2,3,4,5]; 
-    matrix_operations.row_operations.swap(myarr, 1, 4)
-    console.log(myarr);
+    const test_matrix7 = [
+    [49, 67, 93, 85, 71, 45, 12, 33, 60, 78],
+    [12, 92, 56, 84, 39, 77, 55, 68, 23, 10],
+    [41, 83, 90, 27, 16, 99, 38, 25, 44, 66],
+    [35, 61, 74, 58, 32, 46, 29, 21, 88, 54],
+    [63, 17, 50, 97, 31, 59, 91, 11, 65, 76],
+    [26, 40, 19, 80, 14, 62, 36, 43, 87, 53],
+    [81, 22, 37, 18, 95, 70, 30, 48, 28, 34],
+    [98, 13, 24, 42, 75, 57, 82, 96, 47, 64],
+    [20, 52, 73, 79, 86, 94, 15, 51, 69, 61],
+    [ 9,  7,  8,  6,  5,  4,  3,  2,  1,  0],
+];
+    console.log('det test #1: ', matrix_operations.det(test_matrix7));
 }
 
 
-//const LAH = await import('http://127.0.0.1:5500/scripts/math-gens/helpers/linalg-helpers.js');
+// const LAH = await import('http://127.0.0.1:5500/scripts/math-gens/helpers/linalg-helpers.js');
 
