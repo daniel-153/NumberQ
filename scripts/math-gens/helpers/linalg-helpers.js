@@ -221,6 +221,37 @@ export const matrix_operations = {
             }
         }
     },
+    inverse_helpers: {
+        indentityMatrix: function(matrix) { // get the indentity matrix at the current dimension (assumes the matrix is square)
+            return createMatrix(matrix.length, matrix.length,
+                function(row, col) {
+                    return (row === col)? 1 : 0; // 1's in the main diagonal, 0's everywhere else
+                }
+            );
+        },
+        connectMatrices(matrix_1, matrix_2) { // specifically for creating [A | I] (nothing else)
+            let result = [];
+
+            for (let row = 0; row < matrix_1.length; row++) {
+                result[row] = [...matrix_1[row], ...matrix_2[row]]; // connect each row
+            }
+
+            return result;
+        },
+        isIdentityMatrix: function(matrix) { // only meant to take in fractionalized matrices
+            // start traversing the matrix, left to right, *bottom* to top
+            for (let row = matrix.length - 1; row >= 0; row--) {
+                for (let col = 0; col < matrix[0].length; col++) {
+                    const current_entry = matrix[row][col];
+                    if (row === col) {
+                        if (current_entry[0] / current_entry[1] !== 1) return false;
+                    } 
+                    else if (current_entry[0] !== 0) return false;
+                }
+            }
+            return true;
+        }
+    },
     add: function(matrix_1, matrix_2) {
         if (matrix_1.length !== matrix_2.length || matrix_1[0].length !== matrix_2[0].length) {
             console.error('matrix_operations.add() cannot be called on matrices with different dimensions');
@@ -298,6 +329,24 @@ export const matrix_operations = {
         this.rref_helpers.ref_to_rref(rref_matrix);
 
         return rref_matrix;
+    },
+    inverse: function(matrix) {
+        // reduced row echelon form of the [A | I] augmented matrix        
+        const A_I_rref = this.rref(
+            this.inverse_helpers.connectMatrices(
+                matrix, this.inverse_helpers.indentityMatrix(matrix)
+            )
+        );
+
+        const possible_I = createMatrix(matrix.length, matrix.length,
+            (row, col) => A_I_rref[row][col] // left half of the A_I_rref
+        );
+        if (this.inverse_helpers.isIdentityMatrix(possible_I)) {
+            return createMatrix(matrix.length, matrix.length, 
+                (row, col) => A_I_rref[row][col + matrix.length] // right half of the A_I_rref
+            );
+        }
+        else return 'undefined'; // matrix doesn't have an inverse
     }
 };
 
