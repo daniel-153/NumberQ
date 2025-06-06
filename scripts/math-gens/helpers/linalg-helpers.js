@@ -106,6 +106,121 @@ export function createMatrix(rows, cols, valueSupplierCallback = function() {ret
 }
 
 export const matrix_operations = {
+    row_operations: { // all these assume the matrix is fractionalized
+        swap: function(matrix, index_1, index_2) { // swap the rows at index 1 and 2
+            [matrix[index_1], matrix[index_2]] = [matrix[index_2], matrix[index_1]];
+        },
+        scale: function(matrix, row_index, multiplier) {
+            for (let i = 0; i < matrix[row_index].length; i++) {
+                matrix[row_index][i] = matrix_operations.rref_helpers.reduceFrac(
+                    [matrix[row_index][i][0] * multiplier[0], matrix[row_index][i][1] * multiplier[1]]
+                );
+            }
+        },
+        add_scaled: function(matrix, changed_row_index, multiplier, scaled_row_index) { // changed_row_index, multiplier, multiplied_index => Rk -> Rk + s*Rn
+            for (let i = 0; i < matrix[changed_row_index].length; i++) {
+                matrix[changed_row_index][i] = matrix_operations.rref_helpers.reduceFrac([
+                    matrix[changed_row_index][i][0]*multiplier[1]*matrix[scaled_row_index][i][1] + matrix[changed_row_index][i][1]*multiplier[0]*matrix[scaled_row_index][i][0],
+                    matrix[changed_row_index][i][1]*multiplier[1]*matrix[scaled_row_index][i][1]
+                ]);
+            }
+        }
+    },
+    rref_helpers: { // all these assume the matrix is fractionalized
+        getFractionalizedMatrix: function(matrix) { // first step before row operations is to fractionalize
+            return createMatrix(matrix.length, matrix[0].length, function(row, col) {
+                return [matrix[row][col], 1]; // put all of the integer entries over 1
+            });
+        },
+        reduceFrac([num, den]) { // quick reduce (likely faster than using PH)
+            let a = num;
+            let b = den;
+            while (b !== 0) {
+                const t = b;
+                b = a % b;
+                a = t;
+            }
+            return [num / a, den / a];
+        },
+        getLeading1: function(matrix, row_index) { // ensure the row has a leading 1 (from both leftward and upward approaches) or all zeros
+            let nz_col_found = false;
+
+            let first_nz_row, first_nz_col;
+            for (first_nz_col = 0; first_nz_col < matrix[0].length; first_nz_col++) {
+                for (first_nz_row = row_index; first_nz_row < matrix.length; first_nz_row++) {
+                    if (matrix[first_nz_row][first_nz_col][0] !== 0) {
+                        nz_col_found = true;
+                        break;
+                    }
+                }
+                if (nz_col_found) break;
+            }
+
+            if (nz_col_found) { // only continue if a non-zero column was found
+                // bring the row with that entry to the top
+                matrix_operations.row_operations.swap(matrix, first_nz_row, row_index);
+                first_nz_row = row_index; // now this must hold
+
+                // ensure that first entry is = to 1
+                const first_nz_num = matrix[first_nz_row][first_nz_col][0];
+                const first_nz_den = matrix[first_nz_row][first_nz_col][1];
+                if (first_nz_num / first_nz_den !== 1) {
+                    // if not 1, scale the row by the reciprocal of the leading entry (forcing the leading entry to be = to 1)
+                    matrix_operations.row_operations.scale(matrix, first_nz_row, [first_nz_den, first_nz_num]); 
+                }
+
+                // last step is to 0-out any entries below that leading 1
+                for (let row_below = first_nz_row + 1; row_below < matrix.length; row_below++) {
+                    const current_leading_entry = matrix[row_below][first_nz_col]; // leading entry of the current row
+                    if (current_leading_entry[0] !== 0) {
+                        matrix_operations.row_operations.add_scaled(
+                            matrix, row_below, 
+                            [-current_leading_entry[0], current_leading_entry[1]],
+                            first_nz_row 
+                        );
+                    }
+                }
+            }
+        },
+        ref: function(matrix) { // get leading 1s (from both the leftward and upward approaches) in all rows (or all zeros)
+            for (let row = 0; row < matrix.length; row++) {
+                this.getLeading1(matrix, row);
+            }
+        },
+        getUpwardZeros: function(matrix, row_index) { // for the leading 1 in the row, ensure all zeros above it (if there is a leading 1)
+            let leading_1_found = false;
+
+            let leading_1_col;
+            for (leading_1_col = 0; leading_1_col < matrix[0].length; leading_1_col++) {
+                const current_entry = matrix[row_index][leading_1_col];
+                if (current_entry[0] / current_entry[1] === 1) {
+                    leading_1_found = true;
+                    break;
+                }
+                if (leading_1_found) break;
+            }
+
+            if (leading_1_found) { // only continue if a leading 1 was found in the row
+                // 0-out all the entries above that leading 1
+
+                for (let row_above = row_index - 1; row_above >= 0; row_above--) {
+                    const current_entry = matrix[row_above][leading_1_col];
+                    if (current_entry[0] !== 0) {
+                        matrix_operations.row_operations.add_scaled(
+                            matrix, row_above, 
+                            [-current_entry[0], current_entry[1]],
+                            row_index 
+                        );
+                    }
+                }
+            }
+        },
+        ref_to_rref: function(matrix) {
+            for (let row = matrix.length - 1; row >= 0; row--) {
+                this.getUpwardZeros(matrix, row);
+            }
+        }
+    },
     add: function(matrix_1, matrix_2) {
         if (matrix_1.length !== matrix_2.length || matrix_1[0].length !== matrix_2[0].length) {
             console.error('matrix_operations.add() cannot be called on matrices with different dimensions');
@@ -148,6 +263,41 @@ export const matrix_operations = {
                 return sum_of_products;
             }
         );
+    },
+    minor: function(matrix, row, col) {
+        const minor = JSON.parse(JSON.stringify(matrix));
+
+        minor.splice(row, 1); // delete the specified row
+
+        minor.forEach(sub_array => sub_array.splice(col, 1)); // delete the specified column
+
+        return minor;
+    },
+    det: function(matrix) {
+        if (matrix.length === 1 && matrix[0].length === 1) return matrix[0][0]; // determinant of a 1x1 is just the [0][0] entry 
+        
+        let running_sum = 0;
+        
+        for (let j = 0; j <= matrix.length - 1; j++) {
+            running_sum += ((-1)**(j)) * (matrix[0][j]) * this.det(this.minor(matrix, 0, j));
+        }
+
+        return running_sum;
+    },
+    transpose: function(matrix) {
+        return createMatrix(matrix[0].length, matrix.length,
+            function(row, col) {
+                return matrix[col][row];
+            }
+        ); 
+    },
+    rref: function(matrix) {
+        const rref_matrix = this.rref_helpers.getFractionalizedMatrix(matrix);
+
+        this.rref_helpers.ref(rref_matrix);
+        this.rref_helpers.ref_to_rref(rref_matrix);
+
+        return rref_matrix;
     }
 };
 
@@ -173,4 +323,15 @@ export const js_to_tex = {
         }
     }
 }
+
+
+
+export function tempTestFunc() {
+    const myarr = [1,2,3,4,5]; 
+    matrix_operations.row_operations.swap(myarr, 1, 4)
+    console.log(myarr);
+}
+
+
+//const LAH = await import('http://127.0.0.1:5500/scripts/math-gens/helpers/linalg-helpers.js');
 
