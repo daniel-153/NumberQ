@@ -641,11 +641,16 @@ export function factorListToMath(factor_array) {
     return leading_x_n_factor + running_string;
 } // function to turn factors like [[1,2],[3,1],[1,-1]] into a math expression like (x+2)(3x+1)(x-1) {must be degree 2 or higher}
 
-export function simplifiedFracString(raw_numer, raw_denom) {
+export function simplifiedFracString(raw_numer, raw_denom, negative_sign = 'beside_numer') {
     const simplified_frac = simplifyFraction(raw_numer, raw_denom);
 
     if (simplified_frac.denom !== 1) {
-        return '\\frac{' + simplified_frac.numer + '}{' + simplified_frac.denom + '}';
+        if (simplified_frac.numer > 0 || negative_sign === 'beside_numer') {
+            return '\\frac{' + simplified_frac.numer + '}{' + simplified_frac.denom + '}';
+        }
+        else if (negative_sign === 'in_front') {
+            return '-\\frac{' + Math.abs(simplified_frac.numer) + '}{' + simplified_frac.denom + '}';
+        }
     }
     else {
         return simplified_frac.numer + '';
