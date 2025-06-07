@@ -528,7 +528,7 @@ export const matrix_dimensions = {
     type: 'dimension_textboxes',
     code_names: ['matrix_rows','matrix_cols'],
     display_name: 'Matrix Dimensions',
-    tooltip: 'What should the dimensions of the matrix be? (enter 2 integers from 1 to 10)'
+    tooltip: 'What should the dimensions of the matrix be? (enter 2 integers from 1 to 6)'
 };
 
 export const matrix_A_dimensions = {
@@ -618,4 +618,28 @@ export const rounding_rules = {
     display_name: 'Decimal Values',
     display_names: ['Places','Keep Rounded Zeros'],
     tooltip: 'How many places should decimal values be rounded to (0-4)? Should rounded zeros be kept? (3.95 &asymp; 4 or 4.0 when rounded to 1 place?)'
+};
+
+export const single_matrix_operation = {
+    type: 'radio_buttons',
+    code_name: 'single_matrix_operation',
+    display_name: 'Operation',
+    radio_buttons: [
+        ['rref','RREF \\(\\operatorname{rref}(A)\\)'],
+        ['det','Determinant \\(\\operatorname{det}(A)\\)'],
+        ['inverse','Inverse \\(A^{-1}\\)'],
+        ['transpose','Transpose \\(A^{T}\\)'] 
+    ], 
+    tooltip: 'Which operation should be performed on the matrix?'
+};
+
+export const mtrx_op_answer_form = {
+    type: 'radio_buttons',
+    code_name: 'mtrx_op_answer_form',
+    display_name: 'Answer Form',
+    radio_buttons: [
+        ['exact', 'Reduced Fractions'],
+        ['decimals','Rounded Decimals']
+    ], 
+    tooltip: 'How should non-integers in the answer matrix (if any) be represented?'
 };
