@@ -275,6 +275,7 @@ export const matrix_operations = {
                     // if the first nz entry was found below current search row swap it with the row at the top
                     if (first_nz_row > current_row) {
                         matrix_operations.row_operations.swap(matrix, first_nz_row, current_row);
+                        first_nz_row = current_row; // after the swap, this holds
                         det_factor[0] *= -1;
                     }
 
