@@ -120,6 +120,17 @@ export const templates = [
         example_problem_class: 'shrunk-3x-question'
     },
     {
+        function_name: 'genMtrxOp',
+        category_class_name: 'linalg-gen',
+        display_name: 'Matrix Operations',
+        display_category: 'linear algebra',
+        example_problem: `  
+                            \\operatorname{det}(A) \\:\\;\\, 
+                            A^{-1} \\:\\;\\, 
+                            \\operatorname{rref}(A)`,
+        example_problem_class: 'shrunk-question'
+    },
+    {
         function_name: 'genMtrxArith',
         category_class_name: 'linalg-gen',
         display_name: 'Matrix Arithmetic',
@@ -133,6 +144,6 @@ export const templates = [
                             1 & 6
                           \\end{bmatrix}`,
         example_problem_class: 'shrunk-3x-question'
-    },
+    }
 ];
 
