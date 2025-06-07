@@ -479,7 +479,8 @@ body::-webkit-scrollbar-thumb:hover {
 
 .rendered-box[data-special-styles='genVecArith'],
 .rendered-box[data-special-styles='genMtrxArith'],
-.rendered-box[data-special-styles='genVecOp'] {
+.rendered-box[data-special-styles='genVecOp'],
+.rendered-box[data-special-styles='genMtrxOp'] {
     font-size: 0.7vw;
     height: 12vw;
 }
