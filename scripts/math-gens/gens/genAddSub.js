@@ -1,7 +1,7 @@
 import * as H from '../helpers/gen-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // validate number_of_terms and keep track of error locations
     form_obj.number_of_terms = SH.val_term_number(form_obj.number_of_terms, error_locations);
 

@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // validate the term range and keep track of error locations
     let validatedMinMax = SH.val_min_max_range(form_obj.term_range_min, form_obj.term_range_max, error_locations);
     form_obj.term_range_min = validatedMinMax.term_range_min;

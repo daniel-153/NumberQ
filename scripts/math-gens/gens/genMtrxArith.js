@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as LAH from '../helpers/linalg-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     const validated_range = SH.val_restricted_range(
         form_obj.mtrx_entry_range_min,
         form_obj.mtrx_entry_range_max,

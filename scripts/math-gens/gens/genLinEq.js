@@ -3,7 +3,7 @@ import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 import * as MH from '../helpers/math-string-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // validate the variable letter (default to 'x' if anything was invalid)
     form_obj.variable_letter = SH.val_variable_letter(form_obj.variable_letter, error_locations);
 }

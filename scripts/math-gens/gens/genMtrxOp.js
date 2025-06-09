@@ -3,7 +3,7 @@ import * as LAH from '../helpers/linalg-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // ensure the matrix dimensions agree with the operation (are square if they need to be)
     const matrix_dimensions = [
         SH.val_restricted_integer(form_obj.matrix_rows, error_locations, 1, 6, 'matrix_rows'),

@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as SH from '../helpers/settings-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // make sure coef range is an integer between 1 and 10
     form_obj.coef_size = SH.val_restricted_integer(form_obj.coef_size, error_locations, 1, 20, 'coef_size');
 

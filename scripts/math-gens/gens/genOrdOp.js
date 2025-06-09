@@ -1,7 +1,7 @@
 import * as H from '../helpers/gen-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // using this to iterate over the '_count' settings without repeated code
     let all_zero = true;
     let num_operators = 0; // excludes exponent operators

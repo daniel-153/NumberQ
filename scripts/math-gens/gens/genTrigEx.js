@@ -1,6 +1,6 @@
 import * as H from '../helpers/gen-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // use sine and cosine if nothing was selected
     if (form_obj.trig_function_types === undefined) form_obj.trig_function_types = ['sine','cosine'];
 }

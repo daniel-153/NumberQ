@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from"../helpers/polynom-helpers.js";
 import * as MH from '../helpers/math-string-helpers.js';
 
-export function processFormObj(form_obj, error_locations) {
+export function validateSettings(form_obj, error_locations) {
     // set the operation types if none were selected
     if (form_obj.general_operation_types === undefined) form_obj.general_operation_types = ['add','multiply','divide'];
 }
