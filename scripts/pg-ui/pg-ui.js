@@ -32,6 +32,7 @@ export async function generate(func_name, display_name = '') {
         PH.insertGenTitle(display_name, "generator-name");
         PH.adjustOutputBoxSizing(func_name);
         pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
+        FH.correctSettingOverflow('settings-form');
         PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
     }
     

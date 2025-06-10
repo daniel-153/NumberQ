@@ -66,9 +66,27 @@ export function updateFormValues(form_values_object, form_ID) {
 } // used to manually set/preset (autofill) a form; form_values_object is just the names of the form elements and their desired values in an obj
 
 const CSH = { // createSettingsFields helpers
+    getMarginB(number_of_elements) {
+        let margin_bottom;
+        if (number_of_elements <= 3) {
+            margin_bottom = '1.75vw';
+        } 
+        else if (number_of_elements <= 9) {
+            margin_bottom = `${1.7 * (3 / number_of_elements)}vw`;
+        }
+        else {
+            margin_bottom = '0.57vw'
+        }
+
+        return function(current_element_index) {
+            if (current_element_index !== number_of_elements - 1) return margin_bottom;
+            else return '0';
+        }
+    },
     setting_builders: {
         radio_buttons: function(settings) {
             let output_html = '<div class="outer-radio-button-wrapper">';
+            const margin_bottom = CSH.getMarginB(settings.radio_buttons.length);
             for (let i = 0; i < settings.radio_buttons.length; i++) {
                 let current_label = settings.radio_buttons[i][1] // pull out the label so we can modify it
                 
@@ -79,14 +97,16 @@ const CSH = { // createSettingsFields helpers
                 if (current_class.includes('radio-math')) current_label = '\\(' + current_label + '\\)'; // make it renderable for MathJax
                 
                 output_html += `
-                    <div class="inner-radio-button-wrapper">
-                    <input
-                        type="radio"
-                        name="${settings.code_names[0]}"
-                        value="${settings.radio_buttons[i][0]}"
-                        class="radio-buttons"
-                        id="${settings.code_names[0]}-option-${i + 1}"
-                    />
+                    <div class="inner-radio-button-wrapper" style="margin-bottom: ${margin_bottom(i)};">
+                    <div class="radio-circle-wrapper">
+                        <input
+                            type="radio"
+                            name="${settings.code_names[0]}"
+                            value="${settings.radio_buttons[i][0]}"
+                            class="radio-buttons"
+                            id="${settings.code_names[0]}-option-${i + 1}"
+                        />
+                    </div>
                     <label for="${settings.code_names[0]}-option-${i + 1}" class="radio-button-label ${current_class}"
                         >${current_label}</label
                     >
@@ -99,16 +119,19 @@ const CSH = { // createSettingsFields helpers
         },
         check_boxes: function(settings) {
             let output_html = '<div class="outer-radio-button-wrapper">';
+            const margin_bottom = CSH.getMarginB(settings.check_boxes.length);
             for (let i = 0; i < settings.check_boxes.length; i++) {
                 output_html += `
-                    <div class="inner-radio-button-wrapper">
-                    <input
-                        type="checkbox"
-                        name="${settings.code_names[0]}"
-                        value="${settings.check_boxes[i][0]}"
-                        class="radio-buttons"
-                        id="${settings.code_names[0]}-option-${i + 1}"
-                    />
+                    <div class="inner-radio-button-wrapper" style="margin-bottom: ${margin_bottom(i)};">
+                    <div class="radio-circle-wrapper">
+                        <input
+                            type="checkbox"
+                            name="${settings.code_names[0]}"
+                            value="${settings.check_boxes[i][0]}"
+                            class="radio-buttons"
+                            id="${settings.code_names[0]}-option-${i + 1}"
+                        />
+                    </div>
                     <label for="${settings.code_names[0]}-option-${i + 1}" class="radio-button-label"
                         >${settings.check_boxes[i][1]}</label
                     >
@@ -202,7 +225,7 @@ const CSH = { // createSettingsFields helpers
                 </div>
                 `;
             }
-            output_html += '</div>'
+            output_html += '</div>';
 
             return output_html;
         },
@@ -290,7 +313,7 @@ const CSH = { // createSettingsFields helpers
         const output_html = `
             <div class="setting-box">
                 <h3 class="settings-label">${setting_obj.display_name}:</h3>
-                ${CSH.setting_builders[setting_obj.type](setting_obj)}
+                <div class="inner-settings-wrapper">${CSH.setting_builders[setting_obj.type](setting_obj)}</div>
                 ${CSH.buildControlButtons(setting_obj)}
             </div>
         `;
@@ -472,3 +495,11 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
         form_obj[setting_name] = setting_value;
     } 
 } // clean the raw entered values to be => within the setting's valid values
+
+export function correctSettingOverflow(form_ID) {
+    [...document.getElementById(form_ID).querySelectorAll('.inner-settings-wrapper')].forEach(inner_settings_wrapper => {
+        if (inner_settings_wrapper.scrollHeight > inner_settings_wrapper.clientHeight) {     
+            inner_settings_wrapper.firstChild.style.height = '100%';
+        }
+    })
+}
