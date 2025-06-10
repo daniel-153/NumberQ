@@ -269,11 +269,6 @@ const CSH = { // createSettingsFields helpers
             return null;
         }
 
-        // remove any excluded values
-        if (setting_obj.excluded_values !== undefined) {
-            valid_values_array = valid_values_array.filter(item => !setting_obj.excluded_values.includes(item))
-        }
-
         return valid_values_array;
     },
     resolveDefaultValue: function(setting_obj, code_name) {
@@ -295,6 +290,17 @@ const CSH = { // createSettingsFields helpers
                 return null;
             }
         }
+    },
+    resolveExcludedValues: function(setting_obj, code_name) {
+        if (setting_obj.excluded_values !== undefined) { // there are excluded values on the setting
+            if (setting_obj.code_names.length > 1) { // multi setting -> excluded values is an object of arrays
+                return setting_obj.excluded_values[code_name];
+            }
+            else if (setting_obj.code_names.length === 1) { // single setting -> excluded values is an array
+                return setting_obj.excluded_values;
+            }
+        }
+        else return undefined;
     },
     buildControlButtons: function(setting_obj) {
         const lock_status = (setting_obj.prelocked)? 'lock' : 'unlock';
@@ -324,6 +330,7 @@ const CSH = { // createSettingsFields helpers
             valid_values_log[setting_obj.code_names[i]] = {};
             valid_values_log[setting_obj.code_names[i]].valid_values = CSH.resolveValidValues(setting_obj, setting_obj.code_names[i]);
             valid_values_log[setting_obj.code_names[i]].default_value = CSH.resolveDefaultValue(setting_obj, setting_obj.code_names[i]);
+            valid_values_log[setting_obj.code_names[i]].excluded_values = CSH.resolveExcludedValues(setting_obj, setting_obj.code_names[i]);
         }
 
         return {
@@ -363,6 +370,7 @@ export async function createSettingsFields(settings_field_names, settings_templa
             valid_values_log[code_name] = {};
             valid_values_log[code_name].valid_values = log_info.valid_values;
             valid_values_log[code_name].default_value = log_info.default_value;
+            valid_values_log[code_name].excluded_values = log_info.excluded_values;
         }
     }
 
@@ -446,14 +454,24 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
             if (
                 ( // check with explicit valid values (exhuastive list)
                     valid_values_log[setting_name].valid_values[1] !== '--' && // no sign of implied range
-                    !valid_values_log[setting_name].valid_values.includes(setting_value) // And: exhuative list doesn't include the entered value
+                    ( // And: 
+                        !valid_values_log[setting_name].valid_values.includes(setting_value) || // exhuative list doesn't include the entered value
+                        ( // Or: there is an excluded values array in the log entry && it included the current value
+                            valid_values_log[setting_name].excluded_values !== undefined &&
+                            valid_values_log[setting_name].excluded_values.includes(setting_value)
+                        )
+                    )
                 ) ||
                 ( // check with implicit valid values (an implied range)
                     valid_values_log[setting_name].valid_values[1] === '--' && // dealing with an implied range
                     ( // And:
                         !Number.isSafeInteger(setting_value) || // provided value isn't an integer
                         setting_value < valid_values_log[setting_name].valid_values[0] || // Or: it's less than the min
-                        setting_value > valid_values_log[setting_name].valid_values[2] // Or: it's greater than the max
+                        setting_value > valid_values_log[setting_name].valid_values[2] || // Or: it's greater than the max
+                        ( // Or: there is an excluded values array in the log entry && it included the current value
+                            valid_values_log[setting_name].excluded_values !== undefined &&
+                            valid_values_log[setting_name].excluded_values.includes(setting_value)
+                        ) 
                     )
                 )
             ) { // provided value is NOT included in the valid values
