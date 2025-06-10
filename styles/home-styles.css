@@ -17,19 +17,19 @@ body {
 }
 
 body::-webkit-scrollbar {
-    width: 16px; 
+    width: 16px;
 }
 
 body::-webkit-scrollbar-track {
-  background: #4d4c4c;
+    background: #4d4c4c;
 }
 
 body::-webkit-scrollbar-thumb {
-  background: #9f9f9f;
+    background: #9f9f9f;
 }
 
 body::-webkit-scrollbar-thumb:hover {
-  background: rgb(123, 119, 119);
+    background: rgb(123, 119, 119);
 }
 
 .hidden-content {
@@ -108,7 +108,7 @@ body::-webkit-scrollbar-thumb:hover {
     font-weight: 600;
     color: rgb(242, 237, 237);
     background-color: rgba(14, 87, 44, 0.87);
-    border: 0.15vw solid rgb(6, 37, 3); 
+    border: 0.15vw solid rgb(6, 37, 3);
 }
 
 #create-worksheets-button:hover {
@@ -122,7 +122,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 #generator-list {
     display: grid;
-    grid-template-columns: repeat(4,var(--gen-width)); 
+    grid-template-columns: repeat(4, var(--gen-width));
     grid-template-rows: calc(var(--gen-width) * 0.5);
     grid-gap: 2vw 2vw;
     width: 92vw;
@@ -131,14 +131,14 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .generator {
-   display: flex;
-   flex-direction: column;
+    display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
-   width: var(--gen-width);
-   height: calc(var(--gen-width) * 0.5);
-   background-color: bisque;
-   border-radius: calc(0.07 * var(--gen-width) * 0.5); 
+    width: var(--gen-width);
+    height: calc(var(--gen-width) * 0.5);
+    background-color: bisque;
+    border-radius: calc(0.07 * var(--gen-width) * 0.5);
 }
 
 .gen-title-container {
@@ -185,7 +185,8 @@ body::-webkit-scrollbar-thumb:hover {
     margin-bottom: 0.25vw;
 }
 
-.start-button:hover, .start-button:focus {
+.start-button:hover,
+.start-button:focus {
     cursor: pointer;
     background-color: rgb(234, 179, 40);
     font-size: 1.175vw;
@@ -261,7 +262,8 @@ body::-webkit-scrollbar-thumb:hover {
     margin-bottom: 0.25vw;
 }
 
-#feedback-button:hover, #feedback-button:focus {
+#feedback-button:hover,
+#feedback-button:focus {
     cursor: pointer;
     background-color: rgb(121, 18, 185);
     font-size: 1.05vw;
@@ -293,233 +295,12 @@ body::-webkit-scrollbar-thumb:hover {
     border-radius: calc(0.1 * 2vw);
 }
 
-#see-info-button:hover, #see-info-button:focus {
+#see-info-button:hover,
+#see-info-button:focus {
     cursor: pointer;
     background-color: rgb(101, 124, 199);
     font-size: 1.175vw;
     border-width: 0.18vw;
-}
-
-/* Generation content */
-
-#back-arrow-p-modes {
-    outline: none;
-    border: none;
-    background: none;
-    width: 2.6vw;
-    height: auto;
-    position: absolute;
-    left: 0.5vw;
-    top: 0.5vw;
-    padding: 0.2vw;
-    border: 0.12vw solid black;
-    border-radius: calc(0.075 * 2.6vw);
-    z-index: 9999;
-}
-
-#back-arrow-p-modes:hover, 
-#back-arrow-p-modes:focus {
-    width: 2.65vw;
-    border: 0.15vw solid rgb(96, 26, 145); 
-    cursor: pointer;
-}
-
-#generation-container {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    width: var(--gen-container-width);
-    min-height: 93vh;
-    height: auto;
-    left: calc(50vw - var(--gen-container-width) * 0.5);
-    top: calc(50vh - 93vh * 0.5);
-    background-color: rgb(255, 229, 192);
-    border-radius: calc(0.01 * var(--gen-container-width));
-    border: 0.25vw solid rgb(203, 182, 151);
-}
-
-#gen-type-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 0;
-}
-
-#generator-name {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: rgb(22, 14, 68);
-    font-size: 1.78vw;
-    text-decoration: underline;
-    margin-top: 0.5vw;
-    font-weight: 700;
-}
-
-#inner-generation-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-#Q-A-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    width: 65vw;
-    height: 20vw;
-}
-
-.gen-column {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    width: 47%;
-    height: 100%;
-}
-
-.column-header {
-    font-size: 4.5vw;
-    font-family: 'Times New Roman', Times, serif;
-    margin: 0;
-    color: rgb(10, 6, 6);
-}
-
-.output-box-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-
-.output-box {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 3vw;
-    width: 100%;
-    height: 6vw;
-    background-color: whitesmoke;
-    border-radius: calc(0.08 * 5vw);
-    border: 0.13vw solid darkblue;
-    font-family: 'Source Code Pro', monospace;
-    overflow-y: hidden;
-    overflow-x: hidden;
-}
-
-.latex-box {
-    border: 0.1vw solid #5ab8b8;
-    overflow: hidden;
-    height: 2vw;
-    margin-top: 1vw;
-    margin-bottom: 1.4vw;
-    white-space: nowrap;
-    overflow-x: hidden;
-    font-size: 1.2vw;
-}
-
-.copy-button {
-    width: 6.9vw;
-    height: 3vw;
-    font-size: 1.45vw;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: rgb(249, 247, 247);
-    background-color: #4ba1a1;
-    border: 0.17vw solid rgb(42, 74, 181);
-    border-radius: calc(0.07 * 3.5vw);
-    font-weight: 500;
-}
-
-.copy-button:hover {
-    cursor: pointer;
-    border: 0.2vw solid rgb(42, 74, 181);
-    background-color: #5ab8b8;
-    font-size: 1.425vw;
-}
-
-.copy-button[data-status='text-was-copied'] {
-    background-color: #4b66a1;
-}
-
-#generate-button {
-    width: 10.4vw;
-    height: 3.8vw;
-    font-size: 1.7vw;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: rgb(249, 247, 247);
-    background-color: rgb(65, 168, 68);
-    font-weight: 500;
-    border-radius: calc(0.07 * 3.8vw);
-    border: 0.17vw solid rgb(22, 91, 3);
-    margin-top: 1.5vw;
-}
-
-#regen-circle {
-    font-weight: 600;
-    font-size: 2vw;
-}
-
-#generate-button:hover {
-    cursor: pointer;
-    border: 0.2vw solid rgb(22, 91, 3);
-    background-color: rgb(74, 181, 77);
-    font-size: 1.675vw;
-}
-
-/* Special style accomodations for the output boxes */
-
-#un-rendered-Q[data-special-styles='genMulDiv'] {
-    font-size: 0.8vw;
-}
-
-.rendered-box[data-special-styles='genSysEqs'] {
-    height: 8.7vw;
-}
-
-.rendered-box[data-special-styles='genVecArith'],
-.rendered-box[data-special-styles='genMtrxArith'],
-.rendered-box[data-special-styles='genVecOp'],
-.rendered-box[data-special-styles='genMtrxOp'] {
-    font-size: 0.7vw;
-    height: 12vw;
-}
-
-.latex-box[data-special-styles='genSysEqs'] {
-    font-size: 1.2vw;
-}
-
-.rendered-box[data-special-styles='genRatEx'] {
-    height: 7.5vw;
-    font-size: 3.5vw;
-}
-
-.latex-box[data-special-styles='genRatEx'] {
-    font-size: 1.2vw;
-}
-
-#rendered-A[data-special-styles='genPolArith'] {
-    font-size: 2.3vw;
-}
-
-.rendered-box[data-special-styles='genComArith'] {
-    height: 8.7vw;
-}
-
-#rendered-Q[data-special-styles='genComArith'] {
-    font-size: 4vw;
-}
-
-#rendered-Q[data-special-styles='genSimRad'] {
-    font-size: 2.5vw;
-}
-
-#un-rendered-Q[data-special-styles='genSimRad'] {
-    font-size: 1vw;
-}
-
-#rendered-A[data-special-styles='genSimRad'] {
-    font-size: 2.7vw;
 }
 
 /* FAQ content */
@@ -566,10 +347,10 @@ body::-webkit-scrollbar-thumb:hover {
     border-radius: calc(0.075 * 2.6vw);
 }
 
-#back-arrow-FAQ:hover, 
+#back-arrow-FAQ:hover,
 #back-arrow-FAQ:focus {
     width: 2.65vw;
-    border: 0.15vw solid rgb(96, 26, 145); 
+    border: 0.15vw solid rgb(96, 26, 145);
     cursor: pointer;
 }
 
@@ -598,14 +379,16 @@ body::-webkit-scrollbar-thumb:hover {
     line-height: 1.4;
 }
 
-@media (max-width: 1700px) { /* Ipads and Small Laptops */
+@media (max-width: 1700px) {
+
+    /* Ipads and Small Laptops */
     #generator-list {
-        grid-template-columns: repeat(3,25vw); 
+        grid-template-columns: repeat(3, 25vw);
         grid-template-rows: calc(12.5vw);
         grid-gap: 3vw 5vw;
         width: 85vw;
     }
-    
+
     .generator {
         width: 25vw;
         height: 12.5vw;
@@ -617,7 +400,8 @@ body::-webkit-scrollbar-thumb:hover {
         font-size: 1.5vw;
     }
 
-    .start-button:hover, .start-button:focus {
+    .start-button:hover,
+    .start-button:focus {
         font-size: 1.475vw;
     }
 
@@ -628,11 +412,11 @@ body::-webkit-scrollbar-thumb:hover {
     .gen-title {
         font-size: 1.9vw;
     }
-    
+
     .shrunk-title {
         font-size: 1.65vw;
     }
-    
+
     .gen-topic {
         font-size: 1.2vw;
     }
@@ -642,8 +426,9 @@ body::-webkit-scrollbar-thumb:hover {
         height: 3vw;
         font-size: 1.23vw;
     }
-    
-    #feedback-button:hover, #feedback-button:focus {
+
+    #feedback-button:hover,
+    #feedback-button:focus {
         font-size: 1.2vw;
     }
 
@@ -652,8 +437,9 @@ body::-webkit-scrollbar-thumb:hover {
         height: 3vw;
         font-size: 1.35vw;
     }
-    
-    #see-info-button:hover, #see-info-button:focus {
+
+    #see-info-button:hover,
+    #see-info-button:focus {
         font-size: 1.3vw;
     }
 
@@ -673,7 +459,8 @@ body::-webkit-scrollbar-thumb:hover {
         font-size: 2.2vw;
     }
 
-    #generate-button:hover, #generate-button:focus {
+    #generate-button:hover,
+    #generate-button:focus {
         background-color: rgb(65, 168, 68);
         border-width: 0.25vw;
         font-size: 2.1vw;
@@ -689,8 +476,8 @@ body::-webkit-scrollbar-thumb:hover {
         height: 3.7vw;
         border-width: 0.17vw;
     }
-    
-    #back-arrow-p-modes:hover, 
+
+    #back-arrow-p-modes:hover,
     #back-arrow-p-modes:focus {
         width: 3.75vw;
         border-width: 0.2vw;
@@ -698,29 +485,31 @@ body::-webkit-scrollbar-thumb:hover {
 
 }
 
-@media (max-width: 900px) { /* Phones */
+@media (max-width: 900px) {
+
+    /* Phones */
     #outer-title-container {
         margin-bottom: 5.5vh;
     }
-    
+
     #inner-title-container {
         width: calc(var(--numberQ-width) * 1.65);
         height: calc(var(--numberQ-width) * 0.24 * 1.54);
         border-radius: 1vw;
     }
-    
+
     #numberQ-header {
         font-size: 11vw;
         margin-top: 1vw;
     }
-    
+
     #numberQ-description {
         font-size: 4vw;
         width: 75vw;
         border-width: 0.5vw;
         border-radius: 1vw;
     }
-    
+
     #generator-list {
         display: flex;
         flex-direction: column;
@@ -729,7 +518,7 @@ body::-webkit-scrollbar-thumb:hover {
         gap: 3vh;
         width: 95vw;
         padding-bottom: 5vw;
-    } 
+    }
 
     .generator {
         width: 66vw;
@@ -757,22 +546,23 @@ body::-webkit-scrollbar-thumb:hover {
         margin-bottom: 1vw;
     }
 
-    .start-button:hover, .start-button:focus {
+    .start-button:hover,
+    .start-button:focus {
         cursor: pointer;
         background-color: rgb(234, 179, 40);
         font-size: 3.775vw;
         border-width: 0.5vw;
     }
-    
+
     .gen-title {
         margin: 0;
         font-size: 4.6vw;
     }
-    
+
     .shrunk-title {
         font-size: 4.2vw;
     }
-    
+
     .gen-topic {
         margin: 0;
         font-size: 2.7vw;
@@ -781,7 +571,7 @@ body::-webkit-scrollbar-thumb:hover {
     .example-problem {
         font-size: 8.5vw;
     }
-    
+
     .shrunk-question {
         font-size: 6.5vw;
     }
@@ -797,11 +587,11 @@ body::-webkit-scrollbar-thumb:hover {
     #coming-soon-gen {
         border-width: 0.5vw;
     }
-    
+
     #coming-soon-problems {
         font-size: 5vw;
     }
-    
+
     #back-arrow-p-modes {
         width: 7vw;
         height: 7vw;
@@ -809,8 +599,8 @@ body::-webkit-scrollbar-thumb:hover {
         top: 1vw;
         border-width: 0.3vw;
     }
-    
-    #back-arrow-p-modes:hover, 
+
+    #back-arrow-p-modes:hover,
     #back-arrow-p-modes:focus {
         width: 7vw;
         height: 7vw;
@@ -823,7 +613,7 @@ body::-webkit-scrollbar-thumb:hover {
         align-items: center;
         overflow-y: visible;
     }
-    
+
     #generation-container {
         margin-top: 10vw;
         position: static;
@@ -842,20 +632,20 @@ body::-webkit-scrollbar-thumb:hover {
         margin-top: 10vw;
         left: 5vw;
     }
-    
+
     #gen-type-header {
         display: flex;
         flex-direction: column;
         align-items: center;
         margin: 0;
     }
-    
+
     #generator-name {
         font-size: 6vw;
         margin-top: 0.75vw;
         margin-bottom: 4vw;
     }
-    
+
     #Q-A-container {
         display: flex;
         flex-direction: column;
@@ -864,18 +654,18 @@ body::-webkit-scrollbar-thumb:hover {
         align-items: center;
         height: fit-content;
     }
-    
+
     .gen-column {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
     }
-    
+
     .column-header {
         font-size: 11vw;
     }
-    
+
     .output-box {
         font-size: 7vw;
         width: 73vw;
@@ -888,7 +678,7 @@ body::-webkit-scrollbar-thumb:hover {
     .latex-box {
         height: 4vw;
     }
-    
+
     .copy-button {
         width: 20vw;
         height: 9vw;
@@ -897,18 +687,19 @@ body::-webkit-scrollbar-thumb:hover {
         border-radius: calc(0.2 * 3.5vw);
         margin-top: 4vw;
     }
-    
-    .copy-button:hover, .copy-button:focus {
+
+    .copy-button:hover,
+    .copy-button:focus {
         cursor: default;
         border: 0.6vw solid rgb(42, 74, 181);
         background-color: #4ba1a1;
         font-size: 4vw;
     }
-    
+
     .copy-button[data-status='text-was-copied'] {
         background-color: #4b66a1;
     }
-    
+
     #generate-button {
         width: 33vw;
         height: 12vw;
@@ -918,8 +709,9 @@ body::-webkit-scrollbar-thumb:hover {
         border-radius: calc(0.2 * 3.8vw);
         border-width: 0.6vw;
     }
-    
-    #generate-button:hover, #generate-button:focus {
+
+    #generate-button:hover,
+    #generate-button:focus {
         font-size: 5vw;
         border-width: 0.6vw;
         background-color: rgb(65, 168, 68);
@@ -939,7 +731,7 @@ body::-webkit-scrollbar-thumb:hover {
         margin-bottom: 1vw;
     }
 
-    #feedback-button:hover, 
+    #feedback-button:hover,
     #feedback-button:focus {
         width: 42vw;
         height: 6.7vw;
@@ -954,11 +746,11 @@ body::-webkit-scrollbar-thumb:hover {
     #info-gen {
         border-width: 0.5vw;
     }
-    
+
     #generator-info-examples {
         font-size: 3vw;
     }
-    
+
     #see-info-button {
         width: 25vw;
         height: 6.7vw;
@@ -976,7 +768,7 @@ body::-webkit-scrollbar-thumb:hover {
         top: 9.5vw;
         border-width: 0.4vw;
     }
-    
+
     #FAQ-header {
         margin-top: 0.2vw;
         margin-bottom: 5.5vw;
@@ -984,20 +776,20 @@ body::-webkit-scrollbar-thumb:hover {
         border-radius: calc(0.2 * 3.5vw);
         border-width: 0.4vw;
     }
-    
+
     #back-arrow-FAQ {
         width: 7vw;
         left: 0.7vw;
         top: 1vw;
         border-width: 0.3vw;
     }
-    
-    #back-arrow-FAQ:hover, 
+
+    #back-arrow-FAQ:hover,
     #back-arrow-FAQ:focus {
         width: 7vw;
-        border: 0.12vw solid black; 
+        border: 0.12vw solid black;
         cursor: default;
-    }   
+    }
 
     #question-container {
         display: flex;
@@ -1007,12 +799,12 @@ body::-webkit-scrollbar-thumb:hover {
         justify-content: flex-start;
         padding: 0 1.75vw 1vw 1.75vw;
     }
-    
+
     .FAQ-question {
         margin-bottom: 0.6vw;
         font-size: 5.5vw;
     }
-    
+
     .FAQ-answer {
         margin-bottom: 5vw;
         font-size: 4.2vw;
@@ -1025,72 +817,72 @@ body::-webkit-scrollbar-thumb:hover {
     #un-rendered-Q[data-special-styles='genMulDiv'] {
         font-size: 3.73vw;
     }
-    
+
     #rendered-Q[data-special-styles='genSysEqs'] {
         height: 21.75vw;
     }
-    
+
     #rendered-A[data-special-styles='genSysEqs'] {
         height: 21.75vw;
     }
-    
+
     #un-rendered-Q[data-special-styles='genSysEqs'] {
         font-size: 5.36vw;
     }
-    
+
     #un-rendered-A[data-special-styles='genSysEqs'] {
         font-size: 5.36vw;
     }
-    
+
     .latex-box[data-special-styles='genTrigEx'] {
         font-size: 3.96vw;
     }
-    
+
     .rendered-box[data-special-styles='genRatEx'] {
         height: 18.75vw;
         font-size: 8.16vw;
     }
-    
+
     .latex-box[data-special-styles='genRatEx'] {
         font-size: 4.66vw;
     }
-    
+
     #rendered-A[data-special-styles='genPolArith'] {
         font-size: 5.36vw;
     }
-    
+
     #un-rendered-Q[data-special-styles='genPolArith'] {
         font-size: 3.96vw;
     }
-    
+
     #un-rendered-A[data-special-styles='genPolArith'] {
         font-size: 4.66vw;
     }
-    
+
     .rendered-box[data-special-styles='genComArith'] {
         height: 21.75vw;
     }
-    
+
     #rendered-Q[data-special-styles='genComArith'] {
         font-size: 9.33vw;
     }
-    
+
     .latex-box[data-special-styles='genComArith'] {
         font-size: 5.36vw;
     }
-    
+
     #rendered-Q[data-special-styles='genSimRad'] {
         font-size: 5.83vw;
     }
-    
+
     #un-rendered-Q[data-special-styles='genSimRad'] {
         font-size: 4.2vw;
     }
-    
+
     #rendered-A[data-special-styles='genSimRad'] {
         font-size: 6.3vw;
     }
-    
+
     #un-rendered-A[data-special-styles='genSimRad'] {
         font-size: 5.13vw;
     }

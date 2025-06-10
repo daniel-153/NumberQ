@@ -7,6 +7,7 @@
     <link rel="icon" href="images/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="styles/normalize.css" />
     <link rel="stylesheet" href="styles/home-styles.css" />
+    <link rel="stylesheet" href="styles/pg-ui-styles.css" />
     <link rel="stylesheet" href="styles/settings-styles.css" />
     <link rel="stylesheet" href="styles/presentation-styles.css" />
   </head>
@@ -61,20 +62,24 @@
             <div id="Q-A-container">
               <div id="Q-column" class="gen-column">
                 <h2 class="column-header">Q</h2>
-                <div class="output-box-wrapper">
+                <div class="output-box-group-wrapper">
                   <div id="rendered-Q-wrapper">
                     <button id="fullscreen-mode-button">Fullscreen Mode</button>
-                    <div class="output-box rendered-box" id="rendered-Q"></div>
+                    <div class="math-output-wrapper">
+                      <div class="output-box rendered-box" id="rendered-Q"></div>
+                    </div>
                   </div>
-                  <div class="output-box latex-box" id="un-rendered-Q"></div>
+                  <div class="output-box latex-box math-output-wrapper" id="un-rendered-Q"></div>
                   <button class="copy-button" id="Q-copy-button">Copy</button>
                 </div>
               </div>
               <div id="A-column" class="gen-column">
                 <h2 class="column-header">A</h2>
-                <div class="output-box-wrapper">
-                  <div class="output-box rendered-box" id="rendered-A"></div>
-                  <div class="output-box latex-box" id="un-rendered-A"></div>
+                <div class="output-box-group-wrapper">
+                  <div class="math-output-wrapper">
+                    <div class="output-box rendered-box" id="rendered-A"></div>
+                  </div>
+                  <div class="output-box latex-box math-output-wrapper" id="un-rendered-A"></div>
                   <button class="copy-button" id="A-copy-button">Copy</button>
                 </div>
               </div>
