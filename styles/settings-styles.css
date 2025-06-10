@@ -85,6 +85,47 @@
     margin-bottom: 0;
 }
 
+.inner-settings-wrapper {  /* contains outer-radio-button-wrapper */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 99%;
+  gap: 17%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding-top: 3%;
+}
+
+.setting-control-buttons {
+  margin-top: 2%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1vw;
+}
+
+
+.outer-radio-button-wrapper { 
+  width: fit-content;
+  height: fit-content;
+  max-width: 100%; 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow-y: visible;
+}
+
+.inner-radio-button-wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: flex-start;
+
+}
+
 @keyframes flash-red {
   0%, 40%   { border-color: red; color: red; }
   41%, 60%  { border-color: rgb(20, 20, 20); color: black; }
@@ -113,13 +154,6 @@
 }
 
 /* Settings tooltip and lock/unlock styles */
-
-.setting-control-buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1vw;
-}
 
 .settings-lock-image {
   max-width: 90%;
@@ -231,12 +265,20 @@
 
 /* Radio button styles */
 
+.radio-circle-wrapper {
+  height: 100%;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5vw;
+}
+
 .radio-buttons {
   width: 1vw;
   height: 1vw;
   min-width: 1vw;
   min-height: 1vw;
-  margin-right: 0.5vw;
 }
 
 .radio-buttons:hover {
@@ -249,32 +291,24 @@
   font-family: monospace;
   overflow-x: auto;
   overflow-y: hidden;
-  width: 100%;
-}
-
-.outer-radio-button-wrapper {
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-top: 0.4vw;
-  padding-bottom: 0.4vw;
-  max-width: 100%;
+  flex-grow: 1;
 }
 
 /* Scroll bar if the settings overflow a settings box vertically */
-.outer-radio-button-wrapper::-webkit-scrollbar {
+.inner-settings-wrapper::-webkit-scrollbar {
   width: 0.4vw; /* Scrollbar width */
 }
 
-.outer-radio-button-wrapper::-webkit-scrollbar-thumb {
+.inner-settings-wrapper::-webkit-scrollbar-thumb {
   background-color: #555; /* Dark gray thumb */
   border-radius: 0.2vw;
 }
 
-.outer-radio-button-wrapper::-webkit-scrollbar-thumb:hover {
+.inner-settings-wrapper::-webkit-scrollbar-thumb:hover {
   background-color: #666; /* Slightly lighter on hover */
 }
 
-.outer-radio-button-wrapper::-webkit-scrollbar-track {
+.inner-settings-wrapper::-webkit-scrollbar-track {
   background: #2222223d; /* Dark background for contrast */
   border-radius: 0.4vw; /* Round the track ends */
   margin: 0.4vw 0; /* Prevents the track from extending fully */
@@ -299,13 +333,6 @@
   background: #5c5c5c3d; /* Dark background for contrast */
   border-radius: 0.4vw; /* Round the track ends */
   margin: 0.4vw 0; /* Prevents the track from extending fully */
-}
-
-.inner-radio-button-wrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 1.7vw; /* This is now overridden by the JS in the insertSettings function (dynamically calculated margin) */
 }
 
 .last-radio-option {
@@ -419,8 +446,7 @@
 /* Textbox table styles */
 
 .textbox-table-wrapper {
-  overflow-x: hidden;
-  overflow-y: auto;
+  width: 95%;
 }
 
 .textbox-table-entry {
@@ -432,17 +458,14 @@
   margin-top: 0;
 }
 
-.last-textbox-table-entry {
+.textbox-table-entry:last-child {
   margin-bottom: 0;
-
 }
 
 .table-textbox {
   text-align: center;
-  width: 15%;
-  height: 15%;
-  margin-right: 3%;
-  margin-left: 2%;
+  width: 1.8vw;
+  height: 1.8vw;
   font-size: 1.5vw;
 }
 
@@ -450,6 +473,7 @@
   display: inline;
   font-family: monospace;
   font-size: 1vw;
+  margin-left: 5%;
 }
 
 .dimension-textbox-x {
