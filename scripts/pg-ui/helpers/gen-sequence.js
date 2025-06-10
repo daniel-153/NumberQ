@@ -35,19 +35,20 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
     pg_ui_state.current_module = await import(`../../math-gens/gens/${func_name}.js`);
     pg_ui_state.current_gen_func = async function(form_obj) {
         pg_ui_state.error_locations = new Set(); // create a new *Set* of error locations each generation (instead of an array to avoid repeats)
-        pg_ui_state.current_module.processFormObj(form_obj, pg_ui_state.error_locations); // fill in with appropriate values yielded from processing settings
+        FH.preValidateSettings(form_obj, pg_ui_state.valid_settings_log, pg_ui_state.error_locations);
+        pg_ui_state.current_module.validateSettings(form_obj, pg_ui_state.error_locations); // fill in with appropriate values yielded from processing settings
         return pg_ui_state.current_module.default(form_obj); // a processed form_obj (which we created above) is now a valid settings object
     }
 }
 
 export function getCurrentSettings(pg_ui_state, form_ID) {
     if (pg_ui_state.first_pg_ui_open || pg_ui_state.first_with_current_gen) { 
-        pg_ui_state.current_settings = FH.resolveRandSettings(pg_ui_state.current_module.get_presets(), pg_ui_state.possible_settings_log);
+        pg_ui_state.current_settings = FH.resolveRandSettings(pg_ui_state.current_module.get_presets(), pg_ui_state.valid_settings_log);
     }
     else { 
         if (pg_ui_state.randomize_all) {
             const current_form_values = FH.getFormObject(form_ID);
-            const rand_form_values = FH.resolveRandSettings(pg_ui_state.current_module.get_rand_settings(), pg_ui_state.possible_settings_log);
+            const rand_form_values = FH.resolveRandSettings(pg_ui_state.current_module.get_rand_settings(), pg_ui_state.valid_settings_log);
             const form_field_statuses = FH.getFormFieldStatuses(form_ID);
             pg_ui_state.current_settings = {}; // need to turn into an object because we are assigning properties one-by-one
 
