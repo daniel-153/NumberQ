@@ -53,7 +53,10 @@ export function getCurrentSettings(pg_ui_state, form_ID) {
             pg_ui_state.current_settings = {}; // need to turn into an object because we are assigning properties one-by-one
 
             for (const [key, value] of Object.entries(form_field_statuses)) {
-                if (value) { // the current setting is locked => use value in the form ('value' is either true or false)
+                if (
+                    value || // the current setting is locked => use value in the form ('value' is either true or false)
+                    rand_form_values[key] === undefined // Or: get_rand_settings didn't include this setting (it shouldn't be randomized)
+                ) { 
                     pg_ui_state.current_settings[key] = current_form_values[key]
                 }
                 else { // current settings is unlocked => use the random value from get_rand_settings()
