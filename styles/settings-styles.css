@@ -1,91 +1,93 @@
 #settings-container-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 0.4vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.4vw;
 }
 
 #randomize-all-tab {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 0.15vw;
-    width: 7.5vw;
-    min-width: 110px;
-    height: 1.3vw;
-    min-height: 20px;
-    font-size: clamp(13px, 0.9vw, 0.9vw);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-weight: 600;
-    color: whitesmoke;
-    background-color: rgb(172, 84, 84);
-    border: 0.1vw solid maroon;
-    border-radius: 0.1vw;
-    margin-top: 0.3vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.15vw;
+  width: 7.5vw;
+  min-width: 110px;
+  height: 1.3vw;
+  min-height: 20px;
+  font-size: clamp(13px, 0.9vw, 0.9vw);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 600;
+  color: whitesmoke;
+  background-color: rgb(172, 84, 84);
+  border: 0.1vw solid maroon;
+  border-radius: 0.1vw;
+  margin-top: 0.3vw;
 }
 
 #randomize-all-checkbox {
-    margin-right: 0.15vw;
-    width: 1vw;
-    height: 1vw;
-    min-width: 16px;
-    min-height: 16px;
+  margin-right: 0.15vw;
+  width: 1vw;
+  height: 1vw;
+  min-width: 16px;
+  min-height: 16px;
 }
 
 #randomize-all-checkbox:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #settings-container {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    width: fit-content;
-    height: 12.8784375vw;
-    background-color: rgb(52, 64, 81);
-    border: 0.25vw solid rgb(203, 182, 151);
-    border-radius: 0.4vw;
-    overflow-y: auto;
-    padding: 1vw;
-    padding-top: 1.25vw;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: fit-content;
+  height: 12.8784375vw;
+  background-color: rgb(52, 64, 81);
+  border: 0.2vw solid rgb(75, 20, 20);
+  border-radius: 0.4vw;
+  overflow-y: auto;
+  padding: 1vw;
+  padding-top: 1.25vw;
 }
 
 #settings-form {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Three columns per row */
-    gap: 5vw;
-    height: fit-content;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Three columns per row */
+  gap: 5vw;
+  height: fit-content;
 }
 
 .setting-box {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    width: 12.5vw;
-    height: 12.5vw;
-    min-width: 12.5vw;
-    min-height: 12.5vw;
-    background-color: rgb(236, 236, 236);
-    border: 0.1vw solid grey;
-    border-radius: calc(0.05 * 12.5vw);
-    padding-left: 0.1vw;
-    padding-right: 0.1vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  width: 12.5vw;
+  height: 12.5vw;
+  min-width: 12.5vw;
+  min-height: 12.5vw;
+  background-color: rgb(236, 236, 236);
+  border: 0.1vw solid grey;
+  border-radius: calc(0.05 * 12.5vw);
+  padding-left: 0.1vw;
+  padding-right: 0.1vw;
 }
 
 .settings-label {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 1.3vw;
-    font-weight: 600;
-    margin-top: 0.3vw;
-    color: rgb(10, 7, 25);
-    text-decoration: underline;
-    text-align: center;
-    margin-bottom: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1.3vw;
+  font-weight: 600;
+  margin-top: 0.3vw;
+  color: rgb(10, 7, 25);
+  text-decoration: underline;
+  text-align: center;
+  margin-bottom: 0;
 }
 
-.inner-settings-wrapper {  /* contains outer-radio-button-wrapper */
+.inner-settings-wrapper {
+  /* contains outer-radio-button-wrapper */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,10 +110,10 @@
 }
 
 
-.outer-radio-button-wrapper { 
+.outer-radio-button-wrapper {
   width: fit-content;
   height: fit-content;
-  max-width: 100%; 
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -127,10 +129,29 @@
 }
 
 @keyframes flash-red {
-  0%, 40%   { border-color: red; color: red; }
-  41%, 60%  { border-color: rgb(20, 20, 20); color: black; }
-  61%, 99%  { border-color: red; color: red; }
-  100%      { border-color: rgb(20, 20, 20); color: black; }
+
+  0%,
+  40% {
+    border-color: red;
+    color: red;
+  }
+
+  41%,
+  60% {
+    border-color: rgb(20, 20, 20);
+    color: black;
+  }
+
+  61%,
+  99% {
+    border-color: red;
+    color: red;
+  }
+
+  100% {
+    border-color: rgb(20, 20, 20);
+    color: black;
+  }
 }
 
 .flash-red {
@@ -138,19 +159,19 @@
 }
 
 .settings-text-box {
-    width: 3vw;
-    height: 3vw;
-    font-size: 2.3vw;
-    text-align: center;
-    outline: none;
-    border: 0.1vw solid rgb(20, 20, 20);
-    border-radius: 0.1vw;
-    font-family: monospace;
-    font-weight: 400;
+  width: 3vw;
+  height: 3vw;
+  font-size: 2.3vw;
+  text-align: center;
+  outline: none;
+  border: 0.1vw solid rgb(20, 20, 20);
+  border-radius: 0.1vw;
+  font-family: monospace;
+  font-weight: 400;
 }
 
 .settings-text-box:focus {
-    border: 0.12vw solid #1A73E8;
+  border: 0.12vw solid #1A73E8;
 }
 
 /* Settings tooltip and lock/unlock styles */
@@ -209,10 +230,12 @@
 .settings-info-button::before {
   content: attr(data-tooltip);
   position: absolute;
-  bottom: calc(100% + 0.65vw); /* Position tooltip above the button and arrow */
+  bottom: calc(100% + 0.65vw);
+  /* Position tooltip above the button and arrow */
   left: -40%;
   transform: translateX(-50%);
-  width: 11vw; /* Fixed width, allows height to grow dynamically */
+  width: 11vw;
+  /* Fixed width, allows height to grow dynamically */
   padding: 0.5vw;
   background-color: #333;
   color: whitesmoke;
@@ -220,7 +243,8 @@
   text-align: center;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 1vw;
-  height: max-content; /* Allows text wrapping */
+  height: max-content;
+  /* Allows text wrapping */
   white-space: normal;
   opacity: 0;
   pointer-events: none;
@@ -242,25 +266,29 @@
 }
 
 .settings-info-button:hover::before {
-  opacity: 1; /* Makes the tooltip visible on hover */
+  opacity: 1;
+  /* Makes the tooltip visible on hover */
 }
 
 .settings-info-button::after {
   content: '';
   position: absolute;
-  bottom: calc(100% + 0.2vw); /* Place arrow just below the tooltip box */
+  bottom: calc(100% + 0.2vw);
+  /* Place arrow just below the tooltip box */
   left: 50%;
   transform: translateX(-50%);
   border-left: 0.5vw solid transparent;
   border-right: 0.5vw solid transparent;
-  border-top: 0.5vw solid #333; /* Matches tooltip background */
+  border-top: 0.5vw solid #333;
+  /* Matches tooltip background */
   opacity: 0;
   pointer-events: none;
   transition: opacity 25ms ease-in-out;
 }
 
 .settings-info-button:hover::after {
-  opacity: 1; /* Makes the arrow visible on hover */
+  opacity: 1;
+  /* Makes the arrow visible on hover */
 }
 
 /* Radio button styles */
@@ -296,43 +324,55 @@
 
 /* Scroll bar if the settings overflow a settings box vertically */
 .inner-settings-wrapper::-webkit-scrollbar {
-  width: 0.4vw; /* Scrollbar width */
+  width: 0.4vw;
+  /* Scrollbar width */
 }
 
 .inner-settings-wrapper::-webkit-scrollbar-thumb {
-  background-color: #555; /* Dark gray thumb */
+  background-color: #555;
+  /* Dark gray thumb */
   border-radius: 0.2vw;
 }
 
 .inner-settings-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: #666; /* Slightly lighter on hover */
+  background-color: #666;
+  /* Slightly lighter on hover */
 }
 
 .inner-settings-wrapper::-webkit-scrollbar-track {
-  background: #2222223d; /* Dark background for contrast */
-  border-radius: 0.4vw; /* Round the track ends */
-  margin: 0.4vw 0; /* Prevents the track from extending fully */
+  background: #2222223d;
+  /* Dark background for contrast */
+  border-radius: 0.4vw;
+  /* Round the track ends */
+  margin: 0.4vw 0;
+  /* Prevents the track from extending fully */
 }
 
 /* Scroll bar if the settings overflow a settings box horizontally */
 .radio-button-label::-webkit-scrollbar {
-  height: 0.4vw; /* Scrollbar width */
+  height: 0.4vw;
+  /* Scrollbar width */
   min-height: 7.5px;
 }
 
 .radio-button-label::-webkit-scrollbar-thumb {
-  background-color: #777777; /* Dark gray thumb */
+  background-color: #777777;
+  /* Dark gray thumb */
   border-radius: 0.2vw;
 }
 
 .radio-button-label::-webkit-scrollbar-thumb:hover {
-  background-color: #535353; /* Slightly lighter on hover */
+  background-color: #535353;
+  /* Slightly lighter on hover */
 }
 
 .radio-button-label::-webkit-scrollbar-track {
-  background: #5c5c5c3d; /* Dark background for contrast */
-  border-radius: 0.4vw; /* Round the track ends */
-  margin: 0.4vw 0; /* Prevents the track from extending fully */
+  background: #5c5c5c3d;
+  /* Dark background for contrast */
+  border-radius: 0.4vw;
+  /* Round the track ends */
+  margin: 0.4vw 0;
+  /* Prevents the track from extending fully */
 }
 
 .last-radio-option {
@@ -370,7 +410,8 @@
 
 .textbox-w-checkbox:focus {
   border-width: 0.1vw;
-  outline: 0.05vw solid #1A73E8;;
+  outline: 0.05vw solid #1A73E8;
+  ;
 }
 
 .settings-checkbox-tab {
@@ -386,7 +427,7 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   font-weight: 600;
   color: white;
-  background-color:#585858;
+  background-color: #585858;
   border: 0.1vw solid rgb(68, 67, 67);
   border-radius: 0.1vw;
 }
@@ -480,25 +521,28 @@
   font-size: 2.5vw;
 }
 
-@media (max-width: 1700px) { /* Ipads and Small Laptops */
+@media (max-width: 1700px) {
+
+  /* Ipads and Small Laptops */
   #settings-container {
-      height: 21.5vw;
-      border-width: 0.4vw;
-      border-radius: 0.6vw;
+    height: 21.5vw;
+    border-width: 0.4vw;
+    border-radius: 0.6vw;
   }
-    
+
   #settings-form {
-      grid-template-columns: repeat(2, 1fr); /* Three columns per row */
-      gap: 4vw;
+    grid-template-columns: repeat(2, 1fr);
+    /* Three columns per row */
+    gap: 4vw;
   }
 
   .setting-box {
-      width: 21vw;
-      height: 21vw;
-      min-width: 21vw;
-      min-height: 21vw;
-      border-width: 0.2vw;
-      border-radius: calc(0.05 * 21vw);
+    width: 21vw;
+    height: 21vw;
+    min-width: 21vw;
+    min-height: 21vw;
+    border-width: 0.2vw;
+    border-radius: calc(0.05 * 21vw);
   }
 
   .settings-label {
@@ -549,18 +593,22 @@
   }
 
   .settings-info-button::before {
-    bottom: calc(100% + 0.85vw); /* Position tooltip above the button and arrow */
-    width: 18vw; /* Fixed width, allows height to grow dynamically */
+    bottom: calc(100% + 0.85vw);
+    /* Position tooltip above the button and arrow */
+    width: 18vw;
+    /* Fixed width, allows height to grow dynamically */
     padding: 0.5vw;
     border-radius: 0.5vw;
     font-size: 1.75vw;
   }
 
   .settings-info-button::after {
-    bottom: calc(100% + 0.2vw); /* Place arrow just below the tooltip box */
+    bottom: calc(100% + 0.2vw);
+    /* Place arrow just below the tooltip box */
     border-left: 0.8vw solid transparent;
     border-right: 0.8vw solid transparent;
-    border-top: 0.8vw solid #333; /* Matches tooltip background */
+    border-top: 0.8vw solid #333;
+    /* Matches tooltip background */
   }
 
   .radio-math {
@@ -595,7 +643,7 @@
     left: -47.5%;
   }
 
-  .settings-lock::before{
+  .settings-lock::before {
     left: 50%;
     width: 9vw;
   }
@@ -610,14 +658,15 @@
     height: 110vw;
     border-width: 0.4vw;
     border-radius: 1.5vw;
-}
-  
-#settings-form {
-    grid-template-columns: repeat(1, 1fr); /* Three columns per row */
-    gap: 4vw;
-}
+  }
 
-.setting-box {
+  #settings-form {
+    grid-template-columns: repeat(1, 1fr);
+    /* Three columns per row */
+    gap: 4vw;
+  }
+
+  .setting-box {
     width: 81vw;
     height: 81vw;
     min-width: 81vw;
@@ -627,144 +676,154 @@
     margin: 2vw;
     margin-top: 2.5vw;
     margin-bottom: 2.5vw;
-}
+  }
 
-.settings-label {
-  margin-top: 0.5vw;
-  font-size: 8vw;
-  margin-bottom: 2.5vw;
-}
+  .settings-label {
+    margin-top: 0.5vw;
+    font-size: 8vw;
+    margin-bottom: 2.5vw;
+  }
 
-#randomize-all-tab {
-  width: 35.5vw;
-  height: 4.7vw;
-  font-size: 4vw;
-  border-radius: 0.5vw;
-}
+  #randomize-all-tab {
+    width: 35.5vw;
+    height: 4.7vw;
+    font-size: 4vw;
+    border-radius: 0.5vw;
+  }
 
-#randomize-all-checkbox {
-  margin-right: 0.75vw;
-  width: 3.8vw;
-  height: 3.8vw;
-}
+  #randomize-all-checkbox {
+    margin-right: 0.75vw;
+    width: 3.8vw;
+    height: 3.8vw;
+  }
 
-.radio-buttons {
-  width: 7vw;
-  height: 7vw;
-  min-width: 7vw;
-  min-height: 7vw;
-  margin-bottom: 4.5vw;
-  margin-right: 1.5vw;
-}
+  .radio-buttons {
+    width: 7vw;
+    height: 7vw;
+    min-width: 7vw;
+    min-height: 7vw;
+    margin-bottom: 4.5vw;
+    margin-right: 1.5vw;
+  }
 
-.radio-button-label {
-  margin-bottom: 4.5vw;
-  font-size: 6vw;
-}
+  .radio-button-label {
+    margin-bottom: 4.5vw;
+    font-size: 6vw;
+  }
 
-.settings-text-box {
-  width: 20vw;
-  height: 20vw;
-  font-size: 12.3vw;
-  border-width: 0.6vw;
-}
+  .settings-text-box {
+    width: 20vw;
+    height: 20vw;
+    font-size: 12.3vw;
+    border-width: 0.6vw;
+  }
 
-.number-range-box {
-  font-size: 11.5vw;
-}
+  .number-range-box {
+    font-size: 11.5vw;
+  }
 
-.settings-text-box:focus {
-  border-width: 1vw;
-}
+  .settings-text-box:focus {
+    border-width: 1vw;
+  }
 
-.settings-info-button {
-  width: 7.5vw;
-  height: 7.5vw;
-  font-size: 7vw;
-  margin-bottom: 1vw;
-  border-radius: 0.5vw;
-}
+  .settings-info-button {
+    width: 7.5vw;
+    height: 7.5vw;
+    font-size: 7vw;
+    margin-bottom: 1vw;
+    border-radius: 0.5vw;
+  }
 
-.settings-info-button::before {
-  bottom: calc(100% + 3.85vw); /* Position tooltip above the button and arrow */
-  width: 70vw; /* Fixed width, allows height to grow dynamically */
-  padding: 2.5vw;
-  border-radius: 2.2vw;
-  font-size: 6vw;
-}
+  .settings-info-button::before {
+    bottom: calc(100% + 3.85vw);
+    /* Position tooltip above the button and arrow */
+    width: 70vw;
+    /* Fixed width, allows height to grow dynamically */
+    padding: 2.5vw;
+    border-radius: 2.2vw;
+    font-size: 6vw;
+  }
 
-.settings-info-button::after {
-  bottom: calc(100% + 0.75vw); /* Place arrow just below the tooltip box */
-  border-left: 4vw solid transparent;
-  border-right: 4vw solid transparent;
-  border-top: 4vw solid #333; /* Matches tooltip background */
-}
+  .settings-info-button::after {
+    bottom: calc(100% + 0.75vw);
+    /* Place arrow just below the tooltip box */
+    border-left: 4vw solid transparent;
+    border-right: 4vw solid transparent;
+    border-top: 4vw solid #333;
+    /* Matches tooltip background */
+  }
 
-.radio-math {
-  font-size: 7.5vw;
-}
+  .radio-math {
+    font-size: 7.5vw;
+  }
 
-.radio-math-big {
-  font-size: 9.5vw;
-}
+  .radio-math-big {
+    font-size: 9.5vw;
+  }
 
-.radio-sub-label {
-  font-size: 7vw;
-  padding-bottom: 0.7vw;
-}
+  .radio-sub-label {
+    font-size: 7vw;
+    padding-bottom: 0.7vw;
+  }
 
-.number-range-wrapper {
-  font-size: 5vw;
-}
+  .number-range-wrapper {
+    font-size: 5vw;
+  }
 
-.solution-point-wrapper {
-  font-size: 15vw;
-}
+  .solution-point-wrapper {
+    font-size: 15vw;
+  }
 
-.settings-checkbox-tab {
-  width: 32vw;
-  height: 5.4vw;
-  font-size: 4.5vw;
-}
+  .settings-checkbox-tab {
+    width: 32vw;
+    height: 5.4vw;
+    font-size: 4.5vw;
+  }
 
-.single-settings-checkbox {
-  width: 4.5vw;
-  height: 4.5vw;
-  margin-right: 0.75vw;
-}
+  .single-settings-checkbox {
+    width: 4.5vw;
+    height: 4.5vw;
+    margin-right: 0.75vw;
+  }
 
-.outer-radio-button-wrapper::-webkit-scrollbar {
-  width: 2.4vw; /* Scrollbar width */
-}
+  .outer-radio-button-wrapper::-webkit-scrollbar {
+    width: 2.4vw;
+    /* Scrollbar width */
+  }
 
-.outer-radio-button-wrapper::-webkit-scrollbar-thumb {
-  background-color: #555; /* Dark gray thumb */
-  border-radius: 2.2vw;
-}
+  .outer-radio-button-wrapper::-webkit-scrollbar-thumb {
+    background-color: #555;
+    /* Dark gray thumb */
+    border-radius: 2.2vw;
+  }
 
-.outer-radio-button-wrapper::-webkit-scrollbar-thumb:hover {
-  background-color: #666; /* Slightly lighter on hover */
-}
+  .outer-radio-button-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: #666;
+    /* Slightly lighter on hover */
+  }
 
-.outer-radio-button-wrapper::-webkit-scrollbar-track {
-  background: #2222223d; /* Dark background for contrast */
-  border-radius: 2.4vw; /* Round the track ends */
-  margin: 2.4vw 0; /* Prevents the track from extending fully */
-}
+  .outer-radio-button-wrapper::-webkit-scrollbar-track {
+    background: #2222223d;
+    /* Dark background for contrast */
+    border-radius: 2.4vw;
+    /* Round the track ends */
+    margin: 2.4vw 0;
+    /* Prevents the track from extending fully */
+  }
 
   .settings-info-button::before {
     left: -52.5%;
   }
 
-.settings-lock::before {
-  display: none;
-}
+  .settings-lock::before {
+    display: none;
+  }
 
-.settings-lock::after {
-  display: none;
-}
+  .settings-lock::after {
+    display: none;
+  }
 
-.setting-control-buttons {
-  gap: 8vw;
-}
+  .setting-control-buttons {
+    gap: 8vw;
+  }
 }
