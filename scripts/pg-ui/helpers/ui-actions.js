@@ -38,16 +38,21 @@ export function toggleFullScreenAns(method = 'toggle') {
     }
 } // method => 'show', 'hide', or 'toggle' the fullscreen answer 
 
-export function toggleSettingsLock(settings_lock_el) {
-    const current_status = settings_lock_el.getAttribute('data-status');
-    const lock_image_el = [...settings_lock_el.children][0];
+export function toggleSettingsLock(settings_lock_el, method = 'toggle') {
+    if (method === 'toggle') {
+        const current_status = settings_lock_el.getAttribute('data-status');
 
-    if (current_status === 'unlocked') {
+        if (current_status === 'unlocked') method = 'lock';
+        else if (current_status === 'locked') method = 'unlock';
+    }
+
+    const lock_image_el = [...settings_lock_el.children][0];
+    if (method === 'lock') {
         lock_image_el.src = "images/lock.png";
         settings_lock_el.setAttribute('data-status', 'locked');
     }
-    else if (current_status === 'locked') {
+    else if (method === 'unlock') {
         lock_image_el.src = "images/unlock.png";
         settings_lock_el.setAttribute('data-status', 'unlocked');
     }
-} // lock if unlocked and unlock if locked
+} // lock if unlocked and unlock if locked Or -> carry out method if provided

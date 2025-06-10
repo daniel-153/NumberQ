@@ -95,7 +95,7 @@ export function prelockSettings(form_ID, gen_module) {
         lock_element_array.forEach(lock_element => {
             // (if any prelocked setting is found on the current lock, lock it)
             if (gen_module['prelocked_settings'].some(element => lock_element.getAttribute('data-values-to-lock').split(',').includes(element))) {
-                UAH.toggleSettingsLock(lock_element);
+                UAH.toggleSettingsLock(lock_element, 'lock');
             }
         });
     }
