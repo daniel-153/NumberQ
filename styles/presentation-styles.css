@@ -338,10 +338,6 @@
         --button-height: 4.6vw;
         font-size: 3.6vw;
         width: 32vw;
-        top: calc((-1) * var(--button-height) + 0.1vw + 2vw);
-        left: 2vw;
-        border-radius: 0.5vw;
-        
     }
 
     #fullscreen-mode-button:hover {
