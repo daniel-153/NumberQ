@@ -39,10 +39,10 @@
 #generation-container::after {
     content: "";
     position: relative;
-    bottom: -1.75vw;
-    height: 1.75vw;
-    margin-top: -1.75vw;
-    border: 0.1px solid rgba(0, 0, 0, 0);
+    bottom: -1.5vw;
+    height: 1.5vw;
+    margin-top: -1.5vw;
+    border: 0.1px solid rgb(0, 0, 0, 0);
 }
 
 #gen-type-header {
