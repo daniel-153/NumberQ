@@ -79,11 +79,11 @@ export function updateRandomizeAll(pg_ui_state, checkbox_ID) {
     }
 }   
 
-export function updatePGQABoxes(question_obj) {
+export function updatePGQABoxes(question_obj, sizes_obj) {
     // main UI (2 rendered boxes and 2 tex boxes)
-    UH.updateElementMath('rendered-Q',question_obj.question,'3vw');
+    UH.updateElementMath('rendered-Q', question_obj.question, sizes_obj.q_font_size);
     document.getElementById('un-rendered-Q').innerHTML = question_obj.TeXquestion;
-    UH.updateElementMath('rendered-A',question_obj.answer,'2.5vw');
+    UH.updateElementMath('rendered-A', question_obj.answer, sizes_obj.a_font_size);
     document.getElementById('un-rendered-A').innerHTML = question_obj.TeXanswer;
 
     // presentation mode (2 rendered boxes)
@@ -102,4 +102,91 @@ export function prelockSettings(form_ID, gen_module) {
             }
         });
     }
+}
+
+const SAH = { // resolveSizeAdjustments helpers
+    default_sizes: null,
+    getDefaultSizes: function () {
+        const view_width_px = document.documentElement.clientWidth;
+
+        // clear previously applied inline styles
+        const rendered_Q = document.getElementById('rendered-Q');
+        const rendered_A = document.getElementById('rendered-A');
+        document.getElementById('rendered-Q').removeAttribute('style');
+        document.getElementById('rendered-A').removeAttribute('style');
+
+        // get the necessary information
+        SAH.default_sizes = {};
+        SAH.default_sizes.width = rendered_Q.clientWidth / view_width_px * 100 + 'vw';
+        SAH.default_sizes.height = rendered_Q.clientHeight / view_width_px * 100 + 'vw';
+        SAH.default_sizes.q_font_size = parseFloat(getComputedStyle(rendered_Q).fontSize) / view_width_px * 100 + 'vw';
+        SAH.default_sizes.a_font_size = parseFloat(getComputedStyle(rendered_A).fontSize) / view_width_px * 100 + 'vw';
+    },
+    setFinalSize: function(size_name, scale_factor, pg_ui_state) {
+        pg_ui_state.sizes[size_name] = Number(SAH.default_sizes[size_name].slice(0, -2)) * scale_factor + 'vw';
+    },
+    getMaxWidth: function(pg_ui_box_type) {
+        const vw = document.documentElement.clientWidth;
+        const pg_ui_banner_width = document.getElementById('generation-container').clientWidth;
+        console.log('view width: ',vw)
+        console.log('banner width: ',pg_ui_banner_width)
+
+        // need to handle the layout change on mobile
+        let max_single_box_width; // in px to start
+        if (vw > 900) { // not mobile
+            const flex_gap = parseFloat(getComputedStyle(document.getElementById('Q-A-container')).gap);
+
+            max_single_box_width = (pg_ui_banner_width - flex_gap) / 2 - 0.01 * vw; // 1vw away from the edge of pg-ui banner
+        }
+        else { // mobile
+            max_single_box_width = pg_ui_banner_width - 0.06 * vw; // 6vw less than the pg-ui banner width
+        }
+        
+        if (pg_ui_box_type === 'rendered') {
+            return ((max_single_box_width / 1.04) / vw) * 100 + 'vw';
+        }
+        else if (pg_ui_box_type === 'un-rendered') {
+            return (max_single_box_width / vw) * 100 + 'vw';
+        }
+    },
+    applyFinalSizes: function(sizes_obj) {
+        // Only the width and height need to be manually applied here (font changes are applied each time math is inserted)
+        const mathoutput_border = Number(sizes_obj.width.slice(0, -2)) * 0.02 + 'vw';
+        const total_gencol_width = Number(sizes_obj.width.slice(0, -2)) + 2 * Number(mathoutput_border.slice(0, -2)) + 'vw';
+        
+        ['rendered-Q','rendered-A'].forEach(element_id => {
+            const element = document.getElementById(element_id);
+            element.style.width = sizes_obj.width;
+            element.style.height = sizes_obj.height;
+            element.style.borderWidth = mathoutput_border;
+            element.style.maxWidth = SAH.getMaxWidth('rendered');
+            console.log('max width for rendered: ',SAH.getMaxWidth('rendered') + ' + 2*' + mathoutput_border)
+        });
+
+        ['un-rendered-Q', 'un-rendered-A'].forEach(element_id => {
+            const element = document.getElementById(element_id);
+            element.style.width = total_gencol_width;
+            element.style.maxWidth = SAH.getMaxWidth('un-rendered');
+            console.log('max width for unrendered: ',SAH.getMaxWidth('un-rendered'))
+        })
+    }
+};
+export function resolveSizeAdjustments(gen_module, pg_ui_state) {
+    SAH.getDefaultSizes();
+
+    if (gen_module.size_adjustments !== undefined) { // there is at least one size adjustment in the gen module
+        ['width', 'height', 'q_font_size', 'a_font_size'].forEach(size_name => {
+            if (gen_module.size_adjustments[size_name] !== undefined) { // non-1 scale factor provided
+                SAH.setFinalSize(size_name, gen_module.size_adjustments[size_name], pg_ui_state);
+            }
+            else { // no scale factor provided (1 ==> use the default size)
+                SAH.setFinalSize(size_name, 1, pg_ui_state);
+            }
+        });
+    }
+    else { // no size adjustments (use all defaults)
+        pg_ui_state.sizes = SAH.default_sizes;
+    }
+
+    SAH.applyFinalSizes(pg_ui_state.sizes);
 }

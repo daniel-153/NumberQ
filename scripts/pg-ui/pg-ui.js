@@ -18,7 +18,13 @@ const pg_ui_state = {
     error_locations: null,
     randomize_all: false,
     first_pg_ui_open: true, // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
-    first_with_current_gen: false // first generation with the current module
+    first_with_current_gen: false, // first generation with the current module,
+    sizes: {
+        width: null,
+        height: null,
+        q_font_size: null,
+        a_font_size: null
+    }
 };
 
 export async function generate(func_name, display_name = '') {
@@ -30,7 +36,7 @@ export async function generate(func_name, display_name = '') {
     if (pg_ui_state.first_pg_ui_open || func_name !== pg_ui_state.func_name) { // first generation with any mode Or switched to a new gen
         await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
         PH.insertGenTitle(display_name, "generator-name");
-        PH.adjustOutputBoxSizing(func_name);
+        PH.resolveSizeAdjustments(pg_ui_state.current_module, pg_ui_state);
         pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
         FH.correctSettingOverflow('settings-form');
         PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
@@ -42,7 +48,7 @@ export async function generate(func_name, display_name = '') {
 
     PH.getGenOutput(pg_ui_state, await pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
 
-    PH.updatePGQABoxes(pg_ui_state.question_obj);
+    PH.updatePGQABoxes(pg_ui_state.question_obj, pg_ui_state.sizes);
 
     FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
 
