@@ -389,3 +389,7 @@ export function get_rand_settings() {
         sys_eqs_term_number: sys_eqs_term_number
     }; 
 }
+
+export const size_adjustments = {
+    height: 1.3,
+};

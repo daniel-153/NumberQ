@@ -202,3 +202,8 @@ export function get_rand_settings() {
         mtrx_op_answer_form: '__random__'
     };
 }
+
+export const size_adjustments = {
+    width: 1.12,
+    height: 2,
+};

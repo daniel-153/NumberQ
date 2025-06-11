@@ -1225,3 +1225,7 @@ export function get_rand_settings() {
         give_excluded_values: 'no'
     }; 
 }
+
+export const size_adjustments = {
+    height: 1.3,
+};

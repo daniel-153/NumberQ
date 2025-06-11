@@ -186,3 +186,8 @@ export function get_rand_settings() {
         matrix_notation: '__random__'
     };
 }
+
+export const size_adjustments = {
+    width: 1.2,
+    height: 2,
+};

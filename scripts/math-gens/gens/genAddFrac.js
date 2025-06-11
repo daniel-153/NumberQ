@@ -303,3 +303,9 @@ export function get_rand_settings() {
         addsub_operation_type: '__random__'
     }; 
 }
+
+export const size_adjustments = {
+    height: 1.2,
+    q_font_size: 1.1,
+    a_font_size: 1.1
+};

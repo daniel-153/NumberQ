@@ -780,3 +780,7 @@ export function get_rand_settings() {
         multiply_symbol: '__random__' 
     };
 }
+
+export const size_adjustments = {
+    width: 1.12
+};

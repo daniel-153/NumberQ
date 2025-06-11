@@ -171,3 +171,8 @@ export function get_rand_settings() {
         vec_op_answer_form: '__random__'
     } 
 }
+
+export const size_adjustments = {
+    width: 1.1,
+    height: 2.2,
+};

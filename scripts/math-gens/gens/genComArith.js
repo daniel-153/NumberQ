@@ -285,4 +285,6 @@ export function get_rand_settings() {
     }; 
 }
 
-
+export const size_adjustments = {
+    height: 1.1,
+};

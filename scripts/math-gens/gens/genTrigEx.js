@@ -474,3 +474,9 @@ export function get_rand_settings() {
         trig_function_types: '__random__'
     }; 
 }
+
+export const size_adjustments = {
+    height: 1.2,
+    q_font_size: 1.2,
+    a_font_size: 1.2
+};

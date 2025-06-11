@@ -183,3 +183,8 @@ export function get_rand_settings() {
         angle_unit: '__random__'
     };
 }
+
+export const size_adjustments = {
+    width: 1.1,
+    height: 2,
+};

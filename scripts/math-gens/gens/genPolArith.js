@@ -204,3 +204,7 @@ export function get_rand_settings() {
         division_result: '__random__'
     }; 
 }
+
+export const size_adjustments = {
+    width: 1.15,
+};
