@@ -180,57 +180,173 @@
     font-size: 1.675vw;
 }
 
-/* Special style accomodations for the output boxes */
+@media (max-width: 1700px) {
+    #generate-button {
+        width: 13vw;
+        height: 4.3vw;
+        font-size: 2.1vw;
+        border-width: 0.25vw;
+        border-radius: 0.38vw;
+    }
 
-#un-rendered-Q[data-special-styles='genMulDiv'] {
-    font-size: 0.8vw;
+    #regen-circle {
+        font-size: 2.2vw;
+    }
+
+    #generate-button:hover,
+    #generate-button:focus {
+        background-color: rgb(65, 168, 68);
+        border-width: 0.25vw;
+        font-size: 2.1vw;
+
+    }
+
+    #generator-name {
+        font-size: 2vw;
+    }
+
+    #back-arrow-p-modes {
+        width: 3.7vw;
+        height: 3.7vw;
+        border-width: 0.17vw;
+    }
+
+    #back-arrow-p-modes:hover,
+    #back-arrow-p-modes:focus {
+        width: 3.75vw;
+        border-width: 0.2vw;
+    }
 }
 
-.rendered-box[data-special-styles='genSysEqs'] {
-    height: 8.7vw;
-}
+@media (max-width: 900px) {
+    #back-arrow-p-modes {
+        width: 7vw;
+        height: 7vw;
+        left: 0.7vw;
+        top: 1vw;
+        border-width: 0.3vw;
+    }
 
-.rendered-box[data-special-styles='genVecArith'],
-.rendered-box[data-special-styles='genMtrxArith'],
-.rendered-box[data-special-styles='genVecOp'],
-.rendered-box[data-special-styles='genMtrxOp'] {
-    font-size: 0.7vw;
-    height: 20vw;
-}
+    #back-arrow-p-modes:hover,
+    #back-arrow-p-modes:focus {
+        width: 7vw;
+        height: 7vw;
+    }
 
-.latex-box[data-special-styles='genSysEqs'] {
-    font-size: 1.2vw;
-}
+    #generation-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        overflow-y: visible;
+    }
 
-.rendered-box[data-special-styles='genRatEx'] {
-    height: 7.5vw;
-    font-size: 3.5vw;
-}
+    #generation-container {
+        margin-top: 10vw;
+        position: static;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        width: 90vw;
+        height: fit-content;
+        border-radius: calc(0.025 * var(--gen-container-width));
+        border-width: 0.6vw;
+        margin-bottom: 5vw;
 
-.latex-box[data-special-styles='genRatEx'] {
-    font-size: 1.2vw;
-}
+        /* position: fixed; */
+        top: 10vw;
+        margin-top: 10vw;
+        left: 5vw;
+    }
 
-#rendered-A[data-special-styles='genPolArith'] {
-    font-size: 2.3vw;
-}
+    #gen-type-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+    }
 
-.rendered-box[data-special-styles='genComArith'] {
-    height: 8.7vw;
-}
+    #generator-name {
+        font-size: 6vw;
+        margin-top: 0.75vw;
+        margin-bottom: 4vw;
+    }
 
-#rendered-Q[data-special-styles='genComArith'] {
-    font-size: 4vw;
-}
+    #Q-A-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 6vw;
+        align-items: center;
+        height: fit-content;
+    }
 
-#rendered-Q[data-special-styles='genSimRad'] {
-    font-size: 2.5vw;
-}
+    .gen-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-#un-rendered-Q[data-special-styles='genSimRad'] {
-    font-size: 1vw;
-}
+    .column-header {
+        font-size: 11vw;
+    }
 
-#rendered-A[data-special-styles='genSimRad'] {
-    font-size: 2.7vw;
+    .math-output-wrapper {
+        border-radius: calc(0.25 * 5vw);
+    }
+
+    .output-box {
+        font-size: 7vw;
+        width: 73vw;
+        height: 15vw;
+    }
+
+    .latex-box {
+        height: 4vw;
+    }
+
+    .copy-button {
+        width: 20vw;
+        height: 9vw;
+        font-size: 4vw;
+        border: 0.6vw solid rgb(42, 74, 181);
+        border-radius: calc(0.2 * 3.5vw);
+        margin-top: 4vw;
+    }
+
+    .copy-button:hover,
+    .copy-button:focus {
+        cursor: default;
+        border: 0.6vw solid rgb(42, 74, 181);
+        background-color: #4ba1a1;
+        font-size: 4vw;
+    }
+
+    .copy-button[data-status='text-was-copied'] {
+        background-color: #4b66a1;
+    }
+
+    #generate-button {
+        width: 33vw;
+        height: 12vw;
+        font-size: 5vw;
+        margin-top: 5vw;
+        margin-bottom: 14vw;
+        border-radius: calc(0.2 * 3.8vw);
+        border-width: 0.6vw;
+    }
+
+    #generate-button:hover,
+    #generate-button:focus {
+        font-size: 5vw;
+        border-width: 0.6vw;
+        background-color: rgb(65, 168, 68);
+        cursor: default;
+    }
+
+    #regen-circle {
+        font-size: 6vw;
+    }
 }
