@@ -31,7 +31,7 @@ const VOH = { // genVecOp helpers
             return raw_value + '';
         }
         else if (Number.isSafeInteger(raw_denom) && settings.vec_op_answer_form !== 'decimals') { // result is a fraction with no roots 
-            return PH.simplifiedFracString(numerator_int, raw_denom);
+            return PH.simplifiedFracString(numerator_int, raw_denom, 'in_front');
         }
         else if (settings.vec_op_answer_form === 'not-rationalized') { 
             const integer_frac = PH.simplifyFraction(numerator_int, denom_root_expr.numberInFront); // integer part of the result fraction
@@ -39,7 +39,8 @@ const VOH = { // genVecOp helpers
             let final_denom = `\\sqrt{${denom_root_expr.numberUnderRoot}}`;
             if (integer_frac.denom !== 1) final_denom = integer_frac.denom + final_denom; 
 
-            return `\\frac{${final_numer}}{${final_denom}}`;
+            if (final_numer > 0) return `\\frac{${final_numer}}{${final_denom}}`; // positive result
+            else return `-\\frac{${-final_numer}}{${final_denom}}`; // negative result (move the negative sign in front of the frac)
         }
         else if (settings.vec_op_answer_form === 'rationalized') {
             const integer_frac = PH.simplifyFraction(numerator_int, denom_root_expr.numberInFront * denom_root_expr.numberUnderRoot); // integer part of the result fraction
@@ -51,6 +52,7 @@ const VOH = { // genVecOp helpers
             final_numer += `\\sqrt{${denom_root_expr.numberUnderRoot}}`;
 
             if (integer_frac.denom === 1) return final_numer;
+            else if (final_numer.charAt(0) === '-') return `-\\frac{${final_numer.slice(1)}}{${final_denom}}`; 
             else return `\\frac{${final_numer}}{${final_denom}}`;
         }
         else if (settings.vec_op_answer_form === 'decimals') { // only case where the vector might not be exact anymore
