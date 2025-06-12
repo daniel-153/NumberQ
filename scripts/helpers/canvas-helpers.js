@@ -20,7 +20,7 @@ const CH = {
         context.scale(dpr, dpr); // scale the draw context according to the canvas resolution
 
         if (set_as_current) {
-            setCurrentCanvas(canvas_el, context);
+            this.setCurrentCanvas(canvas_el, context);
         }
 
         return {
@@ -36,16 +36,17 @@ const CH = {
         C.beginPath();
         C.moveTo(point_set_obj.A.x, point_set_obj.A.y);
         GH.forEachPoint(point_set_obj, function(point) {
-            lineTo(point.x, point.y);
+            C.lineTo(point.x, point.y);
         });
-        C.closePath();
+        C.lineTo(point_set_obj.A.x, point_set_obj.A.y)
+        C.stroke()
     }
 }
 
 // Module Utilities:
 
 const cartesian_functions = [ // functions that assume a cartesian canvas context
-    GH.drawtriangle
+    CH.drawPolygon
 ];
 for (const [func_name, func_obj] of Object.entries(CH)) {
     if (cartesian_functions.includes(func_obj)) {
@@ -55,7 +56,7 @@ for (const [func_name, func_obj] of Object.entries(CH)) {
             C.translate(0, canvas.height);
             C.scale(1, -1);
 
-            const return_val = func(...args); // call the function now that the context is flipped to cartesian
+            const return_val = func_obj(...args); // call the function now that the context is flipped to cartesian
 
             // restore unflipped context
             C.restore();

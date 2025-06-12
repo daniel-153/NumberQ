@@ -53,7 +53,7 @@ export const build_triangle = {
             },
             C: {
                 x: (side_1**2 - side_2**2 + side_3**2) / 2*side_1,
-                y: side_2 * Math.sin(Math.acos((side_1**2 + side_2**2 - side_3**2) / 2*side_1*side_2))
+                y: side_2 * Math.sin(Math.acos((side_1**2 + side_2**2 - side_3**2) / (2*side_1*side_2)))
             }
         };
     },
@@ -81,18 +81,32 @@ export const transformations = {
         translating_point.y = translating_point.y + translation.y;
     },
     rotate: function(rotating_point, fixed_point, angle) {
-        const r = Math.sqrt( (rotating_point.x - fixed_point.x)**2 + (rotating_point.y - fixed_point.y)**2 );
-        rotating_point.x = rotating_point.x - Math.sin(angle) * r;
-        rotating_point.y = rotating_point.y + (1 - Math.cos(angle)) * r;
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        const dx = rotating_point.x - fixed_point.x;
+        const dy = rotating_point.y - fixed_point.y;
+
+        const rotatedX = dx * cos - dy * sin;
+        const rotatedY = dx * sin + dy * cos;
+
+        rotating_point.x = rotatedX + fixed_point.x;
+        rotating_point.y = rotatedY + fixed_point.y;
     },
     reflect: function(reflecting_point, line_point, line_slope) {
-        const temp = reflecting_point.x;
-        reflecting_point.x = (2*line_point.x*line_slope**2 - reflecting_point.x*line_slope**2 - 2*line_slope*line_point.y + reflecting_point.x + 2*reflecting_point.y*line_slope) / (1 + line_slope**2);
-        reflecting_point.y = (reflecting_point.y*line_slope**2 + 2*temp*line_slope - 2*line_point.x*line_slope + 2*line_point.y - reflecting_point.y) / (1 + line_slope**2);
+        if (line_slope === Infinity || line_slope === -Infinity) { // vertical line
+            reflecting_point.x = 2*line_point.x - reflecting_point.x;
+            // no change to the y-cord
+        }
+        else {
+            const temp = reflecting_point.x;
+            reflecting_point.x = (2*line_point.x*line_slope**2 - reflecting_point.x*line_slope**2 - 2*line_slope*line_point.y + reflecting_point.x + 2*reflecting_point.y*line_slope) / (1 + line_slope**2);
+            reflecting_point.y = (reflecting_point.y*line_slope**2 + 2*temp*line_slope - 2*line_point.x*line_slope + 2*line_point.y - reflecting_point.y) / (1 + line_slope**2);
+        }
     },
-    dialate: function(dialating_point, fixed_point, scale_factor) {
-        dialating_point.x = scale_factor*dialating_point.x + fixed_point.x*(1 - scale_factor);
-        dialating_point.y = scale_factor*dialating_point.y + fixed_point.y*(1 - scale_factor);
+    dilate: function(dilating, fixed_point, scale_factor) {
+        dilating.x = scale_factor*dilating.x + fixed_point.x*(1 - scale_factor);
+        dilating.y = scale_factor*dilating.y + fixed_point.y*(1 - scale_factor);
     },
     transformPointSet: function(point_set, transformation, ...args) {
         for (const [_, point] of Object.entries(point_set)) {
