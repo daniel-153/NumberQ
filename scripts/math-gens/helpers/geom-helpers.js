@@ -115,20 +115,107 @@ export const transformations = {
     }
 }
 
-export function normalizeShapePosition(polygon) {
-    // Identify the x-cord of the point that is farthest to the left on the x-y plane
-    // & Identify the y-cord of the point that is farthest down on the x-y plane
+export function getBoundingRect(point_set) {
     let leftmost_x_cord = Infinity;
-    let downmost_y_cord = Infinity;
-    for (const [_, point] of Object.entries(polygon)) {
+    let rightmost_x_cord = -Infinity;
+    let bottommost_y_cord = Infinity;
+    let topmost_y_cord = -Infinity;
+    
+    for (const [_, point] of Object.entries(point_set)) {
         if (point.x < leftmost_x_cord) leftmost_x_cord = point.x;
-        if (point.y < downmost_y_cord) downmost_y_cord = point.y;
+        if (point.x > rightmost_x_cord) rightmost_x_cord = point.x;
+        if (point.y < bottommost_y_cord) bottommost_y_cord = point.y;
+        if (point.y > topmost_y_cord) topmost_y_cord = point.y;
     }
 
-    // Basically, get the polygon as "snug" as possible *in the first quadrant* with only a translation
-    transformations.transformPointSet(polygon, 'translate',
-        {x: -leftmost_x_cord, y: -downmost_y_cord}
+    return {
+        x1: leftmost_x_cord, x2: rightmost_x_cord, 
+        y1: bottommost_y_cord, y2: topmost_y_cord
+    };
+}
+
+export function normalizePointSetPosition(point_set, position = {x: 0, y: 0}, quadrant = 1) {
+    const bounding_rect = getBoundingRect(point_set);
+
+    // determine the necessary translation based on the desired quadrant and the bounding rect
+    let translation = {x: null, y: null};
+    if (quadrant === 1) {
+        translation.x = -bounding_rect.x1;
+        translation.y = -bounding_rect.y1;
+    }
+    else if (quadrant === 2) {
+        translation.x = -bounding_rect.x2;
+        translation.y = -bounding_rect.y1;
+    }
+    else if (quadrant === 3) {
+        translation.x = -bounding_rect.x2;
+        translation.y = -bounding_rect.y2;
+    }
+    else if (quadrant === 4) {
+        translation.x = -bounding_rect.x1;
+        translation.y = -bounding_rect.y2;
+    }
+
+    // Now add on the desired position to the translation
+    translation.x += position.x;
+    translation.y += position.y;
+    
+    transformations.transformPointSet(point_set, 'translate', translation);
+}
+
+export function fitPointSet(
+    point_set, 
+    bounding_rect = {x1: 0, x2: 1000, y1: 0, y2: 1000}, 
+    x_justify = 'left', y_justify = 'bottom'
+) {
+    // start by normalizing position to Q1 (bottom-left) of the given bounding rect
+    normalizePointSetPosition(point_set, {x: bounding_rect.x1, y: bounding_rect.y1}, 1);
+
+    // determine how much the point set needs to scale to fit snugly in Q1 of the bounding rect
+    let ps_bounding_rect = getBoundingRect(point_set);
+    const ps_diagonal_len = Math.sqrt( (ps_bounding_rect.x2 - ps_bounding_rect.x1)**2 + (ps_bounding_rect.y2 - ps_bounding_rect.y1)**2 );
+    const bounding_diagonal_len = Math.sqrt( (bounding_rect.x2 - bounding_rect.x1)**2 + (bounding_rect.y2 - bounding_rect.y1)**2 );
+    
+    // apply the scaling
+    transformations.transformPointSet(
+        point_set, 'dilate', 
+        {x: bounding_rect.x1, y: bounding_rect.y1}, 
+        (bounding_diagonal_len / ps_diagonal_len)
     );
+
+    // get the updated bounding rect
+    ps_bounding_rect = getBoundingRect(point_set);
+
+    // get the amount of remaining space in the positive x and y directions
+    const x_space = bounding_rect.x2 - ps_bounding_rect.x2;
+    const y_space = bounding_rect.y2 - ps_bounding_rect.y2;
+
+    let justification_translation = {x: null, y: null};
+
+    // determine x-justification (left justified by default)
+    if (x_justify === 'left') {
+        justification_translation.x = 0; // no x translation
+    }
+    else if (x_justify === 'center') {
+        justification_translation.x = x_space / 2; // half the remaining space in the x-direction
+    }
+    else if (x_justify === 'right') {
+        justification_translation.x = x_space; // all the remaining space in the x-direction
+    }
+
+    // determine the y-justification (bottom justified by default)
+    if (y_justify === 'bottom') {
+        justification_translation.y = 0; // no y translation
+    }
+    else if (y_justify === 'center') {
+        justification_translation.y = y_space / 2; // half the remaining space in the y-direction
+    }
+    else if (y_justify === 'top') {
+        justification_translation.y = y_space; // all the remaining space in the y-direction
+    }
+
+    // apply the justification translation
+    transformations.transformPointSet(point_set, 'translate', justification_translation);
 }
 
 export function forEachPoint(point_set_obj, callback) {
@@ -140,3 +227,15 @@ export function forEachPoint(point_set_obj, callback) {
     }
 }
 
+export function getCombinedPointSet(...point_sets) {
+    const combined_point_set = {};
+
+    let i = 0; // using to ensure unique keys
+    point_sets.forEach(point_set_obj => {
+        for (const [_, point] of Object.entries(point_set_obj)) {
+            combined_point_set[String(i++)] = point;
+        }
+    });
+
+    return combined_point_set;
+}
