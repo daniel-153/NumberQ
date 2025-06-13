@@ -1,3 +1,13 @@
+export function buildPointSet(...points) {
+    const point_set = {};
+
+    let i = 0;
+    points.forEach(point => {
+        point_set[_getPointKey(i)] = point;
+    });
+
+    return point_set;
+}
 
 export function convertAngle(theta, to_unit) {
     if (to_unit === 'to_rad') {
@@ -220,8 +230,7 @@ export function fitPointSet(
 
 export function forEachPoint(point_set_obj, callback) {
     for (let i = 0; i < Object.entries(point_set_obj).length; i++) {
-        const alphabet_runs = Math.floor(i / 26);
-        const key = String.fromCharCode(65 + (i % 26)) + String((alphabet_runs >= 1)? alphabet_runs : ''); 
+        const key = _getPointKey(i); 
 
         callback(point_set_obj[key]);
     }
@@ -238,4 +247,149 @@ export function getCombinedPointSet(...point_sets) {
     });
 
     return combined_point_set;
+}
+
+export function getPolygonPointArray(polygon_point_set) {
+    const point_array = [];
+
+    forEachPoint(polygon_point_set, function(point_obj) {
+        point_array.push(point_obj);
+    });
+}
+
+export function getPolygonSignedArea(polygon_point_set) {
+    const point_array = getPolygonPointArray(polygon_point_set);
+
+    let sum = 0;
+    for (let i = 0; i <= point_array.length - 1; i++) { // "shoelace" formula
+        sum += point_array[i].x*point_array[i + 1].y - point_array[i + 1].x*point_array[i].y
+    }
+
+    return sum / 2;
+}
+
+export function getPolygonOrientation(polygon_point_set) {
+    const signed_area = getPolygonSignedArea(polygon_point_set);
+
+    if (signed_area > 0) return 'CCW';
+    else if (signed_area < 0) return 'CW';
+}
+
+export function getLineSegment(polygon, side_name) {
+    let [ first_vertex, second_vertex] = side_name.split('-');
+    first_vertex = polygon[first_vertex];
+    second_vertex = polygon[second_vertex];
+
+    return buildPointSet(
+        {
+            x: first_vertex.x,
+            y: first_vertex.y
+        },
+        {
+            x: second_vertex.x,
+            y: second_vertex.y
+        }
+    );
+}
+
+export function getMidPoint(line_segment) {
+    return {
+        x: (line_segment.A.x + line_segment.B.x) / 2,
+        y: (line_segment.A.y + line_segment.B.y) / 2
+    };
+}
+
+export function getOutwardNormal(polygon, side_name) {
+    let [ first_vertex, second_vertex] = side_name.split('-');
+    first_vertex = polygon[first_vertex];
+    second_vertex = polygon[second_vertex];
+
+    const side_vector = {x: second_vertex.x - first_vertex.x, y: second_vertex.y - first_vertex.y};
+
+    const polygon_orientation = getPolygonOrientation(polygon);
+
+    let outward_normal_vector = {x: null, y: null};
+    if (polygon_orientation === 'CCW') {
+        outward_normal_vector.x = side_vector.y;
+        outward_normal_vector.y = -side_vector.x;
+    }
+    else if (polygon_orientation === 'CW') {
+        outward_normal_vector.x = -side_vector.y;
+        outward_normal_vector.y = side_vector.x;
+    }
+
+    // convert to a unit vector
+    const mag = Math.sqrt(outward_normal_vector.x**2 + outward_normal_vector.y**2);
+    outward_normal_vector.x /= mag;
+    outward_normal_vector.y /= mag;
+
+    return outward_normal_vector;
+}
+
+export function positionPolygonSideLabel(label_bounding_box, polygon, side_name, distance) {
+    // get the side's outward normal vector (to find out which side of the polygon's side the label should be on)
+    const outward_normal = getOutwardNormal(polygon, side_name); // is a unit vector by default
+
+    // place the bounding box's center at the tip of the above normal vector (sprouting from the midpoint of the polygon's side)
+    const midpoint = getMidPoint(getLineSegment(polygon, side_name));
+    const center_point = {
+        x: midpoint.x + outward_normal.x,
+        y: midpoint.y + outward_normal.y
+    };
+    const bounding_box_ps = buildPointSet( // bounding box point set (make it a real rectangle)
+        {
+            x: label_bounding_box.x1,
+            y: label_bounding_box.y1
+        },
+        {
+            x: label_bounding_box.x2,
+            y: label_bounding_box.y1
+        },
+        {
+            x: label_bounding_box.x2,
+            y: label_bounding_box.y2
+        },
+        {
+            x: label_bounding_box.x1,
+            y: label_bounding_box.y2
+        }
+    )
+    const bounding_box_center = {
+        x: (label_bounding_box.x1 + label_bounding_box.x2) / 2,
+        y: (label_bounding_box.x2 + label_bounding_box.y2) / 2
+    };
+    transformations.transformPointSet(bounding_box_ps, 'translate', // center the bounding box on the origin, so then the translation to a point Is the point
+        {
+            x: -bounding_box_center.x + center_point.x,
+            y: -bounding_box_center.y + center_point.y
+        }
+    );
+
+    // now rotate the whole "apparatus" so the normal vector (imaginary now) points directly along the positive x-axis
+    const original_angle = Math.atan(outward_normal.y / outward_normal.x); // original angle of the normal vector
+    transformations.transformPointSet(bounding_box_ps, 'rotate', midpoint, -original_angle);
+
+    // determine how far along the x-axis the bounding box needs to be moved in so it's closest corner is at least distance^ units away from the y axis
+    const leftmost_x_cord = getBoundingRect(bounding_box_ps).x1;
+    const total_movement = distance - leftmost_x_cord;
+
+    // apply that translation
+    transformations.transformPointSet(bounding_box_ps, 'translate', {x: total_movement, y: 0});
+
+    // now rotate everything back to the original orientation 
+    transformations.transformPointSet(bounding_box_ps, 'rotate', midpoint, original_angle);
+
+    // the label's point set now has the correct position, and the last step is ot overrride the original bounding boxes position with this
+    const new_bounding_box = getBoundingRect(bounding_box_ps);
+
+    label_bounding_box.x1 = new_bounding_box.x1;
+    label_bounding_box.y1 = new_bounding_box.y1;
+    label_bounding_box.x2 = new_bounding_box.x2;
+    label_bounding_box.y2 = new_bounding_box.y2;
+}
+
+function _getPointKey(point_index) {
+    const alphabet_runs = Math.floor(point_index / 26);
+    const key = String.fromCharCode(65 + (point_index % 26)) + String((alphabet_runs >= 1)? alphabet_runs : '');
+    return key;
 }
