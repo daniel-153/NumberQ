@@ -31,6 +31,8 @@ const CH = {
     setCurrentCanvas: function(canvas_el, context) {
         canvas = canvas_el;
         C = context;
+
+        C.font = 'bold 16px arial'
     },
     drawPolygon: function(point_set_obj) {
         C.beginPath();
@@ -41,17 +43,24 @@ const CH = {
         C.lineTo(point_set_obj.A.x, point_set_obj.A.y)
         C.stroke()
     },
-    getTextBoundingRect: function(text_string, position = {x: 0, y: 0}) { // assumes the text sprouts from the bottom-left of the rect
-        const text_metrics = C.measureText(text_string);
+    getTextBoundingRect: function(text_string, position = {x: 0, y: 0}) { // assumes left-bottom alignment
+        const text_metrics = C.measureText(text_string); 
+        const bounding_box = {x1: null, x2: null, y1: null, y2: null};
 
-        return {
-            x1: position.x, x2: position.x + text_metrics.width,
-            y1: position.y, y2: position.y + text_metrics.actualBoundingBoxAscent + text_metrics.actualBoundingBoxDescent
-        };
+        bounding_box.x1 = position.x;
+        bounding_box.x2 = position.x + text_metrics.width;
+
+        const extremium_text_metrics = C.measureText(text_string + 'HgypÅÉ|');
+
+        bounding_box.y1 = position.y - extremium_text_metrics.actualBoundingBoxDescent,
+        bounding_box.y2 = position.y + extremium_text_metrics.actualBoundingBoxAscent 
+
+
+        return bounding_box;
     },
     insertText: function(text_string, bounding_rect) {
         // get the actual bounding rect for the provided text (to make sure it will fit)
-        let actual_bouding_rect = this.getTextBoundingRect(text_string, {x: bounding_rect.x1, y: bounding_rect.y1});
+        let actual_bouding_rect = CH.getTextBoundingRect(text_string, {x: bounding_rect.x1, y: bounding_rect.y1});
 
         if (actual_bouding_rect.x2 > bounding_rect.x2 || actual_bouding_rect.y2 > bounding_rect.y2) {
             console.error('Provided text overflows its bounding rect.');
@@ -62,18 +71,28 @@ const CH = {
 
         // ensure the text alignment is correct (left-bottom is assumed)
         C.textAlign = 'left';
-        C.textBaseline = 'bottom';
+        C.textBaseline = "bottom";
 
-        C.fillText(text_string, bounding_rect.x1, bounding_rect.y1);
+        C.fillText(text_string, bounding_rect.x1, canvas.height - bounding_rect.y1);
 
         C.restore();
+    },
+    drawBoundingRect(bounding_rect) {
+        C.beginPath();
+        C.moveTo(bounding_rect.x1, bounding_rect.y1);
+        C.lineTo(bounding_rect.x2, bounding_rect.y1);
+        C.lineTo(bounding_rect.x2, bounding_rect.y2);
+        C.lineTo(bounding_rect.x1, bounding_rect.y2);
+        C.lineTo(bounding_rect.x1, bounding_rect.y1);
+        C.stroke();
     }
 }
 
 // Module Utilities:
 
 const cartesian_functions = [ // functions that assume a cartesian canvas context
-    CH.drawPolygon
+    CH.drawPolygon,
+    CH.drawBoundingRect
 ];
 for (const [func_name, func_obj] of Object.entries(CH)) {
     if (cartesian_functions.includes(func_obj)) {
