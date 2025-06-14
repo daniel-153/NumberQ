@@ -4,6 +4,7 @@ export function buildPointSet(...points) {
     let i = 0;
     points.forEach(point => {
         point_set[_getPointKey(i)] = point;
+        i++;
     });
 
     return point_set;
@@ -255,13 +256,15 @@ export function getPolygonPointArray(polygon_point_set) {
     forEachPoint(polygon_point_set, function(point_obj) {
         point_array.push(point_obj);
     });
+
+    return point_array;
 }
 
 export function getPolygonSignedArea(polygon_point_set) {
     const point_array = getPolygonPointArray(polygon_point_set);
 
     let sum = 0;
-    for (let i = 0; i <= point_array.length - 1; i++) { // "shoelace" formula
+    for (let i = 0; i < point_array.length - 1; i++) { // "shoelace" formula
         sum += point_array[i].x*point_array[i + 1].y - point_array[i + 1].x*point_array[i].y
     }
 
@@ -306,7 +309,7 @@ export function getOutwardNormal(polygon, side_name) {
 
     const side_vector = {x: second_vertex.x - first_vertex.x, y: second_vertex.y - first_vertex.y};
 
-    const polygon_orientation = getPolygonOrientation(polygon);
+    const polygon_orientation = getPolygonSignedArea(polygon) > 0 ? 'CCW' : 'CW';
 
     let outward_normal_vector = {x: null, y: null};
     if (polygon_orientation === 'CCW') {
@@ -332,7 +335,7 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
 
     // place the bounding box's center at the tip of the above normal vector (sprouting from the midpoint of the polygon's side)
     const midpoint = getMidPoint(getLineSegment(polygon, side_name));
-    const center_point = {
+    const outward_normal_tip = {
         x: midpoint.x + outward_normal.x,
         y: midpoint.y + outward_normal.y
     };
@@ -356,30 +359,36 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
     )
     const bounding_box_center = {
         x: (label_bounding_box.x1 + label_bounding_box.x2) / 2,
-        y: (label_bounding_box.x2 + label_bounding_box.y2) / 2
+        y: (label_bounding_box.y2 + label_bounding_box.y2) / 2
     };
     transformations.transformPointSet(bounding_box_ps, 'translate', // center the bounding box on the origin, so then the translation to a point Is the point
         {
-            x: -bounding_box_center.x + center_point.x,
-            y: -bounding_box_center.y + center_point.y
+            x: -bounding_box_center.x + outward_normal_tip.x,
+            y: -bounding_box_center.y + outward_normal_tip.y
         }
     );
 
-    // now rotate the whole "apparatus" so the normal vector (imaginary now) points directly along the positive x-axis
-    const original_angle = Math.atan(outward_normal.y / outward_normal.x); // original angle of the normal vector
+    // now rotate the whole "apparatus" so the normal vector (imaginary now) points directly in the positive x-direction
+    const original_angle = Math.atan2(outward_normal.y, outward_normal.x); // original angle of the normal vector
     transformations.transformPointSet(bounding_box_ps, 'rotate', midpoint, -original_angle);
+
+    // translate the base of the normal vector to the origin
+    transformations.transformPointSet(bounding_box_ps, 'translate', {x: -midpoint.x, y: -midpoint.y});
 
     // determine how far along the x-axis the bounding box needs to be moved in so it's closest corner is at least distance^ units away from the y axis
     const leftmost_x_cord = getBoundingRect(bounding_box_ps).x1;
     const total_movement = distance - leftmost_x_cord;
 
-    // apply that translation
+    // apply that translation (to put the closest corner distance units away from the y axis)
     transformations.transformPointSet(bounding_box_ps, 'translate', {x: total_movement, y: 0});
 
-    // now rotate everything back to the original orientation 
+    // set the base of the normal vector back on the mid-point of the polygon's side
+    transformations.transformPointSet(bounding_box_ps, 'translate', {x: midpoint.x, y: midpoint.y});
+
+    // undo the rotation
     transformations.transformPointSet(bounding_box_ps, 'rotate', midpoint, original_angle);
 
-    // the label's point set now has the correct position, and the last step is ot overrride the original bounding boxes position with this
+    // the label's point set now has the correct position, and the last step is to overwrite the original bounding boxes position with this:
     const new_bounding_box = getBoundingRect(bounding_box_ps);
 
     label_bounding_box.x1 = new_bounding_box.x1;
