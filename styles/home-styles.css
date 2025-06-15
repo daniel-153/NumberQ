@@ -234,6 +234,11 @@ body::-webkit-scrollbar-thumb:hover {
     border-color: rgb(9, 169, 169);
 }
 
+.geometry-gen {
+    background-color: #7c5443;
+    border-color: rgb(87, 37, 0)
+}
+
 #coming-soon-gen {
     background-color: rgb(175, 167, 167);
     border-color: rgb(85, 86, 86);
