@@ -65,6 +65,13 @@ export const templates = [
         example_problem: '\\sqrt{27}+\\sqrt{75}'
     },
     {
+        function_name: 'genPyTheo',
+        category_class_name: 'geometry-gen',
+        display_name: 'Pythagorean Theorem',
+        display_category: 'geometry',
+        example_problem: 'a^{2}+b^{2}=c^{2}'
+    },
+    {
         function_name: 'genTrigEx',
         category_class_name: 'precalc-gen',
         display_name: 'Trig Values',
