@@ -445,7 +445,15 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
         // get the first entry in the valid values log (to determine the correct type for the setting)
         const first_valid_value = valid_values_log[setting_name].valid_values[0];
         
-        if (typeof(first_valid_value) === 'number') { // numerical text input
+        if (first_valid_value === '__regex__') { // text input being validated by a regular expression
+            const regular_expression = valid_values_log[setting_name].valid_values[1]; // second entry is the regex string
+
+            if (!(new RegExp(regular_expression).test(setting_value))) { // if the inputted value does NOT conform to the regular expression
+                error_locations.add(setting_name);
+                setting_value = valid_values_log[setting_name].default_value;
+            }
+        }
+        else if (typeof(first_valid_value) === 'number') { // numerical text input
             // text input was left empty
             if (setting_value === '') error_locations.add(setting_name);
             
