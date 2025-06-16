@@ -706,3 +706,89 @@ export const mtrx_op_answer_form = {
     tooltip: 'How should non-integers in the answer matrix (if any) be represented?',
     prelocked: true
 };
+
+export const triangle_length_unit = {
+    type: 'single_textbox',
+    display_name: 'Unit of Length',
+    tooltip: 'What length unit should the triangle sides be in (in, cm, m, km, etc)? Enter 1-2 letters or leave blank for no unit.',
+    valid_values: ["__regex__", "^([a-zA-Z]{1,2})?$"],
+    default_value: '',
+    prelocked: true
+};
+
+export const triangle_number_type = {
+    type: 'radio_buttons',
+    display_name: 'Given Length Numbers',
+    radio_buttons: [
+        ['integers_only', 'Integers Only'],
+        ['allow_decimals','Allow Decimals']
+    ], 
+    tooltip: 'Should the given side lengths always be integers, or include decimals?',
+    prelocked: true
+};
+
+export const force_py_theo_triples = {
+    type: 'radio_buttons',
+    display_name: 'Pythagorean Triples',
+    radio_buttons: [['always','Always'],['sometimes','Sometimes']], 
+    tooltip: 'Should all triangles be pythagorean triples (like 3-4-5, 5-12-13, and 1.5-2-2.5), or should non-triples also be included?'
+};
+
+export const label_triangle_sides = {
+    type: 'radio_buttons',
+    display_name: 'Label Side Lengths',
+    radio_buttons: [['yes','Yes'],['no','No']], 
+    tooltip: 'Should the triangle sides be labeled with their corresponding letter? (like a=3, b=4, and c=?)',
+    prelocked: true
+};
+
+export const py_theo_unknown = {
+    type: 'radio_buttons',
+    display_name: 'Solve For',
+    radio_buttons: [['leg','A Leg'],['hypotenuse','The Hypotenuse']], 
+    tooltip: 'Which part of the right triangle should be unknown, a leg or the hypotenuse?'
+};
+
+export const py_theo_unknown_marker = {
+    type: 'radio_buttons',
+    display_name: 'Unknown Symbol',
+    radio_buttons: [
+        ['question_mark','Question Mark (?)'],
+        ['letter_x','Nothing'],
+        ['appropriate_side','(b) or (c)'],
+        ['nothing','(x)'] 
+    ], 
+    tooltip: 'What should mark the unknown side? (a question mark, the letter x, the corresponding a-b-c letter, or nothing)',
+    prelocked: true
+};
+
+export const triangle_rotation = {
+    type: 'textbox_w_checkbox',
+    code_names: ['rotation_deg','randomize_rotation'],
+    display_name: 'Triangle Rotation',
+    display_names: ['Degrees&nbsp;(CCW)','Randomize'],
+    tooltip: 'How many degrees should the triangle be rotated by? (enter an integer value in degrees between 0 and 360, or randomize)',
+    valid_values: {
+        'rotation_deg': [0, '--', 360],
+        'randomize_rotation': ['is_checked', undefined]
+    },
+    default_value: {
+        'rotation_deg': 3
+    }
+};
+
+export const triangle_length_size = {
+    type: 'single_textbox',
+    display_name: "Side Length Size",
+    tooltip: "How big or small should the triangle side lengths be? (enter an integer from 1 to 100)",
+    valid_values: [ 1, '--', 100 ],
+    default_value: 75
+};
+
+export const py_theo_answer_form = {
+    type: 'radio_buttons',
+    display_name: 'Answer Form',
+    radio_buttons: [['decimals_answers','Rounded Decimals'],['exact_answers','Exact Root Expressions']], 
+    tooltip: 'How should answers in non-pythagorean-triples be represented? (should the answer to 1-1-? be &radic;2 or &asymp;1.414)',
+    prelocked: true
+};
