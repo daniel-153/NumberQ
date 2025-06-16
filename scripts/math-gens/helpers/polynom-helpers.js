@@ -494,6 +494,14 @@ export function simplifySQRT(n) {
     return {numberInFront, numberUnderRoot};
 }
 
+export function simplifiedSqrtString(non_negative_int) {
+    const simplified_root = simplifySQRT(non_negative_int);
+
+    if (simplified_root.numberUnderRoot === 1) return simplified_root.numberInFront + '';
+    else if (simplified_root.numberUnderRoot === 0) return '0';
+    else return `${simplified_root.numberInFront}\\sqrt{${simplified_root.numberUnderRoot}}`;
+}
+
 export function gcfOfArray(array) {
     // Helper function to find GCF of two numbers using the Euclidean algorithm
     function gcf(a, b) {
