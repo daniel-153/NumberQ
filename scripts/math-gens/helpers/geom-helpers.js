@@ -295,6 +295,48 @@ export function getLineSegment(polygon, side_name) {
     );
 }
 
+export function lineSegmentToVector(line_segment, traversal_direction = 'A-B') {
+    const vector = {x: null, y: null};
+
+    if (traversal_direction = 'A-B') {
+        vector.x = line_segment.B.x - line_segment.A.x;
+        vector.y = line_segment.B.y - line_segment.A.y;
+    }
+    else if (traversal_direction = 'B-A') {
+        vector.x = line_segment.A.x - line_segment.B.x;
+        vector.y = line_segment.A.y - line_segment.B.y;
+    }
+
+    return vector;
+}
+
+export function getDotProduct(vector_1, vector_2) {
+    return vector_1.x*vector_2.x + vector_1.y*vector_2.y;
+}
+
+export function getVectorMagnitude(vector) {
+    return Math.sqrt(vector.x**2 + vector.y**2);
+}
+
+export function convertToUnitVector(vector) {
+    const mag = Math.sqrt(vector.x**2 + vector.y**2);
+
+    vector.x = vector.x / mag;
+    vector.y = vector.y / mag;
+}
+
+export function scaleVector(vector, scalar) {
+    vector.x *= scalar;
+    vector.y *= scalar;
+}
+
+export function addVectors(vector_1, vector_2) {
+    return {
+        x: vector_1.x + vector_2.x,
+        y: vector_1.y + vector_2.y
+    }
+}
+
 export function getMidPoint(line_segment) {
     return {
         x: (line_segment.A.x + line_segment.B.x) / 2,
@@ -395,6 +437,99 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
     label_bounding_box.y1 = new_bounding_box.y1;
     label_bounding_box.x2 = new_bounding_box.x2;
     label_bounding_box.y2 = new_bounding_box.y2;
+}
+
+export function getRightAngleLabel(right_triangle) { // 5% of the length of the longer side, always less than a third of the shorter side
+    // first step is to find the vertex that corresponds to the right angle (this function assumes that vertex exists)
+    const side_vectors = {'A-B': null, 'A-C': null, 'B-A': null, 'B-C': null, 'C-B': null, 'C-A': null};
+    side_vectors.keys.forEach(key => {
+        side_vectors[key] = lineSegmentToVector(getLineSegment(right_triangle, key));
+    });
+
+    const dot_products = {
+        A: getDotProduct(
+            side_vectors['A-B'],
+            side_vectors['A-C']
+        ),
+        B: getDotProduct(
+            side_vectors['B-A'],
+            side_vectors['B-C']
+        ),
+        C: getDotProduct(
+            side_vectors['C-B'],
+            side_vectors['C-A']
+        )
+    };
+
+    // dot product that is closest to 0 is assumed to be the vertex with the right angle
+    const right_angle_vertex = _keyWithClosestValue(dot_products, 0);
+    const other_vertices = ['A','B','C'].filter(vertex => vertex !== right_angle_vertex);
+
+    // next step is to size the right angle label to the current triangle
+    const vector_1 = side_vectors[right_angle_vertex + '-' + other_vertices[0]];
+    const vector_2 = side_vectors[right_angle_vertex + '-' + other_vertices[1]];
+    const unit_vector_1 = convertToUnitVector(...vector_1);
+    const unit_vector_2 = convertToUnitVector(...vector_2);
+
+    // square size is 5% of the longer side, but if <that is greater than 25% of the shorter side, square size is 25% of the shorter side
+    let square_size = 0.05 * Math.max(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2));
+    if (square_size > Math.min(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2)) / 4) {
+        square_size = Math.min(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2)) / 4;
+    }
+
+    // now the 3 points needed for the right angle label can be defined
+    scaleVector(unit_vector_1, square_size);
+    scaleVector(unit_vector_2, square_size);
+
+    const point_1 = addVectors(right_triangle[right_angle_vertex], unit_vector_1);
+    const point_2 = addVectors(point_1, unit_vector_2);
+    const point_3 = addVectors(right_triangle[right_angle_vertex], unit_vector_2);
+
+    return buildPointSet(point_1, point_2, point_3);
+}
+
+export function getTriangleIncenter(triangle) {
+    const a = Math.sqrt((triangle.B.x - triangle.C.x)**2 + (triangle.B.y - triangle.C.y)**2);
+    const b = Math.sqrt((triangle.A.x - triangle.C.x)**2 + (triangle.A.y - triangle.C.y)**2);
+    const c = Math.sqrt((triangle.B.x - triangle.A.x)**2 + (triangle.B.y - triangle.A.y)**2);
+    
+    return {
+        x: (a*triangle.A.x + b*triangle.B.x + c*triangle.C.x) / (a + b + c),
+        y: (a*triangle.A.y + b*triangle.B.y + c*triangle.C.y) / (a + b + c)
+    }
+}
+
+export function getBoundingRectRectangle(bounding_rect) {
+    return buildPointSet(
+        {
+            x: bounding_rect.x1, y: bounding_rect.y1
+        },
+        {
+            x: bounding_rect.x2, y: bounding_rect.y1
+        },
+        {
+            x: bounding_rect.x2, y: bounding_rect.y2
+        },
+        {
+            x: bounding_rect.x1, y: bounding_rect.y2
+        }
+    )
+}
+
+function _keyWithClosestValue(object, numerical_value) {
+    let closest_key = null;
+    let smallest_difference = Infinity;
+
+    for (const [key, value] of Object.entries(object)) {
+        const current_difference = Math.abs(value - numerical_value);
+
+        if (current_difference < smallest_difference) {
+            closest_key = key;
+            smallest_difference = current_difference;
+        }
+    }
+
+    return closest_key;
 }
 
 function _getPointKey(point_index) {
