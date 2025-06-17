@@ -1,4 +1,4 @@
-import * as GH from '../math-gens/helpers/geom-helpers.js';
+import * as geometry from '../math-gens/helpers/geom-helpers.js';
 
 let canvas = null;
 let C = null;
@@ -31,13 +31,11 @@ const CH = {
     setCurrentCanvas: function(canvas_el, context) {
         canvas = canvas_el;
         C = context;
-
-        C.font = 'bold 16px arial'
     },
     drawPolygon: function(point_set_obj) {
         C.beginPath();
         C.moveTo(point_set_obj.A.x, point_set_obj.A.y);
-        GH.forEachPoint(point_set_obj, function(point) {
+        geometry.forEachPoint(point_set_obj, function(point) {
             C.lineTo(point.x, point.y);
         });
         C.lineTo(point_set_obj.A.x, point_set_obj.A.y)
@@ -77,7 +75,7 @@ const CH = {
 
         C.restore();
     },
-    drawBoundingRect(bounding_rect) {
+    drawBoundingRect: function(bounding_rect) {
         C.beginPath();
         C.moveTo(bounding_rect.x1, bounding_rect.y1);
         C.lineTo(bounding_rect.x2, bounding_rect.y1);
@@ -85,6 +83,79 @@ const CH = {
         C.lineTo(bounding_rect.x1, bounding_rect.y2);
         C.lineTo(bounding_rect.x1, bounding_rect.y1);
         C.stroke();
+    },
+    drawRightTriangle: function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
+        // a -> A-B | b -> B-C | c -> C-A
+        const triangle_ps = geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b);
+        const side_name_key = {'a': 'A-B', 'b': 'B-C', 'c': 'C-A'};
+
+        // rotate the triangle by the specified amount (about its incenter)
+        geometry.transformations.transformPointSet(triangle_ps, 'rotate', 
+            geometry.getTriangleIncenter(triangle_ps), geometry.convertAngle(rotation, 'to_rad')
+        );
+
+        // scale the triangle to fit a (theoretical) 500x500 canvas in the corner of Q1
+        geometry.fitPointSet(triangle_ps, {x1: 0, x2: 500, y1: 0, y2: 500}, 'center', 'center');
+
+        // get the bounding rects for the side labels 
+        for (const [key, _] of Object.entries(label_bounding_rects)) {
+            label_bounding_rects[key] = CH.getTextBoundingRect(side_labels_obj[key]);
+        }
+
+        // get and position the bounding rects for the side labels + downsize the triangle to ensure everything fits on the canvas (while maintaining font size)
+        const label_bounding_rects = {a: null, b: null, c: null};
+        C.font = '20px Arial';
+        const downsize_factor = 0.95;
+        let downsize_power = 1;
+        let current_bounding_rect;
+        const incenter = geometry.getTriangleIncenter(triangle_ps);
+        do {
+            // downsize the triangle by an increment
+            geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, downsize_factor**(downsize_power++));
+            
+            // position the labels on the sides
+            for (const [_, bounding_rect] of Object.entries(label_bounding_rects)) {                
+                geometry.positionPolygonSideLabel(
+                    bounding_rect,
+                    triangle_ps,
+                    side_name_key[key],
+                    6
+                );
+            }
+
+            // determine what the bounding rect for the entire apparatus is (don't need to included triangle_ps because it is always within the labels + is shrinking)
+            current_bounding_rect = geometry.getBoundingRect(
+                geometry.getCombinedPointSet(
+                    geometry.getBoundingRectRectangle(label_bounding_rects.a),
+                    geometry.getBoundingRectRectangle(label_bounding_rects.b),
+                    geometry.getBoundingRectRectangle(label_bounding_rects.c)
+                )
+            );
+        } while (
+            current_bounding_rect.x1 >= 0 &&
+            current_bounding_rect.x2 <= 500 &&
+            current_bounding_rect.y1 >= 0 &&
+            current_bounding_rect.y2 <= 500 
+        ); // do until the entire apparatus fits on the canvas
+
+        // last step is to actually draw everything in
+        // draw the triangle
+        C.lineWidth = 2;
+        CH.drawPolygon(triangle_ps);
+
+        // insert the text for the labels
+        CH.insertText(side_labels_obj.a, label_bounding_rects.a);
+        CH.insertText(side_labels_obj.b, label_bounding_rects.b);
+        CH.insertText(side_labels_obj.c, label_bounding_rects.c);
+
+        // draw the right angle label
+        const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
+        C.lineWidth = 1;
+        C.beginPath();
+        C.moveTo(right_angle_label.A.x, right_angle_label.A.y);
+        C.lineTo(right_angle_label.B.x, right_angle_label.B.y);
+        C.lineTo(right_angle_label.C.x, right_angle_label.C.y);
+        C.stroke();    
     }
 }
 
