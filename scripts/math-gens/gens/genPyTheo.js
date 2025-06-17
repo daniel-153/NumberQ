@@ -1,7 +1,5 @@
 import * as H from '../helpers/gen-helpers.js';
-import * as SH from '../helpers/settings-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
-import * as GH from '../helpers/geom-helpers.js';
 import { CH } from '../../helpers/canvas-helpers.js';
 
 export function validateSettings(form_obj, error_locations) {
@@ -233,8 +231,8 @@ export default function genPyTheo(settings) {
             else if (settings.label_triangle_sides === 'no') side_label = marker_for_unknown;
         }
         else {
-            if (settings.label_triangle_sides === 'yes') side_label = key + '=' + display_side_lengths[key] + settings.triangle_length_unit;
-            else if (settings.label_triangle_sides === 'no') side_label = display_side_lengths[key] + settings.triangle_length_unit;
+            if (settings.label_triangle_sides === 'yes') side_label = key + '=' + display_side_lengths[key] + ' ' + settings.triangle_length_unit;
+            else if (settings.label_triangle_sides === 'no') side_label = display_side_lengths[key] + ' ' + settings.triangle_length_unit;
         }
 
         prompt_labels[key] = side_label;
@@ -242,22 +240,26 @@ export default function genPyTheo(settings) {
 
     const answer_labels = {a: null, b: null, c: null};
     for (const [key, _] of Object.entries(answer_labels)) {
-        if (settings.label_triangle_sides === 'yes') answer_labels[key] = key + '=' + display_side_lengths[key] + settings.triangle_length_unit;
-        else if (settings.label_triangle_sides === 'no') answer_labels[key] = display_side_lengths[key] + settings.triangle_length_unit;
+        if (settings.label_triangle_sides === 'yes') answer_labels[key] = key + '=' + display_side_lengths[key] + ' ' + settings.triangle_length_unit;
+        else if (settings.label_triangle_sides === 'no') answer_labels[key] = display_side_lengths[key] + ' ' + settings.triangle_length_unit;
     }
 
+    // create the prompt canvas and draw the prompt triangle on it
+    let new_canvas = CH.createCanvas(500, 500, true);
+    const prompt_canvas = new_canvas.element;
+    CH.drawRightTriangle(numerical_side_lengths, prompt_labels, unknown_side, settings.triangle_rotation);
 
+    // create the answer canvas and draw the answer triangle on it
+    new_canvas = CH.createCanvas(500, 500, true);
+    const answer_canvas = new_canvas.element;
+    CH.drawRightTriangle(numerical_side_lengths, answer_labels, unknown_side, settings.triangle_rotation);
 
-
-
-
-
-
-
-
-
-
-
+    return {
+        question: prompt_canvas,
+        answer: answer_canvas,
+        TeXquestion: 'image',
+        TeXanswer: 'image'
+    }
 }
 
 export const settings_fields = [
@@ -275,7 +277,16 @@ export const settings_fields = [
 
 export function get_presets() {
     return {
-        
+        triangle_number_type: 'integers_only',
+        py_theo_unknown: 'hypotenuse',
+        force_py_theo_triples: 'sometimes', /// seems odd...probably should make it yes or no?
+        triangle_length_unit: '',
+        triangle_rotation: 0,
+        triangle_length_size: 75,
+        py_theo_unknown_marker: 'x',
+        decimal_places: 1,
+        py_theo_answer_form: 'decimals_answers',
+        label_triangle_sides: 'no'
     };
 }
 
