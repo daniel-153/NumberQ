@@ -301,13 +301,18 @@
         border-radius: calc(0.25 * 5vw);
     }
 
+    .rendered-box {
+        width: 73vw;
+        height: 14.36vw;
+        border-width: 1.45vw;
+    }
+
     .output-box {
         font-size: 7vw;
-        width: 73vw;
-        height: 15vw;
     }
 
     .latex-box {
+        width: 75.9vw;
         height: 4vw;
     }
 
