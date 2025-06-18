@@ -180,6 +180,22 @@ export function resolveSizeAdjustments(gen_module, pg_ui_state) {
                 SAH.setFinalSize(size_name, 1, pg_ui_state);
             }
         });
+
+        if (gen_module.size_adjustments.force_square !== undefined) {
+            if (
+                gen_module.size_adjustments.width !== undefined &&
+                gen_module.size_adjustments.height === undefined
+            ) { // (only width provided) => force height to match width
+                pg_ui_state.sizes.height = pg_ui_state.sizes.width;
+            }
+            else if (
+                gen_module.size_adjustments.height !== undefined &&
+                gen_module.size_adjustments.width === undefined
+            ) { // (only height provided) => force width to match height
+                pg_ui_state.sizes.width = pg_ui_state.sizes.height;
+            }
+            else console.error('Cannot force square with unspecified width and height or if both a width and height were provided.');
+        }
     }
     else { // no size adjustments (use all defaults)
         pg_ui_state.sizes = SAH.default_sizes;
@@ -189,8 +205,7 @@ export function resolveSizeAdjustments(gen_module, pg_ui_state) {
 }
 
 export function insertCanvases(question_obj) {
-    const vw = document.documentElement.clientWidth;
-    const output_box_size = (document.getElementById('rendered-Q').clientWidth / vw) * 100 + 'vw';
+    const output_box_size = document.getElementById('rendered-Q').style.width;
 
     const prompt_canvas = question_obj.question;
     const answer_canvas = question_obj.answer;
