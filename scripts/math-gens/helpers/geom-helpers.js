@@ -184,14 +184,17 @@ export function fitPointSet(
 
     // determine how much the point set needs to scale to fit snugly in Q1 of the bounding rect
     let ps_bounding_rect = getBoundingRect(point_set);
-    const ps_diagonal_len = Math.sqrt( (ps_bounding_rect.x2 - ps_bounding_rect.x1)**2 + (ps_bounding_rect.y2 - ps_bounding_rect.y1)**2 );
-    const bounding_diagonal_len = Math.sqrt( (bounding_rect.x2 - bounding_rect.x1)**2 + (bounding_rect.y2 - bounding_rect.y1)**2 );
+
+    // the point set can overflow in the positive x or y directions (or one/neither => scale factor is the max of the two direction ratios)
+    const x_scale_factor = (bounding_rect.x2 - bounding_rect.x1) / (ps_bounding_rect.x2 - ps_bounding_rect.x1);
+    const y_scale_factor = (bounding_rect.y2 - bounding_rect.y1) / (ps_bounding_rect.y2 - ps_bounding_rect.y1);
+    const applied_scale_factor = Math.min(x_scale_factor, y_scale_factor);
     
     // apply the scaling
     transformations.transformPointSet(
         point_set, 'dilate', 
         {x: bounding_rect.x1, y: bounding_rect.y1}, 
-        (bounding_diagonal_len / ps_diagonal_len)
+        applied_scale_factor
     );
 
     // get the updated bounding rect
@@ -318,11 +321,12 @@ export function getVectorMagnitude(vector) {
     return Math.sqrt(vector.x**2 + vector.y**2);
 }
 
-export function convertToUnitVector(vector) {
+export function getUnitVector(vector) {
     const mag = Math.sqrt(vector.x**2 + vector.y**2);
 
-    vector.x = vector.x / mag;
-    vector.y = vector.y / mag;
+    return {
+        x: vector.x / mag, y: vector.y / mag
+    }
 }
 
 export function scaleVector(vector, scalar) {
@@ -442,7 +446,7 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
 export function getRightAngleLabel(right_triangle) { // 5% of the length of the longer side, always less than a third of the shorter side
     // first step is to find the vertex that corresponds to the right angle (this function assumes that vertex exists)
     const side_vectors = {'A-B': null, 'A-C': null, 'B-A': null, 'B-C': null, 'C-B': null, 'C-A': null};
-    side_vectors.keys.forEach(key => {
+    Object.keys(side_vectors).forEach(key => {
         side_vectors[key] = lineSegmentToVector(getLineSegment(right_triangle, key));
     });
 
@@ -468,8 +472,8 @@ export function getRightAngleLabel(right_triangle) { // 5% of the length of the 
     // next step is to size the right angle label to the current triangle
     const vector_1 = side_vectors[right_angle_vertex + '-' + other_vertices[0]];
     const vector_2 = side_vectors[right_angle_vertex + '-' + other_vertices[1]];
-    const unit_vector_1 = convertToUnitVector(...vector_1);
-    const unit_vector_2 = convertToUnitVector(...vector_2);
+    const unit_vector_1 = getUnitVector({...vector_1});
+    const unit_vector_2 = getUnitVector({...vector_2});
 
     // square size is 5% of the longer side, but if <that is greater than 25% of the shorter side, square size is 25% of the shorter side
     let square_size = 0.05 * Math.max(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2));
