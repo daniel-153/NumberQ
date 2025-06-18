@@ -97,7 +97,7 @@ const CH = {
     drawRightTriangle: function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A
         const triangle_ps = geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b);
-        const side_name_key = {'a': 'A-B', 'b': 'B-C', 'c': 'C-A'};
+        const side_name_key = {'a': 'A-B', 'b': 'C-A', 'c': 'B-C'};
 
         // rotate the triangle by the specified amount (about its incenter)
         geometry.transformations.transformPointSet(triangle_ps, 'rotate', 
