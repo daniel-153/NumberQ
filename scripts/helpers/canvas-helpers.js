@@ -60,7 +60,9 @@ const CH = {
         // get the actual bounding rect for the provided text (to make sure it will fit)
         let actual_bouding_rect = CH.getTextBoundingRect(text_string, {x: bounding_rect.x1, y: bounding_rect.y1});
 
-        if (actual_bouding_rect.x2 > bounding_rect.x2 || actual_bouding_rect.y2 > bounding_rect.y2) {
+        if ((actual_bouding_rect.x2 - actual_bouding_rect.x1) > (bounding_rect.x2 - bounding_rect.x1 + 0.1) ||
+            (actual_bouding_rect.y2 - actual_bouding_rect.y1) > (bounding_rect.y2 - bounding_rect.y1 + 0.1)
+        ) {
             console.error('Provided text overflows its bounding rect.');
             return;
         }
@@ -84,6 +86,14 @@ const CH = {
         C.lineTo(bounding_rect.x1, bounding_rect.y1);
         C.stroke();
     },
+    connectPointsWithLine: function(point_set) {
+        C.beginPath();
+        C.moveTo(point_set.A.x, point_set.A.y);
+        geometry.forEachPoint(point_set, function(point) {
+            C.lineTo(point.x, point.y);
+        });
+        C.stroke()
+    },
     drawRightTriangle: function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A
         const triangle_ps = geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b);
@@ -97,46 +107,89 @@ const CH = {
         // scale the triangle to fit a (theoretical) 500x500 canvas in the corner of Q1
         geometry.fitPointSet(triangle_ps, {x1: 0, x2: 500, y1: 0, y2: 500}, 'center', 'center');
 
-        // get the bounding rects for the side labels 
+        // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
+        C.font = '20px Arial';
+        const label_bounding_rects = {a: null, b: null, c: null};
         for (const [key, _] of Object.entries(label_bounding_rects)) {
             label_bounding_rects[key] = CH.getTextBoundingRect(side_labels_obj[key]);
+
+            geometry.positionPolygonSideLabel(
+                label_bounding_rects[key],
+                triangle_ps,
+                side_name_key[key],
+                6
+            );
         }
 
-        // get and position the bounding rects for the side labels + downsize the triangle to ensure everything fits on the canvas (while maintaining font size)
-        const label_bounding_rects = {a: null, b: null, c: null};
-        C.font = '20px Arial';
-        const downsize_factor = 0.95;
-        let downsize_power = 1;
-        let current_bounding_rect;
+        // next step is to fit the whole apparatus (triangle with three labels) to the canvas *without changing the font size*
+        // determine the sensitivity to change of the bounding box to a scaling about the triangle incenter
+        const original_bounding_rect = geometry.getBoundingRect(
+            geometry.getCombinedPointSet(
+                triangle_ps,
+                geometry.getBoundingRectRectangle(label_bounding_rects.a),
+                geometry.getBoundingRectRectangle(label_bounding_rects.b),
+                geometry.getBoundingRectRectangle(label_bounding_rects.c)
+            )
+        );
+        const test_scale_factor = 0.9;
         const incenter = geometry.getTriangleIncenter(triangle_ps);
-        do {
-            // downsize the triangle by an increment
-            geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, downsize_factor**(downsize_power++));
-            
-            // position the labels on the sides
-            for (const [_, bounding_rect] of Object.entries(label_bounding_rects)) {                
-                geometry.positionPolygonSideLabel(
-                    bounding_rect,
-                    triangle_ps,
-                    side_name_key[key],
-                    6
-                );
-            }
-
-            // determine what the bounding rect for the entire apparatus is (don't need to included triangle_ps because it is always within the labels + is shrinking)
-            current_bounding_rect = geometry.getBoundingRect(
-                geometry.getCombinedPointSet(
-                    geometry.getBoundingRectRectangle(label_bounding_rects.a),
-                    geometry.getBoundingRectRectangle(label_bounding_rects.b),
-                    geometry.getBoundingRectRectangle(label_bounding_rects.c)
-                )
+        geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, test_scale_factor);
+        for (const [key, bounding_rect] of Object.entries(label_bounding_rects)) { // position the labels on the slightly scaled triangle
+            geometry.positionPolygonSideLabel(
+                bounding_rect,
+                triangle_ps,
+                side_name_key[key],
+                6
             );
-        } while (
-            current_bounding_rect.x1 >= 0 &&
-            current_bounding_rect.x2 <= 500 &&
-            current_bounding_rect.y1 >= 0 &&
-            current_bounding_rect.y2 <= 500 
-        ); // do until the entire apparatus fits on the canvas
+        }
+        const post_test_bounding_rect = geometry.getBoundingRect(
+            geometry.getCombinedPointSet(
+                triangle_ps,
+                geometry.getBoundingRectRectangle(label_bounding_rects.a),
+                geometry.getBoundingRectRectangle(label_bounding_rects.b),
+                geometry.getBoundingRectRectangle(label_bounding_rects.c)
+            )
+        );
+        const x_change = (post_test_bounding_rect.x2 - post_test_bounding_rect.x1) - (original_bounding_rect.x2 - original_bounding_rect.x1);
+        const y_change =(post_test_bounding_rect.y2 - post_test_bounding_rect.y1) - (original_bounding_rect.y2 - original_bounding_rect.y1);
+        const needed_x_factor = (((original_bounding_rect.x2 - original_bounding_rect.x1) - 500)*(1 - test_scale_factor)) / x_change + 1;
+        const needed_y_factor = (((original_bounding_rect.y2 - original_bounding_rect.y1) - 500)*(1 - test_scale_factor)) / y_change + 1;
+
+        // undo the test scaling and apply the min (more extreme) of the two factors
+        geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, 
+            (1 / test_scale_factor) * Math.min(needed_x_factor, needed_y_factor)
+        );
+
+        // now we know the triangle and its labels must fit in a 500x500 bounding rect, but the entire apparatus needs to be put in the Q1 500x500 rect
+        for (const [key, bounding_rect] of Object.entries(label_bounding_rects)) { 
+            geometry.positionPolygonSideLabel( // position the labels on the final scaled (but mispositioned) triangle
+                bounding_rect,
+                triangle_ps,
+                side_name_key[key],
+                6
+            );
+        }
+        const a_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.a);
+        const b_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.b);
+        const c_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.c);
+
+        // correctly position the entire apparatus as one big point set
+        geometry.fitPointSet(
+            geometry.getCombinedPointSet(
+                triangle_ps,
+                a_rectangle,
+                b_rectangle,
+                c_rectangle
+            ),
+            {x1: 0, x2: 500, y1: 0, y2: 500},
+            'center',
+            'center' 
+        );
+
+        // update the bounding rect positions
+        label_bounding_rects.a = geometry.getBoundingRect(a_rectangle);
+        label_bounding_rects.b = geometry.getBoundingRect(b_rectangle);
+        label_bounding_rects.c = geometry.getBoundingRect(c_rectangle); 
 
         // last step is to actually draw everything in
         // draw the triangle
@@ -151,11 +204,7 @@ const CH = {
         // draw the right angle label
         const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
         C.lineWidth = 1;
-        C.beginPath();
-        C.moveTo(right_angle_label.A.x, right_angle_label.A.y);
-        C.lineTo(right_angle_label.B.x, right_angle_label.B.y);
-        C.lineTo(right_angle_label.C.x, right_angle_label.C.y);
-        C.stroke();    
+        CH.connectPointsWithLine(right_angle_label); 
     }
 }
 
@@ -163,7 +212,8 @@ const CH = {
 
 const cartesian_functions = [ // functions that assume a cartesian canvas context
     CH.drawPolygon,
-    CH.drawBoundingRect
+    CH.drawBoundingRect,
+    CH.connectPointsWithLine
 ];
 for (const [func_name, func_obj] of Object.entries(CH)) {
     if (cartesian_functions.includes(func_obj)) {
