@@ -2,19 +2,21 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
 import { CH } from '../../helpers/canvas-helpers.js';
 
+export const gen_type = 'canvas';
+
 export function validateSettings(form_obj, error_locations) {
     // ensure the side length size isn't too small (for the desired type of side lengths)
     if (
-        settings.force_py_theo_triples === 'always' && 
-        settings.triangle_number_type === 'integers_only' &&
+        form_obj.force_py_theo_triples === 'always' && 
+        form_obj.triangle_number_type === 'integers_only' &&
         form_obj.triangle_length_size < 5
     ) { 
         error_locations.add('triangle_length_size')
         form_obj.triangle_length_size = 5;
     }
     else if (
-        settings.force_py_theo_triples === 'sometimes' && 
-        settings.triangle_number_type === 'integers_only' &&
+        form_obj.force_py_theo_triples === 'sometimes' && 
+        form_obj.triangle_number_type === 'integers_only' &&
         form_obj.triangle_length_size < 2
     ) {
         error_locations.add('triangle_length_size')
@@ -23,7 +25,7 @@ export function validateSettings(form_obj, error_locations) {
 
     // if rounding rules requires that all decimals be rounded to whole numbers, don't allow decimal side lengths
     if (form_obj.decimal_places === 0) {
-        settings.triangle_number_type === 'integers_only'
+        form_obj.triangle_number_type === 'integers_only'
     }
     
     // not an explicit error, but if the number type allows decimals, it doesn't make sense for the final answer to be a root expression like √1.5
@@ -244,16 +246,33 @@ export default function genPyTheo(settings) {
         else if (settings.label_triangle_sides === 'no') answer_labels[key] = display_side_lengths[key] + ' ' + settings.triangle_length_unit;
     }
 
+    // before drawing the triangles, ensure the (drawn) size difference between the legs never gets too extreme (some triangles like 1-100-r(10001) won't be to scale anymore)
+    const max_size_diff = 4.25;
+    if (
+        numerical_side_lengths.a / numerical_side_lengths.b > max_size_diff ||
+        numerical_side_lengths.a / numerical_side_lengths.b < 1 / max_size_diff
+    ) {
+        if (numerical_side_lengths.a > numerical_side_lengths.b) {
+            numerical_side_lengths.a = max_size_diff;
+            numerical_side_lengths.b = 1;
+        } else {
+            numerical_side_lengths.a = 1;
+            numerical_side_lengths.b = max_size_diff;
+        }
+
+        numerical_side_lengths.c = Math.sqrt(numerical_side_lengths.a**2 + numerical_side_lengths.b**2);
+    }
+
     // create the prompt canvas and draw the prompt triangle on it
     let new_canvas = CH.createCanvas(500, 500, true);
     const prompt_canvas = new_canvas.element;
-    CH.drawRightTriangle(numerical_side_lengths, prompt_labels, unknown_side, settings.triangle_rotation);
+    CH.drawRightTriangle(numerical_side_lengths, prompt_labels, unknown_side, settings.rotation_deg);
 
     // create the answer canvas and draw the answer triangle on it
     new_canvas = CH.createCanvas(500, 500, true);
     const answer_canvas = new_canvas.element;
-    CH.drawRightTriangle(numerical_side_lengths, answer_labels, unknown_side, settings.triangle_rotation);
-
+    CH.drawRightTriangle(numerical_side_lengths, answer_labels, unknown_side, settings.rotation_deg);
+    
     return {
         question: prompt_canvas,
         answer: answer_canvas,
@@ -279,11 +298,11 @@ export function get_presets() {
     return {
         triangle_number_type: 'integers_only',
         py_theo_unknown: 'hypotenuse',
-        force_py_theo_triples: 'sometimes', /// seems odd...probably should make it yes or no?
+        force_py_theo_triples: 'sometimes', 
         triangle_length_unit: '',
-        triangle_rotation: 0,
+        rotation_deg: 0,
         triangle_length_size: 75,
-        py_theo_unknown_marker: 'x',
+        py_theo_unknown_marker: 'letter_x',
         decimal_places: 1,
         py_theo_answer_form: 'decimals_answers',
         label_triangle_sides: 'no'
@@ -295,3 +314,8 @@ export function get_rand_settings() {
         
     }; 
 }
+
+export const size_adjustments = {
+    width: 0.9,
+    force_square: true
+};
