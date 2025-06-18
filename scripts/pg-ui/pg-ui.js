@@ -23,6 +23,7 @@ const pg_ui_state = {
     sizes: {
         width: null,
         height: null,
+        force_square: null,
         q_font_size: null,
         a_font_size: null
     }
