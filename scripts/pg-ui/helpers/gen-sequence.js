@@ -33,6 +33,7 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
     pg_ui_state.func_name = func_name;
     pg_ui_state.display_name = display_name;
     pg_ui_state.current_module = await import(`../../math-gens/gens/${func_name}.js`);
+    pg_ui_state.gen_type = (pg_ui_state.current_module.gen_type !== undefined)? pg_ui_state.current_module.gen_type : 'default'; 
     pg_ui_state.current_gen_func = async function(form_obj) {
         pg_ui_state.error_locations = new Set(); // create a new *Set* of error locations each generation (instead of an array to avoid repeats)
         FH.preValidateSettings(form_obj, pg_ui_state.valid_settings_log, pg_ui_state.error_locations);
@@ -128,8 +129,6 @@ const SAH = { // resolveSizeAdjustments helpers
     getMaxWidth: function(pg_ui_box_type) {
         const vw = document.documentElement.clientWidth;
         const pg_ui_banner_width = document.getElementById('generation-container').clientWidth;
-        console.log('view width: ',vw)
-        console.log('banner width: ',pg_ui_banner_width)
 
         // need to handle the layout change on mobile
         let max_single_box_width; // in px to start
@@ -160,14 +159,12 @@ const SAH = { // resolveSizeAdjustments helpers
             element.style.height = sizes_obj.height;
             element.style.borderWidth = mathoutput_border;
             element.style.maxWidth = SAH.getMaxWidth('rendered');
-            console.log('max width for rendered: ',SAH.getMaxWidth('rendered') + ' + 2*' + mathoutput_border)
         });
 
         ['un-rendered-Q', 'un-rendered-A'].forEach(element_id => {
             const element = document.getElementById(element_id);
             element.style.width = total_gencol_width;
             element.style.maxWidth = SAH.getMaxWidth('un-rendered');
-            console.log('max width for unrendered: ',SAH.getMaxWidth('un-rendered'))
         })
     }
 };
@@ -189,4 +186,25 @@ export function resolveSizeAdjustments(gen_module, pg_ui_state) {
     }
 
     SAH.applyFinalSizes(pg_ui_state.sizes);
+}
+
+export function insertCanvases(question_obj) {
+    const vw = document.documentElement.clientWidth;
+    const output_box_size = (document.getElementById('rendered-Q').clientWidth / vw) * 100 + 'vw';
+
+    const prompt_canvas = question_obj.question;
+    const answer_canvas = question_obj.answer;
+
+    prompt_canvas.style.width = output_box_size;
+    prompt_canvas.style.height = output_box_size;
+    answer_canvas.style.width = output_box_size;
+    answer_canvas.style.height = output_box_size;
+
+    document.getElementById('rendered-Q').innerHTML = '';
+    document.getElementById('rendered-Q').appendChild(prompt_canvas);
+    document.getElementById('rendered-A').innerHTML = '';
+    document.getElementById('rendered-A').appendChild(answer_canvas);
+
+    document.getElementById('un-rendered-Q').innerHTML = (question_obj.TeXquestion !== undefined)? question_obj.TeXquestion : 'image';
+    document.getElementById('un-rendered-A').innerHTML = (question_obj.TeXanswer !== undefined)? question_obj.TeXanswer : 'image';
 }
