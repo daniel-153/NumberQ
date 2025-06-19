@@ -94,7 +94,82 @@ const CH = {
         });
         C.stroke()
     },
-    drawRightTriangle: function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
+    getMathJaxAsSvg: async function(latex_string, font_size_px) {
+        const iframe_el = document.createElement('iframe');
+        iframe_el.style.display = 'none';
+        iframe_el.srcdoc = `
+            <!DOCTYPE html><html><body>
+                <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+                <script>
+                    window.addEventListener('message', async (event) => {
+                        const { latex_string, font_size_px } = event.data;
+                        const mjx_container = document.createElement('div');
+                        mjx_container.style.fontSize = font_size_px + 'px';
+                        mjx_container.innerHTML = '\\\\(' + latex_string + '\\\\)';
+                        document.body.appendChild(mjx_container);
+
+                        await MathJax.typesetPromise([mjx_container]);
+                        const svg = mjx_container.querySelector('svg');
+                        mjx_container.remove();
+
+                        event.source.postMessage({ svg: svg.outerHTML }, '*');
+                    });
+                <\/script>
+            </body></html>
+        `;
+        document.body.appendChild(iframe_el);
+
+        iframe_el.onload = () => {
+            iframe_el.contentWindow.postMessage({latex_string, font_size_px}, '*');
+        }
+
+        const svg_string = await new Promise((resolve) => {
+            window.addEventListener('message', (event) => {resolve(event.data.svg)}, { once: true });
+        });
+
+        iframe_el.remove();
+
+        return (new DOMParser()).parseFromString(svg_string, 'image/svg+xml').firstChild;
+    },
+    getMathJaxAsImage: async function(latex_string, font_size_px) {
+        const mjx_svg = await this.getMathJaxAsSvg(latex_string, font_size_px);
+
+        const svg_string = new XMLSerializer().serializeToString(mjx_svg);
+        const encoded = btoa(new TextEncoder().encode(svg_string).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+        const img_src = "data:image/svg+xml;base64," + encoded;
+
+        const img = new Image();
+        img.src = img_src;
+
+        try {
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = () => reject(new Error("SVG image failed to load"));
+            });
+        } catch (err) {
+            throw err;
+        }
+
+        return img;
+    },
+    getImageBoundingRect(image, location = {x: 0, y: 0}) {
+        return {
+            x1: location.x, x2: location.x + image.width,
+            y1: location.y, y2: location.y + image.height
+        };
+    },
+    drawImage: function(image, bounding_rect) { // images expand rightward and downward (by their size) from their specified location
+        const actual_bouding_rect = this.getImageBoundingRect(image);
+        if ((actual_bouding_rect.x2 - actual_bouding_rect.x1) > (bounding_rect.x2 - bounding_rect.x1 + 0.1) ||
+            (actual_bouding_rect.y2 - actual_bouding_rect.y1) > (bounding_rect.y2 - bounding_rect.y1 + 0.1)
+        ) {
+            console.error('Provided image overflows its bounding rect.');
+            return;
+        }
+
+        C.drawImage(image, bounding_rect.x1, canvas.height - bounding_rect.y2, image.width * 2, image.height * 2);
+    },
+    drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A
         const triangle_ps = geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b);
         const side_name_key = {'a': 'A-B', 'b': 'C-A', 'c': 'B-C'};
@@ -110,8 +185,10 @@ const CH = {
         // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
         C.font = '20px Arial';
         const label_bounding_rects = {a: null, b: null, c: null};
-        for (const [key, _] of Object.entries(label_bounding_rects)) {
-            label_bounding_rects[key] = CH.getTextBoundingRect(side_labels_obj[key]);
+        const label_images = {a: null, b: null, c: null};
+        for (const [key, _] of Object.entries(label_images)) {
+            label_images[key] = await CH.getMathJaxAsImage(side_labels_obj[key], 20);
+            label_bounding_rects[key] = CH.getImageBoundingRect(label_images[key]);
 
             geometry.positionPolygonSideLabel(
                 label_bounding_rects[key],
@@ -196,10 +273,10 @@ const CH = {
         C.lineWidth = 2;
         CH.drawPolygon(triangle_ps);
 
-        // insert the text for the labels
-        CH.insertText(side_labels_obj.a, label_bounding_rects.a);
-        CH.insertText(side_labels_obj.b, label_bounding_rects.b);
-        CH.insertText(side_labels_obj.c, label_bounding_rects.c);
+        // insert the images for the labels
+        CH.drawImage(label_images.a, label_bounding_rects.a);
+        CH.drawImage(label_images.b, label_bounding_rects.b);
+        CH.drawImage(label_images.c, label_bounding_rects.c);
 
         // draw the right angle label
         const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
