@@ -181,11 +181,12 @@ const CH = {
                 (actual_bouding_rect.y2 - actual_bouding_rect.y1) * (1 / larger_factor)
             );
         }
-
-        C.drawImage(
-            image, bounding_rect.x1, canvas.height - bounding_rect.y2, 
-            bounding_rect.x2 - bounding_rect.x1, bounding_rect.y2 - bounding_rect.y1
-        );
+        else { // provided image fits in provided bounding rect
+            C.drawImage(
+                image, bounding_rect.x1, canvas.height - bounding_rect.y2, 
+                bounding_rect.x2 - bounding_rect.x1, bounding_rect.y2 - bounding_rect.y1
+            );
+        }  
     },
     drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A

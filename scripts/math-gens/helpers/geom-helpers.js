@@ -405,7 +405,7 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
     )
     const bounding_box_center = {
         x: (label_bounding_box.x1 + label_bounding_box.x2) / 2,
-        y: (label_bounding_box.y2 + label_bounding_box.y2) / 2
+        y: (label_bounding_box.y1 + label_bounding_box.y2) / 2
     };
     transformations.transformPointSet(bounding_box_ps, 'translate', // center the bounding box on the origin, so then the translation to a point Is the point
         {
