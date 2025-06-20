@@ -499,6 +499,7 @@ export function simplifiedSqrtString(non_negative_int) {
 
     if (simplified_root.numberUnderRoot === 1) return simplified_root.numberInFront + '';
     else if (simplified_root.numberUnderRoot === 0) return '0';
+    else if (simplified_root.numberInFront === 1) return `\\sqrt{${simplified_root.numberUnderRoot}}`;
     else return `${simplified_root.numberInFront}\\sqrt{${simplified_root.numberUnderRoot}}`;
 }
 
