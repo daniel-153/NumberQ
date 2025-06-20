@@ -170,12 +170,22 @@ const CH = {
         const actual_bouding_rect = this.getImageBoundingRect(image);
         if ((actual_bouding_rect.x2 - actual_bouding_rect.x1) > (bounding_rect.x2 - bounding_rect.x1 + 0.1) ||
             (actual_bouding_rect.y2 - actual_bouding_rect.y1) > (bounding_rect.y2 - bounding_rect.y1 + 0.1)
-        ) {
-            console.error('Provided image overflows its bounding rect.');
-            return;
+        ) { // Provided image overflows its bounding rect => scale it down to fit in the provided bounding rect
+            const x_overflow_factor = (actual_bouding_rect.x2 - actual_bouding_rect.x1) / (bounding_rect.x2 - bounding_rect.x1 + 0.1);
+            const y_overflow_factor = (actual_bouding_rect.y2 - actual_bouding_rect.y1) / (bounding_rect.y2 - bounding_rect.y1 + 0.1);
+            
+            const larger_factor = Math.max(x_overflow_factor, y_overflow_factor);
+            C.drawImage( // downscale by the inverse of the larger overflow factor (preserving aspect ratio)
+                image, bounding_rect.x1, canvas.height - bounding_rect.y2, 
+                (actual_bouding_rect.x2 - actual_bouding_rect.x1) * (1 / larger_factor), 
+                (actual_bouding_rect.y2 - actual_bouding_rect.y1) * (1 / larger_factor)
+            );
         }
 
-        C.drawImage(image, bounding_rect.x1, canvas.height - bounding_rect.y2, image.width, image.height);
+        C.drawImage(
+            image, bounding_rect.x1, canvas.height - bounding_rect.y2, 
+            bounding_rect.x2 - bounding_rect.x1, bounding_rect.y2 - bounding_rect.y1
+        );
     },
     drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A
