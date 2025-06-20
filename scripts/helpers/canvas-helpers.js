@@ -99,7 +99,7 @@ const CH = {
         iframe_el.style.display = 'none';
         iframe_el.srcdoc = `
             <!DOCTYPE html><html><body>
-                <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
+                <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"><\/script>
                 <script>
                     window.addEventListener('message', async (event) => {
                         const { latex_string, scale_factor } = event.data;
@@ -114,7 +114,13 @@ const CH = {
                         svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * scale_factor + 'ex');
                         svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * scale_factor + 'ex');
 
-                        event.source.postMessage({ svg: svg.outerHTML }, '*');
+                        // correct the 200 unit offset to the right (if it is present) 
+                        // => (there appears to be an issue/bug where mjx svg output is often incorrectly translated 200 units right -> pushing the svg out of its container) 
+                        const svg_height = (-1)*Number(svg.getAttribute('viewBox').split(' ')[1]);
+                        let svg_as_string = svg.outerHTML;
+                        svg_as_string = svg_as_string.replace('translate(200,' + svg_height + ')', 'translate(0,' + svg_height + ')');
+
+                        event.source.postMessage({ svg: svg_as_string }, '*');
                     });
                 <\/script>
             </body></html>
@@ -166,9 +172,6 @@ const CH = {
             (actual_bouding_rect.y2 - actual_bouding_rect.y1) > (bounding_rect.y2 - bounding_rect.y1 + 0.1)
         ) {
             console.error('Provided image overflows its bounding rect.');
-            console.log('image: ',image)
-            console.log('required rect: ',JSON.parse(JSON.stringify(bounding_rect)))
-            console.log('actual rect: ',JSON.parse(JSON.stringify(actual_bouding_rect)))
             return;
         }
 
