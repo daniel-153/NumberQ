@@ -94,7 +94,7 @@ const CH = {
         });
         C.stroke()
     },
-    getMathJaxAsSvg: async function(latex_string, font_size_px) {
+    getMathJaxAsSvg: async function(latex_string, scale_factor) {
         const iframe_el = document.createElement('iframe');
         iframe_el.style.display = 'none';
         iframe_el.srcdoc = `
@@ -102,15 +102,17 @@ const CH = {
                 <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"><\/script>
                 <script>
                     window.addEventListener('message', async (event) => {
-                        const { latex_string, font_size_px } = event.data;
+                        const { latex_string, scale_factor } = event.data;
                         const mjx_container = document.createElement('div');
-                        mjx_container.style.fontSize = font_size_px + 'px';
                         mjx_container.innerHTML = '\\\\(' + latex_string + '\\\\)';
                         document.body.appendChild(mjx_container);
 
                         await MathJax.typesetPromise([mjx_container]);
                         const svg = mjx_container.querySelector('svg');
                         mjx_container.remove();
+
+                        svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * scale_factor + 'ex');
+                        svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * scale_factor + 'ex');
 
                         event.source.postMessage({ svg: svg.outerHTML }, '*');
                     });
@@ -120,7 +122,7 @@ const CH = {
         document.body.appendChild(iframe_el);
 
         iframe_el.onload = () => {
-            iframe_el.contentWindow.postMessage({latex_string, font_size_px}, '*');
+            iframe_el.contentWindow.postMessage({latex_string, scale_factor}, '*');
         }
 
         const svg_string = await new Promise((resolve) => {
@@ -131,8 +133,8 @@ const CH = {
 
         return (new DOMParser()).parseFromString(svg_string, 'image/svg+xml').firstChild;
     },
-    getMathJaxAsImage: async function(latex_string, font_size_px) {
-        const mjx_svg = await this.getMathJaxAsSvg(latex_string, font_size_px);
+    getMathJaxAsImage: async function(latex_string, scale_factor) {
+        const mjx_svg = await this.getMathJaxAsSvg(latex_string, scale_factor);
 
         const svg_string = new XMLSerializer().serializeToString(mjx_svg);
         const encoded = btoa(new TextEncoder().encode(svg_string).reduce((data, byte) => data + String.fromCharCode(byte), ''));
@@ -164,10 +166,13 @@ const CH = {
             (actual_bouding_rect.y2 - actual_bouding_rect.y1) > (bounding_rect.y2 - bounding_rect.y1 + 0.1)
         ) {
             console.error('Provided image overflows its bounding rect.');
+            console.log('image: ',image)
+            console.log('required rect: ',JSON.parse(JSON.stringify(bounding_rect)))
+            console.log('actual rect: ',JSON.parse(JSON.stringify(actual_bouding_rect)))
             return;
         }
 
-        C.drawImage(image, bounding_rect.x1, canvas.height - bounding_rect.y2, image.width * 2, image.height * 2);
+        C.drawImage(image, bounding_rect.x1, canvas.height - bounding_rect.y2, image.width, image.height);
     },
     drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A
@@ -179,22 +184,22 @@ const CH = {
             geometry.getTriangleIncenter(triangle_ps), geometry.convertAngle(rotation, 'to_rad')
         );
 
-        // scale the triangle to fit a (theoretical) 500x500 canvas in the corner of Q1
-        geometry.fitPointSet(triangle_ps, {x1: 0, x2: 500, y1: 0, y2: 500}, 'center', 'center');
+        // scale the triangle to fit a (theoretical) 1000x1000 canvas in the corner of Q1
+        geometry.fitPointSet(triangle_ps, {x1: 0, x2: 1000, y1: 0, y2: 1000}, 'center', 'center');
 
         // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
-        C.font = '20px Arial';
+        const label_spacing = 20; // distance of the labels from the sides (px)
         const label_bounding_rects = {a: null, b: null, c: null};
         const label_images = {a: null, b: null, c: null};
         for (const [key, _] of Object.entries(label_images)) {
-            label_images[key] = await CH.getMathJaxAsImage(side_labels_obj[key], 20);
+            label_images[key] = await CH.getMathJaxAsImage(side_labels_obj[key], 6);
             label_bounding_rects[key] = CH.getImageBoundingRect(label_images[key]);
 
             geometry.positionPolygonSideLabel(
                 label_bounding_rects[key],
                 triangle_ps,
                 side_name_key[key],
-                6
+                label_spacing
             );
         }
 
@@ -216,7 +221,7 @@ const CH = {
                 bounding_rect,
                 triangle_ps,
                 side_name_key[key],
-                6
+                label_spacing
             );
         }
         const post_test_bounding_rect = geometry.getBoundingRect(
@@ -229,21 +234,21 @@ const CH = {
         );
         const x_change = (post_test_bounding_rect.x2 - post_test_bounding_rect.x1) - (original_bounding_rect.x2 - original_bounding_rect.x1);
         const y_change =(post_test_bounding_rect.y2 - post_test_bounding_rect.y1) - (original_bounding_rect.y2 - original_bounding_rect.y1);
-        const needed_x_factor = (((original_bounding_rect.x2 - original_bounding_rect.x1) - 500)*(1 - test_scale_factor)) / x_change + 1;
-        const needed_y_factor = (((original_bounding_rect.y2 - original_bounding_rect.y1) - 500)*(1 - test_scale_factor)) / y_change + 1;
+        const needed_x_factor = (((original_bounding_rect.x2 - original_bounding_rect.x1) - 1000)*(1 - test_scale_factor)) / x_change + 1;
+        const needed_y_factor = (((original_bounding_rect.y2 - original_bounding_rect.y1) - 1000)*(1 - test_scale_factor)) / y_change + 1;
 
         // undo the test scaling and apply the min (more extreme) of the two factors
         geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, 
             (1 / test_scale_factor) * Math.min(needed_x_factor, needed_y_factor)
         );
 
-        // now we know the triangle and its labels must fit in a 500x500 bounding rect, but the entire apparatus needs to be put in the Q1 500x500 rect
+        // now we know the triangle and its labels must fit in a 1000x1000 bounding rect, but the entire apparatus needs to be put in the Q1 1000x1000 rect
         for (const [key, bounding_rect] of Object.entries(label_bounding_rects)) { 
             geometry.positionPolygonSideLabel( // position the labels on the final scaled (but mispositioned) triangle
                 bounding_rect,
                 triangle_ps,
                 side_name_key[key],
-                6
+                label_spacing
             );
         }
         const a_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.a);
@@ -258,7 +263,7 @@ const CH = {
                 b_rectangle,
                 c_rectangle
             ),
-            {x1: 0, x2: 500, y1: 0, y2: 500},
+            {x1: 0, x2: 1000, y1: 0, y2: 1000},
             'center',
             'center' 
         );
@@ -270,7 +275,7 @@ const CH = {
 
         // last step is to actually draw everything in
         // draw the triangle
-        C.lineWidth = 2;
+        C.lineWidth = 5.5;
         CH.drawPolygon(triangle_ps);
 
         // insert the images for the labels
@@ -280,7 +285,7 @@ const CH = {
 
         // draw the right angle label
         const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
-        C.lineWidth = 1;
+        C.lineWidth = 3;
         CH.connectPointsWithLine(right_angle_label); 
     }
 }

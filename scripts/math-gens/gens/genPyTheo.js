@@ -30,7 +30,7 @@ export function validateSettings(form_obj, error_locations) {
     
     // not an explicit error, but if the number type allows decimals, it doesn't make sense for the final answer to be a root expression like √1.5
     if (form_obj.triangle_number_type === 'allow_decimals') {
-        form_obj.py_theo_answer_form === 'decimals_answers';
+        form_obj.py_theo_answer_form === 'decimal_answers';
     }
 }
 
@@ -62,19 +62,19 @@ const PTH = {
         return triples;
     })(),
     getPossibleTriples: function(max_size) {
-        const possible_triples = [];
+        let possible_triples = [];
         for (let key = 1; key <= max_size; key++) {
             const value = this.sub_1000_triples.get(key);
 
             if (value !== undefined) {
-                possible_triples.concat(value);
+                possible_triples = possible_triples.concat(value);
             }
         }
 
         return possible_triples;
     }
 };
-export default function genPyTheo(settings) {
+export default async function genPyTheo(settings) {
     let triple;
     if (
         settings.force_py_theo_triples === 'always'
@@ -82,12 +82,12 @@ export default function genPyTheo(settings) {
         if (settings.triangle_number_type === 'integers_only') {
             triple = H.randFromList(PTH.getPossibleTriples(settings.triangle_length_size));
         }
-        else if (settings.triangle_number_type === 'allow_decimals') {
+        else if (settings.triangle_number_type === 'allow_decimals') {            
             triple = H.randFromList(
                 PTH.getPossibleTriples(
                     settings.triangle_length_size * 10
                 ).filter(triple_array => triple_array.some(side_length => side_length % 10 !== 0)) // ensure at least one side will be a decimal
-            ).map((value, index, array) => {array[index] = value / 10});
+            ).map(value => value / 10);
         }
 
         // mark the unknown (not given) side
@@ -188,19 +188,22 @@ export default function genPyTheo(settings) {
     // next step is to build the displayed labels on the triangle (both in the prompt and answer)
     const display_side_lengths = {a: null, b: null, c: null};
     const round = H.buildNewRounder(settings.decimal_places, settings.keep_rounded_zeros);
-    for (const [key, _] of Object.entries(display_side_lengths)) {
-        if (key === unknown_side) {
+    for (const [side_name, _] of Object.entries(display_side_lengths)) {
+        if (side_name === unknown_side) { // the unknown side might not be a rational (exactly representable) number
             let pre_root_value;
-            if (unknown_side === 'c') pre_root_value = numerical_side_lengths.a**2 + numerical_side_lengths.b**2;
-            else if (unknown_side === 'a') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.b**2;
-            else if (unknown_side === 'b') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.a**2;
+            if (side_name === 'c') pre_root_value = numerical_side_lengths.a**2 + numerical_side_lengths.b**2;
+            else if (side_name === 'a') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.b**2;
+            else if (side_name === 'b') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.a**2;
 
-            if (settings.py_theo_answer_form === 'decimals_answers') {
-                display_side_lengths[key] = round(Math.sqrt(pre_root_value));
+            if (settings.py_theo_answer_form === 'decimal_answers') {
+                display_side_lengths[side_name] = round(Math.sqrt(pre_root_value));
             }
             else if (settings.py_theo_answer_form === 'exact_answers') {
-                display_side_lengths[key] = PH.simplifiedSqrtString(pre_root_value);
+                display_side_lengths[side_name] = PH.simplifiedSqrtString(pre_root_value);
             }
+        }
+        else { // known side lengths are always exact integers or decimals
+            display_side_lengths[side_name] = numerical_side_lengths[side_name]; 
         }
     }
 
@@ -264,14 +267,14 @@ export default function genPyTheo(settings) {
     }
 
     // create the prompt canvas and draw the prompt triangle on it
-    let new_canvas = CH.createCanvas(500, 500, true);
+    let new_canvas = CH.createCanvas(1000, 1000, true);
     const prompt_canvas = new_canvas.element;
-    CH.drawRightTriangle(numerical_side_lengths, prompt_labels, unknown_side, settings.rotation_deg);
+    await CH.drawRightTriangle(numerical_side_lengths, prompt_labels, unknown_side, settings.rotation_deg);
 
     // create the answer canvas and draw the answer triangle on it
-    new_canvas = CH.createCanvas(500, 500, true);
+    new_canvas = CH.createCanvas(1000, 1000, true);
     const answer_canvas = new_canvas.element;
-    CH.drawRightTriangle(numerical_side_lengths, answer_labels, unknown_side, settings.rotation_deg);
+    await CH.drawRightTriangle(numerical_side_lengths, answer_labels, unknown_side, settings.rotation_deg);
     
     return {
         question: prompt_canvas,
@@ -304,7 +307,7 @@ export function get_presets() {
         triangle_length_size: 75,
         py_theo_unknown_marker: 'letter_x',
         decimal_places: 1,
-        py_theo_answer_form: 'decimals_answers',
+        py_theo_answer_form: 'decimal_answers',
         label_triangle_sides: 'no'
     };
 }
@@ -316,6 +319,6 @@ export function get_rand_settings() {
 }
 
 export const size_adjustments = {
-    width: 0.9,
+    width: 0.8,
     force_square: true
 };
