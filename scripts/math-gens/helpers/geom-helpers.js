@@ -476,7 +476,7 @@ export function getRightAngleLabel(right_triangle) { // 5% of the length of the 
     const unit_vector_2 = getUnitVector({...vector_2});
 
     // square size is 5% of the longer side, but if <that is greater than 25% of the shorter side, square size is 25% of the shorter side
-    let square_size = 0.05 * Math.max(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2));
+    let square_size = 0.1 * Math.max(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2));
     if (square_size > Math.min(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2)) / 4) {
         square_size = Math.min(getVectorMagnitude(vector_1), getVectorMagnitude(vector_2)) / 4;
     }
