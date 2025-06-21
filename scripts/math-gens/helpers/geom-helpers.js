@@ -547,6 +547,51 @@ export function getBoundingRectRectangle(bounding_rect) {
     )
 }
 
+export function getTriangleAngle(triangle, vertex_letter) {
+    const vertex = triangle[vertex_letter];
+    const other_vertices = ['A','B','C'].filter(letter => letter !== vertex_letter).map(letter => triangle[letter]);
+
+    // apply the law of cosines
+    const a = Math.sqrt((vertex.x - other_vertices[0].x)**2 + (vertex.y - other_vertices[0].y)**2);
+    const b = Math.sqrt((vertex.x - other_vertices[1].x)**2 + (vertex.y - other_vertices[1].y)**2);
+    const c = Math.sqrt((other_vertices[0].x - other_vertices[1].x)**2 + (other_vertices[0].y - other_vertices[1].y)**2);
+
+    return Math.acos((a**2 + b**2 - c**2) / (2*a*b));
+}
+
+export function getAngleBisectorVector(triangle, vertex_letter) {
+    const vertex = triangle[vertex_letter];
+    const other_vertices = ['A','B','C'].filter(letter => letter !== vertex_letter).map(letter => triangle[letter]);
+
+    const vertex_vector_1 = getUnitVector({x: other_vertices[0].x - vertex.x, y: other_vertices[0].y - vertex.y});
+    const vertex_vector_2 = getUnitVector({x: other_vertices[1].x - vertex.x, y: other_vertices[1].y - vertex.y});
+
+    return getUnitVector(addVectors(vertex_vector_1, vertex_vector_2));
+}
+
+export function getBoundingTriangle(triangle, line_width, bound = 'outer') {
+    const bounding_triangle = {A: {x: null, y: null}, B: {x: null, y: null}, C: {x: null, y: null}};
+
+    for (const [vertex_letter, vertex] of Object.entries(triangle)) {
+        const vertex_angle = getTriangleAngle(triangle, vertex_letter);
+        const half_miter_length = line_width / (2 * Math.sin(vertex_angle / 2));
+
+        // traverse half the miter length in the opposite direction of the vertex's angle bisector
+        const unit_bisector_vector = getAngleBisectorVector(triangle, vertex_letter);
+
+        let direction;
+        (bound === 'inner')? (direction = 1) : (direction = -1);
+
+        const x_step = direction*half_miter_length*unit_bisector_vector.x;
+        const y_step = direction*half_miter_length*unit_bisector_vector.y;
+
+        bounding_triangle[vertex_letter].x = vertex.x + x_step;
+        bounding_triangle[vertex_letter].y = vertex.y + y_step;
+    }
+
+    return bounding_triangle;
+}
+
 function _keyWithClosestValue(object, numerical_value) {
     let closest_key = null;
     let smallest_difference = Infinity;
