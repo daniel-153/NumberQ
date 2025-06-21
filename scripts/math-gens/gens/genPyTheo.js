@@ -32,6 +32,9 @@ export function validateSettings(form_obj, error_locations) {
     if (form_obj.triangle_number_type === 'allow_decimals') {
         form_obj.py_theo_answer_form === 'decimal_answers';
     }
+
+    // handle random rotation
+    if (form_obj.randomize_rotation === 'is_checked') form_obj.rotation_deg = H.randInt(0, 360);
 }
 
 const PTH = {
@@ -197,6 +200,32 @@ export default async function genPyTheo(settings) {
 
             if (settings.py_theo_answer_form === 'decimal_answers') {
                 display_side_lengths[side_name] = round(Math.sqrt(pre_root_value));
+
+                // the following is to handle the case where rounding creates an "impossible" triangle
+                // for example, in a=2-b=42-c=?, c (rounded to 1 place) would be 42! (but - even though it follows the settings - a 2-42-42 right triangle is very glaringly wrong)
+                let current_side = Number(display_side_lengths[side_name]);
+                const other_two_sides = ['a','b','c'].filter(letter => letter !== side_name).map(letter => numerical_side_lengths[letter]);
+                if ( // if a triangle has hypotenuse = (one of its legs)
+                    (side_name === 'c' && (current_side === numerical_side_lengths.a || current_side === numerical_side_lengths.b)) || 
+                    ((side_name === 'a' || side_name === 'b') && current_side === numerical_side_lengths.c)
+                ) { // the above problem was detected
+                    // Forcably increase the number of rounding places until the numbers aren't equal
+                    // this is guarunteed never to yield more than 4 places - because the most extreme triangle 0.1-100-100.00005 is safe when rounded to 4 places
+                    let problem_side;
+                    const equal_side = (current_side === other_two_sides[0])? other_two_sides[0] : other_two_sides[1];
+                    const exact_value = Math.sqrt(pre_root_value);
+                    let decimal_places = settings.decimal_places;
+                    do {
+                        problem_side = H.buildNewRounder(++decimal_places, settings.keep_rounded_zeros)(exact_value);
+                    } while (Number(problem_side) === equal_side);
+
+                    display_side_lengths[side_name] = problem_side; // overwrite with the fixed value
+                }
+
+                // make sure to add a 'roughly equal' symbol if not exactly equal anymore 
+                if (Number(display_side_lengths[side_name]) !== Math.sqrt(pre_root_value)) {
+                    display_side_lengths[side_name] = '\\approx' + display_side_lengths[side_name];
+                }
             }
             else if (settings.py_theo_answer_form === 'exact_answers') {
                 display_side_lengths[side_name] = PH.simplifiedSqrtString(pre_root_value);
@@ -216,37 +245,20 @@ export default async function genPyTheo(settings) {
         else marker_for_unknown = 'b';
     }
     else if (settings.py_theo_unknown_marker === 'nothing') marker_for_unknown = '';
+    console.log(marker_for_unknown)
 
     const prompt_labels = {a: null, b: null, c: null};
     for (const [key, _] of Object.entries(prompt_labels)) {
         let side_label;
-        if (key === unknown_side) {
-            if (settings.label_triangle_sides === 'yes') {
-                if ( // to avoid labels like 'c=c' and 'c= ', all these need to be represented with a question mark 'c=?'
-                    settings.py_theo_unknown_marker === 'question_mark' ||
-                    settings.py_theo_unknown_marker === 'appropriate_side' ||
-                    settings.py_theo_unknown_marker === 'nothing' 
-                ) {
-                    side_label = key + '=' + '?';
-                }
-                else if (settings.py_theo_unknown_marker === 'letter_x') {
-                    side_label = key + '=' + 'x';
-                }
-            }
-            else if (settings.label_triangle_sides === 'no') side_label = marker_for_unknown;
-        }
-        else {
-            if (settings.label_triangle_sides === 'yes') side_label = key + '=' + display_side_lengths[key] + ' ' + settings.triangle_length_unit;
-            else if (settings.label_triangle_sides === 'no') side_label = display_side_lengths[key] + ' ' + settings.triangle_length_unit;
-        }
+        if (key === unknown_side) side_label = marker_for_unknown;
+        else side_label = display_side_lengths[key] + ((settings.triangle_length_unit === '')? '' : `~\\mathrm{${settings.triangle_length_unit}}`); 
 
         prompt_labels[key] = side_label;
     }
 
     const answer_labels = {a: null, b: null, c: null};
     for (const [key, _] of Object.entries(answer_labels)) {
-        if (settings.label_triangle_sides === 'yes') answer_labels[key] = key + '=' + display_side_lengths[key] + ' ' + settings.triangle_length_unit;
-        else if (settings.label_triangle_sides === 'no') answer_labels[key] = display_side_lengths[key] + ' ' + settings.triangle_length_unit;
+        answer_labels[key] = display_side_lengths[key] + ((settings.triangle_length_unit === '')? '' : `~\\mathrm{${settings.triangle_length_unit}}`);
     }
 
     // before drawing the triangles, ensure the (drawn) size difference between the legs never gets too extreme (some triangles like 1-100-r(10001) won't be to scale anymore)
@@ -293,8 +305,7 @@ export const settings_fields = [
     'triangle_length_size',
     'py_theo_unknown_marker',
     'rounding_rules',
-    'py_theo_answer_form',
-    'label_triangle_sides' 
+    'py_theo_answer_form'
 ];
 
 export function get_presets() {
@@ -307,8 +318,7 @@ export function get_presets() {
         triangle_length_size: 75,
         py_theo_unknown_marker: 'letter_x',
         decimal_places: 1,
-        py_theo_answer_form: 'decimal_answers',
-        label_triangle_sides: 'no'
+        py_theo_answer_form: 'decimal_answers'
     };
 }
 
