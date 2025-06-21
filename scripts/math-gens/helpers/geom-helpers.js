@@ -301,11 +301,11 @@ export function getLineSegment(polygon, side_name) {
 export function lineSegmentToVector(line_segment, traversal_direction = 'A-B') {
     const vector = {x: null, y: null};
 
-    if (traversal_direction = 'A-B') {
+    if (traversal_direction === 'A-B') {
         vector.x = line_segment.B.x - line_segment.A.x;
         vector.y = line_segment.B.y - line_segment.A.y;
     }
-    else if (traversal_direction = 'B-A') {
+    else if (traversal_direction === 'B-A') {
         vector.x = line_segment.A.x - line_segment.B.x;
         vector.y = line_segment.A.y - line_segment.B.y;
     }
@@ -375,9 +375,36 @@ export function getOutwardNormal(polygon, side_name) {
     return outward_normal_vector;
 }
 
+export function getTriangleOutwardNormal(triangle, side_name) {
+    const first_letter = side_name.split('-')[0]; // (of the side name 'X-Y')
+    const second_letter = side_name.split('-')[1];
+
+    const vertex_1 = triangle[first_letter];
+    const vertex_2 = triangle[second_letter];
+    const other_vertex = triangle[['A','B','C'].filter(letter => ![first_letter,second_letter].includes(letter))[0]];
+
+    // the line (y=mx+b) from vertex 1 to vertex 2
+    const slope = ((vertex_2.y - vertex_1.y) / (vertex_2.x - vertex_1.x));
+    if (Number.isFinite(slope)) { // regular line
+        const sideLine = (x) => slope * (x - vertex_1.x) + vertex_1.y;
+
+        if (other_vertex.y > sideLine(other_vertex.x)) { // other vertex lies above the line (normal should point below the line)
+            return getUnitVector({x: slope, y: -1});
+        }
+        else if (other_vertex.y < sideLine(other_vertex.x)) { // other vertex lies below the line (normal should point above the line)
+            return getUnitVector({x: -slope, y: 1});
+        }
+    }
+    else { // vertical line
+        if (other_vertex.x > vertex_1.x) return {x: -1, y: 0};
+        else if (other_vertex.x < vertex_1.x) return {x: 1, y: 0};
+    }
+
+}
+
 export function positionPolygonSideLabel(label_bounding_box, polygon, side_name, distance) {
     // get the side's outward normal vector (to find out which side of the polygon's side the label should be on)
-    const outward_normal = getOutwardNormal(polygon, side_name); // is a unit vector by default
+    const outward_normal = getTriangleOutwardNormal(polygon, side_name); // is a unit vector by default
 
     // place the bounding box's center at the tip of the above normal vector (sprouting from the midpoint of the polygon's side)
     const midpoint = getMidPoint(getLineSegment(polygon, side_name));
