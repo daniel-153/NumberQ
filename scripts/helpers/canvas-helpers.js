@@ -33,6 +33,9 @@ const CH = {
         C = context;
     },
     drawPolygon: function(point_set_obj) {
+        C.save();
+        
+        C.lineCap = 'square';
         C.beginPath();
         C.moveTo(point_set_obj.A.x, point_set_obj.A.y);
         geometry.forEachPoint(point_set_obj, function(point) {
@@ -40,6 +43,8 @@ const CH = {
         });
         C.lineTo(point_set_obj.A.x, point_set_obj.A.y)
         C.stroke()
+
+        C.restore();
     },
     getTextBoundingRect: function(text_string, position = {x: 0, y: 0}) { // assumes left-bottom alignment
         const text_metrics = C.measureText(text_string); 
@@ -190,7 +195,11 @@ const CH = {
     },
     drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
         // a -> A-B | b -> B-C | c -> C-A
-        const triangle_ps = geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b);
+        const triangle_line_width = 5.5; // the canvas context lineWidth at which the triangle will be drawn
+        const triangle_ps = geometry.getBoundingTriangle( // the idea here is to "pretend" we're dealing with the filled-in triangle until the very end
+            geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b),
+            triangle_line_width
+        );
         const side_name_key = {'a': 'A-B', 'b': 'C-A', 'c': 'B-C'};
 
         // rotate the triangle by the specified amount (about its incenter)
@@ -202,11 +211,15 @@ const CH = {
         geometry.fitPointSet(triangle_ps, {x1: 0, x2: 1000, y1: 0, y2: 1000}, 'center', 'center');
 
         // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
-        const label_spacing = 20; // distance of the labels from the sides (px)
+        const label_spacing = 17.25; // distance of the labels from the sides (px)
         const label_bounding_rects = {a: null, b: null, c: null};
         const label_images = {a: null, b: null, c: null};
         for (const [key, _] of Object.entries(label_images)) {
-            label_images[key] = await CH.getMathJaxAsImage(side_labels_obj[key], 6);
+            // scale down the mathjax image slightly for long decimals
+            let mjx_image_scale = 6;
+            if (side_labels_obj[key].includes('~') && side_labels_obj[key].split('~')[0].length >= 6) mjx_image_scale = 5;
+
+            label_images[key] = await CH.getMathJaxAsImage(side_labels_obj[key], mjx_image_scale);
             label_bounding_rects[key] = CH.getImageBoundingRect(label_images[key]);
 
             geometry.positionPolygonSideLabel(
@@ -288,9 +301,9 @@ const CH = {
         label_bounding_rects.c = geometry.getBoundingRect(c_rectangle); 
 
         // last step is to actually draw everything in
-        // draw the triangle
-        C.lineWidth = 5.5;
-        CH.drawPolygon(triangle_ps);
+        // draw the triangle => get the original triangle back from the bounding triangle
+        C.lineWidth = triangle_line_width;
+        CH.drawPolygon(geometry.getBoundingTriangle(triangle_ps, triangle_line_width, 'inner'));
 
         // insert the images for the labels
         CH.drawImage(label_images.a, label_bounding_rects.a);
