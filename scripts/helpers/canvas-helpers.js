@@ -99,71 +99,159 @@ const CH = {
         });
         C.stroke()
     },
-    getMathJaxAsSvg: async function(latex_string, scale_factor) {
-        const iframe_el = document.createElement('iframe');
-        iframe_el.style.display = 'none';
-        iframe_el.srcdoc = `
-            <!DOCTYPE html><html><body>
-                <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"><\/script>
-                <script>
-                    window.addEventListener('message', async (event) => {
-                        const { latex_string, scale_factor } = event.data;
-                        const mjx_container = document.createElement('div');
-                        mjx_container.innerHTML = '\\\\(' + latex_string + '\\\\)';
-                        document.body.appendChild(mjx_container);
+    MIH: { // mjx image helpers
+        awaitIframeResponse: function(iframe_el, resolveCallback) {
+            const handlerFunc = function(event) {
+                if (
+                    event.origin !== window.location.origin ||
+                    event.source !== iframe_el.contentWindow
+                ) return;
+                else {
+                    window.removeEventListener('message', handlerFunc);
+                    resolveCallback(event.data);
+                }
+            };
 
-                        await MathJax.typesetPromise([mjx_container]);
-                        const svg = mjx_container.querySelector('svg');
-                        mjx_container.remove();
+            window.addEventListener('message', handlerFunc);
+        },
+        initIframe: async function() { // insert into the dom (+ wait until ready before continuing)
+            const iframe_el = document.createElement('iframe');
+            iframe_el.style.display = 'none';
+            iframe_el.srcdoc = `
+                <!DOCTYPE html><html><body>
+                    <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"><\/script>
+                    <script>
+                        const iframe_parent_origin = '${window.location.origin}';
 
-                        svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * scale_factor + 'ex');
-                        svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * scale_factor + 'ex');
+                        async function getSvgStringArray(string_factor_pairs) {
+                            string_factor_pairs.forEach(pair => {
+                                const mjx_container = document.createElement('div');
+                                mjx_container.innerHTML = '\\\\(' + pair[0] + '\\\\)';
+                                mjx_container.setAttribute('data-scale-factor', pair[1]);
 
-                        // correct the 200 unit offset to the right (if it is present) 
-                        // => (there appears to be an issue/bug where mjx svg output is often incorrectly translated 200 units right -> pushing the svg out of its container) 
-                        const svg_height = (-1)*Number(svg.getAttribute('viewBox').split(' ')[1]);
-                        let svg_as_string = svg.outerHTML;
-                        svg_as_string = svg_as_string.replace('translate(200,' + svg_height + ')', 'translate(0,' + svg_height + ')');
+                                document.body.appendChild(mjx_container);
+                            });
 
-                        event.source.postMessage({ svg: svg_as_string }, '*');
-                    });
-                <\/script>
-            </body></html>
-        `;
-        document.body.appendChild(iframe_el);
+                            await MathJax.typesetPromise([document.body]);
 
-        iframe_el.onload = () => {
-            iframe_el.contentWindow.postMessage({latex_string, scale_factor}, '*');
+                            const svg_string_array = [];
+                            Array.from(document.querySelectorAll('body div')).forEach(mjx_container => {
+                                const svg = mjx_container.querySelector('svg');
+                                svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
+                                svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
+
+                                // correct the 200 unit offset to the right (if it is present) 
+                                // => (there appears to be an issue/bug where mjx svg output is often "incorrectly" translated 200 units right -> pushing the svg out of its container) 
+                                const svg_height = (-1)*Number(svg.getAttribute('viewBox').split(' ')[1]);
+                                let svg_as_string = svg.outerHTML;
+                                svg_as_string = svg_as_string.replace('translate(200,' + svg_height + ')', 'translate(0,' + svg_height + ')');
+
+                                svg_string_array.push(svg_as_string);
+                            });
+
+                            // clear all the elements
+                            document.body.innerHTML = '';
+
+                            return svg_string_array;
+                        }
+
+                        window.addEventListener('message', async (event) => {
+                            if (event.origin !== iframe_parent_origin) return;
+
+                            if (event.data.message_type === 'status_confirmation') {
+                                window.parent.postMessage('ready', iframe_parent_origin);
+                            }
+                            else if (event.data.message_type === 'typeset_request') {
+                                window.parent.postMessage(
+                                    await getSvgStringArray(event.data.string_factor_pairs),
+                                    iframe_parent_origin
+                                );
+                            }
+                        });
+
+                        window.parent.postMessage('ready', iframe_parent_origin);
+                    <\/script>
+                </body></html>
+            `;
+
+            // remove a pre-existing iframe if it exists (to avoid adding multiple)
+            if (document.getElementById('mjx-svg-loader') !== null) document.getElementById('mjx-svg-loader').remove();
+            iframe_el.id = 'mjx-svg-loader';
+            document.getElementById('generation-content').appendChild(iframe_el);
+
+            // don't continue until the iframe loads and sends its initial 'ready' message
+            await new Promise((resolve) => {CH.MIH.awaitIframeResponse(iframe_el, resolve);});
+
+            return iframe_el;
+        },
+        getIframeStatus: async function() {
+            const iframe_el = document.getElementById('mjx-svg-loader');
+
+            if (iframe_el === null || iframe_el.contentWindow === undefined) return null; // no iframe element was inserted (if the status is null, this is almost certainly why)
+
+            // nonetheless, still add this handling just in case the iframe exists but can't communicate 
+            const test_result = await new Promise((resolve) => {
+                Promise.race([ // start the race
+                    new Promise((resolveResponse) => {
+                        CH.MIH.awaitIframeResponse(iframe_el, resolveResponse);
+                    }),
+                    new Promise((resolveTimedOut) => setTimeout(() => {resolveTimedOut(null)}, 500))
+                ]).then((value) => resolve(value));
+
+                iframe_el.contentWindow.postMessage({message_type: 'status_confirmation'}, window.location.origin); // send the message
+            });
+            
+            return test_result; // null or 'ready'
+        }
+    },
+    getMathJaxAsSvg: async function(string_factor_pairs) {
+        // initialize the iframe if it isn't already
+        let iframe_el;
+        if ((await this.MIH.getIframeStatus()) === null) {
+            iframe_el = await this.MIH.initIframe();
+        }
+        else {
+            iframe_el = document.getElementById('mjx-svg-loader');
         }
 
-        const svg_string = await new Promise((resolve) => {
-            window.addEventListener('message', (event) => {resolve(event.data.svg)}, { once: true });
+        // send over the latex string(s) and wait for the response
+        const svg_string_array = await new Promise((resolve) => {
+            new Promise((resolveResponse) => {
+                CH.MIH.awaitIframeResponse(iframe_el, resolveResponse);
+            }).then((value) => resolve(value));
+
+            iframe_el.contentWindow.postMessage({
+                message_type: 'typeset_request', 
+                string_factor_pairs
+            }, window.location.origin);
         });
 
-        iframe_el.remove();
-
-        return (new DOMParser()).parseFromString(svg_string, 'image/svg+xml').firstChild;
+        // return the svg elements parsed out of the strings
+        const dom_parser = new DOMParser();
+        return svg_string_array.map(svg_string => dom_parser.parseFromString(svg_string, 'image/svg+xml').firstChild);
     },
-    getMathJaxAsImage: async function(latex_string, scale_factor) {
-        const mjx_svg = await this.getMathJaxAsSvg(latex_string, scale_factor);
+    getMathJaxAsImage: async function(string_factor_pairs) {
+        const mjx_images = await this.getMathJaxAsSvg(string_factor_pairs);
 
-        const svg_string = new XMLSerializer().serializeToString(mjx_svg);
-        const encoded = btoa(new TextEncoder().encode(svg_string).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-        const img_src = "data:image/svg+xml;base64," + encoded;
+        return await Promise.all(mjx_images.map(async function(mjx_svg) { // convert the each svg to an image
+            const svg_string = new XMLSerializer().serializeToString(mjx_svg);
+            const encoded = btoa(new TextEncoder().encode(svg_string).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+            const img_src = "data:image/svg+xml;base64," + encoded;
 
-        const img = new Image();
-        img.src = img_src;
+            const img = new Image();
+            img.src = img_src;
 
-        try {
-            await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = () => reject(new Error("SVG image failed to load"));
-            });
-        } catch (err) {
-            throw err;
-        }
+            try {
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = () => reject(new Error("SVG image failed to load"));
+                });
+            } catch (err) {
+                throw err;
+            }
 
-        return img;
+            return img;
+        }));
     },
     getImageBoundingRect(image, location = {x: 0, y: 0}) {
         return {
@@ -210,16 +298,28 @@ const CH = {
         // scale the triangle to fit a (theoretical) 1000x1000 canvas in the corner of Q1
         geometry.fitPointSet(triangle_ps, {x1: 0, x2: 1000, y1: 0, y2: 1000}, 'center', 'center');
 
+        // get the image for each side label
+        const string_factor_pairs = [];
+        ['a','b','c'].forEach(side_letter => {
+            const label_string = side_labels_obj[side_letter];
+            const pair = [];
+            pair[0] = label_string;
+
+            // shrink the scale factor for longer latex strings
+            let mjx_image_scale = 6;
+            if (label_string.includes('~') && label_string.split('~')[0].length >= 6) mjx_image_scale = 5;
+            pair[1] = mjx_image_scale;
+
+            string_factor_pairs.push(pair);
+        });
+        const mjx_images = await CH.getMathJaxAsImage(string_factor_pairs);
+
         // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
         const label_spacing = 17.25; // distance of the labels from the sides (px)
         const label_bounding_rects = {a: null, b: null, c: null};
         const label_images = {a: null, b: null, c: null};
         for (const [key, _] of Object.entries(label_images)) {
-            // scale down the mathjax image slightly for long decimals
-            let mjx_image_scale = 6;
-            if (side_labels_obj[key].includes('~') && side_labels_obj[key].split('~')[0].length >= 6) mjx_image_scale = 5;
-
-            label_images[key] = await CH.getMathJaxAsImage(side_labels_obj[key], mjx_image_scale);
+            label_images[key] = mjx_images[key.charCodeAt(0) - 97];
             label_bounding_rects[key] = CH.getImageBoundingRect(label_images[key]);
 
             geometry.positionPolygonSideLabel(
