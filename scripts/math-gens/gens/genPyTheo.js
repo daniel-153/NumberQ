@@ -35,6 +35,11 @@ export function validateSettings(form_obj, error_locations) {
 
     // handle random rotation
     if (form_obj.randomize_rotation === 'is_checked') form_obj.rotation_deg = H.randInt(0, 360);
+
+    // if forcing pythagorean triples, ensure the answer form is exact (doesn't make sense to have rounded triples - defeats the purpose)
+    if (form_obj.force_py_theo_triples === 'always') {
+        form_obj.py_theo_answer_form = 'exact_answers';
+    }
 }
 
 const PTH = {
@@ -83,14 +88,14 @@ export default async function genPyTheo(settings) {
         settings.force_py_theo_triples === 'always'
     ) {
         if (settings.triangle_number_type === 'integers_only') {
-            triple = H.randFromList(PTH.getPossibleTriples(settings.triangle_length_size));
+            triple = JSON.parse(JSON.stringify(H.randFromList(PTH.getPossibleTriples(settings.triangle_length_size))));
         }
         else if (settings.triangle_number_type === 'allow_decimals') {            
-            triple = H.randFromList(
+            triple = JSON.parse(JSON.stringify(H.randFromList(
                 PTH.getPossibleTriples(
                     settings.triangle_length_size * 10
                 ).filter(triple_array => triple_array.some(side_length => side_length % 10 !== 0)) // ensure at least one side will be a decimal
-            ).map(value => value / 10);
+            ).map(value => value / 10)));
         }
 
         // mark the unknown (not given) side
@@ -140,11 +145,11 @@ export default async function genPyTheo(settings) {
             // Ensure c > a, but still treat them equally
             if (H.randInt(0, 1) === 0) {
                 a = H.randInt(1, max_length - 1);
-                c = H.randInt(a, max_length);
+                c = H.randInt(a + 1, max_length);
             }
             else {
                 c = H.randInt(2, max_length);
-                a = H.randInt(1, c);
+                a = H.randInt(1, c - 1);
             }
 
             // randomly swap a and b
@@ -228,7 +233,15 @@ export default async function genPyTheo(settings) {
                 }
             }
             else if (settings.py_theo_answer_form === 'exact_answers') {
-                display_side_lengths[side_name] = PH.simplifiedSqrtString(pre_root_value);
+                if (settings.triangle_number_type === 'integers_only') { // expression inside Math.sqrt guarunteed to be exact
+                    display_side_lengths[side_name] = PH.simplifiedSqrtString(pre_root_value);
+                }
+                else if (
+                    settings.triangle_number_type === 'allow_decimals' &&
+                    settings.force_py_theo_triples === 'always' // by settings validation, if force triples, then exact answers
+                ) { 
+                    display_side_lengths[side_name] = H.buildNewRounder(1)(Math.sqrt(pre_root_value)); // garunteed to yield the exact value
+                }
             }
         }
         else { // known side lengths are always exact integers or decimals
@@ -245,8 +258,6 @@ export default async function genPyTheo(settings) {
         else marker_for_unknown = 'b';
     }
     else if (settings.py_theo_unknown_marker === 'nothing') marker_for_unknown = '';
-    console.log(marker_for_unknown)
-
     const prompt_labels = {a: null, b: null, c: null};
     for (const [key, _] of Object.entries(prompt_labels)) {
         let side_label;
@@ -324,7 +335,15 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-        
+        triangle_number_type: '__random__',
+        py_theo_unknown: '__random__',
+        force_py_theo_triples: '__random__', 
+        triangle_length_unit: H.randFromList(['in', 'ft', 'yd', 'mi', 'mm', 'cm', 'm', 'km']),
+        rotation_deg: H.randInt(0, 360),
+        triangle_length_size: H.randInt(25, 100),
+        py_theo_unknown_marker: '__random__',
+        py_theo_answer_form: '__random__',
+        randomize_rotation: 'is_checked'
     }; 
 }
 
