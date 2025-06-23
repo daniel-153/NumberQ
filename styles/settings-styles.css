@@ -457,6 +457,10 @@
   font-size: 1.8vw;
 }
 
+.wide-textbox {
+  width: 4vw;
+}
+
 /* Special radio button styles */
 
 .radio-math {

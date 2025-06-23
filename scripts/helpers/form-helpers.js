@@ -147,7 +147,7 @@ const CSH = { // createSettingsFields helpers
                 <input
                     type="text"
                     name="${settings.code_names[0]}"
-                    class="settings-text-box"
+                    class="settings-text-box ${(settings.textbox_class !== undefined)? settings.textbox_class : ''}"
                     id="${settings.code_names[0]}-text-box"
                 />
             `;
@@ -235,7 +235,7 @@ const CSH = { // createSettingsFields helpers
                     <input
                         type="text"
                         name="${settings.code_names[0]}"
-                        class="settings-text-box textbox-w-checkbox"
+                        class="settings-text-box textbox-w-checkbox ${(settings.textbox_class !== undefined)? settings.textbox_class : ''}"
                         id="${settings.code_names[0]}-text-input"
                     />
                 </div>

@@ -711,7 +711,7 @@ export const triangle_length_unit = {
     type: 'single_textbox',
     display_name: 'Unit of Length',
     tooltip: 'What length unit should the triangle sides be in (in, cm, m, km, etc)? Enter 1-2 letters or leave blank for no unit.',
-    valid_values: ["__regex__", "^([a-zA-Z]{1,2})?$"],
+    valid_values: ["__regex__", "^([a-z]{1,2})?$"],
     default_value: '',
     prelocked: true
 };
@@ -754,9 +754,9 @@ export const py_theo_unknown_marker = {
     display_name: 'Unknown Symbol',
     radio_buttons: [
         ['question_mark','Question Mark (?)'],
-        ['letter_x','Nothing'],
+        ['letter_x','(x)'],
         ['appropriate_side','(b) or (c)'],
-        ['nothing','(x)'] 
+        ['nothing','Nothing']
     ], 
     tooltip: 'What should mark the unknown side? (a question mark, the letter x, the corresponding a-b-c letter, or nothing)',
     prelocked: true
@@ -774,7 +774,8 @@ export const triangle_rotation = {
     },
     default_value: {
         'rotation_deg': 3
-    }
+    },
+    textbox_class: 'wide-textbox'
 };
 
 export const triangle_length_size = {
@@ -782,13 +783,14 @@ export const triangle_length_size = {
     display_name: "Side Length Size",
     tooltip: "How big or small should the triangle side lengths be? (enter an integer from 1 to 100)",
     valid_values: [ 1, '--', 100 ],
-    default_value: 75
+    default_value: 75,
+    textbox_class: 'wide-textbox'
 };
 
 export const py_theo_answer_form = {
     type: 'radio_buttons',
     display_name: 'Answer Form',
-    radio_buttons: [['decimals_answers','Rounded Decimals'],['exact_answers','Exact Root Expressions']], 
+    radio_buttons: [['decimal_answers','Rounded Decimals'],['exact_answers','Exact Root Expressions']], 
     tooltip: 'How should answers in non-pythagorean-triples be represented? (should the answer to 1-1-? be &radic;2 or &asymp;1.414)',
     prelocked: true
 };
