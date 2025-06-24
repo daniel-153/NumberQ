@@ -36,34 +36,23 @@ const event_listeners = [
     },
 
     function problemGenPage() {
-        document.getElementById('Q-copy-button').addEventListener('click', function() {
-            PGH.copyTextThenReset('un-rendered-Q', this);
-        })
+        document.getElementById('Q-column').addEventListener('click', async (event) => {
+            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) PGH.handleCopyClick('Q');
+            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) PGH.handleSaveClick('Q');
+        });
 
-        document.getElementById('A-copy-button').addEventListener('click', function() {
-            PGH.copyTextThenReset('un-rendered-A', this);
-        })
+        document.getElementById('A-column').addEventListener('click', (event) => {
+            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) PGH.handleCopyClick('A');
+            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) PGH.handleSaveClick('A');
+        });
 
         document.getElementById('generate-button').addEventListener('click', () => {
             PG.generate(document.getElementById('generate-button').getAttribute('data-gen-func-name'));
-        })
+        });
 
         document.getElementById('back-arrow-p-modes').addEventListener('click', () => {
             UH.toggleVisibility(['home-page-content'], ['generation-content']);
             document.body.style.overflowY = 'visible';
-        });
-
-        document.getElementById('fullscreen-mode-button').addEventListener('click', () => {
-            UH.toggleVisibility(['presenation-content'], []);
-            
-            // fit the TeX on the Q and A when the presentation window is first opened
-            UH.updateElementMath('fullscreen-question');
-            UH.updateElementMath('fullscreen-answer');
-    
-            // don't allow scrolling the generation content while in the presentation banner (by hiding it) (mostly for mobile)
-            document.body.style.overflowY = 'hidden'; // the three ways out of here (where you need to set this back) are back-arrow, exit, and browser-back
-    
-            PGH.toggleFullScreenAns('hide');
         });
 
         document.getElementById('settings-form').addEventListener('click', (event) => {
