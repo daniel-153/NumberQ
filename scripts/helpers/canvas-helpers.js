@@ -6,7 +6,7 @@ let C = null;
 const CH = {
     createCanvas: function(width_px, height_px, set_as_current = false) {
         const canvas_el = document.createElement('canvas');
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = (window.devicePixelRatio > 1) ? window.devicePixelRatio : 1;
 
         // Set the correct canvas resolution (canvas px per css px)
         canvas_el.width = width_px * dpr;
@@ -31,6 +31,12 @@ const CH = {
     setCurrentCanvas: function(canvas_el, context) {
         canvas = canvas_el;
         C = context;
+    },
+    canvasHeight: function() {
+        return Number(canvas.style.height.slice(0, -2));
+    },
+    canvasWidth: function() {
+        return Number(canvas.style.width.slice(0, -2));
     },
     drawPolygon: function(point_set_obj) {
         C.save();
@@ -78,7 +84,7 @@ const CH = {
         C.textAlign = 'left';
         C.textBaseline = "bottom";
 
-        C.fillText(text_string, bounding_rect.x1, canvas.height - bounding_rect.y1);
+        C.fillText(text_string, bounding_rect.x1, CH.canvasHeight() - bounding_rect.y1);
 
         C.restore();
     },
@@ -269,14 +275,14 @@ const CH = {
             
             const larger_factor = Math.max(x_overflow_factor, y_overflow_factor);
             C.drawImage( // downscale by the inverse of the larger overflow factor (preserving aspect ratio)
-                image, bounding_rect.x1, canvas.height - bounding_rect.y2, 
+                image, bounding_rect.x1, CH.canvasHeight() - bounding_rect.y2, 
                 (actual_bouding_rect.x2 - actual_bouding_rect.x1) * (1 / larger_factor), 
                 (actual_bouding_rect.y2 - actual_bouding_rect.y1) * (1 / larger_factor)
             );
         }
         else { // provided image fits in provided bounding rect
             C.drawImage(
-                image, bounding_rect.x1, canvas.height - bounding_rect.y2, 
+                image, bounding_rect.x1, CH.canvasHeight() - bounding_rect.y2, 
                 bounding_rect.x2 - bounding_rect.x1, bounding_rect.y2 - bounding_rect.y1
             );
         }  
@@ -429,7 +435,7 @@ for (const [func_name, func_obj] of Object.entries(CH)) {
         CH[func_name] = function(...args) {
             // save and flip
             C.save();
-            C.translate(0, canvas.height);
+            C.translate(0, CH.canvasHeight());
             C.scale(1, -1);
 
             const return_val = func_obj(...args); // call the function now that the context is flipped to cartesian
