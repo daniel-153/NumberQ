@@ -56,3 +56,51 @@ export function toggleSettingsLock(settings_lock_el, method = 'toggle') {
         settings_lock_el.setAttribute('data-status', 'unlocked');
     }
 } // lock if unlocked and unlock if locked Or -> carry out method if provided
+
+const CCH = { // handleCopyClick helpers
+    determineContentType: function(Q_or_A) { // 'latex' or 'canvas'
+        const content_container = document.getElementById(`rendered-${Q_or_A}`).firstElementChild;
+
+        if (content_container.tagName === 'CANVAS') {
+            return 'canvas';
+        }
+        else return 'latex';
+    },
+    copyLatex: function(Q_or_A) {
+        navigator.clipboard.writeText(document.getElementById(`un-rendered-${Q_or_A}`).textContent);
+    },
+    copyCanvas: async function(Q_or_A) {
+        const target_canvas = document.getElementById(`rendered-${Q_or_A}`).firstElementChild;
+
+        const blob = await new Promise(resolve => target_canvas.toBlob(resolve, 'image/png'));
+        const item = new ClipboardItem({ 'image/png': blob });
+
+        try {
+            await navigator.clipboard.write([item]);
+        } catch (error) {
+            console.error(`Failed to copy ${Q_or_A} canvas: ${error}`);
+        }
+    }
+};
+export async function handleCopyClick(Q_or_A) {
+    const content_type = CCH.determineContentType(Q_or_A);
+    if (content_type === 'latex') CCH.copyLatex(Q_or_A);
+    else if (content_type === 'canvas') await CCH.copyCanvas(Q_or_A);
+
+    const copy_button_el = document.getElementById(`${Q_or_A}-copy-image-wrapper`);
+
+    copy_button_el.setAttribute('data-status', 'copy-cooldown');
+
+    if (copy_button_el._timeoutId) {
+        clearTimeout(copy_button_el._timeoutId);
+    }
+
+    copy_button_el._timeoutId = setTimeout(() => {
+        copy_button_el.setAttribute('data-status', 'default');
+        copy_button_el._timeoutId = null; 
+    }, 2000);
+}
+
+export function handleSaveClick(Q_or_A) {
+
+}
