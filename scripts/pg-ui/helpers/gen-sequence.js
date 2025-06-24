@@ -223,3 +223,51 @@ export function insertCanvases(question_obj) {
     document.getElementById('un-rendered-Q').innerHTML = (question_obj.TeXquestion !== undefined)? question_obj.TeXquestion : 'image';
     document.getElementById('un-rendered-A').innerHTML = (question_obj.TeXanswer !== undefined)? question_obj.TeXanswer : 'image';
 }
+
+export function insertCopySaveButtons() {
+    const createButtonsHtml = function(Q_or_A) {
+        return `<div class="export-buttons-wrapper">
+                    <div id="${Q_or_A}-copy-image-wrapper" class="export-image-wrapper copy-image-wrapper" data-status="default">
+                        <img
+                            class="export-button-image copy-button-image"
+                            src="images/copy.png"
+                            alt="copy"
+                        />
+                    </div>
+                    <div id="${Q_or_A}-save-image-wrapper" class="export-image-wrapper save-image-wrapper">
+                        <img
+                            class="export-button-image save-button-image"
+                            src="images/save.png"
+                            alt="save"
+                        />
+                    </div>
+                </div>
+        `;
+    }
+
+    // insert the base html for the buttons
+    document.getElementById('Q-column').querySelector('.rendered-box-wrapper').insertAdjacentHTML('afterbegin', createButtonsHtml('Q'));
+    document.getElementById('A-column').querySelector('.rendered-box-wrapper').insertAdjacentHTML('afterbegin', createButtonsHtml('A'));
+
+    // add additional styles
+    document.getElementById('Q-A-container').insertAdjacentHTML('beforeend',` 
+        <style>
+            .copy-image-wrapper::before {
+                content: 'Copy';
+            }
+
+            .copy-image-wrapper[data-status="copy-cooldown"]::before {
+                content: 'Copied!';
+                opacity: 1;
+            }
+
+            .copy-image-wrapper[data-status="copy-cooldown"]::after {
+                opacity: 1;
+            }
+
+            .save-image-wrapper::before {
+                content: 'Save';
+            }
+        </style>
+    `);
+}
