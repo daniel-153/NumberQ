@@ -1,6 +1,7 @@
 import * as PG from '../pg-ui/pg-ui.js';
 import * as PGH from '../pg-ui/helpers/ui-actions.js';
 import * as UH from '../helpers/ui-helpers.js';
+import * as E from '../pg-ui/export-ui/export.js';
 
 const event_listeners = [
     function homePage() {
@@ -36,14 +37,9 @@ const event_listeners = [
     },
 
     function problemGenPage() {
-        document.getElementById('Q-column').addEventListener('click', async (event) => {
-            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) PGH.handleCopyClick('Q');
-            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) PGH.handleSaveClick('Q');
-        });
-
-        document.getElementById('A-column').addEventListener('click', (event) => {
-            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) PGH.handleCopyClick('A');
-            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) PGH.handleSaveClick('A');
+        document.getElementById('Q-A-container').addEventListener('click', async (event) => {
+            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) PGH.handleCopyClick(event.target.closest('.export-image-wrapper').id.slice(0, 3));
+            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) E.buildNewExportUi(event.target.closest('.export-image-wrapper').id.charAt(0));
         });
 
         document.getElementById('generate-button').addEventListener('click', () => {
