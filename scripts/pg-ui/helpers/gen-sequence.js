@@ -227,7 +227,7 @@ export function insertCanvases(question_obj) {
 export function insertCopySaveButtons() {
     const createButtonsHtml = function(Q_or_A) {
         return `<div class="export-buttons-wrapper">
-                    <div id="${Q_or_A}-copy-image-wrapper" class="export-image-wrapper copy-image-wrapper" data-status="default">
+                    <div id="r-${Q_or_A}-copy-image-wrapper" class="export-image-wrapper copy-image-wrapper" data-status="default">
                         <img
                             class="export-button-image copy-button-image"
                             src="images/copy.png"
@@ -270,4 +270,23 @@ export function insertCopySaveButtons() {
             }
         </style>
     `);
+
+    const createSingleCopyButton = function(Q_or_A) {
+        return `
+            <div
+                id="u-${Q_or_A}-copy-image-wrapper"
+                class="export-image-wrapper copy-image-wrapper un-rendered-copy-image-wrapper"
+                data-status="default"
+            >
+                <img
+                class="export-button-image copy-button-image un-rendered-copy-button"
+                src="images/copy.png"
+                alt="copy"
+                />
+            </div>
+        `;
+    }
+
+    document.getElementById('Q-column').querySelector('.un-rendered-box-wrapper').insertAdjacentHTML('afterbegin', createSingleCopyButton('Q'));
+    document.getElementById('A-column').querySelector('.un-rendered-box-wrapper').insertAdjacentHTML('afterbegin', createSingleCopyButton('A'));
 }

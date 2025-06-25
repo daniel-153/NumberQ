@@ -1,3 +1,5 @@
+import { CH } from "../../helpers/canvas-helpers.js";
+
 export function copyTextThenReset(text_element_id, copy_button_el) {
     navigator.clipboard.writeText(document.getElementById(text_element_id).textContent);
     copy_button_el.innerHTML = 'Copied!';
@@ -80,14 +82,55 @@ const CCH = { // handleCopyClick helpers
         } catch (error) {
             console.error(`Failed to copy ${Q_or_A} canvas: ${error}`);
         }
+    },
+    copySvgImgElToClipboard: async function(img_el) {
+        return new Promise((resolve, reject) => {
+            // Draw the <img> onto a canvas
+            const canvas = document.createElement('canvas'); 
+            canvas.width = img_el.naturalWidth || img_el.width;
+            canvas.height = img_el.naturalHeight || img_el.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img_el, 0, 0);
+
+            // Convert canvas to blob and copy it
+            canvas.toBlob(async blob => {
+                if (!blob) {
+                    reject(new Error("Failed to convert canvas to blob"));
+                    return;
+                }
+
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ "image/png": blob })
+                    ]);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            }, 'image/png');
+        });
+    },
+    copyMjxAsImage: async function(Q_or_A) {
+        const latex_string = document.getElementById(`rendered-${Q_or_A}`).getAttribute('data-latexcode');
+
+        const mjx_img_el = (await CH.getMathJaxAsImage([[latex_string, 15]]))[0];
+
+        this.copySvgImgElToClipboard(mjx_img_el);
     }
 };
-export async function handleCopyClick(Q_or_A) {
-    const content_type = CCH.determineContentType(Q_or_A);
-    if (content_type === 'latex') CCH.copyLatex(Q_or_A);
-    else if (content_type === 'canvas') await CCH.copyCanvas(Q_or_A);
+export async function handleCopyClick(r_or_u_Q_or_A) {
+    const [r_or_u, Q_or_A]  = r_or_u_Q_or_A.split('-');
 
-    const copy_button_el = document.getElementById(`${Q_or_A}-copy-image-wrapper`);
+    const content_type = CCH.determineContentType(Q_or_A);
+    if (content_type === 'latex') {
+        if (r_or_u === 'u') CCH.copyLatex(Q_or_A);
+        else if (r_or_u === 'r') CCH.copyMjxAsImage(Q_or_A);
+    }
+    else if (content_type === 'canvas') {
+        await CCH.copyCanvas(Q_or_A);
+    }
+
+    const copy_button_el = document.getElementById(`${r_or_u_Q_or_A}-copy-image-wrapper`);
 
     copy_button_el.setAttribute('data-status', 'copy-cooldown');
 
@@ -99,8 +142,4 @@ export async function handleCopyClick(Q_or_A) {
         copy_button_el.setAttribute('data-status', 'default');
         copy_button_el._timeoutId = null; 
     }, 2000);
-}
-
-export function handleSaveClick(Q_or_A) {
-
 }
