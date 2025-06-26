@@ -78,6 +78,17 @@ const event_listeners = [
             UH.toggleVisibility(['home-page-content'], ['FAQ-page']);
         });
     },
+
+    function exportPage() {
+        document.getElementById('generation-content').addEventListener('click', (event) => {
+            if (event.target.id === 'export-exit-button') {
+                UH.toggleVisibility([], ['export-content']);
+            }
+            else if (event.target.id === 'download-button') {
+                E.exportMath();
+            }
+        });
+    }
 ];
 
 export function registerEventListeners() {
