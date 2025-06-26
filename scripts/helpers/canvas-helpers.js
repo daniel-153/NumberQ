@@ -122,7 +122,9 @@ const CH = {
         },
         initIframe: async function() { // insert into the dom (+ wait until ready before continuing)
             const iframe_el = document.createElement('iframe');
-            iframe_el.style.display = 'none';
+            iframe_el.style.position = 'absolute';
+            iframe_el.style.left = '-9999px';
+            iframe_el.style.top = '-9999px';
             iframe_el.srcdoc = `
                 <!DOCTYPE html><html><body>
                     <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"><\/script>
@@ -146,13 +148,11 @@ const CH = {
                                 svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
                                 svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
 
-                                // correct the 200 unit offset to the right (if it is present) 
-                                // => (there appears to be an issue/bug where mjx svg output is often "incorrectly" translated 200 units right -> pushing the svg out of its container) 
-                                const svg_height = (-1)*Number(svg.getAttribute('viewBox').split(' ')[1]);
-                                let svg_as_string = svg.outerHTML;
-                                svg_as_string = svg_as_string.replace('translate(200,' + svg_height + ')', 'translate(0,' + svg_height + ')');
+                                // ensure viewbox = bbox (no visible part of the svg is cut off)
+                                const svg_bbox = svg.getBBox();
+                                svg.setAttribute('viewBox', svg_bbox.x + ' ' + svg_bbox.y + ' ' + svg_bbox.width + ' ' + svg_bbox.height)
 
-                                svg_string_array.push(svg_as_string);
+                                svg_string_array.push(svg.outerHTML);
                             });
 
                             // clear all the elements
