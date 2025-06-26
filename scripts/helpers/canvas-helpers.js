@@ -420,6 +420,16 @@ const CH = {
         const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
         C.lineWidth = 3;
         CH.connectPointsWithLine(right_angle_label); 
+    },
+    getCanvasClone: function(original_canvas = canvas) {
+        const clone = document.createElement('canvas');
+        clone.width = original_canvas.width;
+        clone.height = original_canvas.height;
+
+        const ctx = clone.getContext('2d');
+        ctx.drawImage(original_canvas, 0, 0);
+
+        return clone;
     }
 }
 
