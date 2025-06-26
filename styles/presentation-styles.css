@@ -34,7 +34,7 @@
 
 /* Presentation banner styles */
 
-#presenation-content {
+.dark-overlay {
     position: fixed;
     top: 0vw;
     display: flex;
@@ -345,7 +345,7 @@
         background-color: rgb(60, 80, 147);
     }
 
-    #presenation-content {
+    .dark-overlay {
         position: fixed;
         z-index: 9999;
         top: 0vw;

@@ -1,0 +1,140 @@
+.pop-up-banner {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 50vw;
+    height: 50vh;
+    background-color: rgb(204, 204, 205);
+    border-radius: 0.5vw;
+    border: 0.15vw solid black;
+}
+
+.main-pop-up-content {
+    width: 100%;
+    height: 80%;
+    display: flex;
+    flex-direction: row;
+}
+
+.export-preview-wrapper {
+    height: 100%;
+    width: 70%;
+    border-right: 0.05vw solid rgb(22, 22, 22);
+    border-top-left-radius: 0.5vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.export-form-wrapper {
+    height: 100%;
+    width: 30%;
+}
+
+.export-form-header {
+    width: 100%;
+    height: 15%;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 1.5vw;
+    font-weight: 400;
+    border-bottom: 0.05vw solid rgb(22, 22, 22);
+}
+
+.export-form {
+    width: 100%;
+    height: 85%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.auto-spaced-radio-buttons {
+    display: flex;
+    justify-content: space-evenly;
+    height: 100%;
+}
+
+.file-type-name {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    color: rgb(16, 16, 16);
+}
+
+.pop-up-base {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 0.05vw solid rgb(22, 22, 22);
+}
+
+.download-button {
+    width: 17%;
+    height: 60%;
+    background-color: rgb(30, 107, 81);
+    outline: none;
+    border: 0.15vw solid rgb(15, 59, 45);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: whitesmoke;
+    font-weight: 500;
+    border-radius: 0.3vw;
+    font-size: 1.25vw;
+}
+
+.download-button:hover {
+    cursor: pointer;
+    background-color: rgb(39, 131, 101);
+    border-width: 0.17vw;
+    font-size: 1.24vw;
+}
+
+.checkerboard {
+    --color1: #ffffff;
+    --color2: #f0f0f0;
+    --tiles-across: 20; 
+    --tile-size: calc(100% / var(--tiles-across));
+
+    background-image: 
+    repeating-conic-gradient(
+        var(--color1) 0% 25%, 
+        var(--color2) 0% 50%
+    );
+    background-size: var(--tile-size) var(--tile-size);
+}
+
+.export-exit-button {
+    --exit-button-height: 1.8vw;
+    height: var(--exit-button-height);
+    width: var(--exit-button-height);
+    position: absolute;
+    background-color: rgba(0,0,0,0);
+    border: 0.15vw solid black;
+    outline: none;
+    font-size: 1.5vw;
+    top: calc((-1) * var(--exit-button-height));
+    top: -0.12vw;
+    right: -0.12vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-bottom-left-radius: 0.2vw;
+    border-top-right-radius: 0.2vw;
+    background-color: rgb(204, 204, 205);
+    transition: background-color 0.2s ease;
+}
+
+.export-exit-button:hover {
+    cursor: pointer;
+    background-color: rgb(196, 45, 45);
+}
+
+.export-preview-image:hover {
+    border: 0.1vw dotted rgb(58, 58, 58);
+}
