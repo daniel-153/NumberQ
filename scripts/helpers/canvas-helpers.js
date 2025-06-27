@@ -148,10 +148,6 @@ const CH = {
                                 svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
                                 svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
 
-                                // ensure viewbox = bbox (no visible part of the svg is cut off)
-                                const svg_bbox = svg.getBBox();
-                                svg.setAttribute('viewBox', svg_bbox.x + ' ' + svg_bbox.y + ' ' + svg_bbox.width + ' ' + svg_bbox.height)
-
                                 svg_string_array.push(svg.outerHTML);
                             });
 
