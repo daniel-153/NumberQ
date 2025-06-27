@@ -22,11 +22,11 @@ export function insertExportUiHtml() {
                         type="radio"
                         name="export-file-type"
                         value="png"
-                        class="radio-buttons"
+                        class="radio-buttons export-radio-buttons"
                         id="file-type-png"
                       />
                     </div>
-                    <label for="file-type-png" class="radio-button-label"
+                    <label for="file-type-png" class="radio-button-label export-radio-label"
                       ><span class="file-type-name">PNG</span>
                       (recommended)</label
                     >
@@ -37,11 +37,11 @@ export function insertExportUiHtml() {
                         type="radio"
                         name="export-file-type"
                         value="jpeg"
-                        class="radio-buttons"
+                        class="radio-buttons export-radio-buttons"
                         id="file-type-jpeg"
                       />
                     </div>
-                    <label for="file-type-jpeg" class="radio-button-label"
+                    <label for="file-type-jpeg" class="radio-button-label export-radio-label"
                       ><span class="file-type-name">JPEG</span> (smaller
                       file)</label
                     >
@@ -52,11 +52,11 @@ export function insertExportUiHtml() {
                         type="radio"
                         name="export-file-type"
                         value="webp"
-                        class="radio-buttons"
+                        class="radio-buttons export-radio-buttons"
                         id="file-type-webp"
                       />
                     </div>
-                    <label for="file-type-webp" class="radio-button-label"
+                    <label for="file-type-webp" class="radio-button-label export-radio-label"
                       ><span class="file-type-name">WebP</span> (small &
                       sharp)</label
                     >
@@ -67,11 +67,11 @@ export function insertExportUiHtml() {
                         type="radio"
                         name="export-file-type"
                         value="svg"
-                        class="radio-buttons"
+                        class="radio-buttons export-radio-buttons"
                         id="file-type-svg"
                       />
                     </div>
-                    <label for="file-type-svg" class="radio-button-label"
+                    <label for="file-type-svg" class="radio-button-label export-radio-label"
                       ><span class="file-type-name">SVG</span> (editable)</label
                     >
                   </div>
@@ -180,6 +180,9 @@ export function setPreviewScale(export_ui_state, scale_value) {
     const vw = document.documentElement.clientWidth;
     export_ui_state.export_preview_copy.style.width = (new_width_px / vw) * 100 + 'vw';
     export_ui_state.export_preview_copy.style.height = (new_height_px / vw) * 100 + 'vw';
+
+    export_ui_state.export_preview_copy.style.width = new_width_px;
+    export_ui_state.export_preview_copy.style.height = new_height_px;
 }
 
 export function getSelectedFileFormat(export_ui_state) {

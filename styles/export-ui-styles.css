@@ -2,11 +2,13 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    width: 50vw;
-    height: 50vh;
     background-color: rgb(204, 204, 205);
-    border-radius: 0.5vw;
-    border: 0.15vw solid black;
+    border-radius: 12.8px;
+    border-top-right-radius: 5px;
+    border: 3px solid black;
+    width: 1280px;
+    height: 639px;
+    font-size: 38.4px;
 }
 
 .main-pop-up-content {
@@ -20,7 +22,7 @@
     height: 100%;
     width: 70%;
     border-right: 0.05vw solid rgb(22, 22, 22);
-    border-top-left-radius: 0.5vw;
+    border-top-left-radius: 12.8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,6 +45,7 @@
     font-size: 1.5vw;
     font-weight: 400;
     border-bottom: 0.05vw solid rgb(22, 22, 22);
+    font-size: 100%;
 }
 
 .export-form {
@@ -51,6 +54,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.export-radio-buttons {
+    width: 25.5px;
+    height: 25.5px;
+    min-width: 25.5px;
+    min-height: 25.5px;
+}
+
+.export-radio-label {
+    font-size: 66.66%;
 }
 
 .auto-spaced-radio-buttons {
@@ -79,19 +93,20 @@
     height: 60%;
     background-color: rgb(30, 107, 81);
     outline: none;
-    border: 0.15vw solid rgb(15, 59, 45);
+    border: 3px solid rgb(15, 59, 45);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     color: whitesmoke;
     font-weight: 500;
-    border-radius: 0.3vw;
+    border-radius: 7.5px;
     font-size: 1.25vw;
+    font-size: 82.6%;
 }
 
 .download-button:hover {
     cursor: pointer;
     background-color: rgb(39, 131, 101);
-    border-width: 0.17vw;
-    font-size: 1.24vw;
+    border-width: 4px;
+    font-size: 82%;
 }
 
 .checkerboard {
@@ -109,23 +124,22 @@
 }
 
 .export-exit-button {
-    --exit-button-height: 1.8vw;
+    --exit-button-height: 43.3px;
     height: var(--exit-button-height);
     width: var(--exit-button-height);
     position: absolute;
     background-color: rgba(0,0,0,0);
-    border: 0.15vw solid black;
+    border: 3px solid black;
     outline: none;
-    font-size: 1.5vw;
-    top: calc((-1) * var(--exit-button-height));
+    font-size: 36px;
     top: -0.12vw;
     right: -0.12vw;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    border-bottom-left-radius: 0.2vw;
-    border-top-right-radius: 0.2vw;
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
     background-color: rgb(204, 204, 205);
     transition: background-color 0.2s ease;
 }
@@ -137,4 +151,112 @@
 
 .export-preview-image:hover {
     border: 0.1vw dotted rgb(58, 58, 58);
+}
+
+@media (max-width: 1550px) {
+    .pop-up-banner {
+        width: 950px;
+        height: 474.3px;
+        font-size: 28.5px;
+    }
+
+    .export-radio-buttons {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        min-height: 22px;
+    }
+
+    .download-button:hover {
+        border-width: 3.5px;
+    }
+
+    .export-exit-button {
+        --exit-button-height: 30px;
+        border: 3px solid black;
+        font-size: 25px;
+        top: -0.15vw;
+        right: -0.15vw;
+        border-bottom-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+}
+
+@media (max-width: 1070px) {
+    .pop-up-banner {
+        width: 90vw;
+        height: 90vh;
+        font-size: 40px;
+    }
+
+    .main-pop-up-content {
+        width: 100%;
+        height: 80%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .export-preview-wrapper {
+        height: 40%;
+        width: 100%;
+        border-right: unset;
+        border-bottom: 0.05vw solid rgb(22, 22, 22);
+        border-top-right-radius: 12.8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .export-form-wrapper {
+        height: 60%;
+        width: 100%;
+    }
+
+    .export-radio-buttons {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        min-height: 22px;
+    }
+
+    .download-button {
+        width: fit-content;
+        height: 50%;
+        font-size: 80%;
+        min-width: fit-content;
+    }
+
+    .download-button:hover {
+        font-size: 80%;
+        border-width: 3px;
+    }
+
+    .export-exit-button {
+        --exit-button-height: 30px;
+        border: 2px solid black;
+        font-size: 25px;
+        top: -0.15vw;
+        right: -0.15vw;
+        border-bottom-left-radius: 5px;
+        border-top-right-radius: 5px;
+    }
+
+    .export-form {
+        height: 85%;
+    }
+}
+
+@media (max-width: 700px) {
+    .pop-up-banner {
+        font-size: 30px;
+    }
+
+    .download-button {
+        height: 45%;
+    }
+
+    .export-exit-button {
+        top: -1.5px;
+        right: -1.5px;
+    }
 }

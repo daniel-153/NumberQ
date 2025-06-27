@@ -174,7 +174,7 @@
 .export-buttons-wrapper {
     --button-height: 2vw;
     position: absolute;
-    top: calc((-1.1) * var(--button-height) + 0.05vw);
+    top: calc((-1.05) * var(--button-height) + 0.05vw);
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -232,7 +232,6 @@
     height: var(--button-height);
     border-radius: calc(0.2 * var(--button-height));
     border: calc(0.05 * var(--button-height)) solid rgb(13, 1, 19);
-    border-bottom-color: rgba(0, 0, 0, 0);
 }
 
 .copy-button-image {
@@ -247,7 +246,6 @@
     background-color: #3481c4;
     cursor: pointer;
     border-color: rgb(1, 9, 252);
-    border-bottom-color: transparent;
 }
 
 .save-button-image {
@@ -262,7 +260,6 @@
     background-color: rgb(88, 76, 192);
     cursor: pointer;
     border-color: rgb(45, 3, 130);
-    border-bottom-color: transparent;
 }
 
 .un-rendered-copy-image-wrapper {
