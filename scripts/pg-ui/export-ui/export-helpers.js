@@ -156,8 +156,16 @@ export function setPreviewScale(export_ui_state, scale_value) {
     const wrapper_width = preview_wrapper.clientWidth;
     const wrapper_height = preview_wrapper.clientHeight;
 
-    const original_width = export_ui_state.export_preview_copy.clientWidth;
-    const original_height = export_ui_state.export_preview_copy.clientHeight;
+    let original_width, original_height;
+    if (export_ui_state.export_preview_copy.tagName === 'CANVAS') {
+        original_width = export_ui_state.export_preview_copy.clientWidth;
+        original_height = export_ui_state.export_preview_copy.clientHeight;
+    }
+    else if (export_ui_state.export_preview_copy.tagName === 'svg') {
+        const bbox = export_ui_state.export_preview_copy.getBBox();
+        original_width = bbox.width;
+        original_height = bbox.height;
+    }
 
     const width_ratio = original_width / wrapper_width;
     const height_ratio = original_height / wrapper_height;
