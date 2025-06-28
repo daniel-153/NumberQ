@@ -591,6 +591,10 @@ export function positionAngleLabelManual(label_bounding_rect, vertex_letter, tri
     label_bounding_rect.y2 = new_bounding_rect.y2;
 }
 
+export function vectorDirection(vector) {
+    return Math.atan2(vector.y, vector.x);
+}
+
 export function pointToSegmentInDirection(target_point, direction, seg_point_1, seg_point_2) { // suppose we started at target_point, and went in direction by some scalar amount. Is there a scalar that lands the vector on the segment? Give its length, or indicate impossible
     const sin0 = Math.sin(direction);
     const cos0 = Math.cos(direction);
@@ -613,12 +617,83 @@ export function pointToSegmentInDirection(target_point, direction, seg_point_1, 
     }
 }
 
-export function positionAngleLabelSimple(label_bounding_rect, vertex_letter, triangle, distance_from_vertex, square_size_ratio = 0.9) {
+export function getRectangleCenter(rectangle_point_set) {
+    // basically take the average of all the points
+    let avg_x = 0;
+    let avg_y = 0;
+    for (const [_, point] of Object.entries(rectangle_point_set)) {
+        avg_x += point.x;
+        avg_y += point.y;
+    }
 
+    return {x: avg_x / 4, y: avg_y / 4};
+}
 
+export function positionAngleLabelSimple(label_bounding_rect, vertex_letter, triangle, center_distance_from_vertex, square_size_ratio = 0.9) {
+    const target_vertex = triangle[vertex_letter];
+    const other_vertices = ['A','B','C'].filter(letter => letter !== vertex_letter).map(letter => triangle[letter]);
+    const unit_bisector = getAngleBisectorVector(triangle, vertex_letter);
+    
+    // first ensure the distance from the vertex isn't too far (a good rule of thumb is never more to go more than 20% of the way along the bisector line segment)
+    const bisector_length = pointToSegmentInDirection(
+        triangle[vertex_letter], 
+        vectorDirection(unit_bisector),
+        other_vertices[0], other_vertices[1]
+    ); // distance between the vertex and the opposite side, traversed in the direction of the angle bisector
 
+    let max_bisector_proportion = 0.2;
+    if (center_distance_from_vertex / bisector_length > max_bisector_proportion) {
+        center_distance_from_vertex = max_bisector_proportion * bisector_length;
+    }
 
+    // find the point we've just decided to center the square on
+    const square_center = {
+        x: target_vertex.x + unit_bisector.x * center_distance_from_vertex,
+        y: target_vertex.y + unit_bisector.y * center_distance_from_vertex
+    }
 
+    // find the dimensions of the largest square that is centered at this point and still fits in the triangle
+    let min_dist_to_a_side = Infinity;
+    for (const [vertex_letter, vertex_cords] of Object.entries(triangle)) {
+        const seg_point_1 = {
+            x: vertex_cords.x,
+            y: vertex_cords.y
+        };
+        const next_vertex_cords = triangle[getNextVertexLetter(triangle, vertex_letter)];
+        const seg_point_2 = {
+           x: next_vertex_cords.x,
+           y: next_vertex_cords.y 
+        };
+
+        // test vectors sprouting from the point in directions pi/4, 3pi/4, 5pi/4, and 7pi/4
+        [Math.PI / 4, 3*Math.PI / 4, 5*Math.PI / 4, 7*Math.PI / 4].forEach(direction => {
+            const current_distance = pointToSegmentInDirection(square_center, direction, seg_point_1, seg_point_2);
+
+            if (current_distance === 'no_intersection') return;
+            else if (current_distance < min_dist_to_a_side) min_dist_to_a_side = current_distance;
+        });
+    }
+
+    // now scale + position the bounding rect so it's centered in this square and its largest dimension obeys the square size ratio
+    const rect = getBoundingRectRectangle(label_bounding_rect);
+    const max_dimension = Math.max(label_bounding_rect.x2 - label_bounding_rect.x1, label_bounding_rect.y2 - label_bounding_rect.y1);
+    const new_max_dimension = square_size_ratio * 2*min_dist_to_a_side*Math.SQRT2;
+    const scale_factor = new_max_dimension / max_dimension;
+
+    // apply the downscaling at one of the rectangle's corners
+    transformations.transformPointSet(rect, 'dilate', {x: rect.A.x, y: rect.A.y}, scale_factor);
+
+    // last step is to position this rectangle centered within the square
+    const rect_center = getRectangleCenter(rect);
+    transformations.transformPointSet(rect, 'translate', {x: -rect_center.x, y: -rect_center.y}); // bring to origin first
+    transformations.transformPointSet(rect, 'translate', {x: square_center.x, y: square_center.y}); // center on the square
+
+    // update the values in the original bounding rect
+    const new_bounding_rect = getBoundingRect(rect);
+    label_bounding_rect.x1 = new_bounding_rect.x1;
+    label_bounding_rect.x2 = new_bounding_rect.x2;
+    label_bounding_rect.y1 = new_bounding_rect.y1;
+    label_bounding_rect.y2 = new_bounding_rect.y2;
 }
 
 export function getRightAngleLabel(right_triangle) { // 5% of the length of the longer side, always less than a third of the shorter side
