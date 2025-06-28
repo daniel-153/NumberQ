@@ -71,11 +71,11 @@ const CH = {
         // get the actual bounding rect for the provided text (to make sure it will fit)
         let actual_bouding_rect = CH.getTextBoundingRect(text_string, {x: bounding_rect.x1, y: bounding_rect.y1});
 
+        let fits_in_rect = true;
         if ((actual_bouding_rect.x2 - actual_bouding_rect.x1) > (bounding_rect.x2 - bounding_rect.x1 + 0.1) ||
             (actual_bouding_rect.y2 - actual_bouding_rect.y1) > (bounding_rect.y2 - bounding_rect.y1 + 0.1)
         ) {
-            console.error('Provided text overflows its bounding rect.');
-            return;
+            fits_in_rect = false;
         }
 
         C.save();        
@@ -87,6 +87,8 @@ const CH = {
         C.fillText(text_string, bounding_rect.x1, CH.canvasHeight() - bounding_rect.y1);
 
         C.restore();
+
+        return fits_in_rect; // indicate whether or not the text needed to be resized to fit in its rect
     },
     drawBoundingRect: function(bounding_rect) {
         C.beginPath();
@@ -275,12 +277,16 @@ const CH = {
                 (actual_bouding_rect.x2 - actual_bouding_rect.x1) * (1 / larger_factor), 
                 (actual_bouding_rect.y2 - actual_bouding_rect.y1) * (1 / larger_factor)
             );
+
+            return false; // indicate it didn't fit and was downsized
         }
         else { // provided image fits in provided bounding rect
             C.drawImage(
                 image, bounding_rect.x1, CH.canvasHeight() - bounding_rect.y2, 
                 bounding_rect.x2 - bounding_rect.x1, bounding_rect.y2 - bounding_rect.y1
             );
+
+            return true; // indicate that the image sucessfully fit in its rect
         }  
     },
     drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
