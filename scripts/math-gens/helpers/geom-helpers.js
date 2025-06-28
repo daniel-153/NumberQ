@@ -470,6 +470,157 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
     label_bounding_box.y2 = new_bounding_box.y2;
 }
 
+export function getDistance(point_1, point_2) {
+    return Math.sqrt((point_1.x - point_2.x)**2 + (point_1.y - point_2.y)**2)
+}
+
+export function getNextVertexLetter(polygon, vertex_letter) {
+    if (polygon[vertex_letter] === undefined) {
+        console.error('Provided polygon does not have vertex: ', vertex_letter);
+        return;
+    }
+
+    let possible_next_letter = String.fromCharCode(vertex_letter.charCodeAt(0) + 1);
+    if (polygon[possible_next_letter] !== undefined) return possible_next_letter;
+    else return 'A';
+}
+
+export function pointOnSegment(point, segment_point_1, segment_point_2) {
+    const cross = (segment_point_2.x - segment_point_1.x) * (point.y - segment_point_1.y) - (segment_point_2.y - segment_point_1.y) * (point.x - segment_point_1.x);
+    if (cross !== 0) return false; // Not collinear
+
+    const dot = (point.x - segment_point_1.x) * (segment_point_2.x - segment_point_1.x) + (point.y - segment_point_1.y) * (segment_point_2.y - segment_point_1.y);
+    if (dot < 0) return false;
+
+    const lenSq = (segment_point_2.x - segment_point_1.x)**2 + (segment_point_2.y - segment_point_1.y)**2;
+    return dot <= lenSq;
+}
+
+export function pointRelativeToPolygon(point, polygon) {
+    const vertices = Object.values(polygon);
+    const numVertices = vertices.length;
+    let inside = false;
+
+    for (let i = 0, j = numVertices - 1; i < numVertices; j = i++) {
+        const pi = vertices[i];
+        const pj = vertices[j];
+
+        // Check if point is exactly on the edge
+        if (pointOnSegment(point, pj, pi)) {
+            return 'on';
+        }
+
+        // Ray casting logic (crossing count)
+        const intersects = (
+            ((pi.y > point.y) !== (pj.y > point.y)) &&
+            (point.x < ((pj.x - pi.x) * (point.y - pi.y)) / (pj.y - pi.y) + pi.x)
+        );
+
+        if (intersects) {
+            inside = !inside;
+        }
+    }
+
+    return inside ? 'inside' : 'outside';
+}
+
+export function lineSegmentToPointDistance(target_point, line_seg_point_1, line_seg_point_2) {
+    const a = target_point.x;
+    const b = target_point.y;
+
+    const x1 = line_seg_point_1.x;
+    const y1 = line_seg_point_1.y;
+    const x2 = line_seg_point_2.x;
+    const y2 = line_seg_point_2.y; 
+
+    const xt = (t) => (x2 - x1) * t + x1;
+    const yt = (t) => (y2 - y1) * t + y1;
+
+    const Dt = (t) => Math.sqrt((xt(t) - a)**2 + (yt(t) - b)**2);
+
+    const t0 = 0;
+    const t1 = 1;
+
+    const tmin = ((x1 - a)*(x1 - x2) + (y1 - b)*(y1 - y2)) / ((x1 - x2)**2 + (y1 - y2)**2); // t value where D't equals 0
+
+    if (tmin > t0 && tmin < t1) { // absolute min distance occurs between the two points that form the line segment
+        return Dt(tmin);
+    }
+    else { // absolute min distance occurs elsewhere on the line (so the min is one of the endpoints)
+        return Math.min(Dt(t0), Dt(t1));
+    }
+}
+
+export function getPointToPolygonDistance(point, polygon) {
+    // first ensure the point isn't inside/on the polygon (which would immidiately mean the distance is zero)
+    const point_relative_to_polygon = pointRelativeToPolygon(point, polygon);
+    if (point_relative_to_polygon === 'inside' || point_relative_to_polygon === 'on') return 0;
+    
+    // run the "point to line" distance formula for each of the polygon's sides (the calculus optimization version)
+    let min_distance = Infinity;
+    const a = point.x;
+    const b = point.y;
+    for (const [vertex_letter, vertex_cords] of Object.entries(polygon)) {
+        const next_vertex_cords = polygon[getNextVertexLetter(polygon, vertex_letter)];
+        let current_distance = lineSegmentToPointDistance(point, vertex_cords, next_vertex_cords);
+        if (current_distance < min_distance) min_distance = current_distance;
+    }
+
+    return min_distance;
+}
+
+export function positionAngleLabelManual(label_bounding_rect, vertex_letter, triangle, center_distance_from_vertex) {
+    const target_vertex = triangle[vertex_letter];
+    const rect = getBoundingRectRectangle(label_bounding_rect);
+
+    // start by translating the bounding rect's center to the vertex
+    transformations.transformPointSet(rect, 'translate', {x: -(label_bounding_rect.x1 + label_bounding_rect.x2)/2, y: -(label_bounding_rect.y1 + label_bounding_rect.y2)/2});
+    transformations.transformPointSet(rect, 'translate', {x: target_vertex.x, y: target_vertex.y});
+
+    // now that the rect is at the vertex, translate it along the bisector vector by the specified amount
+    const unit_bisector = getAngleBisectorVector(triangle, vertex_letter);
+    scaleVector(unit_bisector, center_distance_from_vertex);
+    transformations.transformPointSet(rect, 'translate', {x: unit_bisector.x, y: unit_bisector.y});
+
+    // update the values of the original bounding rect
+    const new_bounding_rect = getBoundingRect(rect);
+
+    label_bounding_rect.x1 = new_bounding_rect.x1;
+    label_bounding_rect.x2 = new_bounding_rect.x2;
+    label_bounding_rect.y1 = new_bounding_rect.y1;
+    label_bounding_rect.y2 = new_bounding_rect.y2;
+}
+
+export function pointToSegmentInDirection(target_point, direction, seg_point_1, seg_point_2) { // suppose we started at target_point, and went in direction by some scalar amount. Is there a scalar that lands the vector on the segment? Give its length, or indicate impossible
+    const sin0 = Math.sin(direction);
+    const cos0 = Math.cos(direction);
+
+    const Px = target_point.x;
+    const Py = target_point.y;
+    const Ax = seg_point_1.x;
+    const Ay = seg_point_1.y;
+    const Bx = seg_point_2.x;
+    const By = seg_point_2.y;
+
+    const N = (Px*sin0 - Py*cos0 - Ax*sin0 + Ay*cos0) / (sin0*(Bx - Ax) - cos0*(By - Ay));
+    const K = (Ax + N*(Bx - Ax) - Px) / cos0;
+
+    if ((K >= 0) && (N >= 0 && N <= 1)) { // there is a scalar that produces a valid intersection (its value is K)
+        return K;
+    }
+    else { // no intersection with the given constraints
+        return 'no_intersection';
+    }
+}
+
+export function positionAngleLabelSimple(label_bounding_rect, vertex_letter, triangle, distance_from_vertex, square_size_ratio = 0.9) {
+
+
+
+
+
+}
+
 export function getRightAngleLabel(right_triangle) { // 5% of the length of the longer side, always less than a third of the shorter side
     // first step is to find the vertex that corresponds to the right angle (this function assumes that vertex exists)
     const side_vectors = {'A-B': null, 'A-C': null, 'B-A': null, 'B-C': null, 'C-B': null, 'C-A': null};
