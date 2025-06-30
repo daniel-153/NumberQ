@@ -81,6 +81,14 @@ export const templates = [
         short_name: 'pythagorean'
     },
     {
+        function_name: 'genSpTri',
+        category_class_name: 'geometry-gen',
+        display_name: 'Special Right Triagles',
+        display_category: 'geometry',
+        example_problem: 'x\\sqrt{2}\\:\\;\\,2x\\:\\;\\,x\\sqrt{3}',
+        short_name: 'special-triangles'
+    },
+    {
         function_name: 'genTrigEx',
         category_class_name: 'precalc-gen',
         display_name: 'Trig Values',
