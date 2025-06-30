@@ -794,3 +794,69 @@ export const py_theo_answer_form = {
     tooltip: 'How should answers in non-pythagorean-triples be represented? (should the answer to 1-1-? be &radic;2 or &asymp;1.414)',
     prelocked: true
 };
+
+export const right_triangle_type = {
+    type: 'radio_buttons',
+    display_name: 'Right Triangle Type',
+    radio_buttons: [['45-45-90','45&ndash;45&ndash;90'],['30-60-90','30&ndash;60&ndash;90']], 
+    tooltip: 'Which special right triangle should be used?'
+};
+
+export const sp_tri_side_length = {
+    type: 'radio_buttons',
+    display_name: 'Given Length',
+    radio_buttons: [
+        ['integer','Integer'],
+        ['rand_expression','Random Expression'],
+        ['matched_to_triangle','Matched to Triangle']
+    ], 
+    tooltip: 'Should the given side length be an integer, a random expression, or match the triangle type (forms like n&radic;2, 2n, n&radic;3, etc)?'
+};
+
+export const sp_tri_given_angles = {
+    type: 'radio_buttons',
+    display_name: 'Given Angles',
+    radio_buttons: [['both','Both'],['just_one','Just One']], 
+    tooltip: 'Should both of the 45-45 or 30-60 angles be given, or just one?'
+};
+
+export const sp_tri_unknowns = {
+    type: 'radio_buttons',
+    display_name: 'Unknown Sides',
+    radio_buttons: [
+        ['x_y','x & y'],
+        ['a_b','a & b'],
+        ['p_q','p & q'],
+        ['h_l','h & l'],
+        ['u_v','u & v'],
+        ['v_w','v & w'],
+        ['j_k','j & k']
+    ], 
+    tooltip: 'Which two letters should represent the unknown sides?'
+};
+
+export const rationalize_answers = {
+    type: 'radio_buttons',
+    display_name: 'Answer Form',
+    radio_buttons: [
+        ['yes','Rationalized&nbsp;\\( \\frac{a\\sqrt{b}}{b} \\)'],
+        ['no','Not Rationalized&nbsp;\\( \\frac{a}{\\sqrt{b}} \\)']
+    ], 
+    tooltip: "When square root expressions appear in the answers' denominators, should the answers be rationalized?",
+    prelocked: true
+};
+
+export const triangle_reflection = {
+    type: 'check_boxes',
+    display_name: 'Triangle Reflection',
+    check_boxes: [['horizontal','Horizontal'],['vertical','Vertical']], 
+    tooltip: 'Should the triangle be flipped horizontally or vertically (to change its orientation)?' 
+};
+
+export const sp_tri_number_size = {
+    type: 'single_textbox',
+    display_name: "Given Length Size",
+    tooltip: "How large should the numbers in the given side lengths be? (enter an integer from 1 to 30)",
+    valid_values: [ 1, '--', 30 ],
+    default_value: 15
+};
