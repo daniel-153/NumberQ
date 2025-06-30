@@ -292,12 +292,12 @@ export default async function genPyTheo(settings) {
     // create the prompt canvas and draw the prompt triangle on it
     let new_canvas = CH.createCanvas(1000, 1000, true);
     const prompt_canvas = new_canvas.element;
-    await CH.drawRightTriangle(numerical_side_lengths, prompt_labels, unknown_side, settings.rotation_deg);
+    await CH.drawRightTriangle(numerical_side_lengths, prompt_labels, settings.rotation_deg);
 
     // create the answer canvas and draw the answer triangle on it
     new_canvas = CH.createCanvas(1000, 1000, true);
     const answer_canvas = new_canvas.element;
-    await CH.drawRightTriangle(numerical_side_lengths, answer_labels, unknown_side, settings.rotation_deg);
+    await CH.drawRightTriangle(numerical_side_lengths, answer_labels, settings.rotation_deg);
     
     return {
         question: prompt_canvas,
