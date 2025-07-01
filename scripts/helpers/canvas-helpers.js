@@ -515,6 +515,20 @@ const CH = {
         ctx.drawImage(original_canvas, 0, 0);
 
         return clone;
+    },
+    getCanvasBoundingRect: function() {
+        return {
+            x1: 0, x2: CH.canvasWidth(),
+            y1: 0, y2: CH.canvasHeight()
+        };
+    },
+    drawCenteredImageOnCanvas(image) {
+        const canvas_rect = CH.getCanvasBoundingRect(canvas);
+        const image_rect = CH.getImageBoundingRect(image);
+
+        geometry.centerBoundingRect(image_rect, canvas_rect);
+
+        CH.drawImage(image, image_rect);
     }
 }
 
