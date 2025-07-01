@@ -301,9 +301,7 @@ export default async function genPyTheo(settings) {
     
     return {
         question: prompt_canvas,
-        answer: answer_canvas,
-        TeXquestion: 'image',
-        TeXanswer: 'image'
+        answer: answer_canvas
     }
 }
 
