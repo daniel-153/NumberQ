@@ -257,6 +257,10 @@ const CSH = { // createSettingsFields helpers
         }
         else if (setting_obj.type === 'check_boxes') {
             setting_obj[setting_obj.type].forEach(code_display_arr => valid_values_array.push( [code_display_arr[0]] ));
+
+            if (setting_obj.required !== undefined && !setting_obj.required) {
+                valid_values_array.unshift(['__empty__']);
+            }
         }
         else if (Array.isArray(setting_obj.valid_values)) { // single setting
             valid_values_array = setting_obj.valid_values;   
@@ -509,8 +513,8 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
             }
         }
         else if (Array.isArray(first_valid_value)) { // checkbox groups (multiselect)
-            // the only way to be invalid here is to leave the entire multiselect blank
-            if (setting_value.length === 0) { // empty array
+            // the only way to be invalid here is to leave the entire multiselect blank *when it's a required one - which is almost all of them*
+            if (setting_value.length === 0 && valid_values_log[setting_name].valid_values[0][0] !== '__empty__') { // not allowed to be empty
                 error_locations.add(setting_name);
 
                 setting_value = valid_values_log[setting_name].default_value; // use the default
