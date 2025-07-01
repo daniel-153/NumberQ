@@ -919,6 +919,31 @@ export function getAllTriangleAngles(triangle, angular_unit = 'rad') {
     };
 }
 
+export function centerBoundingRect(bounding_rect, outer_bounding_rect) {
+    const b_rect = getBoundingRectRectangle(bounding_rect);
+
+    // first bring the bounding rect to the bottom left corner of the outer rectangle 
+    transformations.transformPointSet(b_rect, 'translate', 
+        {x: -bounding_rect.x1 + outer_bounding_rect.x1, y: -bounding_rect.y1 + outer_bounding_rect.y1}
+    );
+
+    // then center based on the available space in the x and y directions (traverse half of it)
+    const x_space = (outer_bounding_rect.x2 - outer_bounding_rect.x1) - (bounding_rect.x2 - bounding_rect.x1);
+    const y_space = (outer_bounding_rect.y2 - outer_bounding_rect.y1) - (bounding_rect.y2 - bounding_rect.y1);
+
+    transformations.transformPointSet(b_rect, 'translate', {x: x_space / 2, y: y_space / 2});
+
+    // update the values in the original bounding rect
+    _updateBoundingRectValues(bounding_rect, getBoundingRect(b_rect));
+}
+
+function _updateBoundingRectValues(old_bounding_rect, new_bounding_rect) {
+    old_bounding_rect.x1 = new_bounding_rect.x1;
+    old_bounding_rect.x2 = new_bounding_rect.x2;
+    old_bounding_rect.y1 = new_bounding_rect.y1;
+    old_bounding_rect.y2 = new_bounding_rect.y2;
+}
+
 function _keyWithClosestValue(object, numerical_value) {
     let closest_key = null;
     let smallest_difference = Infinity;
