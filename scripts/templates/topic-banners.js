@@ -83,7 +83,7 @@ export const templates = [
     {
         function_name: 'genSpTri',
         category_class_name: 'geometry-gen',
-        display_name: 'Special Right Triagles',
+        display_name: 'Special Right Triangles',
         display_category: 'geometry',
         example_problem: 'x\\sqrt{2}\\:\\;\\,2x\\:\\;\\,x\\sqrt{3}',
         short_name: 'special-triangles'
