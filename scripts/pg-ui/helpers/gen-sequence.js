@@ -16,21 +16,19 @@ export function adjustOutputBoxSizing(funcName) {
 }
 
 export function getGenOutput(pg_ui_state, question_obj) {
-    const question = question_obj.question;
-    const answer = question_obj.answer;
-    
-    let TeXquestion, TeXanswer;
-    if (question_obj.TeXquestion !== undefined) TeXquestion = question_obj.TeXquestion;
-    else if (pg_ui_state.gen_type === 'canvas') TeXquestion = 'image';
-    else TeXquestion = question_obj.question;
-    if (question_obj.TeXanswer !== undefined) TeXanswer = question_obj.TeXanswer;
-    else if (pg_ui_state.gen_type === 'canvas') TeXanswer = 'image';
-    else TeXanswer = question_obj.answer;
+    ['question','answer'].forEach(Q_or_A => {
+        // rendered q or a is just the .question or .answer given by the gen
+        pg_ui_state.question_obj[Q_or_A] = question_obj[Q_or_A];
 
-    pg_ui_state.question_obj.question = question;
-    pg_ui_state.question_obj.answer = answer;
-    pg_ui_state.question_obj.TeXquestion = TeXquestion;
-    pg_ui_state.question_obj.TeXanswer = TeXanswer;
+        // un-rendered boxes have special rules
+        if (question_obj[`TeX${Q_or_A}`] !== undefined) {
+            pg_ui_state.question_obj[`TeX${Q_or_A}`] = question_obj[`TeX${Q_or_A}`];
+        }
+        else if (pg_ui_state[`${Q_or_A}_type`] === 'canvas') {
+            pg_ui_state.question_obj[`TeX${Q_or_A}`] = 'image';
+        }
+        else pg_ui_state.question_obj[`TeX${Q_or_A}`] = question_obj[Q_or_A];
+    });
 }
 
 export async function switchGenInfo(pg_ui_state, func_name, display_name) {
@@ -39,7 +37,9 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
     pg_ui_state.func_name = func_name;
     pg_ui_state.display_name = display_name;
     pg_ui_state.current_module = await import(`../../math-gens/gens/${func_name}.js`);
-    pg_ui_state.gen_type = (pg_ui_state.current_module.gen_type !== undefined)? pg_ui_state.current_module.gen_type : 'default'; 
+    pg_ui_state.gen_type = (pg_ui_state.current_module.gen_type !== undefined)? pg_ui_state.current_module.gen_type : 'latex-Q|latex-A'; 
+    pg_ui_state.question_type = pg_ui_state.gen_type.split('|')[0].split('-')[0];
+    pg_ui_state.answer_type = pg_ui_state.gen_type.split('|')[1].split('-')[0];
     pg_ui_state.current_gen_func = async function(form_obj) {
         pg_ui_state.error_locations = new Set(); // create a new *Set* of error locations each generation (instead of an array to avoid repeats)
         FH.preValidateSettings(form_obj, pg_ui_state.valid_settings_log, pg_ui_state.error_locations);
@@ -86,16 +86,30 @@ export function updateRandomizeAll(pg_ui_state, checkbox_ID) {
     }
 }   
 
-export function updatePGQABoxes(question_obj, sizes_obj) {
-    // main UI (2 rendered boxes and 2 tex boxes)
-    UH.updateElementMath('rendered-Q', question_obj.question, sizes_obj.q_font_size);
-    document.getElementById('un-rendered-Q').innerHTML = question_obj.TeXquestion;
-    UH.updateElementMath('rendered-A', question_obj.answer, sizes_obj.a_font_size);
-    document.getElementById('un-rendered-A').innerHTML = question_obj.TeXanswer;
+export function updatePGQABoxes(question_obj, sizes_obj, question_type, answer_type) {
+    ['Q', 'A'].forEach(Q_or_A => {
+        const box_type = (Q_or_A === 'Q')? 'question' : 'answer';
+        const output_type = (Q_or_A === 'Q')? question_type : answer_type;
+        
+        // un-rendered box content is always just the TeX(q/a)
+        document.getElementById(`un-rendered-${Q_or_A}`).innerHTML = question_obj[`TeX${box_type}`];
+        
+        // rendered box requires handling with size adjustments and output types
+        if (output_type === 'latex') {
+            UH.updateElementMath(`rendered-${Q_or_A}`, question_obj[box_type], sizes_obj[`${Q_or_A.toLowerCase()}_font_size`]);
+        }
+        else if (output_type === 'canvas') {
+            const output_box_size = document.getElementById(`rendered-${Q_or_A}`).style.width;
 
-    // presentation mode (2 rendered boxes)
-    UH.updateElementMath('fullscreen-question', question_obj.question, '3.75vw');
-    UH.updateElementMath('fullscreen-answer', question_obj.answer, '3.3vw');
+            const output_canvas = question_obj[box_type];
+
+            output_canvas.style.width = output_box_size;
+            output_canvas.style.height = output_box_size;
+
+            document.getElementById(`rendered-${Q_or_A}`).innerHTML = '';
+            document.getElementById(`rendered-${Q_or_A}`).appendChild(output_canvas);
+        }
+    });
 }
 
 export function prelockSettings(form_ID, gen_module) {

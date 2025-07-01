@@ -8,6 +8,8 @@ const pg_ui_state = {
     func_name: null,
     display_name: null,
     gen_type: null,
+    question_type: null,
+    answer_type: null,
     current_settings: null,
     valid_settings_log: null,
     question_obj: {
@@ -51,12 +53,7 @@ export async function generate(func_name, display_name = '') {
 
     PH.getGenOutput(pg_ui_state, await pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
 
-    if (pg_ui_state.gen_type === 'default') { // regular question and answer as latex strings
-        PH.updatePGQABoxes(pg_ui_state.question_obj, pg_ui_state.sizes);
-    }
-    else if (pg_ui_state.gen_type === 'canvas') { // canvases
-        PH.insertCanvases(pg_ui_state.question_obj);
-    }
+    PH.updatePGQABoxes(pg_ui_state.question_obj, pg_ui_state.sizes, pg_ui_state.question_type, pg_ui_state.answer_type);
 
     FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
 
