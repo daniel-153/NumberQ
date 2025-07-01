@@ -827,7 +827,6 @@ export const sp_tri_unknowns = {
         ['x_y','x & y'],
         ['a_b','a & b'],
         ['p_q','p & q'],
-        ['h_l','h & l'],
         ['u_v','u & v'],
         ['v_w','v & w'],
         ['j_k','j & k']
@@ -850,7 +849,8 @@ export const triangle_reflection = {
     type: 'check_boxes',
     display_name: 'Triangle Reflection',
     check_boxes: [['horizontal','Horizontal'],['vertical','Vertical']], 
-    tooltip: 'Should the triangle be flipped horizontally or vertically (to change its orientation)?' 
+    tooltip: 'Should the triangle be flipped horizontally or vertically (to change its orientation)?',
+    required: false
 };
 
 export const sp_tri_number_size = {
