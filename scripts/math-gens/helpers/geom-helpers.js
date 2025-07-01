@@ -317,6 +317,14 @@ export function getDotProduct(vector_1, vector_2) {
     return vector_1.x*vector_2.x + vector_1.y*vector_2.y;
 }
 
+export function get2DVectorOrientation(base_vector, test_vector) { // (using the determinant), if > 0, 2 is CCW to 1, if < 0 2 is CW to 1, if 0, colinear
+    const determinant = base_vector.x * test_vector.y - base_vector.y * test_vector.x;
+    
+    if (determinant > 0) return 'CCW';
+    else if (determinant < 0) return 'CW';
+    else if (determinant === 0) return 'L';
+}
+
 export function getVectorMagnitude(vector) {
     return Math.sqrt(vector.x**2 + vector.y**2);
 }
@@ -332,6 +340,13 @@ export function getUnitVector(vector) {
 export function scaleVector(vector, scalar) {
     vector.x *= scalar;
     vector.y *= scalar;
+}
+
+export function getScaledVector(vector, scalar) {
+    return {
+        x: vector.x * scalar,
+        y: vector.y * scalar
+    };
 }
 
 export function addVectors(vector_1, vector_2) {
@@ -524,6 +539,25 @@ export function pointRelativeToPolygon(point, polygon) {
     return inside ? 'inside' : 'outside';
 }
 
+export function pointToLineDistance(target_point, line_point_1, line_point_2) {
+    const a = target_point.x;
+    const b = target_point.y;
+
+    const x1 = line_point_1.x;
+    const y1 = line_point_1.y;
+    const x2 = line_point_2.x;
+    const y2 = line_point_2.y; 
+
+    const xt = (t) => (x2 - x1) * t + x1;
+    const yt = (t) => (y2 - y1) * t + y1;
+
+    const Dt = (t) => Math.sqrt((xt(t) - a)**2 + (yt(t) - b)**2);
+
+    const tmin = ((x1 - a)*(x1 - x2) + (y1 - b)*(y1 - y2)) / ((x1 - x2)**2 + (y1 - y2)**2); // t value where D't equals 0
+
+    return Dt(tmin);
+}
+
 export function lineSegmentToPointDistance(target_point, line_seg_point_1, line_seg_point_2) {
     const a = target_point.x;
     const b = target_point.y;
@@ -569,28 +603,6 @@ export function getPointToPolygonDistance(point, polygon) {
     return min_distance;
 }
 
-export function positionAngleLabelManual(label_bounding_rect, vertex_letter, triangle, center_distance_from_vertex) {
-    const target_vertex = triangle[vertex_letter];
-    const rect = getBoundingRectRectangle(label_bounding_rect);
-
-    // start by translating the bounding rect's center to the vertex
-    transformations.transformPointSet(rect, 'translate', {x: -(label_bounding_rect.x1 + label_bounding_rect.x2)/2, y: -(label_bounding_rect.y1 + label_bounding_rect.y2)/2});
-    transformations.transformPointSet(rect, 'translate', {x: target_vertex.x, y: target_vertex.y});
-
-    // now that the rect is at the vertex, translate it along the bisector vector by the specified amount
-    const unit_bisector = getAngleBisectorVector(triangle, vertex_letter);
-    scaleVector(unit_bisector, center_distance_from_vertex);
-    transformations.transformPointSet(rect, 'translate', {x: unit_bisector.x, y: unit_bisector.y});
-
-    // update the values of the original bounding rect
-    const new_bounding_rect = getBoundingRect(rect);
-
-    label_bounding_rect.x1 = new_bounding_rect.x1;
-    label_bounding_rect.x2 = new_bounding_rect.x2;
-    label_bounding_rect.y1 = new_bounding_rect.y1;
-    label_bounding_rect.y2 = new_bounding_rect.y2;
-}
-
 export function vectorDirection(vector) {
     return Math.atan2(vector.y, vector.x);
 }
@@ -629,66 +641,140 @@ export function getRectangleCenter(rectangle_point_set) {
     return {x: avg_x / 4, y: avg_y / 4};
 }
 
-export function positionAngleLabelSimple(label_bounding_rect, vertex_letter, triangle, center_distance_from_vertex, square_size_ratio = 0.9) {
+export function buildLinearInequality(
+    inequality = {
+        point_1: {x: 0, y: 0},
+        point_2: {x: 1, y: 0},
+        normal_direction: 'CW',
+        inclusive: true
+    },
+    tolerance = 1e-6
+) {
+    return function(point) {
+        // determinant of the vectors [point_1->point_2] and [point_1->point]
+        const det = (inequality.point_2.x - inequality.point_1.x)*(point.y - inequality.point_1.y) - 
+        (inequality.point_2.y - inequality.point_1.y)*(point.x - inequality.point_1.x);
+
+        // the orientation of [point_1->point] relative to [point_1->point_2] (generally CCW, CW, or neither)
+        let orientation;
+        if (Math.abs(det) <= tolerance) orientation = 'L'; // L for colinear
+        else if (det > 0) orientation = 'CCW';
+        else if (det < 0) orientation  = 'CW';
+
+        return (
+            orientation === inequality.normal_direction ||
+            (inequality.inclusive && orientation === 'L')
+        );
+    }
+}
+
+export function positionAngleLabelFixedSize(label_bounding_rect, vertex_letter, triangle, rect_size_ratio = 0.9) {
     const target_vertex = triangle[vertex_letter];
     const other_vertices = ['A','B','C'].filter(letter => letter !== vertex_letter).map(letter => triangle[letter]);
-    const unit_bisector = getAngleBisectorVector(triangle, vertex_letter);
+
+    // first step is to build the inequality that tests whether a point is "inside" the vertex rays or "on" them
+    const vector_1 = {x: other_vertices[0].x - target_vertex.x, y: other_vertices[0].y - target_vertex.y};
+    const vector_2 = {x: other_vertices[1].x - target_vertex.x, y: other_vertices[1].y - target_vertex.y};
+    const inequality_1 = buildLinearInequality(
+        {
+            point_1: {x: target_vertex.x, y: target_vertex.y},
+            point_2: {x: other_vertices[0].x, y: other_vertices[0].y},
+            normal_direction: get2DVectorOrientation(vector_1, vector_2),
+            inclusive: true
+        }
+    );
+    const inequality_2 = buildLinearInequality(
+        {
+            point_1: {x: target_vertex.x, y: target_vertex.y},
+            point_2: {x: other_vertices[1].x, y: other_vertices[1].y},
+            normal_direction: get2DVectorOrientation(vector_2, vector_1),
+            inclusive: true
+        }
+    );
+    const pointIsWithinVertex = function(point) { // tolerance of 1e-6 by default
+        return (inequality_1(point) && inequality_2(point));
+    }
     
-    // first ensure the distance from the vertex isn't too far (a good rule of thumb is never more to go more than 20% of the way along the bisector line segment)
-    const bisector_length = pointToSegmentInDirection(
-        triangle[vertex_letter], 
-        vectorDirection(unit_bisector),
-        other_vertices[0], other_vertices[1]
-    ); // distance between the vertex and the opposite side, traversed in the direction of the angle bisector
-
-    let max_bisector_proportion = 0.2;
-    if (center_distance_from_vertex / bisector_length > max_bisector_proportion) {
-        center_distance_from_vertex = max_bisector_proportion * bisector_length;
-    }
-
-    // find the point we've just decided to center the square on
-    const square_center = {
-        x: target_vertex.x + unit_bisector.x * center_distance_from_vertex,
-        y: target_vertex.y + unit_bisector.y * center_distance_from_vertex
-    }
-
-    // find the dimensions of the largest square that is centered at this point and still fits in the triangle
-    let min_dist_to_a_side = Infinity;
-    for (const [vertex_letter, vertex_cords] of Object.entries(triangle)) {
-        const seg_point_1 = {
-            x: vertex_cords.x,
-            y: vertex_cords.y
-        };
-        const next_vertex_cords = triangle[getNextVertexLetter(triangle, vertex_letter)];
-        const seg_point_2 = {
-           x: next_vertex_cords.x,
-           y: next_vertex_cords.y 
-        };
-
-        // test vectors sprouting from the point in directions pi/4, 3pi/4, 5pi/4, and 7pi/4
-        [Math.PI / 4, 3*Math.PI / 4, 5*Math.PI / 4, 7*Math.PI / 4].forEach(direction => {
-            const current_distance = pointToSegmentInDirection(square_center, direction, seg_point_1, seg_point_2);
-
-            if (current_distance === 'no_intersection') return;
-            else if (current_distance < min_dist_to_a_side) min_dist_to_a_side = current_distance;
-        });
-    }
-
-    // now scale + position the bounding rect so it's centered in this square and its largest dimension obeys the square size ratio
+    // get the larger (bounding-bounding) rect based on the rect_size_ratio (basically serves to add padding around the label so not right on triangle sides)
     const rect = getBoundingRectRectangle(label_bounding_rect);
-    const max_dimension = Math.max(label_bounding_rect.x2 - label_bounding_rect.x1, label_bounding_rect.y2 - label_bounding_rect.y1);
-    const new_max_dimension = square_size_ratio * 2*min_dist_to_a_side*Math.SQRT2;
-    const scale_factor = new_max_dimension / max_dimension;
-
-    // apply the downscaling at one of the rectangle's corners
-    transformations.transformPointSet(rect, 'dilate', {x: rect.A.x, y: rect.A.y}, scale_factor);
-
-    // last step is to position this rectangle centered within the square
+    transformations.transformPointSet(rect, 'dilate', rect.A, 1 / rect_size_ratio);
     const rect_center = getRectangleCenter(rect);
-    transformations.transformPointSet(rect, 'translate', {x: -rect_center.x, y: -rect_center.y}); // bring to origin first
-    transformations.transformPointSet(rect, 'translate', {x: square_center.x, y: square_center.y}); // center on the square
 
-    // update the values in the original bounding rect
+    // for each rect point, the signed distance (D) between the point and each of the vertex rays is linear with respect to the translation scalar (T)
+    // the correct translation is the one where all 4 points satisfy the combined inequality after applying it
+    const unit_bisector = getAngleBisectorVector(triangle, vertex_letter);
+    const lines = { // the two lines representing the triangle vertex 
+        line_1: {point_1: {x: target_vertex.x, y: target_vertex.y}, point_2: {x: other_vertices[0].x, y: other_vertices[0].y}},
+        line_2: {point_1: {x: target_vertex.x, y: target_vertex.y}, point_2: {x: other_vertices[1].x, y: other_vertices[1].y}},
+    };
+    let translation_found = false;
+    let final_scalar;
+    for (const [vertex_letter, vertex_cords] of Object.entries(rect)) {
+        let line_index = 1;
+        for (const [_, points] of Object.entries(lines)) {
+            // build the function that gives the signed distance between the rect vertex point and the line based on a translation scalar
+            const rectVertexToLineDist = function(translation_scalar) {
+                // the center of the rect based on the translation (center of the rect always sits on the bisector)
+                const point_on_bisector = addVectors(target_vertex, getScaledVector(unit_bisector, translation_scalar));
+
+                const rect_vertex_location = addVectors(
+                    point_on_bisector,
+                    {x: vertex_cords.x - rect_center.x, y: vertex_cords.y - rect_center.y} // vector from rect center to current vertex
+                );
+
+                const unsigned_distance = pointToLineDistance(rect_vertex_location, points.point_1, points.point_2);
+
+                let current_inequality;
+                if (line_index === 1) current_inequality = inequality_1;
+                else if (line_index === 2) current_inequality = inequality_2;
+
+                let distance_sign;
+                if (current_inequality(rect_vertex_location)) { // satisfies the inequality
+                    distance_sign = 1;
+                } // fails the inequality
+                else distance_sign = -1;
+
+                return distance_sign * unsigned_distance;
+            }
+
+            // use the fact that distance is linear with respect to the translation to find and solve a linear equation
+            const test_scalar_1 = 0;
+            const test_scalar_2 = 50;
+            const test_distance_1 = rectVertexToLineDist(test_scalar_1);
+            const test_distance_2 = rectVertexToLineDist(test_scalar_2);
+            // solve the linear equation for a distance of 0 (which scalar puts the rect vertex exactly on the line)
+            const target_scalar = test_scalar_1 - test_distance_1 * ((test_scalar_2 - test_scalar_1) / (test_distance_2 - test_distance_1));
+            const rect_center_on_bisector = addVectors(target_vertex, getScaledVector(unit_bisector, target_scalar));
+
+            // now, if all 3 other points satisfy the inequality (are within the vertex), this is the correct scalar (out of the possible 8)
+            let all_satisfied = true;
+            ['A','B','C','D'].filter(letter => letter !== vertex_letter).forEach(other_vertex_letter => {
+                const vertex_vector = {x: rect[other_vertex_letter].x - rect_center.x, y: rect[other_vertex_letter].y - rect_center.y};
+
+                const point_location = addVectors(rect_center_on_bisector, vertex_vector);
+
+                if (!pointIsWithinVertex(point_location)) all_satisfied = false;
+            });
+
+            if (all_satisfied) {
+                final_scalar = target_scalar;
+                translation_found = true;
+                break;
+            }
+
+            line_index++;
+        }
+
+        if (translation_found) break;
+    }
+
+    // the ideal translation found above is based on the upsized (padded rect), but the original rect has the same center as this rect
+    const new_rect_location = addVectors(target_vertex, getScaledVector(unit_bisector, final_scalar));
+    transformations.transformPointSet(rect, 'dilate', rect_center, rect_size_ratio); // undo the upsizing
+    transformations.transformPointSet(rect, 'translate', {x: -rect_center.x, y: -rect_center.y}); // center at the origin
+    transformations.transformPointSet(rect, 'translate', {x: new_rect_location.x, y: new_rect_location.y}); // bring to new location
+
+    // update the values in the provided bounding rect
     const new_bounding_rect = getBoundingRect(rect);
     label_bounding_rect.x1 = new_bounding_rect.x1;
     label_bounding_rect.x2 = new_bounding_rect.x2;
@@ -773,7 +859,7 @@ export function getBoundingRectRectangle(bounding_rect) {
     )
 }
 
-export function getTriangleAngle(triangle, vertex_letter) {
+export function getTriangleAngle(triangle, vertex_letter, angular_unit = 'rad') {
     const vertex = triangle[vertex_letter];
     const other_vertices = ['A','B','C'].filter(letter => letter !== vertex_letter).map(letter => triangle[letter]);
 
@@ -782,7 +868,14 @@ export function getTriangleAngle(triangle, vertex_letter) {
     const b = Math.sqrt((vertex.x - other_vertices[1].x)**2 + (vertex.y - other_vertices[1].y)**2);
     const c = Math.sqrt((other_vertices[0].x - other_vertices[1].x)**2 + (other_vertices[0].y - other_vertices[1].y)**2);
 
-    return Math.acos((a**2 + b**2 - c**2) / (2*a*b));
+    // return the angle in the specified unit
+    const radian_angle = Math.acos((a**2 + b**2 - c**2) / (2*a*b));
+    if (angular_unit === 'rad') {
+        return radian_angle;
+    }
+    else if (angular_unit === 'deg') {
+        return convertAngle(radian_angle, 'to_deg');
+    }
 }
 
 export function getAngleBisectorVector(triangle, vertex_letter) {
@@ -816,6 +909,14 @@ export function getBoundingTriangle(triangle, line_width, bound = 'outer') {
     }
 
     return bounding_triangle;
+}
+
+export function getAllTriangleAngles(triangle, angular_unit = 'rad') {
+    return {
+        A: getTriangleAngle(triangle, 'A', angular_unit),
+        B: getTriangleAngle(triangle, 'B', angular_unit),
+        C: getTriangleAngle(triangle, 'C', angular_unit)
+    };
 }
 
 function _keyWithClosestValue(object, numerical_value) {
