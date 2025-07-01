@@ -283,12 +283,12 @@ const CSH = { // createSettingsFields helpers
             if (setting_obj.default_value !== undefined) { // default value was provided
                 return setting_obj.default_value;
             }
-            else if (
-                setting_obj.type === 'radio_buttons' || 
-                setting_obj.type === 'check_boxes'
-            ) { // radio buttons & check boxes (default value is assumed to be the first option)
-                return setting_obj[setting_obj.type][0][0]; // first check/radio option
-            }   
+            else if (setting_obj.type === 'radio_buttons' ) { // radio buttons (default value is assumed to be the first option)
+                return setting_obj[setting_obj.type][0][0]; // first radio option
+            }
+            else if (setting_obj.type === 'check_boxes') { // check boxes (default value is the first option, but wrapped in an array)
+                return [setting_obj[setting_obj.type][0][0]]; // first check option wrapped in an array
+            }  
             else { // a mistake was likely made (no default provided)
                 console.error('A default value could be resolved for the following setting: ', setting_obj);
                 return null;
@@ -514,7 +514,10 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
         }
         else if (Array.isArray(first_valid_value)) { // checkbox groups (multiselect)
             // the only way to be invalid here is to leave the entire multiselect blank *when it's a required one - which is almost all of them*
-            if (setting_value.length === 0 && valid_values_log[setting_name].valid_values[0][0] !== '__empty__') { // not allowed to be empty
+            if (
+                (setting_value === undefined || setting_value.length === 0) && 
+                valid_values_log[setting_name].valid_values[0][0] !== '__empty__'
+            ) { // not allowed to be empty
                 error_locations.add(setting_name);
 
                 setting_value = valid_values_log[setting_name].default_value; // use the default
