@@ -1,21 +1,5 @@
 import { CH } from "../../helpers/canvas-helpers.js";
 
-export function copyTextThenReset(text_element_id, copy_button_el) {
-    navigator.clipboard.writeText(document.getElementById(text_element_id).textContent);
-    copy_button_el.innerHTML = 'Copied!';
-    copy_button_el.setAttribute('data-status', 'text-was-copied');
-    
-    if (copy_button_el._timeoutId) {
-        clearTimeout(copy_button_el._timeoutId);
-    }
-
-    copy_button_el._timeoutId = setTimeout(() => {
-        copy_button_el.innerHTML = 'Copy';
-        copy_button_el.removeAttribute('data-status');
-        copy_button_el._timeoutId = null; 
-    }, 2000);
-}
-
 export function toggleFullScreenAns(method = 'toggle') {
     if (method === 'toggle') {
         if (document.getElementById('show-hide-button').getAttribute('data-status') === 'show') method = 'show';
