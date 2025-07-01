@@ -289,7 +289,10 @@ const CH = {
             return true; // indicate that the image sucessfully fit in its rect
         }  
     },
-    drawRightTriangle: async function(side_lengths_obj, side_labels_obj, rotation, horizontal_reflection = false, vertical_reflection = false) {
+    drawRightTriangle: async function(
+        side_lengths_obj, side_labels_obj, rotation, 
+        mjx_scale = 6, horizontal_reflection = false, vertical_reflection = false
+    ) {
         // a -> A-B | b -> B-C | c -> C-A
         const triangle_line_width = 5.5; // the canvas context lineWidth at which the triangle will be drawn
         const triangle_ps = geometry.getBoundingTriangle( // the idea here is to "pretend" we're dealing with the filled-in triangle until the very end
@@ -326,8 +329,12 @@ const CH = {
             pair[0] = label_string;
 
             // shrink the scale factor for longer latex strings
-            let mjx_image_scale = 6;
-            if (label_string.includes('~') && label_string.split('~')[0].length >= 6) mjx_image_scale = 5;
+            let mjx_image_scale = mjx_scale;
+            if (label_string.includes('~') && label_string.split('~')[0].length >= 6) mjx_image_scale = mjx_scale * (5 / 6);
+            else if (label_string.includes('\\frac')) mjx_image_scale = mjx_scale * (7.5 / 6.5);
+            else if (label_string === 'x' || label_string === '?' || label_string === 'a' || label_string === 'b' || label_string === 'c') {
+                mjx_image_scale = Math.max(6.5, mjx_scale);
+            }
             pair[1] = mjx_image_scale;
 
             string_factor_pairs.push(pair);
@@ -442,20 +449,20 @@ const CH = {
     },
     drawSpecialRightTriangle: async function(
         side_labels, angle_measures, given_angles, rotation, 
-        horizontal_reflection = false, vertical_reflection = false
+        mjx_scale = 6.5, horizontal_reflection = false, vertical_reflection = false
     ) {
         // draw triangle at a fixed size (hypotenuse = 1)
         let inner_triangle;
         if (angle_measures.A === 30 || angle_measures.A === 60) {
             inner_triangle = (await CH.drawRightTriangle(
                 {a: 0.5, b: 0.5*Math.sqrt(3), c: 1},
-                side_labels, rotation, horizontal_reflection, vertical_reflection
+                side_labels, rotation, mjx_scale, horizontal_reflection, vertical_reflection
             )).inner_bound_triangle;
         }
         else if (angle_measures.A === 45) {
             inner_triangle = (await CH.drawRightTriangle(
                 {a: Math.SQRT1_2, b: Math.SQRT1_2, c: 1},
-                side_labels, rotation, horizontal_reflection, vertical_reflection
+                side_labels, rotation, mjx_scale, horizontal_reflection, vertical_reflection
             )).inner_bound_triangle;
         }
 
@@ -501,7 +508,7 @@ const CH = {
 
             const bounding_rect = CH.getImageBoundingRect(current_mjx_image);
 
-            geometry.positionAngleLabelFixedSize(bounding_rect, current_vertex_letter, inner_triangle);
+            geometry.positionAngleLabelFixedSize(bounding_rect, current_vertex_letter, inner_triangle, 0.95);
 
             CH.drawImage(current_mjx_image, bounding_rect);
         }
