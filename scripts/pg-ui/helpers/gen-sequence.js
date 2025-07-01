@@ -18,8 +18,14 @@ export function adjustOutputBoxSizing(funcName) {
 export function getGenOutput(pg_ui_state, question_obj) {
     const question = question_obj.question;
     const answer = question_obj.answer;
-    const TeXquestion = (question_obj.TeXquestion === undefined) ? question_obj.question : question_obj.TeXquestion;
-    const TeXanswer = (question_obj.TeXanswer === undefined) ? question_obj.answer : question_obj.TeXanswer;
+    
+    let TeXquestion, TeXanswer;
+    if (question_obj.TeXquestion !== undefined) TeXquestion = question_obj.TeXquestion;
+    else if (pg_ui_state.gen_type === 'canvas') TeXquestion = 'image';
+    else TeXquestion = question_obj.question;
+    if (question_obj.TeXanswer !== undefined) TeXanswer = question_obj.TeXanswer;
+    else if (pg_ui_state.gen_type === 'canvas') TeXanswer = 'image';
+    else TeXanswer = question_obj.answer;
 
     pg_ui_state.question_obj.question = question;
     pg_ui_state.question_obj.answer = answer;
