@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
 import { CH } from '../../helpers/canvas-helpers.js';
 
-export const gen_type = 'canvas';
+export const gen_type = 'canvas-Q|latex-A';
 
 export function validateSettings(form_obj, error_locations) {
     // if the number size is too small <2 or <3, matched_to_triangle can't be applied 
@@ -16,6 +16,9 @@ export function validateSettings(form_obj, error_locations) {
 
     // if the number size is one, just the number '1' is possible as a side length
     if (form_obj.sp_tri_number_size === 1) form_obj.sp_tri_side_length = 'integer';
+
+    // handle random rotation
+    if (form_obj.randomize_rotation === 'is_checked') form_obj.rotation_deg = H.randInt(0, 360);
 }
 
 const STH = { // genSpTri helpers
@@ -109,8 +112,8 @@ const STH = { // genSpTri helpers
         return side_length_strings;
     },
     getRandomExpressionValue: function(side_length_size) {
-        // cap the number under the root at 8 (in its raw form)
-        const root_number_limit = (side_length_size > 8)? 8 : side_length_size; // guarunteed to be >= 2 by settings validation
+        // cap the number under the root at 7 (in its raw form)
+        const root_number_limit = (side_length_size > 7)? 7 : side_length_size; // guarunteed to be >= 2 by settings validation
         const leading_number_limit = (H.randInt(1, 3) === 3)? 1 : side_length_size; // randomly floor to 1 sometimes
         const denom_number_limit = (H.randInt(1, 3) === 3)? 1 : side_length_size; // randomly floor to 1 sometimes
 
@@ -196,21 +199,27 @@ export default async function genSpTri(settings) {
 
     // next step is to determine the labels for the prompt and answer triangles
     const prompt_side_labels = {a: null, b: null, c: null};
-    const answer_side_labels = {...side_lengths};
+    let answer_tex_string;
     const first_unknown_letter = settings.sp_tri_unknowns.split('_')[0];
     const second_unknown_letter = settings.sp_tri_unknowns.split('_')[1];
     prompt_side_labels[given_side_letter] = side_lengths[given_side_letter];
     if (given_side_letter === 'a') {
         prompt_side_labels.b = first_unknown_letter;
         prompt_side_labels.c = second_unknown_letter;
+
+        answer_tex_string = `${first_unknown_letter}=${side_lengths.b},\\:${second_unknown_letter}=${side_lengths.c}`;
     }
     else if (given_side_letter === 'b') {
         prompt_side_labels.a = first_unknown_letter;
         prompt_side_labels.c = second_unknown_letter;
+
+        answer_tex_string = `${first_unknown_letter}=${side_lengths.a},\\:${second_unknown_letter}=${side_lengths.c}`;
     }
     else if (given_side_letter === 'c') {
         prompt_side_labels.a = first_unknown_letter;
         prompt_side_labels.b = second_unknown_letter;
+
+        answer_tex_string = `${first_unknown_letter}=${side_lengths.a},\\:${second_unknown_letter}=${side_lengths.b}`;
     }
 
     // extract the reflections from the settings
@@ -235,20 +244,13 @@ export default async function genSpTri(settings) {
     // create the prompt canvas and draw the prompt triangle on it
     let new_canvas = CH.createCanvas(1000, 1000, true);
     const prompt_canvas = new_canvas.element;
-    await CH.drawSpecialRightTriangle(prompt_side_labels, angle_measures, given_angles, settings.rotation_deg, horizontal_reflection, vertical_reflection);
-
-    // create the answer canvas and draw the answer triangle on it
-    new_canvas = CH.createCanvas(1000, 1000, true);
-    const answer_canvas = new_canvas.element;
-    await CH.drawSpecialRightTriangle(answer_side_labels, angle_measures, given_angles, settings.rotation_deg, horizontal_reflection, vertical_reflection);
-
+    await CH.drawSpecialRightTriangle(prompt_side_labels, angle_measures, given_angles, settings.rotation_deg, 6.5, horizontal_reflection, vertical_reflection);
+    
     return {
         question: prompt_canvas,
-        answer: answer_canvas
+        answer: answer_tex_string
     };
 }
-
-
 
 export const settings_fields = [
     'sp_tri_side_length',
@@ -274,7 +276,14 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-       
+        sp_tri_side_length: '__random__',
+        right_triangle_type: '__random__',
+        sp_tri_unknowns: '__random__',
+        sp_tri_number_size: H.randInt(1, 15),
+        rotation_deg: H.randInt(0, 360),
+        triangle_reflection: H.randFromList([['horizontal'],['vertical'],['horizontal', 'vertical']]),
+        sp_tri_given_angles: '__random__',
+        randomize_rotation: 'is_checked'
     }; 
 }
 
