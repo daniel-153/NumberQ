@@ -825,11 +825,11 @@ export const sp_tri_unknowns = {
     display_name: 'Unknown Sides',
     radio_buttons: [
         ['x_y','x & y'],
+        ['y_z','y & z'],
         ['a_b','a & b'],
+        ['c_d','c & d'],
         ['p_q','p & q'],
-        ['u_v','u & v'],
-        ['v_w','v & w'],
-        ['j_k','j & k']
+        ['v_w','v & w']
     ], 
     tooltip: 'Which two letters should represent the unknown sides?'
 };
