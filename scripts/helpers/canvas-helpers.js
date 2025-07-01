@@ -289,7 +289,7 @@ const CH = {
             return true; // indicate that the image sucessfully fit in its rect
         }  
     },
-    drawRightTriangle: async function(side_lengths_obj, side_labels_obj, unknown_side, rotation) {
+    drawRightTriangle: async function(side_lengths_obj, side_labels_obj, rotation, horizontal_reflection = false, vertical_reflection = false) {
         // a -> A-B | b -> B-C | c -> C-A
         const triangle_line_width = 5.5; // the canvas context lineWidth at which the triangle will be drawn
         const triangle_ps = geometry.getBoundingTriangle( // the idea here is to "pretend" we're dealing with the filled-in triangle until the very end
@@ -302,6 +302,18 @@ const CH = {
         geometry.transformations.transformPointSet(triangle_ps, 'rotate', 
             geometry.getTriangleIncenter(triangle_ps), geometry.convertAngle(rotation, 'to_rad')
         );
+
+        // perform the reflections (if specified)
+        if (horizontal_reflection) {
+            geometry.transformations.transformPointSet(triangle_ps, 'reflect', 
+                {x: 0, y: 0}, Infinity
+            );
+        }
+        if (vertical_reflection) {
+            geometry.transformations.transformPointSet(triangle_ps, 'reflect', 
+                {x: 0, y: 0}, 0
+            );
+        }
 
         // scale the triangle to fit a (theoretical) 1000x1000 canvas in the corner of Q1
         geometry.fitPointSet(triangle_ps, {x1: 0, x2: 1000, y1: 0, y2: 1000}, 'center', 'center');
@@ -421,7 +433,78 @@ const CH = {
         // draw the right angle label
         const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
         C.lineWidth = 3;
-        CH.connectPointsWithLine(right_angle_label); 
+        CH.connectPointsWithLine(right_angle_label);
+
+        return {
+            outer_bound_triangle: triangle_ps,
+            inner_bound_triangle: geometry.getBoundingTriangle(triangle_ps, 2* triangle_line_width, 'inner')
+        };
+    },
+    drawSpecialRightTriangle: async function(
+        side_labels, angle_measures, given_angles, rotation, 
+        horizontal_reflection = false, vertical_reflection = false
+    ) {
+        // draw triangle at a fixed size (hypotenuse = 1)
+        let inner_triangle;
+        if (angle_measures.A === 30 || angle_measures.A === 60) {
+            inner_triangle = (await CH.drawRightTriangle(
+                {a: 0.5, b: 0.5*Math.sqrt(3), c: 1},
+                side_labels, rotation, horizontal_reflection, vertical_reflection
+            )).inner_bound_triangle;
+        }
+        else if (angle_measures.A === 45) {
+            inner_triangle = (await CH.drawRightTriangle(
+                {a: Math.SQRT1_2, b: Math.SQRT1_2, c: 1},
+                side_labels, rotation, horizontal_reflection, vertical_reflection
+            )).inner_bound_triangle;
+        }
+
+        // determine which angle labels correspond to which vertex (basically decipher how the labels have been switched around at this point)
+        const triangle_angles = geometry.getAllTriangleAngles(inner_triangle, 'deg');
+        const already_matched_values = [];
+        const label_to_vertex = {'A': null, 'B': null, 'C': null};
+        const difference_tolerance = 1;
+        for (const [label_letter, _] of Object.entries(label_to_vertex)) {
+            const provided_angle_measure = angle_measures[label_letter];
+
+            for (const [vertex_name, calculated_angle_measure] of Object.entries(triangle_angles)) {
+                if (
+                    Math.abs(provided_angle_measure - calculated_angle_measure) < difference_tolerance &&
+                    !already_matched_values.includes(vertex_name)
+                ) {
+                    label_to_vertex[label_letter] = vertex_name;
+                    already_matched_values.push(vertex_name);
+                    break;
+                }
+            }
+        }
+
+        // extract all the latex strings that need to be typeset into svg's->images
+        const string_factor_pairs = [];
+        const vertex_letter_order = []; // the corresponding vertex for each entry in string_factor_pairs
+        const default_mjx_scale = 5;
+        given_angles.forEach(given_angle_name => {
+            const current_pair = [];
+
+            current_pair[0] = angle_measures[given_angle_name] + '^\\circ';
+            current_pair[1] = default_mjx_scale;
+
+            string_factor_pairs.push(current_pair);
+            vertex_letter_order.push(label_to_vertex[given_angle_name]);
+        });
+        const mjx_images = await CH.getMathJaxAsImage(string_factor_pairs);
+
+        // position and insert the images onto the triangle
+        for (let i = 0; i < mjx_images.length; i++) {
+            const current_vertex_letter = vertex_letter_order[i];
+            const current_mjx_image = mjx_images[i];
+
+            const bounding_rect = CH.getImageBoundingRect(current_mjx_image);
+
+            geometry.positionAngleLabelFixedSize(bounding_rect, current_vertex_letter, inner_triangle);
+
+            CH.drawImage(current_mjx_image, bounding_rect);
+        }
     },
     getCanvasClone: function(original_canvas = canvas) {
         const clone = document.createElement('canvas');
