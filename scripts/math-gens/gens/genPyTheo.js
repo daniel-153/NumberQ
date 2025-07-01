@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
 import { CH } from '../../helpers/canvas-helpers.js';
 
-export const gen_type = 'canvas';
+export const gen_type = 'canvas-Q|canvas-A';
 
 export function validateSettings(form_obj, error_locations) {
     // ensure the side length size isn't too small (for the desired type of side lengths)
