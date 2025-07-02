@@ -270,9 +270,11 @@
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     height: 2vw;
+    background-color: #2868a0;
 }
 
 .un-rendered-copy-image-wrapper:hover {
+    background-color: #3481c4;
     border-color: rgb(1, 9, 252);
     border-right-color: #5ab8b8;
 }
@@ -282,7 +284,11 @@
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
     width: 2vw;
-    
+    background-color: transparent;
+}
+
+.un-rendered-copy-button:hover {
+    background-color: transparent;
 }
 
 @media (max-width: 1700px) {
