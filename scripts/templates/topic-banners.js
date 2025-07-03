@@ -89,6 +89,15 @@ export const templates = [
         short_name: 'special-triangles'
     },
     {
+        function_name: 'genLawSico',
+        category_class_name: 'geometry-gen',
+        display_name: 'Law of Sines & Cosines',
+        display_category: 'geometry',
+        example_problem: 'c^2=a^2+b^2-2ab\\cos(C)',
+        example_problem_class: 'shrunk-question',
+        short_name: 'sines-cosines'
+    },
+    {
         function_name: 'genTrigEx',
         category_class_name: 'precalc-gen',
         display_name: 'Trig Values',
