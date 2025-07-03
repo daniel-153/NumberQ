@@ -734,14 +734,6 @@ export const force_py_theo_triples = {
     tooltip: 'Should all triangles be pythagorean triples (like 3-4-5, 5-12-13, and 1.5-2-2.5), or should non-triples also be included?'
 };
 
-export const label_triangle_sides = {
-    type: 'radio_buttons',
-    display_name: 'Label Side Lengths',
-    radio_buttons: [['yes','Yes'],['no','No']], 
-    tooltip: 'Should the triangle sides be labeled with their corresponding letter? (like a=3, b=4, and c=?)',
-    prelocked: true
-};
-
 export const py_theo_unknown = {
     type: 'radio_buttons',
     display_name: 'Solve For',
@@ -859,4 +851,36 @@ export const sp_tri_number_size = {
     tooltip: "How large should the numbers in the given side lengths be? (enter an integer from 1 to 30)",
     valid_values: [ 1, '--', 30 ],
     default_value: 15
+};
+
+export const law_sin_or_cos = {
+    type: 'radio_buttons',
+    display_name: 'Triangle Law',
+    radio_buttons: [
+        ['sines','Law of Sines'],
+        ['cosines','Law of Cosines']
+    ], 
+    tooltip: "Which triangle law should be required to solve for the unknowns?"
+};
+
+export const sico_solve_for = {
+    type: 'radio_buttons',
+    display_name: 'Solve For',
+    radio_buttons: [
+        ['one_unknown','One Unknown'],
+        ['whole_triangle','The Whole Triangle']
+    ], 
+    tooltip: "Should the prompt be to solve for a single unknown, or to solve all three triangle angles and sides?"
+};
+
+export const sico_labels = {
+    type: 'radio_buttons',
+    display_name: 'Label',
+    radio_buttons: [
+        ['all_vert','All Vertices'],
+        ['all_vert_and_unknown','All Vertices & <br> Unknown Side'],
+        ['only_unknown','Only The Unknown <br> (x or &theta;)'],
+        ['no_labels','No Labels']
+    ], 
+    tooltip: "How should the triangle sides and vertices be labeled? (note: 'No Labels' is only applied when solving the whole triangle)"
 };
