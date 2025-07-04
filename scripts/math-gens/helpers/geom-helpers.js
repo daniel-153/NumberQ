@@ -20,7 +20,12 @@ export function convertAngle(theta, to_unit) {
 }
 
 export const build_triangle = {
-    ASA: function(angle_1, side, angle_2) {
+    ASA: function(angle_1, side, angle_2, angular_unit = 'rad') { // angle_1 -> A, side -> c, angle_2 -> B
+        if (angular_unit === 'deg') {
+            angle_1 = convertAngle(angle_1, 'to_rad');
+            angle_2 = convertAngle(angle_2, 'to_rad');
+        }
+        
         return {
             A: {
                 x: 0,
@@ -36,7 +41,11 @@ export const build_triangle = {
             }
         };
     },
-    SAS: function(side_1, angle, side_2) {
+    SAS: function(side_1, angle, side_2, angular_unit = 'rad') { // side_1 -> c, angle -> B, side_2 -> a
+        if (angular_unit === 'deg') {
+            angle = convertAngle(angle, 'to_rad');
+        }
+        
         return {
             A: {
                 x: 0,
@@ -52,23 +61,31 @@ export const build_triangle = {
             }
         };
     },
-    SSS: function(side_1, side_2, side_3) {
+    SSS: function(side_1, side_2, side_3) { // side_1 -> a, side_2 -> b, side_3 -> c
+        const B = Math.acos((side_1**2 + side_3**2 - side_2**2) / (2*side_1*side_3));
+        const a_vect = {x: side_1*Math.cos(Math.PI - B), y: side_1*Math.sin(Math.PI - B)};
+        
         return {
             A: {
                 x: 0,
                 y: 0
             },
             B: {
-                x: side_1,
+                x: side_3,
                 y: 0
             },
             C: {
-                x: (side_1**2 - side_2**2 + side_3**2) / 2*side_1,
-                y: side_2 * Math.sin(Math.acos((side_1**2 + side_2**2 - side_3**2) / (2*side_1*side_2)))
+                x: side_3 + a_vect.x,
+                y: a_vect.y
             }
         };
     },
-    AAS: function(angle_1, angle_2, side) {
+    AAS: function(angle_1, angle_2, side, angular_unit = 'rad') { // angle_1 -> C, angle_2 -> A, side -> c
+        if (angular_unit === 'deg') {
+            angle_1 = convertAngle(angle_1, 'to_rad');
+            angle_2 = convertAngle(angle_2, 'to_rad');
+        }
+        
         return {
             A: {
                 x: 0,
@@ -251,6 +268,24 @@ export function getCombinedPointSet(...point_sets) {
     });
 
     return combined_point_set;
+}
+
+export function getCombinedBoundingRect(...bounding_rects) {
+    let min_x = Infinity;
+    let max_x = -Infinity;
+    let min_y = Infinity;
+    let max_y = -Infinity;
+    bounding_rects.forEach(b_rect => {
+        if (b_rect.x1 < min_x) min_x = b_rect.x1;
+        if (b_rect.x2 > max_x) max_x = b_rect.x2;
+        if (b_rect.y1 < min_y) min_y = b_rect.y1;
+        if (b_rect.y2 > max_y) max_y = b_rect.y2;
+    });
+
+    return {
+        x1: min_x, x2: max_x,
+        y1: min_y, y2: max_y
+    };
 }
 
 export function getPolygonPointArray(polygon_point_set) {
@@ -483,6 +518,12 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
     label_bounding_box.y1 = new_bounding_box.y1;
     label_bounding_box.x2 = new_bounding_box.x2;
     label_bounding_box.y2 = new_bounding_box.y2;
+}
+
+export function positionAllTriangleSideLabels(label_b_rects_obj, triangle, distance, side_name_key = {'a': 'B-C', 'b': 'C-A', 'C': 'A-B'}) {
+    for (const [side_letter, b_rect] of Object.entries(label_b_rects_obj)) {
+        positionPolygonSideLabel(b_rect, triangle, side_name_key[side_letter], distance);
+    }
 }
 
 export function getDistance(point_1, point_2) {
@@ -878,6 +919,29 @@ export function getTriangleAngle(triangle, vertex_letter, angular_unit = 'rad') 
     }
 }
 
+export function getTriangleSide(triangle, side_letter_or_segment) { // side_letter_or_segment => 'a' or 'B-C'
+    if (!side_letter_or_segment.includes('-')) { // side_letter (needs to be parsed)
+        const opposite_vertex_letter = side_letter_or_segment.toUpperCase();
+        const other_vertex_letters = ['A','B','C'].filter(letter => letter !== opposite_vertex_letter);
+
+        side_letter_or_segment = other_vertex_letters.join('-');
+    }
+
+    const [letter_1, letter_2] = side_letter_or_segment.split('-');
+    const vertex_1 = triangle[letter_1];
+    const vertex_2 = triangle[letter_2];
+
+    return getDistance(vertex_1, vertex_2);
+}
+
+export function getAllTriangleSides(triangle) {
+    return {
+        'a': getTriangleSide(triangle, 'a'),
+        'b': getTriangleSide(triangle, 'b'),
+        'c': getTriangleSide(triangle, 'c')
+    };
+}
+
 export function getAngleBisectorVector(triangle, vertex_letter) {
     const vertex = triangle[vertex_letter];
     const other_vertices = ['A','B','C'].filter(letter => letter !== vertex_letter).map(letter => triangle[letter]);
@@ -935,6 +999,89 @@ export function centerBoundingRect(bounding_rect, outer_bounding_rect) {
 
     // update the values in the original bounding rect
     _updateBoundingRectValues(bounding_rect, getBoundingRect(b_rect));
+}
+
+export function positionTriangleVertexLabel(label_bounding_rect, triangle_ps, vertex_name, distance) {
+    const neg_unit_bisector = getScaledVector(getAngleBisectorVector(triangle_ps, vertex_name), -1); // points directly outside the vertex
+    const rect = getBoundingRectRectangle(label_bounding_rect);
+    const rect_center = getRectangleCenter(rect);
+    transformations.transformPointSet(rect, 'translate', // center the rect on the tip of the negative bisector
+        {x: -rect_center.x + neg_unit_bisector.x, y: -rect_center.y + neg_unit_bisector.y}
+    );
+
+    // orient the neg_unit_bisector along the pos-x axis to simplify the distance calculation
+    const neg_unit_bisector_ang = Math.atan2(neg_unit_bisector.y, neg_unit_bisector.x);
+    transformations.transformPointSet(rect, 'rotate', {x: 0, y: 0}, -neg_unit_bisector_ang);
+    const reoriented_bounding_rect = getBoundingRect(rect); // bounding rect of the rotated rect, centered on the vector pointing in positive x
+    
+    // now x1 of this bounding rect is the distance we want to "set"
+    const current_distance = reoriented_bounding_rect.x1; // possibly negative
+    const addition_needed_distance = distance - current_distance;
+    transformations.transformPointSet(rect, 'translate', {x: addition_needed_distance, y: 0}); // apply the additional distance
+    transformations.transformPointSet(rect, 'rotate', {x: 0, y: 0}, neg_unit_bisector_ang); // rotate everything back into original orientation
+
+    // update the values in the original bounding rect
+    _updateBoundingRectValues(label_bounding_rect, getBoundingRect(rect));
+}
+
+export function getRandomTriangleAngles(min_angle = 10) {
+    if (min_angle > 60) {
+        console.error(`A triangle with all angles >= to ${min_angle}deg is impossible.`);
+        return;
+    }
+
+    // use the stars and bars (**|****|***) process to randomly decompose 180 - 3*min_angle into three non-neg ints that add to 180 - 3*min_angle
+    const max_reduced_angle = 180 - min_angle * 3;
+    let rand_1 = Math.floor(Math.random() * (max_reduced_angle + 1));
+    let rand_2 = Math.floor(Math.random() * (max_reduced_angle + 1));
+    if (rand_2 < rand_1) [rand_1, rand_2] = [rand_2, rand_1];
+
+    let A = rand_1 + min_angle;
+    let B = rand_2 - rand_1 + min_angle;
+    let C = max_reduced_angle - rand_2 + min_angle;
+
+    let angles = [A, B, C];
+ 
+    for (let i = angles.length - 1; i > 0; i--) { // Fisher–Yates
+        let j = Math.floor(Math.random() * (i + 1));
+        [angles[i], angles[j]] = [angles[j], angles[i]];
+    }
+
+    return angles;
+}
+
+export function getIncreasedAnglesForDrawing(triangle_angle_array, min_angle = 25) {
+    const t_values = triangle_angle_array.map(a => {
+        if (a >= min_angle || a >= 60) return 0;
+        else return (min_angle - a) / (60 - a);
+    });
+
+    const t = Math.max(...t_values);
+
+    const new_angles = triangle_angle_array.map(a => (1 - t) * a + t * 60);
+    return new_angles;
+}
+
+export function getAdjustedTriangle(triangle_ps, min_angle = 25) {
+    const orig_angles = getAllTriangleAngles(triangle_ps, 'deg');
+    const increased_angles = getIncreasedAnglesForDrawing([orig_angles.A, orig_angles.B, orig_angles.C], min_angle);
+    const c = getTriangleSide(triangle_ps, 'c');
+
+    // ASA => A, c, B
+    const adjusted_triangle = build_triangle.ASA(increased_angles[0], c, increased_angles[1]);
+
+    return adjusted_triangle;
+}
+
+export function positionTopLeftLabelBRect(label_bounding_rect, other_content_b_rect) {
+    const rect = getBoundingRectRectangle(label_bounding_rect);
+
+    // bring the bottom left corner of the rect to the origin, then to the top left corner of the other content rect
+    transformations.transformPointSet(rect, 'translate', 
+        {x: -rect.A.x + other_content_b_rect.x1, y: -rect.A.y + other_content_b_rect.y2}
+    );
+
+    _updateBoundingRectValues(label_bounding_rect, getBoundingRect(rect));
 }
 
 function _updateBoundingRectValues(old_bounding_rect, new_bounding_rect) {
