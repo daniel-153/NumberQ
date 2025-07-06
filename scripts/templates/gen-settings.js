@@ -859,7 +859,7 @@ export const law_sin_or_cos = {
     radio_buttons: [
         ['sines','Law of Sines'],
         ['cosines','Law of Cosines'],
-        ['either', 'Either Law']
+        ['random', 'Random']
     ], 
     tooltip: "Which triangle law should be required to solve for the unknowns?"
 };
@@ -880,8 +880,7 @@ export const sico_labels = {
     radio_buttons: [
         ['all_vert','All Vertices'],
         ['all_vert_and_unknown','All Vertices & <br> Unknown Side'],
-        ['only_unknown','Only The Unknown <br> (x or &theta;)'],
-        ['no_labels','No Labels']
+        ['only_unknown','Only The Unknown <br> (x or &theta;)']
     ], 
     tooltip: "How should the triangle sides and vertices be labeled? (note: 'No Labels' is only applied when solving the whole triangle)"
 };
