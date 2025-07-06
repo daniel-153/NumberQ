@@ -296,7 +296,7 @@ const CH = {
         // a -> A-B | b -> B-C | c -> C-A
         const triangle_line_width = 5.5; // the canvas context lineWidth at which the triangle will be drawn
         const triangle_ps = geometry.getBoundingTriangle( // the idea here is to "pretend" we're dealing with the filled-in triangle until the very end
-            geometry.build_triangle.SSS(side_lengths_obj.a, side_lengths_obj.c, side_lengths_obj.b),
+            geometry.build_triangle.SSS(side_lengths_obj.c, side_lengths_obj.b, side_lengths_obj.a),
             triangle_line_width
         );
         const side_name_key = {'a': 'A-B', 'b': 'C-A', 'c': 'B-C'};
@@ -512,6 +512,223 @@ const CH = {
 
             CH.drawImage(current_mjx_image, bounding_rect);
         }
+    },
+    drawGeneralTriangle: async function(
+        triangle_info_obj, label_vertices = true, rotation = 0, 
+        horizontal_reflection = false, vertical_reflection = false
+    ) {
+        const {triangle, side_labels, angle_labels, written_prompt} = triangle_info_obj;
+        let vertex_labels;
+        if (label_vertices) vertex_labels = {'A': 'A', 'B': 'B', 'C': 'C'};
+        else vertex_labels = {'A': null, 'B': null, 'C': null};
+
+        const mjx_scale = 6;
+        const line_width = 5.5;
+        const side_label_spacing = 17.25; // distance of the side labels from the sides (px)
+        const vertex_label_spacing = 4; // distance of vertex labels from vertices
+
+        // get the adjusted triangle with no too-small angles
+        const triangle_ps = geometry.getBoundingTriangle(geometry.getAdjustedTriangle(triangle, 30), line_width);
+
+        // rotate the triangle by the specified amount (about its incenter)
+        geometry.transformations.transformPointSet(triangle_ps, 'rotate', 
+            geometry.getTriangleIncenter(triangle_ps), geometry.convertAngle(rotation, 'to_rad')
+        );
+
+        // perform the reflections (if specified)
+        if (horizontal_reflection) {
+            geometry.transformations.transformPointSet(triangle_ps, 'reflect', 
+                {x: 0, y: 0}, Infinity
+            );
+        }
+        if (vertical_reflection) {
+            geometry.transformations.transformPointSet(triangle_ps, 'reflect', 
+                {x: 0, y: 0}, 0
+            );
+        }
+
+        // get several image labels in one typset (max would be 10 => 3 sides, 3 angles, 3 vertices, 1 prompt)
+        const string_factor_pairs = [];
+        const image_no_image_key = [];
+        for (let pair_index = 0; pair_index < 10; pair_index++) {
+            let image_to_typset = false;
+            
+            if (pair_index < 3) { // sides
+                const letter = String.fromCharCode(97 + pair_index);
+                if (side_labels[letter] !== null) {
+                    if (side_labels[letter] === 'x' || side_labels[letter] === 'a' || side_labels[letter] === 'b' || side_labels[letter] === 'c') {
+                        string_factor_pairs.push([side_labels[letter], mjx_scale * (6.5/6)]); // scale up variable letters
+                    }
+                    else {
+                        string_factor_pairs.push([side_labels[letter], mjx_scale]);
+                    }
+                    
+                    image_to_typset = true;
+                }
+                
+            }
+            else if (pair_index < 6) { // angles
+                const letter = String.fromCharCode(65 + (pair_index - 3));
+                if (angle_labels[letter] !== null) {
+                    if (angle_labels[letter] === '\\theta') {
+                        string_factor_pairs.push([angle_labels[letter], mjx_scale * (6.5/6)]); // scale up angles labeled with theta
+                    }
+                    else {
+                        string_factor_pairs.push([angle_labels[letter], mjx_scale * (4.5/6)]); // 4.5/6 mjx scale
+                    }
+                    
+                    image_to_typset = true;
+                }
+            }
+            else if (pair_index < 9) { // vertices
+                const letter = String.fromCharCode(65 + (pair_index - 6));
+                if (vertex_labels[letter] !== null) {
+                    string_factor_pairs.push([vertex_labels[letter], mjx_scale * (5/6)]);
+                    image_to_typset = true;
+                }
+            }
+            else if (pair_index === 9) { // prompt
+                string_factor_pairs.push([written_prompt, mjx_scale]);
+                image_to_typset = true;
+            }
+
+            image_no_image_key.push(image_to_typset);
+        }
+        const mjx_images = await CH.getMathJaxAsImage(string_factor_pairs);
+
+        // unpack only the images that weren't null (and therefore were typeset)
+        const side_images = {};
+        const side_image_b_rects = {};
+        const angle_images = {};
+        const angle_image_b_rects = {};
+        const vertex_images = {};
+        const vertex_image_b_rects = {};
+        let prompt_image;
+        let prompt_image_b_rect;
+        let image_index = 0;
+        for (let pair_index = 0; pair_index < 10; pair_index++) {
+            let image_to_typset = image_no_image_key[pair_index];
+            if (!image_to_typset) continue;
+            
+            if (pair_index < 3) { // sides
+                const letter = String.fromCharCode(97 + pair_index);
+                side_images[letter] = mjx_images[image_index];
+                side_image_b_rects[letter] = CH.getImageBoundingRect(mjx_images[image_index]);
+            }
+            else if (pair_index < 6) { // angles
+                const letter = String.fromCharCode(65 + (pair_index - 3));
+                angle_images[letter] = mjx_images[image_index];
+                angle_image_b_rects[letter] = CH.getImageBoundingRect(mjx_images[image_index]);
+            }
+            else if (pair_index < 9) { // vertices
+                const letter = String.fromCharCode(65 + (pair_index - 6));
+                vertex_images[letter] = mjx_images[image_index];
+                vertex_image_b_rects[letter] = CH.getImageBoundingRect(mjx_images[image_index]);
+            }
+            else if (pair_index === 9) { // prompt
+                prompt_image = mjx_images[image_index];
+                prompt_image_b_rect = CH.getImageBoundingRect(mjx_images[image_index]);
+            }
+            image_index++
+        }
+
+        // determine how much space should be allocated to the triangle drawing vs the prompt image
+        const canvas_size = 1000;
+        const prompt_image_padding = 30; // a bit of extra space between the triangle region and prompt region (so they are never touching)
+        const prompt_space = {x1: 0, x2: canvas_size, y1: canvas_size - (prompt_image_b_rect.y2 - prompt_image_b_rect.y1) - prompt_image_padding, y2: canvas_size};
+        const triangle_space = {x1: 0, x2: canvas_size, y1: 0, y2: prompt_space.y1};
+
+        // position the bounding rect for the prompt (left-aligned in its space)
+        prompt_image_b_rect = {
+            x1: 0, x2: (prompt_image_b_rect.x2 - prompt_image_b_rect.x1), 
+            y1: prompt_space.y1 + prompt_image_padding, y2: prompt_space.y2
+        };
+
+        // scale the triangle to fit its space the entirety of its space (ignoring labels for now)
+        geometry.fitPointSet(triangle_ps, triangle_space, 'center', 'center');
+
+        // position the side and vertex labels on the initial triangle (which will likely overflow initially)
+        geometry.positionAllTriangleSideLabels(side_image_b_rects, triangle_ps, side_label_spacing);
+        geometry.positionAllTriangleVertexLabels(vertex_image_b_rects, triangle_ps, vertex_label_spacing);
+        
+        // next step is to do the linear scaling algo to fit the triangle apparatus in its space
+        let triangle_content_b_rect = geometry.getCombinedBoundingRect(
+            geometry.getBoundingRect(triangle_ps), ...Object.values(side_image_b_rects), ...Object.values(vertex_image_b_rects) 
+        );
+        const x0 = triangle_content_b_rect.x2 - triangle_content_b_rect.x1;
+        const y0 = triangle_content_b_rect.y2 - triangle_content_b_rect.y1;
+
+        const test_scale_factor = 0.9;
+        const incenter = geometry.getTriangleIncenter(triangle_ps);
+        geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, test_scale_factor);
+        geometry.positionAllTriangleSideLabels(side_image_b_rects, triangle_ps, side_label_spacing);
+        geometry.positionAllTriangleVertexLabels(vertex_image_b_rects, triangle_ps, vertex_label_spacing);
+
+        triangle_content_b_rect = geometry.getCombinedBoundingRect(
+            geometry.getBoundingRect(triangle_ps), ...Object.values(side_image_b_rects), ...Object.values(vertex_image_b_rects) 
+        );
+        const x1 = triangle_content_b_rect.x2 - triangle_content_b_rect.x1;
+        const y1 = triangle_content_b_rect.y2 - triangle_content_b_rect.y1;
+        const needed_x_factor = (((triangle_space.x2 - triangle_space.x1) - x0)*(test_scale_factor - 1)) / (x1 - x0) + 1;
+        const needed_y_factor = (((triangle_space.y2 - triangle_space.y1) - y0)*(test_scale_factor - 1)) / (y1 - y0) + 1;
+        geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, 
+            (1 / test_scale_factor) * Math.min(needed_x_factor, needed_y_factor) // more extreme of the two factors ensures all the triangle content fits in its space
+        );
+
+        // reposition labels on the downscaled triangle
+        geometry.positionAllTriangleSideLabels(side_image_b_rects, triangle_ps, side_label_spacing);
+        geometry.positionAllTriangleVertexLabels(vertex_image_b_rects, triangle_ps, vertex_label_spacing);
+
+        // now the triangle content can fit in its space, but it still needs positioned properly (centered within its space)
+        const side_rectangles = {};
+        const vertex_rectangles = {};
+        for (const [side_name, b_rect] of Object.entries(side_image_b_rects)) {
+            side_rectangles[side_name] = geometry.getBoundingRectRectangle(b_rect);
+        }
+        for (const [vertex_name, b_rect] of Object.entries(vertex_image_b_rects)) {
+            vertex_rectangles[vertex_name] = geometry.getBoundingRectRectangle(b_rect);
+        }
+        geometry.fitPointSet(
+            geometry.getCombinedPointSet(
+                triangle_ps,
+                ...Object.values(side_rectangles),
+                ...Object.values(vertex_rectangles)
+            ),
+            triangle_space, 'center', 'center' 
+        );
+        for (const [side_name, rect] of Object.entries(side_rectangles)) {
+            side_image_b_rects[side_name] = geometry.getBoundingRect(rect);
+        }
+        for (const [vertex_name, rect] of Object.entries(vertex_rectangles)) {
+            vertex_image_b_rects[vertex_name] = geometry.getBoundingRect(rect);
+        }
+
+        // put the angle labels on the triangle (now that it's in its final position)
+        const inner_triangle = geometry.getBoundingTriangle(triangle_ps, 2*line_width, 'inner'); // account for line width
+        geometry.positionAllTriangleAngleLabelsFS(angle_image_b_rects, inner_triangle, 0.97);
+
+        // draw the triangle
+        const middle_triangle = geometry.getBoundingTriangle(triangle_ps, line_width, 'inner');
+        C.lineWidth = line_width;
+        CH.drawPolygon(middle_triangle);
+
+        // draw the side labels
+        for (const [side_name, side_b_rect] of Object.entries(side_image_b_rects)) {
+            CH.drawImage(side_images[side_name], side_b_rect);
+        }
+
+        // draw the vertex labels
+        for (const [vertex_name, vertex_b_rect] of Object.entries(vertex_image_b_rects)) {
+            CH.drawImage(vertex_images[vertex_name], vertex_b_rect);
+        }
+
+        // draw the angle labels
+        for (const [angle_name, angle_b_rect] of Object.entries(angle_image_b_rects)) {
+            CH.drawImage(angle_images[angle_name], angle_b_rect);
+        }
+
+        // draw the written prompt
+        CH.drawImage(prompt_image, prompt_image_b_rect);
     },
     getCanvasClone: function(original_canvas = canvas) {
         const clone = document.createElement('canvas');
