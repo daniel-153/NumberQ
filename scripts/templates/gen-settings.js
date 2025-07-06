@@ -773,7 +773,7 @@ export const triangle_rotation = {
 export const triangle_length_size = {
     type: 'single_textbox',
     display_name: "Side Length Size",
-    tooltip: "How big or small should the triangle side lengths be? (enter an integer from 1 to 100)",
+    tooltip: "How big or small should the given triangle side lengths be? (enter an integer from 1 to 100)",
     valid_values: [ 1, '--', 100 ],
     default_value: 75,
     textbox_class: 'wide-textbox'
@@ -858,7 +858,8 @@ export const law_sin_or_cos = {
     display_name: 'Triangle Law',
     radio_buttons: [
         ['sines','Law of Sines'],
-        ['cosines','Law of Cosines']
+        ['cosines','Law of Cosines'],
+        ['either', 'Either Law']
     ], 
     tooltip: "Which triangle law should be required to solve for the unknowns?"
 };
