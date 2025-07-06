@@ -520,7 +520,7 @@ export function positionPolygonSideLabel(label_bounding_box, polygon, side_name,
     label_bounding_box.y2 = new_bounding_box.y2;
 }
 
-export function positionAllTriangleSideLabels(label_b_rects_obj, triangle, distance, side_name_key = {'a': 'B-C', 'b': 'C-A', 'C': 'A-B'}) {
+export function positionAllTriangleSideLabels(label_b_rects_obj, triangle, distance, side_name_key = {'a': 'B-C', 'b': 'C-A', 'c': 'A-B'}) {
     for (const [side_letter, b_rect] of Object.entries(label_b_rects_obj)) {
         positionPolygonSideLabel(b_rect, triangle, side_name_key[side_letter], distance);
     }
@@ -823,6 +823,12 @@ export function positionAngleLabelFixedSize(label_bounding_rect, vertex_letter, 
     label_bounding_rect.y2 = new_bounding_rect.y2;
 }
 
+export function positionAllTriangleAngleLabelsFS(label_b_rects_obj, triangle, rect_size_ratio) {
+    for (const [vertex_letter, label_b_rect] of Object.entries(label_b_rects_obj)) {
+        positionAngleLabelFixedSize(label_b_rect, vertex_letter, triangle, rect_size_ratio);
+    }
+}
+
 export function getRightAngleLabel(right_triangle) { // 5% of the length of the longer side, always less than a third of the shorter side
     // first step is to find the vertex that corresponds to the right angle (this function assumes that vertex exists)
     const side_vectors = {'A-B': null, 'A-C': null, 'B-A': null, 'B-C': null, 'C-B': null, 'C-A': null};
@@ -1020,8 +1026,18 @@ export function positionTriangleVertexLabel(label_bounding_rect, triangle_ps, ve
     transformations.transformPointSet(rect, 'translate', {x: addition_needed_distance, y: 0}); // apply the additional distance
     transformations.transformPointSet(rect, 'rotate', {x: 0, y: 0}, neg_unit_bisector_ang); // rotate everything back into original orientation
 
+    // the distance that the rect center should be translated in the direction of the neg-bisector (off of the vertex)
+    // is now the distance of the rect center from the origin - so the final step is just to translate the rect unto the vertex
+    transformations.transformPointSet(rect, 'translate', {x: triangle_ps[vertex_name].x, y: triangle_ps[vertex_name].y});
+
     // update the values in the original bounding rect
     _updateBoundingRectValues(label_bounding_rect, getBoundingRect(rect));
+}
+
+export function positionAllTriangleVertexLabels(label_b_rects_obj, triangle_ps, distance) {
+    for (const [vertex_name, vertex_b_rect] of Object.entries(label_b_rects_obj)) {
+        positionTriangleVertexLabel(vertex_b_rect, triangle_ps, vertex_name, distance);
+    }
 }
 
 export function getRandomTriangleAngles(min_angle = 10) {
@@ -1068,7 +1084,7 @@ export function getAdjustedTriangle(triangle_ps, min_angle = 25) {
     const c = getTriangleSide(triangle_ps, 'c');
 
     // ASA => A, c, B
-    const adjusted_triangle = build_triangle.ASA(increased_angles[0], c, increased_angles[1]);
+    const adjusted_triangle = build_triangle.ASA(increased_angles[0], c, increased_angles[1], 'deg');
 
     return adjusted_triangle;
 }
