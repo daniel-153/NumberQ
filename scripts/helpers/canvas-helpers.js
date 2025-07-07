@@ -559,6 +559,9 @@ const CH = {
                     if (side_labels[letter] === 'x' || side_labels[letter] === 'a' || side_labels[letter] === 'b' || side_labels[letter] === 'c') {
                         string_factor_pairs.push([side_labels[letter], mjx_scale * (6.5/6)]); // scale up variable letters
                     }
+                    else if (side_labels[letter].includes('\\,')) { 
+                        string_factor_pairs.push([side_labels[letter], mjx_scale * (5/6)]); // scale down side labels that include units
+                    }
                     else {
                         string_factor_pairs.push([side_labels[letter], mjx_scale]);
                     }
