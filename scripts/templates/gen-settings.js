@@ -871,7 +871,8 @@ export const sico_solve_for = {
         ['one_unknown','One Unknown'],
         ['whole_triangle','The Whole Triangle']
     ], 
-    tooltip: "Should the prompt be to solve for a single unknown, or to solve all three triangle angles and sides?"
+    tooltip: "Should the prompt be to solve for a single unknown, or to solve all three triangle angles and sides?",
+    prelocked: true
 };
 
 export const sico_labels = {
@@ -882,5 +883,6 @@ export const sico_labels = {
         ['all_vert_and_unknown','All Vertices & <br> Unknown Side'],
         ['only_unknown','Only The Unknown <br> (x or &theta;)']
     ], 
-    tooltip: "How should the triangle sides and vertices be labeled? (note: 'No Labels' is only applied when solving the whole triangle)"
+    tooltip: "How should the triangle sides and vertices be labeled? (note: 'No Labels' is only applied when solving the whole triangle)",
+    prelocked: true
 };
