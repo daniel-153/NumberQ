@@ -209,7 +209,7 @@ const LSH = { // genLawSico helpers
     getPromptMeasureLabel: function(measure_letter, triangle_info, settings, triangle_unknown) {
         // just return the numerical value (with units) if known
         if (triangle_info.knowns[measure_letter] !== undefined) {
-            if (this.upperOrLower(measure_letter) === 'lower') return triangle_info.knowns[measure_letter] + ((settings.triangle_length_unit === '')? '' : `~\\mathrm{${settings.triangle_length_unit}}`);
+            if (this.upperOrLower(measure_letter) === 'lower') return triangle_info.knowns[measure_letter] + ((settings.triangle_length_unit === '')? '' : `\\,\\mathrm{${settings.triangle_length_unit}}`);
             else if (this.upperOrLower(measure_letter) === 'upper') return triangle_info.knowns[measure_letter] + '^\\circ';
         }
         
@@ -293,6 +293,15 @@ export default async function genLawSico(settings) {
     if (settings.sico_solve_for === 'one_unknown') solved_unknowns = [triangle_unknown];
     else if (settings.sico_solve_for === 'whole_triangle') solved_unknowns = [...triangle_info.all_unknowns];
 
+    // sort the unknown letters in the following general order (angles before sides + alphabetical when applicable)
+    const ordered_unknowns = [];
+    ['A','B','C','a','b','c'].forEach(ordered_letter => {
+        if (solved_unknowns.includes(ordered_letter)) {
+            ordered_unknowns.push(ordered_letter)
+        }
+    });
+    solved_unknowns = ordered_unknowns;
+
     const round = H.buildNewRounder(settings.decimal_places, settings.keep_rounded_zeros);
     solved_unknowns = solved_unknowns.map(function(solved_unknown_letter) {
         const measure_type = (LSH.upperOrLower(solved_unknown_letter) === 'lower')? 'side' : 'angle';
@@ -306,7 +315,7 @@ export default async function genLawSico(settings) {
 
         // add on units
         if (measure_type === 'angle') value += '^\\circ';
-        else if (measure_type === 'side' && settings.triangle_length_unit !== '') value += `~\\mathrm{${settings.triangle_length_unit}}`;
+        else if (measure_type === 'side' && settings.triangle_length_unit !== '') value += `\\,\\mathrm{${settings.triangle_length_unit}}`;
 
         const label = LSH.getUnknownDisplaySymbol(solved_unknown_letter, settings);
 
@@ -367,7 +376,15 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-        
+        triangle_length_size: H.randInt(20, 100),
+        law_sin_or_cos: '__random__',
+        sico_labels: '__random__',
+        triangle_number_type: '__random__',
+        sico_solve_for: '__random__',
+        triangle_length_unit: H.randFromList(['in', 'ft', 'yd', 'mi', 'mm', 'cm', 'm', 'km']),
+        rotation_deg: H.randInt(0, 360),
+        randomize_rotation: 'is_checked',
+        triangle_reflection: H.randFromList([['horizontal'],['vertical'],['horizontal', 'vertical']])
     }; 
 }
 
