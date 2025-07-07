@@ -25,12 +25,12 @@ export function validateSettings(form_obj, error_locations) {
 
     // if rounding rules requires that all decimals be rounded to whole numbers, don't allow decimal side lengths
     if (form_obj.decimal_places === 0) {
-        form_obj.triangle_number_type === 'integers_only'
+        form_obj.triangle_number_type = 'integers_only';
     }
     
     // not an explicit error, but if the number type allows decimals, it doesn't make sense for the final answer to be a root expression like √1.5
     if (form_obj.triangle_number_type === 'allow_decimals') {
-        form_obj.py_theo_answer_form === 'decimal_answers';
+        form_obj.py_theo_answer_form = 'decimal_answers';
     }
 
     // handle random rotation
