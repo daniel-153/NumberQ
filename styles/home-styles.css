@@ -162,6 +162,10 @@ body::-webkit-scrollbar-thumb:hover {
     font-size: 2.6vw;
 }
 
+.medium-shrunk-question {
+    font-size: 2.3vw;
+}
+
 .shrunk-question {
     font-size: 1.9vw;
 }
