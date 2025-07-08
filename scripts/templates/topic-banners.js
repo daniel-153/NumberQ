@@ -42,6 +42,15 @@ export const templates = [
         short_name: 'equation' 
     },
     {
+        function_name: 'genVarIso',
+        category_class_name: 'algebra-gen',
+        display_name: 'Variable Isolation',
+        display_category: 'algebra',
+        example_problem: 'a=\\frac{b}{c+d} \\rightarrow d=\\frac{b-ac}{a}',
+        example_problem_class: 'medium-shrunk-question',
+        short_name: 'equation' 
+    },
+    {
         function_name: 'genFacQuad',
         category_class_name: 'algebra-gen',
         display_name: 'Quadratics & Factoring',
