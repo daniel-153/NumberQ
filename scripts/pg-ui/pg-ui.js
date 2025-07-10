@@ -5,6 +5,7 @@ import * as UH from '../helpers/ui-helpers.js';
 const pg_ui_state = {
     current_module: null,
     current_gen_func: null,
+    is_currently_generating: false,
     func_name: null,
     display_name: null,
     gen_type: null,
@@ -32,6 +33,9 @@ const pg_ui_state = {
 };
 
 export async function generate(func_name, display_name = '') {
+    if (pg_ui_state.is_currently_generating) return;
+    pg_ui_state.is_currently_generating = true;
+    
     if (pg_ui_state.first_pg_ui_open) { // first generation with any mode
         UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
         UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
@@ -64,4 +68,5 @@ export async function generate(func_name, display_name = '') {
     
     pg_ui_state.first_pg_ui_open = false; // no longer the first generation
     pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
+    pg_ui_state.is_currently_generating = false;
 }
