@@ -665,3 +665,159 @@ export function simplifiedFracString(raw_numer, raw_denom, negative_sign = 'besi
         return simplified_frac.numer + '';
     }
 }
+
+export function prodEx(leading_coef_number, ...symbols) { // a product expression concists of a leading coef (always) and some number of symbols (optional) [number, symbol1, symbol2, symbol3, ...]
+    // handle the special case where the leading coef is a symbol (basically when you want to create a term like 'x' without '1x')
+    if (Number.isNaN(Number(leading_coef_number))) { // prod(x,y) => prod(1,x,y) (so you don't have to pass the 1)
+        symbols.unshift(leading_coef_number);
+        leading_coef_number = 1;
+    }
+
+    const prod_array = [];
+
+    prod_array.push(leading_coef_number);
+    symbols.forEach(symbol => {prod_array.push(symbol)});
+    prod_array.unshift('P');
+
+    return prod_array;
+}
+
+export function sumEx(...products_or_fracs) { // a sum is a sum of either fraction expressions or product expressions
+    products_or_fracs.unshift('S');
+    return products_or_fracs;
+}
+
+export function fracEx(numer_ex, denom_ex, leading_coef_number = 1) { // the numer and denom of a fraction expression are sums of product expressions
+    if (numer_ex[0] === 'P') numer_ex  = ['S',numer_ex]; // convert product to single term sum
+    if (denom_ex[0] === 'P') denom_ex  = ['S',denom_ex]; 
+
+    return ['F', leading_coef_number, numer_ex, denom_ex];
+}
+
+export function randomizeSumExTermOrder(sum_ex) {
+    // extract all the terms
+    const sum_terms = [];
+    for (let i = 1; i < sum_ex.length; i++) {
+        sum_terms.push(sum_ex[i]);
+    }
+
+    // fisher yates array randomization
+    for (let i = sum_terms.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sum_terms[i], sum_terms[j]] = [sum_terms[j], sum_terms[i]];
+    }
+
+    // overwrite old terms with randomized ones
+    for (let i = 1; i < sum_ex.length; i++) { 
+        sum_ex[i] = sum_terms[i - 1];
+    }
+}
+
+export function getSignedSumExGcf(sum_ex) {
+    const leading_coef_array = [];
+    const sum_leading_sign = Math.sign(sum_ex[1][1]);
+    
+    for (let i = 1; i < sum_ex.length; i++) {
+        leading_coef_array.push(sum_ex[i]);
+    }
+
+    return sum_leading_sign * gcfOfArray(leading_coef_array);
+}
+
+export function multiplyOrDivideSumEx(sum_ex, method, number) { // method = 'multiply' or 'divide'
+    for (let i = 1; i < sum_ex.length; i++) {
+        const current_term = sum_ex[i];
+
+        if (method === 'multiply') current_term[1] *= number;
+        else if (method === 'divide') current_term[1] /= number;
+    }
+}
+
+export function simplifiedExpressionString(outer_sum_expression) {
+    // first step is to simplify any fractions
+    const cleaned_sum_ex = ['S'];
+    for (let term_index = 1; term_index < outer_sum_expression.length; term_index++) {
+        const current_term = outer_sum_expression[i];
+        if (current_term[0] === 'F') { // fraction term found
+            // pull out the signed numer and denom gcf's and simplify the resulting fraction 
+            const signed_numer_gcf = getSignedSumExGcf(current_term[2]);
+            multiplyOrDivideSumEx(current_term[2], 'divide', signed_numer_gcf); // divide it out
+            const signed_denom_gcf = getSignedSumExGcf(current_term[3]);
+            multiplyOrDivideSumEx(current_term[3], 'divide', signed_denom_gcf); // divide it out
+            const leading_frac_coef = current_term[1]; // pull out the number in front of the frac
+            current_term[1] = 1; // divide it out
+
+            // get the combined fraction
+            const combined_frac = simplifyFraction(signed_numer_gcf * leading_frac_coef, signed_denom_gcf);
+
+            multiplyOrDivideSumEx(current_term[2], 'multiply', Math.abs(combined_frac.numer));
+            multiplyOrDivideSumEx(current_term[3], 'multiply', combined_frac.denom);
+            if (combined_frac.numer < 0) current_term[1] = -1;
+
+            // now if the denom is equal to 1, the fraction simplified completely, and it can be eliminated (turned into a sum)
+            if (current_term[3][1][1] === 1) {
+                // ensure the leading frac coef gets distributed to the numer first
+                multiplyOrDivideSumEx(current_term[2], 'multiply', current_term[1]);
+
+                // now all the sum terms in the numer can be extracted
+                const numer_sum_ex = current_term[2];
+                for (let i = 1; i < numer_sum_ex.length; i++) {
+                    cleaned_sum_ex.push(numer_sum_ex[i]);
+                }
+            }
+            else {
+                cleaned_sum_ex.push(current_term);
+            }
+        }
+        else { // regular term
+            cleaned_sum_ex.push(current_term);
+        }
+    }
+
+    const getCleanedProductString = function(prod_ex_arr, outer_term_index) {
+        if (prod_ex_arr[1] < 0 || outer_term_index === 1) { // first term Or the leading coef is negative
+            if (prod_ex_arr[1] === -1 && prod_ex_arr.length !== 2) prod_ex_arr[1] = '-';
+            else if (prod_ex_arr[1] === 1 && prod_ex_arr.length !== 2) prod_ex_arr[1] = '';
+
+            return prod_ex_arr.slice(1).join('');
+        }
+        else { // positive term in the middle of the expression
+            if (prod_ex_arr[1] === 1 && prod_ex_arr.length !== 2) prod_ex_arr[1] = '';
+
+            return ('+' + prod_ex_arr.slice(1).join('')); // plus sign needed
+        }
+    }
+
+    let expression_string = '';
+    for (let outer_term_index = 1; outer_term_index < cleaned_sum_ex.length; outer_term_index++) {
+        const current_term = cleaned_sum_ex[outer_term_index];
+        if (current_term[0] === 'F') { // term is a fraction
+            let frac_numer = '';
+            for (let i = 1; i < current_term[2].length; i++) {
+                frac_numer += getCleanedProductString(current_term[2][i]);
+            }
+
+            let frac_denom = '';
+            for (let i = 1; i < current_term[3].length; i++) {
+                frac_denom += getCleanedProductString(current_term[3][i]);
+            }
+
+            if (outer_term_index === 1 || current_term[1] < 0) {
+                if (current_term[1] === -1) current_term[1] = '-';
+                else if (current_term[1] === 1) current_term[1] = '';
+
+                expression_string += `${current_term[1]}\\frac{${frac_numer}}{${frac_denom}}`;
+            }
+            else { // positive term somewhere in the middle of the expression
+                if (current_term[1] === 1) current_term[1] = '';
+
+                expression_string += ('+' + `${current_term[1]}\\frac{${frac_numer}}{${frac_denom}}`); // plus sign needed
+            }
+        }
+        else if (current_term[0] === 'P') { // term is a product
+            expression_string += getCleanedProductString(current_term, outer_term_index);
+        }
+    }
+
+    return expression_string;
+}
