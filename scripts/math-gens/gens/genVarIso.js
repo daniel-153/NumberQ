@@ -1,12 +1,43 @@
 import * as H from '../helpers/gen-helpers.js';
 import * as SH from '../helpers/settings-helpers.js';
+import { sumEx, prodEx, fracEx, randomizeSumExTermOrder, simplifiedExpressionString } from '../helpers/polynom-helpers.js';
 
 export function validateSettings(form_obj, error_locations) {
-    
+
 }
 
 const VIH = { // genVarIso helpers
-    begin_random_forms: [
+    buildEq: function(lhs_arr, rhs_arr) {
+        const lhs_sum_ex = sumEx(...lhs_arr);
+        const rhs_sum_ex = sumEx(...rhs_arr);
+
+        // randomize the order of the terms on each side
+        randomizeSumExTermOrder(lhs_sum_ex);
+        randomizeSumExTermOrder(rhs_sum_ex);
+
+        // randomly swap the sides of the equation
+        if (H.randInt(0, 1) === 0) {
+            return `${simplifiedExpressionString(lhs_sum_ex)}=${simplifiedExpressionString(rhs_sum_ex)}`;
+        }
+        else {
+            return `${simplifiedExpressionString(rhs_sum_ex)}=${simplifiedExpressionString(lhs_sum_ex)}`;
+        }
+        
+    },
+    buildEx: function(ex_arr) {
+        return simplifiedExpressionString(sumEx(...ex_arr));
+    },
+    buildFrac: function(numer_arr, denom_arr, randomize_term_order = false) {
+        const num_sum_ex = sumEx(...numer_arr);
+        const den_sum_ex = sumEx(...denom_arr);
+        if (randomize_term_order) {
+            randomizeSumExTermOrder(num_sum_ex);
+            randomizeSumExTermOrder(den_sum_ex);
+        } 
+
+        return fracEx(num_sum_ex, den_sum_ex);
+    },
+    pure_var_random_forms: [
         {
             a:(b,c) => `${b} + ${c}`,
             b:(a,c) => `${a} - ${c}`,
@@ -223,13 +254,182 @@ const VIH = { // genVarIso helpers
             e:(a,b,c,d) => `\\frac{${b}${c} + ${c}${d} - ${a}${c}${d}}{${a}}`
         }
     ],
-    inter_random_forms: {
-
-    },
-    advan_random_forms: {
-
-    },
-    algebra_1_forms: [
+    numerical_random_forms: [
+        {
+            base_form:(a,b,A,B,C) => VIH.buildEq([prodEx(A,a), prodEx(B,b)], [prodEx(C)]),
+            a:(b,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(C), prodEx(-B,b)], [prodEx(A)])]),
+            b:(a,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(C), prodEx(-A,a)], [prodEx(B)])])
+        },
+        {
+            a:(b,A,B) => VIH.buildEx([prodEx(A,b), prodEx(B)]),
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(-B)], [prodEx(A)])])
+        },
+        {
+            base_form:(a,b,A,B) => VIH.buildEq([prodEx(A,a)], [prodEx(a,b), prodEx(B)]),
+            a:(b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B)], [prodEx(A), prodEx(-1,b)])]),
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a,A), prodEx(-B)], [prodEx(a)])])
+        },
+        {
+            base_form:(a,b,c,A,B,C) => VIH.buildEq([prodEx(a), prodEx(A)], [prodEx(B,b), prodEx(C,c)]),
+            a:(b,c,A,B,C) => VIH.buildEx([prodEx(B,b), prodEx(C,c), prodEx(-A)]),
+            b:(a,c,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(A), prodEx(-C,c)], [prodEx(B)])]),
+            c:(a,b,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(A), prodEx(-B,b)], [prodEx(C)])])
+        },
+        {
+            base_form:(a,b,A,B,C,D) => VIH.buildEq([prodEx(A,a), prodEx(B)], [prodEx(C,b), prodEx(D)]),
+            a:(b,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,b), prodEx(D - B)], [prodEx(A)])]),
+            b:(a,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(B - D)], [prodEx(C)])])
+        },
+        {
+            base_form:(a,b,c) => VIH.buildEq([prodEx(a,b,c)], [prodEx(a), prodEx(b), prodEx(c)]),
+            a:(b,c) => VIH.buildEx([VIH.buildFrac([prodEx(b), prodEx(c)], [prodEx(b,c), prodEx(-1)])]),
+            b:(a,c) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(c)], [prodEx(a,c), prodEx(-1)])]),
+            c:(a,b) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(b)], [prodEx(a,b), prodEx(-1)])])
+        },
+        {
+            force_base_form: true,
+            base_form:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a)], [prodEx(b)])], [VIH.buildFrac([prodEx(a), prodEx(A)], [prodEx(b), prodEx(B)], true)]),
+            a:(b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,b)], [prodEx(B)])]),
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,a)], [prodEx(A)])])
+        },
+        {
+            force_base_form: true,
+            base_form:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a), prodEx(b)], [prodEx(A)], true)], [prodEx(B)]),
+            a:(b,A,B) => VIH.buildEx([prodEx(A*B), prodEx(-1, b)]),
+            b:(a,A,B) => VIH.buildEx([prodEx(A*B), prodEx(-1, a)])
+        },
+        {
+            a:(b,A,B) => VIH.buildEx([prodEx(A,b), prodEx(B)]),
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(-B)], [prodEx(A)])])
+        },
+        {
+            base_form:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a)], [prodEx(A)]), VIH.buildFrac([prodEx(b)], [prodEx(B)])], [prodEx(1)]),
+            a:(b,A,B) => VIH.buildEx(VIH.buildFrac([prodEx(A*B), prodEx(-A,b)], [prodEx(B)])),
+            b:(a,A,B) => VIH.buildEx(VIH.buildFrac([prodEx(A*B), prodEx(-B,a)], [prodEx(A)]))     
+        },
+        {
+            base_form:(a,b,c,d,A,B,C,D) => VIH.buildEq([prodEx(A,a), prodEx(B,b)], [prodEx(C,c), prodEx(D,d)]),
+            a:(b,c,d,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,c), prodEx(D,d), prodEx(-B,b)], [prodEx(A)])]),
+            b:(a,c,d,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,c), prodEx(D,d), prodEx(-A,a)], [prodEx(B)])]),
+            c:(a,b,d,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(B,b), prodEx(-D,d)], [prodEx(C)])]),
+            d:(a,b,c,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(B,b), prodEx(-C,c)], [prodEx(D)])])
+        },
+        {
+            base_form:(a,b,A,B,C,D) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a), prodEx(B)], true)], [VIH.buildFrac([prodEx(C)], [prodEx(b), prodEx(D)], true)]),
+            a:(b,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,b), prodEx(A*D - B*C)], [prodEx(C)])]),
+            b:(a,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,a), prodEx(B*C - A*D)], [prodEx(A)])])
+        },
+        {
+            base_form:(a,b,A,B,C) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a)]), VIH.buildFrac([prodEx(b)], [prodEx(B)])], [prodEx(C)]),
+            a:(b,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(A*B)], [prodEx(B*C), prodEx(-1, b)])]),
+            b:(a,A,B,C) => VIH.buildEx([prodEx(B*C), VIH.buildFrac([prodEx(-A*B)], [prodEx(a)])]) 
+        },
+        {
+            base_form:(a,b,c,A,B) => VIH.buildEq([prodEx(A,a), prodEx(B)], [VIH.buildFrac([prodEx(c)], [prodEx(b), prodEx(c)])]),
+            a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(c)], [prodEx(A,b), prodEx(A,c)]), VIH.buildFrac([prodEx(-B)], [prodEx(A)])]),
+            b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(1 - B,c), prodEx(-A,a,c)], [prodEx(A,a), prodEx(B)])]),
+            c:(a,b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a,b), prodEx(B,b)], [prodEx(1 - B), prodEx(-A,a)])])
+        },
+        {
+            a:(b,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(c), prodEx(-A)], [prodEx(b)])]),
+            b:(a,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(c), prodEx(-A)], [prodEx(a)])]),
+            c:(a,b,A) => VIH.buildEx([prodEx(a,b), prodEx(A)])
+        },
+        {
+            base_form:(a,b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a,b)]), prodEx(c)], [prodEx(B)]),
+            a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A)], [prodEx(B,b), prodEx(-1,b,c)])]),
+            b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A)], [prodEx(B,a), prodEx(-1,a,c)])]),
+            c:(a,b,A,B) => VIH.buildEx([prodEx(B), VIH.buildFrac([prodEx(-A)], [prodEx(a,b)])])
+        },
+        {
+            a:(b,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(A)], [prodEx(b), prodEx(c)])]),
+            b:(a,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(A), prodEx(-1,a,c)], [prodEx(a)])]),
+            c:(a,b,A) => VIH.buildEx([VIH.buildFrac([prodEx(A), prodEx(-1,a,b)], [prodEx(a)])])
+        },
+        {
+            base_form:(a,b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A)], [prodEx(a)]), prodEx(b)], [VIH.buildFrac([prodEx(B)], [prodEx(c)])]),
+            a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,c)], [prodEx(B), prodEx(-1,b,c)])]),
+            b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B)], [prodEx(c)]), VIH.buildFrac([prodEx(-A)], [prodEx(a)])]),
+            c:(a,b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,a)], [prodEx(A), prodEx(a,b)])])
+        },
+        {
+            force_base_form: true,
+            base_form:(a,b,c,d,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a), prodEx(b)])], [VIH.buildFrac([prodEx(B)], [prodEx(c), prodEx(d)])]),
+            a:(b,c,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,c), prodEx(A,d), prodEx(-B,b)], [prodEx(B)])]),
+            b:(a,c,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,c), prodEx(A,d), prodEx(-B,a)], [prodEx(B)])]),
+            c:(a,b,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,a), prodEx(B,b), prodEx(-A,d)], [prodEx(A)])]),
+            d:(a,b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,a), prodEx(B,b), prodEx(-A,c)], [prodEx(A)])])
+        },
+        {
+            base_form:(a,b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a)], [prodEx(b), prodEx(c)])], [prodEx(A,a), prodEx(B)]),
+            a:(b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(B,b), prodEx(B,c)], [prodEx(1), prodEx(-A,b), prodEx(-A,c)])]),
+            b:(a,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a), prodEx(-A,a,c), prodEx(-B,c)], [prodEx(A,a), prodEx(B)])]),
+            c:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a), prodEx(-A,a,b), prodEx(-B,b)], [prodEx(A,a), prodEx(B)])])
+        },
+        {
+            base_form:(a,b,c,A) => VIH.buildEq([prodEx(A,a)], [prodEx(a,b), prodEx(b,c)]),
+            a:(b,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(b,c)], [prodEx(A), prodEx(-1,b)])]),
+            b:(a,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(A,a)], [prodEx(a), prodEx(c)])]),
+            c:(a,b,A) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(-1,a,b)], [prodEx(b)])])
+        },
+        {
+            base_form:(a,b,c,d,A,B) => VIH.buildEq([prodEx(A,a,b)], [prodEx(B,c,d)]),
+            a:(b,c,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,c,d)], [prodEx(A,b)])]),
+            b:(a,c,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,c,d)], [prodEx(A,a)])]),
+            c:(a,b,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a,b)], [prodEx(B,d)])]),
+            d:(a,b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a,b)], [prodEx(B,c)])])
+        },
+        {
+            base_form:(a,b,c,d,A,B) => VIH.buildEq([prodEx(A), VIH.buildFrac([prodEx(b)], [prodEx(a)])], [prodEx(B), VIH.buildFrac([prodEx(d)], [prodEx(c)])]),
+            a:(b,c,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(b,c)], [prodEx(B - A,c), prodEx(d)])]),
+            b:(a,c,d,A,B) => VIH.buildEx([prodEx(B - A,a), VIH.buildFrac([prodEx(a,d)], [prodEx(c)])]),
+            c:(a,b,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a,d)], [prodEx(A - B,a), prodEx(b)])]),
+            d:(a,b,c,A,B) => VIH.buildEx([prodEx(A - B,c), VIH.buildFrac([prodEx(b,c)], [prodEx(a)])])
+        },
+        {
+            base_form:(a,b,c,d) => VIH.buildEq([prodEx(a), prodEx(b,c), prodEx(c,d)], [prodEx(d)]),
+            a:(b,c,d) => VIH.buildEx([prodEx(d), prodEx(-1,b,c), prodEx(-1,c,d)]),
+            b:(a,c,d) => VIH.buildEx([VIH.buildFrac([prodEx(d), prodEx(-1,c,d), prodEx(-1,a)], [prodEx(c)])]),
+            c:(a,b,d) => VIH.buildEx([VIH.buildFrac([prodEx(d), prodEx(-1, a)], [prodEx(b), prodEx(d)])]),
+            d:(a,b,c) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(b,c)], [prodEx(1), prodEx(-1,c)])]) 
+        },
+        {
+            base_form:(a,b,c,A,B,C) => VIH.buildEq([prodEx(A,a,b,c)], [prodEx(B,a), prodEx(C,b)]),
+            a:(b,c,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(C,b)], [prodEx(A,b,c), prodEx(-B)])]),
+            b:(a,c,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(B,a)], [prodEx(A,a,c), prodEx(-C)])]),
+            c:(a,b,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(B,a), prodEx(C,b)], [prodEx(A,a,b)])])
+        },
+        {
+            base_form:(a,b,c,A,B,C) => VIH.buildEq([prodEx(a,b,c)], [prodEx(A,a), prodEx(B,b), prodEx(C,c)]),
+            a:(b,c,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(B,b), prodEx(C,c)], [prodEx(b,c), prodEx(-A)])]),
+            b:(a,c,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(C,c)], [prodEx(a,c), prodEx(-B)])]),
+            c:(a,b,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(B,b)], [prodEx(a,b), prodEx(-C)])])
+        },
+        {
+            base_form:(a,b,c,A) => VIH.buildEq([VIH.buildFrac([prodEx(a), prodEx(b), prodEx(c)], [prodEx(a), prodEx(b)])], [prodEx(A,c)]),
+            a:(b,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(A,b,c), prodEx(-1,b), prodEx(-1,c)], [prodEx(1), prodEx(-A,c)])]),
+            b:(a,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(A,a,c), prodEx(-1,a), prodEx(-1,c)], [prodEx(1), prodEx(-A,c)])]),
+            c:(a,b,A) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(b)], [prodEx(A,a), prodEx(A,b), prodEx(-1)])])
+        },
+        {
+            base_form:(a,b,c,A) => VIH.buildEq([prodEx(a), prodEx(a,b,c)], [prodEx(A,b), prodEx(c)]),
+            a:(b,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(A,b), prodEx(c)], [prodEx(1), prodEx(b,c)])]),
+            b:(a,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(c), prodEx(-1,a)], [prodEx(a,c), prodEx(-A)])]),
+            c:(a,b,A) => VIH.buildEx([VIH.buildFrac([prodEx(A,b), prodEx(-1,a)], [prodEx(a,b), prodEx(-1)])])
+        },
+        {
+            base_form:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a,b)], [prodEx(A)]), prodEx(a)], [prodEx(B,b)]),
+            a:(b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A*B,b)], [prodEx(b), prodEx(A)])]),
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a)], [prodEx(A*B), prodEx(-1,a)])])
+        },
+        {
+            base_form:(a,b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a)]), VIH.buildFrac([prodEx(B)], [prodEx(b)])], [VIH.buildFrac([prodEx(c)], [prodEx(a,b)])]),
+            a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(c), prodEx(-A,b)], [prodEx(B)])]),
+            b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(c), prodEx(-B,a)], [prodEx(A)])]),
+            c:(a,b,A,B) => VIH.buildEx([prodEx(A,b), prodEx(B,a)])
+        }
+    ],
+    algebra_forms: [
         { // slope
             preset_letter_mapping: ['m', 'y_{2}', 'y_{1}', 'x_{2}', 'x_{1}'],
             base_form: 'a',
@@ -596,14 +796,104 @@ const VIH = { // genVarIso helpers
             d:(a,b,c,e) => `-\\frac{${a}${e}}{${b}${c}}`,
             e:(a,b,c,d) => `-\\frac{${b}${c}${d}}{${a}}`,
             exclusion_tags: ['subscripts']
+        },
+        {
+            preset_letter_mapping: ['U_{S}','k','x'],
+            base_form: 'a',
+            a:(b,c) => `\\frac{${b}${c}^{2}}{2}`,
+            b:(a,c) => `\\frac{2${a}}{${c}^{2}}`,
+            c:(a,b) => `\\sqrt{\\frac{2${a}}{${b}}}`,
+            exclusion_tags: ['numerical_coefs','contains_exponents','subscripts','sign_restrictions'],
+            non_negative_vars: ['c']
+        },
+        {
+            preset_letter_mapping: ['\\omega','k','m'],
+            base_form: 'a',
+            a:(b,c) => `\\sqrt{\\frac{${b}}{${c}}}`,
+            b:(a,c) => `${c}${a}^{2}`,
+            c:(a,b) => `\\frac{${b}}{${a}^{2}}`,
+            exclusion_tags: ['sign_restrictions','contains_exponents'],
+            non_negative_vars: 'a'
+        },
+        {
+            preset_letter_mapping: ['\\omega','m','g','d','I'],
+            base_form: 'a',
+            a:(b,c,d,e) => `\\sqrt{\\frac{${b}${c}${d}}{${e}}}`,
+            b:(a,c,d,e) => `\\frac{${e}${a}^{2}}{${c}${d}}`,
+            c:(a,b,d,e) => `\\frac{${e}${a}^{2}}{${b}${d}}`,
+            d:(a,b,c,e) => `\\frac{${e}${a}^{2}}{${b}${c}}`,
+            e:(a,b,c,d) => `\\frac{${b}${c}${d}}{${a}^{2}}`,
+            exclusion_tags: ['sign_restrictions','contains_exponents'],
+            non_negative_vars: 'a'
         }
     ],
     chemistry_forms: [
-
+        {
+            preset_letter_mapping: ['n','m','M'],
+            base_form: 'a',
+            a:(b,c) => `\\frac{${b}}{${c}}`,
+            b:(a,c) => `${a}${c}`,
+            c:(a,b) => `\\frac{${b}}{${a}}`,
+        },
+        {
+            preset_letter_mapping: ['P','V','n','R','T'],
+            base_form:(a,b,c,d,e) => `${a}${b}=${c}${d}${e}`,
+            a:(b,c,d,e) => `\\frac{${c}${d}${e}}{${b}}`,
+            b:(a,c,d,e) => `\\frac{${c}${d}${e}}{${a}}`,
+            c:(a,b,d,e) => `\\frac{${a}${b}}{${d}${e}}`,
+            d:(a,b,c,e) => `\\frac{${a}${b}}{${c}${e}}`,
+            e:(a,b,c,d) => `\\frac{${a}${b}}{${c}${d}}`
+        },
+        {
+            preset_letter_mapping: ['P_{1}','V_{1}','P_{2}','V_{2}'],
+            base_form:(a,b,c,d) => `${a}${b}=${c}${d}`,
+            a:(b,c,d) => `\\frac{${c}${d}}{${b}}`,
+            b:(a,c,d) => `\\frac{${c}${d}}{${a}}`,
+            c:(a,b,d) => `\\frac{${a}${b}}{${d}}`,
+            d:(a,b,c) => `\\frac{${a}${b}}{${c}}`,
+            exclusion_tags: ['subscripts']
+        },
+        {
+            preset_letter_mapping: ['V_{1}','T_{1}','V_{2}','T_{2}'],
+            base_form:(a,b,c,d) => `\\frac{${a}}{${b}}=\\frac{${c}}{${d}}`,
+            a:(b,c,d) => `\\frac{${b}${c}}{${d}}`,
+            b:(a,c,d) => `\\frac{${a}${d}}{${c}}`,
+            c:(a,b,d) => `\\frac{${a}${d}}{${b}}`,
+            d:(a,b,c) => `\\frac{${b}${c}}{${a}}`,
+            exclusion_tags: ['subscripts']
+        },
+        {
+            preset_letter_mapping: ['P_{1}','T_{1}','P_{2}','T_{2}'],
+            base_form:(a,b,c,d) => `\\frac{${a}}{${b}}=\\frac{${c}}{${d}}`,
+            a:(b,c,d) => `\\frac{${b}${c}}{${d}}`,
+            b:(a,c,d) => `\\frac{${a}${d}}{${c}}`,
+            c:(a,b,d) => `\\frac{${a}${d}}{${b}}`,
+            d:(a,b,c) => `\\frac{${b}${c}}{${a}}`,
+            exclusion_tags: ['subscripts']
+        },
+        {
+            preset_letter_mapping: ['P_{1}','V_{1}','T_{1}','P_{2}','V_{2}','T_{2}'],
+            base_form:(a,b,c,d,e,f) => `\\frac{${a}${b}}{${c}}=\\frac{${d}${e}}{${f}}`,
+            a:(b,c,d,e,f) => `\\frac{${c}${d}${e}}{${b}${f}}`,
+            b:(a,c,d,e,f) => `\\frac{${c}${d}${e}}{${a}${f}}`,
+            c:(a,b,d,e,f) => `\\frac{${a}${b}${f}}{${d}${e}}`,
+            d:(a,b,c,e,f) => `\\frac{${a}${b}${f}}{${c}${e}}`,
+            e:(a,b,c,d,f) => `\\frac{${a}${b}${f}}{${c}${d}}`,
+            f:(a,b,c,d,e) => `\\frac{${c}${d}${e}}{${a}${b}}`,
+            exclusion_tags: ['subscripts']
+        },
+        {
+            preset_letter_mapping: ['\\rho','P','M','R','T'],
+            base_form: 'a',
+            a:(b,c,d,e) => `\\frac{${b}${c}}{${d}${e}}`,
+            b:(a,c,d,e) => `\\frac{${a}${d}${e}}{${c}}`,
+            c:(a,b,d,e) => `\\frac{${a}${d}${e}}{${b}}`,
+            d:(a,b,c,e) => `\\frac{${b}${c}}{${a}${e}}`,
+            e:(a,b,c,d) => `\\frac{${b}${c}}{${a}${d}}`
+        }
     ]
 };
 export default function genVarIso(settings) {    
-    
 
     return {
         
