@@ -6,7 +6,7 @@ export function validateSettings(form_obj, error_locations) {
 
 }
 
-const VIH = { // genVarIso helpers
+export const VIH = { // genVarIso helpers
     buildEq: function(lhs_arr, rhs_arr) {
         const lhs_sum_ex = sumEx(...lhs_arr);
         const rhs_sum_ex = sumEx(...rhs_arr);
@@ -79,7 +79,7 @@ const VIH = { // genVarIso helpers
         {
             a:(b,c) => `\\frac{${b}}{${c}}`,
             b:(a,c) => `${a}${c}`,
-            c:(b,a) => `\\frac{${b}}{${a}}`
+            c:(a,b) => `\\frac{${b}}{${a}}`
         },
         {
             base_form:(a,b,c,d) => `\\frac{${a}}{${b}}=\\frac{${c}}{${d}}`,
@@ -112,7 +112,7 @@ const VIH = { // genVarIso helpers
             base_form:(a,b,c,d,e) => `\\frac{${a}}{${b} + ${c}}=${d} + ${e}`,
             a:(b,c,d,e) => `${b}${d} + ${b}${e} + ${c}${d} + ${c}${e}`,
             b:(a,c,d,e) => `\\frac{${a} - ${c}${d} - ${c}${e}}{${d} + ${e}}`,
-            c:(a,b,d,e) => `\\frac{${a} - ${b}${d} - ${d}${e}}{${d} + ${e}}`,
+            c:(a,b,d,e) => `\\frac{${a} - ${b}${d} - ${b}${e}}{${d} + ${e}}`,
             d:(a,b,c,e) => `\\frac{${a} - ${b}${e} - ${c}${e}}{${b} + ${c}}`,
             e:(a,b,c,d) => `\\frac{${a} - ${b}${d} - ${c}${d}}{${b} + ${c}}`
         },
