@@ -57,7 +57,7 @@ export async function beginTestLoop(handler_file_name, end_on_failed_test = true
         }
     } catch (error) {
         status.is_currently_testing = false;
-        console.error('Error in creating, sending, or recieving test: ', error);
+        console.error(`Error in creating, sending, or recieving test #${status.number_of_tests + 1}: `, error);
         return;
     }
 
