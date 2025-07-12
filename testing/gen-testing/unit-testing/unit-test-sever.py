@@ -2,6 +2,7 @@ import logging
 import flask
 import flask_cors
 import importlib
+import traceback
 
 # Start the flask server and enable it for all routes (that are defined below)
 app = flask.Flask(__name__)
@@ -43,7 +44,7 @@ def perform_test():
     except ModuleNotFoundError:
         return flask.jsonify({'test_result': 'failed', 'error': f'No module named unit_verifiers.{handler_file_name}'})
     except Exception as e:
-        return flask.jsonify({'test_result': 'failed', 'error': str(e)})
+        return flask.jsonify({'test_result': 'failed', 'error': str(e), 'trace': traceback.format_exc()})
 
 # This must be placed after all the app.route definitions
 if __name__ == '__main__':
