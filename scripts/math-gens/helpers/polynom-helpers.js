@@ -718,10 +718,10 @@ export function getSignedSumExGcf(sum_ex) {
     const sum_leading_sign = Math.sign(sum_ex[1][1]);
     
     for (let i = 1; i < sum_ex.length; i++) {
-        leading_coef_array.push(sum_ex[i]);
+        leading_coef_array.push(sum_ex[i][1]);
     }
 
-    return sum_leading_sign * gcfOfArray(leading_coef_array);
+    return sum_leading_sign * gcfOfArray(leading_coef_array); // (gcf is positive by default)
 }
 
 export function multiplyOrDivideSumEx(sum_ex, method, number) { // method = 'multiply' or 'divide'
@@ -733,91 +733,148 @@ export function multiplyOrDivideSumEx(sum_ex, method, number) { // method = 'mul
     }
 }
 
+export function prodOnlySumExToTeX(prod_only_sum_ex, handle_first_term = true) {
+    let tex_string = '';
+
+    for (let term_index = 1; term_index < prod_only_sum_ex.length; term_index++) {
+        const current_term = prod_only_sum_ex[term_index];
+        let leading_coef_num = current_term[1];
+        let leading_coef_str;
+
+        // first, handle products with just a number (no symbols at all following it)
+        if (current_term.length === 2) { // ['P',C]
+            if (term_index === 1 && handle_first_term) tex_string += leading_coef_num; // first term (no sign handling)
+            else if (leading_coef_num > 0) tex_string += ('+' + leading_coef_num); // second+ term (need sign handling for positives)
+            else if (leading_coef_num < 0) tex_string += leading_coef_num; // no sign handling for negatives
+            continue;
+        }
+
+        // past this point, the current product must contain symbols (at least one)
+        if (leading_coef_num === 1) leading_coef_str = ''; // [1,x] -> ['',x]
+        else if (leading_coef_num === -1) leading_coef_str = '-'; // [-1,x] -> ['-',x]
+        else leading_coef_str = leading_coef_num + ''; // [k,x] -> ['k',x]
+
+        // add just the coef (and plus sign if needed) to the expression
+        if (term_index === 1 && handle_first_term) { // very first term in the expression (no plus-sign handling)
+            tex_string += leading_coef_str;
+        }
+        else { // somewhere in the middle (second term and following) (plus sign needed for term with pos coefs)
+            if (leading_coef_num > 0) tex_string += ('+' + leading_coef_str); // >0 => plus sign
+            else if (leading_coef_num < 0) tex_string += leading_coef_str; // <0 => no additional handling
+        }
+
+        // add all of the symbols after the leading coef (which must be at least one) ['P',C,'a','b',...]
+        for (let i = 2; i < current_term.length; i++) {
+            tex_string += current_term[i];
+        }
+    }
+
+    return tex_string;
+}
+
+export function getReducedFrac(frac_ex) {     
+    let leading_coef = frac_ex[1]; // leading coef as supplied in the frac_ex ['F', leading_coef, numer_ex, denom_ex]
+    const numer_sum_ex = JSON.parse(JSON.stringify(frac_ex[2])); // a flat sum ex of only products (no nested fractions)
+    const denom_sum_ex = JSON.parse(JSON.stringify(frac_ex[3])); // a flat sum ex of only products (no nested fractions)
+
+    // start by normalizing signs (if -P/-Q cancel the neg, if -P/Q or P/-Q bring neg in front, if P/Q no change)
+    const num_leading_sign = Math.sign(numer_sum_ex[1][1]);
+    const den_leading_sign = Math.sign(denom_sum_ex[1][1]);
+
+    if (num_leading_sign === -1 && den_leading_sign === -1) { // -P/-Q
+        multiplyOrDivideSumEx(numer_sum_ex, 'multiply', -1);
+        multiplyOrDivideSumEx(denom_sum_ex, 'multiply', -1);
+    }
+    else if (num_leading_sign === -1) { // -P/Q
+        multiplyOrDivideSumEx(numer_sum_ex, 'multiply', -1);
+        leading_coef *= -1;
+    }
+    else if (den_leading_sign === -1) { // P/-Q
+        multiplyOrDivideSumEx(denom_sum_ex, 'multiply', -1);
+        leading_coef *= -1;
+    }
+
+    // try to convert to just a sum, or if not possible, remove any common factors
+    const num_gcf = getSignedSumExGcf(numer_sum_ex); // must be positive at this point
+    const den_gcf = getSignedSumExGcf(denom_sum_ex); // must be positive at this point
+    const number_in_denom = denom_sum_ex[1][1];
+    if (denom_sum_ex.length === 2 && denom_sum_ex[1].length === 2 && num_gcf % number_in_denom === 0) { // can be reduced to just a sum
+        // it's possible to divide out the numer by the constant in the denom
+        multiplyOrDivideSumEx(numer_sum_ex, 'divide', number_in_denom); // divide out the denom constant
+        multiplyOrDivideSumEx(numer_sum_ex, 'multiply', leading_coef); // distribute leading coef back in
+
+        return {
+            expression: numer_sum_ex,
+            is_a_sum: true // indicate that the fraction reduced to a sum
+        }
+    }
+    else { // only the removal of common factors is possible
+        // pull out the num and den gcfs
+        multiplyOrDivideSumEx(numer_sum_ex, 'divide', num_gcf);
+        multiplyOrDivideSumEx(denom_sum_ex, 'divide', den_gcf);
+
+        // get the reduced fraction created by num_gcf/den_gcf
+        const {numer, denom} = simplifyFraction(num_gcf, den_gcf);
+
+        // multiply the reduced numer and denom back in
+        multiplyOrDivideSumEx(numer_sum_ex, 'multiply', numer);
+        multiplyOrDivideSumEx(denom_sum_ex, 'multiply', denom);
+
+        return {
+            expression: ['F', leading_coef, numer_sum_ex, denom_sum_ex],
+            is_a_sum: false // indicate that the fraction could not be completely reduced to a sum
+        }
+    }
+}
+
+export function fracExToTeX(frac_ex, is_first_term = true) { // assumes the fraction is irreducible (doesn't try to reduce)
+    // handle the numer and denom expressions
+    const numer_tex_string = prodOnlySumExToTeX(frac_ex[2]);
+    const denom_tex_string = prodOnlySumExToTeX(frac_ex[3]);
+    const frac_string = `\\frac{${numer_tex_string}}{${denom_tex_string}}`;
+
+    // handle the leading coef
+    const leading_coef_num = frac_ex[1];
+    let leading_coef_str;
+    if (leading_coef_num === 1) leading_coef_str = '';
+    else if (leading_coef_num === -1) leading_coef_str = '-';
+    else leading_coef_str = String(leading_coef_num)
+
+    if (is_first_term) { // fraction is the first term in an expression
+        return (leading_coef_str + frac_string);
+    }
+    else { // fraction is somewhere in the middle of an expression
+        if (leading_coef_num > 0) return ('+' + leading_coef_str + frac_string);
+        else if (leading_coef_num < 0) return (leading_coef_str + frac_string);
+    }
+}
+
 export function simplifiedExpressionString(outer_sum_expression) {
-    // first step is to simplify any fractions
-    const cleaned_sum_ex = ['S'];
-    for (let term_index = 1; term_index < outer_sum_expression.length; term_index++) {
-        const current_term = outer_sum_expression[i];
-        if (current_term[0] === 'F') { // fraction term found
-            // pull out the signed numer and denom gcf's and simplify the resulting fraction 
-            const signed_numer_gcf = getSignedSumExGcf(current_term[2]);
-            multiplyOrDivideSumEx(current_term[2], 'divide', signed_numer_gcf); // divide it out
-            const signed_denom_gcf = getSignedSumExGcf(current_term[3]);
-            multiplyOrDivideSumEx(current_term[3], 'divide', signed_denom_gcf); // divide it out
-            const leading_frac_coef = current_term[1]; // pull out the number in front of the frac
-            current_term[1] = 1; // divide it out
+    console.log(JSON.parse(JSON.stringify(outer_sum_expression)))
+    
+    outer_sum_expression = JSON.parse(JSON.stringify(outer_sum_expression));
+    outer_sum_expression.shift(); // remove the 'S' indicating the sum string ['S',[...],[...],...]
 
-            // get the combined fraction
-            const combined_frac = simplifyFraction(signed_numer_gcf * leading_frac_coef, signed_denom_gcf);
+    let expr_tex_string = '';
 
-            multiplyOrDivideSumEx(current_term[2], 'multiply', Math.abs(combined_frac.numer));
-            multiplyOrDivideSumEx(current_term[3], 'multiply', combined_frac.denom);
-            if (combined_frac.numer < 0) current_term[1] = -1;
+    let is_first_term = true;
+    outer_sum_expression.forEach(term => {
+        if (term[0] === 'P') { // prod term
+            expr_tex_string += prodOnlySumExToTeX(['S',term], (is_first_term)? true : false);
+        }
+        else if (term[0] === 'F') { // frac term
+            const simplification_result = getReducedFrac(term); // could still be a frac or turn to a sum of prods
 
-            // now if the denom is equal to 1, the fraction simplified completely, and it can be eliminated (turned into a sum)
-            if (current_term[3][1][1] === 1) {
-                // ensure the leading frac coef gets distributed to the numer first
-                multiplyOrDivideSumEx(current_term[2], 'multiply', current_term[1]);
-
-                // now all the sum terms in the numer can be extracted
-                const numer_sum_ex = current_term[2];
-                for (let i = 1; i < numer_sum_ex.length; i++) {
-                    cleaned_sum_ex.push(numer_sum_ex[i]);
-                }
+            if (simplification_result.is_a_sum) { // reduced all the way to a sum of prods
+                expr_tex_string += prodOnlySumExToTeX(simplification_result.expression, (is_first_term)? true : false);
             }
-            else {
-                cleaned_sum_ex.push(current_term);
+            else { // still a fraction
+                expr_tex_string += fracExToTeX(simplification_result.expression, is_first_term);
             }
         }
-        else { // regular term
-            cleaned_sum_ex.push(current_term);
-        }
-    }
 
-    const getCleanedProductString = function(prod_ex_arr, outer_term_index) {
-        if (prod_ex_arr[1] < 0 || outer_term_index === 1) { // first term Or the leading coef is negative
-            if (prod_ex_arr[1] === -1 && prod_ex_arr.length !== 2) prod_ex_arr[1] = '-';
-            else if (prod_ex_arr[1] === 1 && prod_ex_arr.length !== 2) prod_ex_arr[1] = '';
-
-            return prod_ex_arr.slice(1).join('');
-        }
-        else { // positive term in the middle of the expression
-            if (prod_ex_arr[1] === 1 && prod_ex_arr.length !== 2) prod_ex_arr[1] = '';
-
-            return ('+' + prod_ex_arr.slice(1).join('')); // plus sign needed
-        }
-    }
-
-    let expression_string = '';
-    for (let outer_term_index = 1; outer_term_index < cleaned_sum_ex.length; outer_term_index++) {
-        const current_term = cleaned_sum_ex[outer_term_index];
-        if (current_term[0] === 'F') { // term is a fraction
-            let frac_numer = '';
-            for (let i = 1; i < current_term[2].length; i++) {
-                frac_numer += getCleanedProductString(current_term[2][i]);
-            }
-
-            let frac_denom = '';
-            for (let i = 1; i < current_term[3].length; i++) {
-                frac_denom += getCleanedProductString(current_term[3][i]);
-            }
-
-            if (outer_term_index === 1 || current_term[1] < 0) {
-                if (current_term[1] === -1) current_term[1] = '-';
-                else if (current_term[1] === 1) current_term[1] = '';
-
-                expression_string += `${current_term[1]}\\frac{${frac_numer}}{${frac_denom}}`;
-            }
-            else { // positive term somewhere in the middle of the expression
-                if (current_term[1] === 1) current_term[1] = '';
-
-                expression_string += ('+' + `${current_term[1]}\\frac{${frac_numer}}{${frac_denom}}`); // plus sign needed
-            }
-        }
-        else if (current_term[0] === 'P') { // term is a product
-            expression_string += getCleanedProductString(current_term, outer_term_index);
-        }
-    }
-
-    return expression_string;
+        is_first_term = false;
+    });
+    
+    return expr_tex_string;
 }
