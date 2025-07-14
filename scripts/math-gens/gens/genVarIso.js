@@ -278,7 +278,10 @@ export const VIH = { // genVarIso helpers
         {
             base_form:(a,b,A,B,C,D) => VIH.buildEq([prodEx(A,a), prodEx(B)], [prodEx(C,b), prodEx(D)]),
             a:(b,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,b), prodEx(D - B)], [prodEx(A)])]),
-            b:(a,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(B - D)], [prodEx(C)])])
+            b:(a,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(B - D)], [prodEx(C)])]),
+            conditions_met:(A,B,C,D) => (
+                B !== D
+            )
         },
         {
             base_form:(a,b,c) => VIH.buildEq([prodEx(a,b,c)], [prodEx(a), prodEx(b), prodEx(c)]),
@@ -304,8 +307,8 @@ export const VIH = { // genVarIso helpers
         },
         {
             base_form:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a)], [prodEx(A)]), VIH.buildFrac([prodEx(b)], [prodEx(B)])], [prodEx(1)]),
-            a:(b,A,B) => VIH.buildEx(VIH.buildFrac([prodEx(A*B), prodEx(-A,b)], [prodEx(B)])),
-            b:(a,A,B) => VIH.buildEx(VIH.buildFrac([prodEx(A*B), prodEx(-B,a)], [prodEx(A)]))     
+            a:(b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A*B), prodEx(-A,b)], [prodEx(B)])]),
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A*B), prodEx(-B,a)], [prodEx(A)])])     
         },
         {
             base_form:(a,b,c,d,A,B,C,D) => VIH.buildEq([prodEx(A,a), prodEx(B,b)], [prodEx(C,c), prodEx(D,d)]),
@@ -317,7 +320,10 @@ export const VIH = { // genVarIso helpers
         {
             base_form:(a,b,A,B,C,D) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a), prodEx(B)], true)], [VIH.buildFrac([prodEx(C)], [prodEx(b), prodEx(D)], true)]),
             a:(b,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(A,b), prodEx(A*D - B*C)], [prodEx(C)])]),
-            b:(a,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,a), prodEx(B*C - A*D)], [prodEx(A)])])
+            b:(a,A,B,C,D) => VIH.buildEx([VIH.buildFrac([prodEx(C,a), prodEx(B*C - A*D)], [prodEx(A)])]),
+            conditions_met:(A,B,C,D) => (
+                A*D !== B*C
+            )
         },
         {
             base_form:(a,b,A,B,C) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a)]), VIH.buildFrac([prodEx(b)], [prodEx(B)])], [prodEx(C)]),
@@ -328,7 +334,10 @@ export const VIH = { // genVarIso helpers
             base_form:(a,b,c,A,B) => VIH.buildEq([prodEx(A,a), prodEx(B)], [VIH.buildFrac([prodEx(c)], [prodEx(b), prodEx(c)])]),
             a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(c)], [prodEx(A,b), prodEx(A,c)]), VIH.buildFrac([prodEx(-B)], [prodEx(A)])]),
             b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(1 - B,c), prodEx(-A,a,c)], [prodEx(A,a), prodEx(B)])]),
-            c:(a,b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a,b), prodEx(B,b)], [prodEx(1 - B), prodEx(-A,a)])])
+            c:(a,b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a,b), prodEx(B,b)], [prodEx(1 - B), prodEx(-A,a)])]),
+            conditions_met:(A,B) => (
+                B !== 1
+            )
         },
         {
             a:(b,c,A) => VIH.buildEx([VIH.buildFrac([prodEx(c), prodEx(-A)], [prodEx(b)])]),
@@ -347,7 +356,7 @@ export const VIH = { // genVarIso helpers
             c:(a,b,A) => VIH.buildEx([VIH.buildFrac([prodEx(A), prodEx(-1,a,b)], [prodEx(a)])])
         },
         {
-            base_form:(a,b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A)], [prodEx(a)]), prodEx(b)], [VIH.buildFrac([prodEx(B)], [prodEx(c)])]),
+            base_form:(a,b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(A)], [prodEx(a)]), prodEx(b)], [VIH.buildFrac([prodEx(B)], [prodEx(c)])]),
             a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,c)], [prodEx(B), prodEx(-1,b,c)])]),
             b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B)], [prodEx(c)]), VIH.buildFrac([prodEx(-A)], [prodEx(a)])]),
             c:(a,b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,a)], [prodEx(A), prodEx(a,b)])])
@@ -362,9 +371,9 @@ export const VIH = { // genVarIso helpers
         },
         {
             base_form:(a,b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a)], [prodEx(b), prodEx(c)])], [prodEx(A,a), prodEx(B)]),
-            a:(b,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(B,b), prodEx(B,c)], [prodEx(1), prodEx(-A,b), prodEx(-A,c)])]),
-            b:(a,c,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a), prodEx(-A,a,c), prodEx(-B,c)], [prodEx(A,a), prodEx(B)])]),
-            c:(a,b,A,B) => VIH.buildEq([VIH.buildFrac([prodEx(a), prodEx(-A,a,b), prodEx(-B,b)], [prodEx(A,a), prodEx(B)])])
+            a:(b,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B,b), prodEx(B,c)], [prodEx(1), prodEx(-A,b), prodEx(-A,c)])]),
+            b:(a,c,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(-A,a,c), prodEx(-B,c)], [prodEx(A,a), prodEx(B)])]),
+            c:(a,b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a), prodEx(-A,a,b), prodEx(-B,b)], [prodEx(A,a), prodEx(B)])])
         },
         {
             base_form:(a,b,c,A) => VIH.buildEq([prodEx(A,a)], [prodEx(a,b), prodEx(b,c)]),
@@ -384,7 +393,10 @@ export const VIH = { // genVarIso helpers
             a:(b,c,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(b,c)], [prodEx(B - A,c), prodEx(d)])]),
             b:(a,c,d,A,B) => VIH.buildEx([prodEx(B - A,a), VIH.buildFrac([prodEx(a,d)], [prodEx(c)])]),
             c:(a,b,d,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a,d)], [prodEx(A - B,a), prodEx(b)])]),
-            d:(a,b,c,A,B) => VIH.buildEx([prodEx(A - B,c), VIH.buildFrac([prodEx(b,c)], [prodEx(a)])])
+            d:(a,b,c,A,B) => VIH.buildEx([prodEx(A - B,c), VIH.buildFrac([prodEx(b,c)], [prodEx(a)])]),
+            conditions_met:(A,B) => (
+                A !== B
+            )
         },
         {
             base_form:(a,b,c,d) => VIH.buildEq([prodEx(a), prodEx(b,c), prodEx(c,d)], [prodEx(d)]),
