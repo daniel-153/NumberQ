@@ -67,8 +67,8 @@ export async function beginTestLoop(handler_file_name, end_on_failed_test = true
 function handleFailedTest(test_data_obj, result_data_obj) {
     console.log(`
         Test ${status.number_of_tests} with ${status.handler_file_name} failed:
-        Test Data: ${JSON.stringify(test_data_obj)},
-        Test Result: ${JSON.stringify(result_data_obj)}
+        Test Data: ${JSON.stringify(test_data_obj, null, 2)},
+        Test Result: ${JSON.stringify(result_data_obj, null, 2)}
     `);
 }
 
