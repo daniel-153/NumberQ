@@ -3,7 +3,7 @@ import * as SH from '../helpers/settings-helpers.js';
 import { sumEx, prodEx, fracEx, randomizeSumExTermOrder, simplifiedExpressionString } from '../helpers/polynom-helpers.js';
 
 export function validateSettings(form_obj, error_locations) {
-
+    
 }
 
 export const VIH = { // genVarIso helpers
@@ -136,13 +136,13 @@ export const VIH = { // genVarIso helpers
             a:(b,c,d,e) => `\\frac{${b} + ${c} + ${d}}{${e}}`,
             b:(a,c,d,e) => `${a}${e} - ${c} - ${d}`,
             c:(a,b,d,e) => `${a}${e} - ${b} - ${d}`,
-            d:(a,b,c,e) => `${b} + ${c} - ${a}${e}`,
+            d:(a,b,c,e) => `${a}${e} - ${b} - ${c}`,
             e:(a,b,c,d) => `\\frac{${b} + ${c} + ${d}}{${a}}`
         },
         {
             base_form:(a,b,c,d) => `\\frac{${a}}{${a} + ${c}}=\\frac{${b}}{${c} + ${d}}`,
             a:(b,c,d) => `\\frac{${b}${c}}{${c} + ${d} - ${b}}`,
-            b:(a,c,d) => `\\frac{${a}${c} + ${a}${d}}{${a}${c}}`,
+            b:(a,c,d) => `\\frac{${a}${c} + ${a}${d}}{${a} + ${c}}`,
             c:(a,b,d) => `\\frac{${a}${b} - ${a}${d}}{${a} - ${b}}`,
             d:(a,b,c) => `\\frac{${a}${b} + ${b}${c} - ${a}${c}}{${a}}`
         },
@@ -172,7 +172,7 @@ export const VIH = { // genVarIso helpers
         {
             base_form:(a,b,c,d) => `${a}${b} + ${a}${c}=${b}${c} + ${b}${d}`,
             a:(b,c,d) => `\\frac{${b}${c} + ${b}${d}}{${b} + ${c}}`,
-            b:(a,c,d) => `\\frac{${a}${d} - ${a}${c}}{${a} - ${c}}`,
+            b:(a,c,d) => `\\frac{${a}${c}}{${c} + ${d} - ${a}}`,
             c:(a,b,d) => `\\frac{${b}${d} - ${a}${b}}{${a} - ${b}}`,
             d:(a,b,c) => `\\frac{${a}${b} + ${a}${c} - ${b}${c}}{${b}}`
         },
@@ -233,7 +233,7 @@ export const VIH = { // genVarIso helpers
         {
             base_form:(a,b,c,d,e) => `\\frac{${a}${d}}{${b}${d} + ${c}}=\\frac{${e}}{${c}}`,
             a:(b,c,d,e) => `\\frac{${b}${d}${e} + ${c}${e}}{${c}${d}}`,
-            b:(a,c,d,e) => `\\frac{${a}${c}${d}}{$${d}${e}} - \\frac{${c}}{${d}}`,
+            b:(a,c,d,e) => `\\frac{${a}${c}${d}}{${d}${e}} - \\frac{${c}}{${d}}`,
             c:(a,b,d,e) => `\\frac{${b}${d}${e}}{${a}${d} - ${e}}`,
             d:(a,b,c,e) => `\\frac{${c}${e}}{${a}${c} - ${b}${e}}`,
             e:(a,b,c,d) => `\\frac{${a}${c}${d}}{${b}${d} + ${c}}`
@@ -249,13 +249,13 @@ export const VIH = { // genVarIso helpers
         {
             a:(b,c,d,e) => `\\frac{${b}${c} + ${c}${d}}{${e} + ${c}${d}}`,
             b:(a,c,d,e) => `\\frac{${a}${e} + ${a}${c}${d} - ${c}${d}}{${c}}`,
-            c:(a,b,d,e) => `\\frac{${a}${e}}{${b} + ${d} + ${a}${d}}`,
+            c:(a,b,d,e) => `\\frac{${a}${e}}{${b} + ${d} - ${a}${d}}`,
             d:(a,b,c,e) => `\\frac{${b}${c} - ${a}${e}}{${a}${c} - ${c}}`,
             e:(a,b,c,d) => `\\frac{${b}${c} + ${c}${d} - ${a}${c}${d}}{${a}}`
         }
     ],
     numerical_random_forms: [
-        {
+        { 
             base_form:(a,b,A,B,C) => VIH.buildEq([prodEx(A,a), prodEx(B,b)], [prodEx(C)]),
             a:(b,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(C), prodEx(-B,b)], [prodEx(A)])]),
             b:(a,A,B,C) => VIH.buildEx([VIH.buildFrac([prodEx(C), prodEx(-A,a)], [prodEx(B)])])
@@ -267,7 +267,7 @@ export const VIH = { // genVarIso helpers
         {
             base_form:(a,b,A,B) => VIH.buildEq([prodEx(A,a)], [prodEx(a,b), prodEx(B)]),
             a:(b,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(B)], [prodEx(A), prodEx(-1,b)])]),
-            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(a,A), prodEx(-B)], [prodEx(a)])])
+            b:(a,A,B) => VIH.buildEx([VIH.buildFrac([prodEx(A,a), prodEx(-B)], [prodEx(a)])])
         },
         {
             base_form:(a,b,c,A,B,C) => VIH.buildEq([prodEx(a), prodEx(A)], [prodEx(B,b), prodEx(C,c)]),
@@ -595,7 +595,7 @@ export const VIH = { // genVarIso helpers
             preset_letter_mapping: ['A','r'],
             base_form: 'a',
             a:(b) => `\\pi ${b}^{2}`,
-            b:(a) => `\\frac{${a}}{\\pi}`,
+            b:(a) => `\\sqrt{\\frac{${a}}{\\pi}}`,
             exclusion_tags: ['numerical_coefs', 'contains_exponents', 'sign_restrictions'],
             non_negative_vars: ['b']
         },
