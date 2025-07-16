@@ -850,8 +850,6 @@ export function fracExToTeX(frac_ex, is_first_term = true) { // assumes the frac
 }
 
 export function simplifiedExpressionString(outer_sum_expression) {
-    console.log(JSON.parse(JSON.stringify(outer_sum_expression)))
-    
     outer_sum_expression = JSON.parse(JSON.stringify(outer_sum_expression));
     outer_sum_expression.shift(); // remove the 'S' indicating the sum string ['S',[...],[...],...]
 
