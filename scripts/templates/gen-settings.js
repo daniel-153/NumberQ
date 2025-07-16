@@ -886,3 +886,89 @@ export const sico_labels = {
     tooltip: "How should the triangle sides and vertices be labeled?",
     prelocked: true
 };
+
+export const var_iso_var_letters = {
+    type: 'radio_buttons',
+    display_name: 'Variable Letters',
+    radio_buttons: [
+        ['lower_rand_progress', 'Lowercase Progression'],
+        ['upper_rand_progess', 'Uppercase Progression'],
+        ['rand_lower_except','Random Lowercase <br> (excl. e,i,l,o,s,z)'],
+        ['rand_upper_except','Random Uppercase <br> (excl. I,O,S,Z)'],
+        ['rand_any', 'Random (any letter)'],
+        ['alpha_lower', 'Lowercase Alphabetical'],
+        ['alpha_upper', 'Uppercase Alphabetical']
+    ], 
+    tooltip: "How should the letters that represent the unknowns be picked?",
+    prelocked: true
+};
+
+export const var_iso_match_form = {
+    type: 'radio_buttons',
+    display_name: 'Keep Known Equation Letters',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should algebra, geometry, physics, and chemistry equations keep their typical letters, or be replaced with the letters required by other settings?",
+    prelocked: true
+};
+
+export const var_iso_solving_var = {
+    type: 'radio_buttons',
+    display_name: 'Letter To Solve For',
+    radio_buttons: [
+        ['any','Any Letter'],
+        ['always_x','Always x']
+    ], 
+    tooltip: "Should the letter to solve for be random, or always be x?",
+    prelocked: true
+};
+
+export const var_iso_num_vars = {
+    type: 'radio_buttons',
+    display_name: 'Number of Variables',
+    radio_buttons: [
+        ['random','Random'],
+        ['two_or_three','2 or 3'],
+        ['four_or_five_plus', '4 or 5+']
+    ], 
+    tooltip: "How many variables should the equations have?"
+};
+
+export const var_iso_allow_exponents = {
+    type: 'radio_buttons',
+    display_name: 'Allow Exponents',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should equations with exponents (like V=s³) be allowed?",
+    prelocked: true
+};
+
+export const var_iso_allow_sign_rest = {
+    type: 'radio_buttons',
+    display_name: 'Allow Sign Restrictions',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should equations with sign restrictions (like 'Solve A=s² for s&#8805;0') be allowed?",
+    prelocked: true
+};
+
+export const var_iso_eq_type = {
+    type: 'radio_buttons',
+    display_name: 'Equation Type',
+    radio_buttons: [
+        ['random','Random (any type)'],
+        ['pure_var_random_forms','Random Without Coefficients'],
+        ['numerical_random_forms', 'Random With Coefficients'],
+        ['algebra_forms', 'Algebra Equations'],
+        ['geometry_forms', 'Geometry Equations'],
+        ['physics_forms', 'Physics Equations'],
+        ['chemistry_forms', 'Chemistry Equations']
+    ], 
+    tooltip: "What type of equations should be used? (random forms like ab+c=d, or ones from specific topics)?"
+};
