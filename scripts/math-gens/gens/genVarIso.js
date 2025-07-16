@@ -1,9 +1,21 @@
 import * as H from '../helpers/gen-helpers.js';
-import * as SH from '../helpers/settings-helpers.js';
 import { sumEx, prodEx, fracEx, randomizeSumExTermOrder, simplifiedExpressionString } from '../helpers/polynom-helpers.js';
 
 export function validateSettings(form_obj, error_locations) {
-    
+    // if the var to solve for is 'always x', but match form is 'yes' and the eq form is potentially a topic form, switch always_x to any
+    if (
+        form_obj.var_iso_solving_var === 'always_x' &&
+        form_obj.var_iso_match_form === 'yes' &&
+        form_obj.var_iso_eq_type !== 'pure_var_random' &&
+        form_obj.var_iso_eq_type !== 'numerical_random'
+    ) {
+        form_obj.var_iso_solving_var = 'any';
+    }
+
+    // if there are a restrictions on the number of variables, open up the eq types to all forms (some forms have very little of 2-3 letter forms)
+    if (form_obj.var_iso_num_vars !== 'random') {
+        form_obj.var_iso_eq_type = 'random';
+    }
 }
 
 export const VIH = { // genVarIso helpers
@@ -903,27 +915,433 @@ export const VIH = { // genVarIso helpers
             d:(a,b,c,e) => `\\frac{${b}${c}}{${a}${e}}`,
             e:(a,b,c,d) => `\\frac{${b}${c}}{${a}${d}}`
         }
-    ]
+    ],
+    getNumberOfVars: function(eq_form) { // assumes vars is [a,z]
+        let num_vars;
+
+        for (let ascii_int = 122; ascii_int >= 97; ascii_int--) {
+            if (eq_form[String.fromCharCode(ascii_int)] === undefined) continue;
+            else {
+                num_vars = (ascii_int - 97) + 1;
+                break;
+            }
+        }
+
+        return num_vars;
+    },
+    pickRandEqTopic: function() { // get a random topic from the (2 rand forms + 4 topic forms)
+        const topic_proportions = {}; // what proportional of all the equations each topic takes up (like chemistry: 7/112)
+        let start_form_number = 1;
+        ['pure_var_random_forms', 'numerical_random_forms', 'algebra_forms', 'geometry_forms', 'physics_forms', 'chemistry_forms'].forEach(form_array_name => {
+            topic_proportions[form_array_name] = [start_form_number, start_form_number + VIH[form_array_name].length - 1];
+            start_form_number += VIH[form_array_name].length;
+        }); // example -> pure_var: [1,30], alg: [31,42], geo: [43,50], ...
+
+        // randomly select a topic while maintaining size representation fairness
+        const last_form_number = start_form_number - 1;
+        const rand_form_number = H.randInt(1, last_form_number);
+
+        // determine which topic the rand number landed on
+        let selected_topic;
+        for (const [topic_name, topic_proportion_arr] of Object.entries(topic_proportions)) {
+            if (rand_form_number >= topic_proportion_arr[0] && rand_form_number <= topic_proportion_arr[1]) {
+                selected_topic = topic_name;
+                break;
+            }
+        }
+
+        return selected_topic;
+    },
+    getRandEqForm: function(settings) {
+        // first, narrow down the eq-types to just one form array (random, algebra, geometry, etc)
+        let form_array;
+        let chosen_topic;
+        if (settings.var_iso_eq_type === 'random') {
+            chosen_topic = VIH.pickRandEqTopic();
+            form_array = VIH[chosen_topic];
+        }
+        else {
+            chosen_topic = settings.var_iso_eq_type;
+            form_array = VIH[chosen_topic];
+        }
+
+        // next, narrow down that form array to only equations that meet the settings requirements
+        let numVarsIsValid;
+        if (settings.var_iso_num_vars === 'random') {
+            numVarsIsValid = () => true;
+        }
+        else if (settings.var_iso_num_vars === 'two_or_three') {
+            numVarsIsValid = (eq_form) => {
+                const num_vars = VIH.getNumberOfVars(eq_form);
+                return (num_vars === 2 || num_vars === 3);
+            };
+        }
+        else if (settings.var_iso_num_vars === 'four_or_five_plus') {
+            numVarsIsValid = (eq_form) => {
+                const num_vars = VIH.getNumberOfVars(eq_form);
+                return (num_vars >= 4);
+            };
+        }
+
+        const otherRestictionsMet = (eq_form) => {
+            if (eq_form.exclusion_tags === undefined) return true; // no restrictions present on form
+            else if (
+                (settings.var_iso_allow_exponents === 'no' && eq_form.exclusion_tags.includes('contains_exponents')) ||
+                (settings.var_iso_allow_sign_rest === 'no' && eq_form.exclusion_tags.includes('sign_restrictions'))
+            ) {
+                return false;
+            }
+            else return true;
+        }
+
+        const valid_eq_forms = [];
+        form_array.forEach(eq_form => {
+            if (numVarsIsValid(eq_form) && otherRestictionsMet(eq_form)) valid_eq_forms.push(eq_form);
+        });
+
+        return {
+            topic: chosen_topic,
+            form: H.randFromList(valid_eq_forms)
+        };
+    },
+    getStartingAsciiIndex: function(lower_or_upper) {
+        if (lower_or_upper === 'lower') {
+            return 97;
+        }
+        else if (lower_or_upper === 'upper') {
+            return 65;
+        }
+    },
+    getAToZArray: function(lower_or_upper) {
+        const ascii_index = VIH.getStartingAsciiIndex(lower_or_upper);
+
+        const letter_array = [];
+        for (let i = ascii_index; i < ascii_index + 26; i++) {
+            letter_array.push(String.fromCharCode(i));
+        }
+
+        return letter_array;
+    },
+    getRandLetterArrWithExlcusions: function(num_letters, lower_or_upper, exlcuded_letters_array) {
+        let letter_array = VIH.getAToZArray(lower_or_upper);
+        letter_array = H.removeFromArray(exlcuded_letters_array, letter_array);
+
+        const selected_letters = [];
+        for (let i = 0; i < num_letters; i++) {
+            const rand_index = H.randInt(0, letter_array.length - 1);
+            
+            // push the selected letter, then remove it (to avoid repeats)
+            selected_letters.push(letter_array[rand_index]);
+            letter_array.splice(rand_index, 1);
+        }
+
+        H.randomizeList(selected_letters);
+        
+        return selected_letters;
+    },
+    getRandLetterArrAny: function(num_letters) {
+        const letter_array = VIH.getAToZArray('lower').concat(VIH.getAToZArray('upper'));
+
+        const selected_letters = [];
+        for (let i = 0; i < num_letters; i++) {
+            const rand_index = H.randInt(0, letter_array.length - 1);
+            
+            // push the selected letter, then remove it (to avoid repeats)
+            const current_letter = letter_array[rand_index];
+            selected_letters.push(current_letter);
+            letter_array.splice(rand_index, 1);
+
+            // make sure to also remove the upper/lower case version of the current letter (to avoid things like 'C' and 'c' in the same EQ)
+            const lower_index = letter_array.indexOf(current_letter.toLowerCase());
+            const upper_index = letter_array.indexOf(current_letter.toUpperCase());
+
+            if (lower_index !== -1) letter_array.splice(lower_index, 1);
+            else if (upper_index !== -1) letter_array.splice(upper_index, 1);
+        }
+
+        H.randomizeList(selected_letters);
+
+        return selected_letters;
+    },
+    getLetterSequenceAlphabetic: function(num_letters, lower_or_upper) {
+        const starting_ascii_index = VIH.getStartingAsciiIndex(lower_or_upper);
+
+        const letter_array = [];
+        for (let i = starting_ascii_index; i < starting_ascii_index + num_letters; i++) {
+            letter_array.push(String.fromCharCode(i))
+        }
+
+        return letter_array;
+    },
+    getRandLetterProgress: function(num_letters, lower_or_upper) {
+        const ascii_index = VIH.getStartingAsciiIndex(lower_or_upper);
+
+        const o_index = 14;
+        const z_index = 25;
+        const pre_o_limit = o_index  - num_letters; // the highest *index* below 'o' (24) that the progression can start
+        const pre_z_limit = (z_index + 1) - num_letters; // the highest *index* below 'z' (25 + 1 - z is inclusive) that the progression can start
+
+        // ensures no progression ever contains 'o' or goes past 'z'
+        const valid_starting_indices = H.integerArray(0, pre_o_limit).concat(H.integerArray(o_index + 1, pre_z_limit));
+        const chosen_starting_index = H.randFromList(valid_starting_indices);
+
+        const letter_array = [];
+        for (let i = chosen_starting_index; i < chosen_starting_index + num_letters; i++) {
+            letter_array.push(String.fromCharCode(ascii_index + i));
+        }
+
+        return letter_array;
+    },
+    getVarLetters: function(number_required, settings) {        
+        let initial_letter_array;
+        if (settings.var_iso_var_letters === 'lower_rand_progress') {
+            initial_letter_array = VIH.getRandLetterProgress(number_required, 'lower');
+        }
+        else if (settings.var_iso_var_letters === 'upper_rand_progess') {
+            initial_letter_array = VIH.getRandLetterProgress(number_required, 'upper');
+        }
+        else if (settings.var_iso_var_letters === 'rand_lower_except') {
+            initial_letter_array = VIH.getRandLetterArrWithExlcusions(number_required, 'lower', ['e','i','l','o','s','z']);
+        }
+        else if (settings.var_iso_var_letters === 'rand_upper_except') {
+            initial_letter_array = VIH.getRandLetterArrWithExlcusions(number_required, 'upper', ['I','O','S','Z']); 
+        }
+        else if (settings.var_iso_var_letters === 'rand_any') {
+            initial_letter_array = VIH.getRandLetterArrAny(number_required);
+        }
+        else if (settings.var_iso_var_letters === 'alpha_lower') {
+            initial_letter_array = VIH.getLetterSequenceAlphabetic(number_required, 'lower');
+        }
+        else if (settings.var_iso_var_letters === 'alpha_upper') {
+            initial_letter_array = VIH.getLetterSequenceAlphabetic(number_required, 'upper');
+        }
+
+        // handle the 'always_x' requirement (lowercase 'x' needs to be included in the letter array)
+        if (settings.var_iso_solving_var === 'always_x') {
+            if (initial_letter_array.includes('x')) return initial_letter_array; // no change needed (already includes 'x')
+            else { // pick an entry at a random index to overwrite to 'x'
+                const chosen_index = H.randInt(0, initial_letter_array.length - 1);
+
+                initial_letter_array[chosen_index] = 'x';
+            }
+        }
+
+        return initial_letter_array;
+    },
+    getArgIndexFromLetter: function(a_to_z_char) {
+        const a_to_z_arr = VIH.getAToZArray('lower');
+
+        return a_to_z_arr.indexOf(a_to_z_char);
+    },
+    getEqPropAsFullEqFunc: function(eq_form, prop_name) {
+        let fullFunc;
+        if (prop_name === 'base_form') {
+            if (typeof(eq_form.base_form) === 'function') { // function of all vars
+                fullFunc = eq_form.base_form;
+            }
+            else if (typeof(eq_form.base_form) === 'string') { // string in the form '{letter}-flipped'
+                const eq_letter = eq_form.base_form.split('-')[0];
+
+                const arg_index = VIH.getArgIndexFromLetter(eq_letter);
+                
+                fullFunc = function(...args) {
+                    const lhs_var = args.splice(arg_index, 1)[0];
+                    
+                    return `${eq_form[eq_letter](...args)}=${lhs_var}`; // flip the eq
+                }
+            }
+            else { // string in the form '{letter}'
+                const arg_index = VIH.getArgIndexFromLetter(eq_form.base_form);
+    
+                fullFunc = function(...args) {
+                    const lhs_var = args.splice(arg_index, 1)[0];
+                    
+                    return `${lhs_var}=${eq_form[eq_form.base_form](...args)}`;
+                }
+            }
+        }
+        else { // 'a','b','c', etc
+            const arg_index = VIH.getArgIndexFromLetter(prop_name);
+    
+            fullFunc = function(...args) {
+                const lhs_var = args.splice(arg_index, 1)[0];
+                
+                return `${lhs_var}=${eq_form[prop_name](...args)}`;
+            }
+        }
+
+        return fullFunc;
+    },
+    getRandomLetter: function(num_vars) {
+        const rand_index = H.randInt(0, num_vars - 1);
+
+        return String.fromCharCode(97 +rand_index);
+    },
+    getRandomPromptAnswerProps: function(eq_form, num_vars, has_base_form, base_form_frequency, force_solve_x = false, letter_array = null) {
+        const rand_selector = Math.random();
+        let prompt, answer;
+        if (rand_selector <= base_form_frequency && has_base_form) { // base_form_frequency*100%
+            prompt = 'base_form';
+
+            if (force_solve_x) { // must solve for the form corresponding to 'x' -> ['k','j','x','m'] | ['a','b','c','d'] -> 'c'
+                const x_index = letter_array.indexOf('x');
+
+                answer = String.fromCharCode(97 + x_index);
+            }
+            else { // can solve for any letter
+                answer = VIH.getRandomLetter(num_vars);
+            }
+        }
+        else { // prompt is an isolated letter form (1 - base_form_frequency)*100%
+            if (force_solve_x) { // prompt must not be isolated for x, and the answer must be x solved 
+                const prompt_indices = H.integerArray(0, num_vars - 1).filter(index => index !== letter_array.indexOf('x')); // anything but x
+                const chosen_prompt_index = H.randFromList(prompt_indices);
+                const answer_index = letter_array.indexOf('x');
+
+                prompt = String.fromCharCode(97 + chosen_prompt_index);
+                answer = String.fromCharCode(97 + answer_index);
+            }
+            else { // random prompt and answer (and letters)
+                const available_indices = H.integerArray(0, num_vars - 1);
+                const prompt_index = available_indices.splice(H.randInt(0, available_indices.length - 1), 1)[0]; // choose then remove a random index
+                const answer_index = available_indices[H.randInt(0, available_indices.length - 1)]; // choose from the remaining indices
+                prompt = String.fromCharCode(97 + prompt_index);
+                answer = String.fromCharCode(97 + answer_index);
+            }
+        }
+
+        return {
+            prompt,
+            answer
+        };
+    },
+    appendRandsToArray: function(arr, num_entries_to_add, rand_limit) {
+        for (let i = 0; i < num_entries_to_add; i++) {
+            arr.push((-1)**(H.randInt(0, 1)) * H.randInt(1, rand_limit));
+        }
+    },
+    getNumberOfCoefs: function(eq_form) {
+        const num_symbols = VIH.getNumberOfVars(eq_form);
+        return (eq_form['a'].length + 1) - num_symbols; // (total_num_args - num_symbol_args) = num_coef_args
+    }
 };
 export default function genVarIso(settings) {    
+    // first, pick a random equation form based on settings
+    const new_eq_form_obj = VIH.getRandEqForm(settings);
+    const eq_form = new_eq_form_obj.form;
+    const eq_topic = new_eq_form_obj.topic;
+    const has_base_form = (eq_form.base_form === undefined)? false : true;
+    const num_vars = VIH.getNumberOfVars(eq_form);
+    
+    // constants for random selection
+    const base_form_frequency = 0.35;
+    const coef_size = 7;
 
+    // preliminary (can be overwritten in specific topic equations)
+    let var_letter_array = VIH.getVarLetters(num_vars, settings);
+    
+    let new_prompt_and_answer;
+    if (settings.var_iso_solving_var === 'any') {
+        new_prompt_and_answer = VIH.getRandomPromptAnswerProps(eq_form, num_vars, has_base_form, base_form_frequency);
+    }
+    else if (settings.var_iso_solving_var === 'always_x') {
+        new_prompt_and_answer = VIH.getRandomPromptAnswerProps(eq_form, num_vars, has_base_form, base_form_frequency, true, var_letter_array);
+    }
+    const prompt_func = VIH.getEqPropAsFullEqFunc(eq_form, new_prompt_and_answer.prompt);
+    const answer_func = VIH.getEqPropAsFullEqFunc(eq_form, new_prompt_and_answer.answer);
+
+    let eq_args; // args to be supplied to eq_form[props above^]
+    if (eq_topic === 'pure_var_random_forms') {
+        eq_args = [...var_letter_array];
+    }
+    else if (eq_topic === 'numerical_random_forms') {
+        eq_args = [...var_letter_array]; // just symbols at this point
+        VIH.appendRandsToArray(eq_args, VIH.getNumberOfCoefs(eq_form), coef_size); // add the random coefs
+    }
+    else { // specific topic (algebra, geometry, etc)
+        if (settings.var_iso_match_form === 'yes') { // use the vars from the topic form (like y,m,x,b in y=mx+b)
+            var_letter_array = [...eq_form.preset_letter_mapping];
+            eq_args = [...var_letter_array];
+        }
+        else if (settings.var_iso_match_form === 'no') { // use the vars necessitated by the other settings
+            eq_args = [...var_letter_array];
+        }
+    }
+
+    // build the prompt and answer strings
+    const prompt_eq = prompt_func(...eq_args);
+    const answer_eq = answer_func(...eq_args);
+
+    const letter_to_solve = var_letter_array[VIH.getLetterSequenceAlphabetic(num_vars, 'lower').indexOf(new_prompt_and_answer.answer)];
+
+    // determine whether the chosen variable to solve for is sign restricted (must be >= 0)
+    let is_sign_restricted = false;
+    if (
+        eq_form.exclusion_tags !== undefined && 
+        eq_form.exclusion_tags.includes['sign_restrictions'] &&
+        eq_form.non_negative_vars.includes[new_prompt_and_answer.answer]
+    ) {
+        is_sign_restricted = true;
+    }
+
+    let sign_restriction = '';
+    if (is_sign_restricted) sign_restriction = '\\geq 0';
+
+
+    const prompt_string = `\\text{Solve for}~${letter_to_solve}${sign_restriction}\\text{:}~~${prompt_eq}`;
+    
     return {
-        
+        question: prompt_string,
+        answer: answer_eq
     };
 }
 
 export const settings_fields = [
-    
+    'var_iso_var_letters',
+    'var_iso_eq_type',
+    'var_iso_num_vars',
+    'var_iso_solving_var',
+    'var_iso_match_form',
+    'var_iso_allow_exponents',
+    'var_iso_allow_sign_rest'
 ];
+
+// export function get_presets() {
+//     return {
+//         var_iso_var_letters: 'rand_lower_except',
+//         var_iso_eq_type: 'random',
+//         var_iso_num_vars: 'random',
+//         var_iso_solving_var: 'any',
+//         var_iso_match_form: 'yes',
+//         var_iso_allow_exponents: 'yes',
+//         var_iso_allow_sign_rest: 'yes'
+//     };
+// }
 
 export function get_presets() {
     return {
-        
+        var_iso_var_letters: 'rand_lower_except',
+        var_iso_eq_type: 'pure_var_random_forms',
+        var_iso_num_vars: 'random',
+        var_iso_solving_var: 'any',
+        var_iso_match_form: 'yes',
+        var_iso_allow_exponents: 'yes',
+        var_iso_allow_sign_rest: 'yes'
     };
 }
 
 export function get_rand_settings() {
     return {
-        
+        var_iso_var_letters: '__random__',
+        var_iso_eq_type: '__random__',
+        var_iso_num_vars: '__random__',
+        var_iso_solving_var: '__random__',
+        var_iso_match_form: '__random__',
+        var_iso_allow_exponents: '__random__',
+        var_iso_allow_sign_rest: '__random__'
     }; 
 }
+
+export const size_adjustments = {
+    width: 1.12
+};
