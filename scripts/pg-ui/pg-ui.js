@@ -54,8 +54,14 @@ export async function generate(func_name, display_name = '') {
     PH.updateRandomizeAll(pg_ui_state, 'randomize-all-checkbox'); // update randomize all to true if it was checked (false if not)
 
     PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into current_settings
-
-    PH.getGenOutput(pg_ui_state, await pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
+    
+    try {
+        PH.getGenOutput(pg_ui_state, await pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
+    } catch (error) {
+        console.error('Failed to generate: ', error);
+        PH.endGeneration(pg_ui_state);
+        return;
+    }
 
     PH.updatePGQABoxes(pg_ui_state.question_obj, pg_ui_state.sizes, pg_ui_state.question_type, pg_ui_state.answer_type);
 
@@ -66,7 +72,5 @@ export async function generate(func_name, display_name = '') {
         FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form'); 
     }
     
-    pg_ui_state.first_pg_ui_open = false; // no longer the first generation
-    pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
-    pg_ui_state.is_currently_generating = false;
+    PH.endGeneration(pg_ui_state); // first_pg_ui_open, first_with_current_gen, is_currently_generating -> false
 }
