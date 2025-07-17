@@ -6,8 +6,8 @@ export function validateSettings(form_obj, error_locations) {
     if (
         form_obj.var_iso_solving_var === 'always_x' &&
         form_obj.var_iso_match_form === 'yes' &&
-        form_obj.var_iso_eq_type !== 'pure_var_random' &&
-        form_obj.var_iso_eq_type !== 'numerical_random'
+        form_obj.var_iso_eq_type !== 'pure_var_random_forms' &&
+        form_obj.var_iso_eq_type !== 'numerical_random_forms'
     ) {
         form_obj.var_iso_solving_var = 'any';
     }
@@ -227,7 +227,7 @@ export const VIH = { // genVarIso helpers
             e:(a,b,c,d) => `\\frac{${a} + ${b} + ${c}}{${d}}`
         },
         {
-            base_form:(a,b,c,d,e) => `\\frac{${a} + ${b}}{c}=\\frac{${d}}{${c} + ${e}}`,
+            base_form:(a,b,c,d,e) => `\\frac{${a} + ${b}}{${c}}=\\frac{${d}}{${c} + ${e}}`,
             a:(b,c,d,e) => `\\frac{${c}${d}}{${c} + ${e}} - ${b}`,
             b:(a,c,d,e) => `\\frac{${c}${d}}{${c} + ${e}} - ${a}`,
             c:(a,b,d,e) => `\\frac{${a}${e} + ${b}${e}}{${d} - ${a} - ${b}}`,
@@ -772,7 +772,7 @@ export const VIH = { // genVarIso helpers
             non_negative_vars: ['b']
         },
         {
-            preset_letter_mapping: ['F_{G}','G','m','M','r'],
+            preset_letter_mapping: ['F_{\\small{G}}','G','m','M','r'],
             base_form: 'a',
             a:(b,c,d,e) => `\\frac{${b}${c}${d}}{${e}^{2}}`,
             b:(a,c,d,e) => `\\frac{${a}${e}^{2}}{${c}${d}}`,
@@ -783,7 +783,7 @@ export const VIH = { // genVarIso helpers
             non_negative_vars: ['e']
         },
         {
-            preset_letter_mapping: ['D','C','\\rho','A','v'],
+            preset_letter_mapping: ['D','C','\\rho ','A','v'],
             base_form: 'a',
             a:(b,c,d,e) => `\\frac{1}{2}${b}${c}${d}${e}^{2}`,
             b:(a,c,d,e) => `\\frac{2${a}}{${c}${d}${e}^{2}}`,
@@ -812,7 +812,7 @@ export const VIH = { // genVarIso helpers
             exclusion_tags: ['numerical_coefs','subscripts']
         },
         {
-            preset_letter_mapping: ['U_{G}','G','m','M','r'],
+            preset_letter_mapping: ['U_{\\small{G}}','G','m','M','r'],
             base_form: 'a',
             a:(b,c,d,e) => `-\\frac{${b}${c}${d}}{${e}}`,
             b:(a,c,d,e) => `-\\frac{${a}${e}}{${c}${d}}`,
@@ -822,7 +822,7 @@ export const VIH = { // genVarIso helpers
             exclusion_tags: ['subscripts']
         },
         {
-            preset_letter_mapping: ['U_{S}','k','x'],
+            preset_letter_mapping: ['U_{\\small{S}}','k','x'],
             base_form: 'a',
             a:(b,c) => `\\frac{${b}${c}^{2}}{2}`,
             b:(a,c) => `\\frac{2${a}}{${c}^{2}}`,
@@ -831,7 +831,7 @@ export const VIH = { // genVarIso helpers
             non_negative_vars: ['c']
         },
         {
-            preset_letter_mapping: ['\\omega','k','m'],
+            preset_letter_mapping: ['\\omega ','k','m'],
             base_form: 'a',
             a:(b,c) => `\\sqrt{\\frac{${b}}{${c}}}`,
             b:(a,c) => `${c}${a}^{2}`,
@@ -840,7 +840,7 @@ export const VIH = { // genVarIso helpers
             non_negative_vars: 'a'
         },
         {
-            preset_letter_mapping: ['\\omega','m','g','d','I'],
+            preset_letter_mapping: ['\\omega ','m','g','d','I'],
             base_form: 'a',
             a:(b,c,d,e) => `\\sqrt{\\frac{${b}${c}${d}}{${e}}}`,
             b:(a,c,d,e) => `\\frac{${e}${a}^{2}}{${c}${d}}`,
@@ -907,7 +907,7 @@ export const VIH = { // genVarIso helpers
             exclusion_tags: ['subscripts']
         },
         {
-            preset_letter_mapping: ['\\rho','P','M','R','T'],
+            preset_letter_mapping: ['\\rho ','P','M','R','T'],
             base_form: 'a',
             a:(b,c,d,e) => `\\frac{${b}${c}}{${d}${e}}`,
             b:(a,c,d,e) => `\\frac{${a}${d}${e}}{${c}}`,
@@ -1040,7 +1040,7 @@ export const VIH = { // genVarIso helpers
         return selected_letters;
     },
     getRandLetterArrAny: function(num_letters) {
-        const letter_array = VIH.getAToZArray('lower').concat(VIH.getAToZArray('upper'));
+        const letter_array = VIH.getAToZArray('lower').concat(VIH.getAToZArray('upper')).filter(letter => letter !== 'o' && letter !== 'O');
 
         const selected_letters = [];
         for (let i = 0; i < num_letters; i++) {
@@ -1118,12 +1118,16 @@ export const VIH = { // genVarIso helpers
 
         // handle the 'always_x' requirement (lowercase 'x' needs to be included in the letter array)
         if (settings.var_iso_solving_var === 'always_x') {
-            if (initial_letter_array.includes('x')) return initial_letter_array; // no change needed (already includes 'x')
-            else { // pick an entry at a random index to overwrite to 'x'
-                const chosen_index = H.randInt(0, initial_letter_array.length - 1);
+            if (!initial_letter_array.includes('x')) { // change is needed (letter array doesn't already include 'x')
+                if (initial_letter_array.includes('X')) { // includes an uppercase 'X' (change that to lowercase 'x' to avoid having 'x' and 'X' in the same eq)
+                    initial_letter_array[initial_letter_array.indexOf('X')] = 'x';
+                }
+                else { // doesn't include 'x' or 'X' -> pick an entry at a random index to overwrite to 'x'
+                    const chosen_index = H.randInt(0, initial_letter_array.length - 1);
 
-                initial_letter_array[chosen_index] = 'x';
-            }
+                    initial_letter_array[chosen_index] = 'x';
+                }
+            }  
         }
 
         return initial_letter_array;
@@ -1139,7 +1143,7 @@ export const VIH = { // genVarIso helpers
             if (typeof(eq_form.base_form) === 'function') { // function of all vars
                 fullFunc = eq_form.base_form;
             }
-            else if (typeof(eq_form.base_form) === 'string') { // string in the form '{letter}-flipped'
+            else if (typeof(eq_form.base_form) === 'string' && eq_form.base_form.includes('flipped')) { // string in the form '{letter}-flipped'
                 const eq_letter = eq_form.base_form.split('-')[0];
 
                 const arg_index = VIH.getArgIndexFromLetter(eq_letter);
@@ -1150,7 +1154,7 @@ export const VIH = { // genVarIso helpers
                     return `${eq_form[eq_letter](...args)}=${lhs_var}`; // flip the eq
                 }
             }
-            else { // string in the form '{letter}'
+            else if (typeof(eq_form.base_form) === 'string') { // string in the form '{letter}'
                 const arg_index = VIH.getArgIndexFromLetter(eq_form.base_form);
     
                 fullFunc = function(...args) {
@@ -1177,34 +1181,94 @@ export const VIH = { // genVarIso helpers
 
         return String.fromCharCode(97 +rand_index);
     },
+    allVarsAreSolvable: function(eq_form) {
+        const num_vars = VIH.getNumberOfVars(eq_form);
+        const props = VIH.getLetterSequenceAlphabetic(num_vars, 'lower');
+
+        // check if all the letters from 'a' to Char(num_vars) exist on the form (if not, *not* all vars are solvable - have solutions)
+        let all_props_exist = true;
+        for (let i = 0; i < props.length; i++) {
+            const prop_letter = props[i];
+            if (eq_form[prop_letter] === undefined) {
+                all_props_exist = false;
+                break;
+            }
+        }
+
+        return all_props_exist;
+    },
+    getBaseFormLetter: function(eq_form) {
+        if (eq_form.base_form === undefined || typeof(eq_form.base_form) === 'function') return;
+        else if (eq_form.base_form.includes('flipped')) return eq_form.base_form.split('-')[0]; // 'a-flipped'
+        else return eq_form.base_form; // 'a'
+    },
     getRandomPromptAnswerProps: function(eq_form, num_vars, has_base_form, base_form_frequency, force_solve_x = false, letter_array = null) {
+        // first, determine whether the prompt will be a base form or not (a letter form) (this info is needed for the following handling)
         const rand_selector = Math.random();
+        const prompt_is_base_form = ((rand_selector <= base_form_frequency && has_base_form) || eq_form.force_base_form === true);
+        
+        // solvable indices in the letter array (ex: [1,3,4,6] -> 'a','c','d','f' solvable, 'b','e' not solvable -- in [a,b,c,d,e,f])
+        let solvable_indices = H.integerArray(0, num_vars - 1); // starts off assuming all are solvable, but can change with the handling below
+
+        // this is needed because it's possible that not all vars are solvable on the current form (it has non_simple_solvable_vars)
+        const all_vars_solvable = VIH.allVarsAreSolvable(eq_form);
+        if (!all_vars_solvable) { // eq form has non_simple_solvable_vars
+            const non_solvable_indices = eq_form.non_simple_solvable_vars.map(a_to_z_char => VIH.getArgIndexFromLetter(a_to_z_char));
+            solvable_indices = solvable_indices.filter(
+                index => !non_solvable_indices.includes(index)
+            );
+        }
+
+        // promptable indices are a snapshot of solvable indices at this point
+        let promptable_indices = JSON.parse(JSON.stringify(solvable_indices)); // any letter that is listed (all except the non_simple_solvables, which were filtered above)
+
+        // this is needed for base forms like 'a' and 'a-flipped' to ensure that variable ('a' in this example) isn't solved for (resulting in a 0-step problem)
+        const base_form_is_letter = (typeof(eq_form.base_form) === 'string');
+        if (base_form_is_letter && prompt_is_base_form) { // 'a' or 'a-flipped' case detected
+            const base_form_letter_index = VIH.getArgIndexFromLetter(VIH.getBaseFormLetter(eq_form));
+            solvable_indices = solvable_indices.filter(index => index !== base_form_letter_index); // remove that index from the list of solvable ones
+        }
+
+        // this ensures that if 'x' is being force solved, it's position in the letter array is valid (solvable), or moved to be valid
+        let x_index;
+        if (force_solve_x) { // need to handle + potentially change the index of 'x'
+            x_index = letter_array.indexOf('x');
+
+            if (!solvable_indices.includes(x_index)) { // x is in a *non* solvable position (needs to be moved)
+                // swap x with a random index that is solvable
+                const rand_solvable_index = H.randFromList(solvable_indices);
+
+                const temp = letter_array[x_index];
+                letter_array[x_index] = letter_array[rand_solvable_index];
+                letter_array[rand_solvable_index] = temp;
+
+                x_index = rand_solvable_index;
+            }
+        }
+
         let prompt, answer;
-        if (rand_selector <= base_form_frequency && has_base_form) { // base_form_frequency*100%
+        if (prompt_is_base_form) { // base_form_frequency*100%
             prompt = 'base_form';
 
             if (force_solve_x) { // must solve for the form corresponding to 'x' -> ['k','j','x','m'] | ['a','b','c','d'] -> 'c'
-                const x_index = letter_array.indexOf('x');
-
                 answer = String.fromCharCode(97 + x_index);
             }
             else { // can solve for any letter
-                answer = VIH.getRandomLetter(num_vars);
+                answer = String.fromCharCode(97 + H.randFromList(solvable_indices));
             }
         }
         else { // prompt is an isolated letter form (1 - base_form_frequency)*100%
             if (force_solve_x) { // prompt must not be isolated for x, and the answer must be x solved 
-                const prompt_indices = H.integerArray(0, num_vars - 1).filter(index => index !== letter_array.indexOf('x')); // anything but x
-                const chosen_prompt_index = H.randFromList(prompt_indices);
-                const answer_index = letter_array.indexOf('x');
-
-                prompt = String.fromCharCode(97 + chosen_prompt_index);
-                answer = String.fromCharCode(97 + answer_index);
+                promptable_indices = promptable_indices.filter(index => index !== x_index); // anything but x
+                const prompt_index = H.randFromList(promptable_indices);
+                
+                prompt = String.fromCharCode(97 + prompt_index);
+                answer = String.fromCharCode(97 + x_index);
             }
             else { // random prompt and answer (and letters)
-                const available_indices = H.integerArray(0, num_vars - 1);
-                const prompt_index = available_indices.splice(H.randInt(0, available_indices.length - 1), 1)[0]; // choose then remove a random index
-                const answer_index = available_indices[H.randInt(0, available_indices.length - 1)]; // choose from the remaining indices
+                const prompt_index = H.randFromList(promptable_indices);
+                solvable_indices = solvable_indices.filter(index => index !== prompt_index);
+                const answer_index = H.randFromList(solvable_indices);
                 prompt = String.fromCharCode(97 + prompt_index);
                 answer = String.fromCharCode(97 + answer_index);
             }
@@ -1234,7 +1298,7 @@ export default function genVarIso(settings) {
     const num_vars = VIH.getNumberOfVars(eq_form);
     
     // constants for random selection
-    const base_form_frequency = 0.35;
+    const base_form_frequency = 0.3;
     const coef_size = 7;
 
     // preliminary (can be overwritten in specific topic equations)
@@ -1256,7 +1320,22 @@ export default function genVarIso(settings) {
     }
     else if (eq_topic === 'numerical_random_forms') {
         eq_args = [...var_letter_array]; // just symbols at this point
-        VIH.appendRandsToArray(eq_args, VIH.getNumberOfCoefs(eq_form), coef_size); // add the random coefs
+
+        // get an array of random coefs + ensure it meets the requirements
+        const num_coefs = VIH.getNumberOfCoefs(eq_form);
+        let coef_array;
+        if (eq_form.conditions_met !== undefined) { // coefs must meet certain conditions
+            do {
+                coef_array = [];
+                VIH.appendRandsToArray(coef_array, num_coefs, coef_size); // get the random coefs
+            } while (!eq_form.conditions_met(...coef_array));
+        }
+        else { // no conditions provided
+            coef_array = [];
+            VIH.appendRandsToArray(coef_array, num_coefs, coef_size);
+        }
+        
+        eq_args = eq_args.concat(coef_array); // add the coef args onto the symbol args
     }
     else { // specific topic (algebra, geometry, etc)
         if (settings.var_iso_match_form === 'yes') { // use the vars from the topic form (like y,m,x,b in y=mx+b)
@@ -1275,11 +1354,11 @@ export default function genVarIso(settings) {
     const letter_to_solve = var_letter_array[VIH.getLetterSequenceAlphabetic(num_vars, 'lower').indexOf(new_prompt_and_answer.answer)];
 
     // determine whether the chosen variable to solve for is sign restricted (must be >= 0)
-    let is_sign_restricted = false;
+    let is_sign_restricted = false;    
     if (
         eq_form.exclusion_tags !== undefined && 
-        eq_form.exclusion_tags.includes['sign_restrictions'] &&
-        eq_form.non_negative_vars.includes[new_prompt_and_answer.answer]
+        eq_form.exclusion_tags.includes('sign_restrictions') &&
+        eq_form.non_negative_vars.includes(new_prompt_and_answer.answer)
     ) {
         is_sign_restricted = true;
     }
@@ -1288,8 +1367,8 @@ export default function genVarIso(settings) {
     if (is_sign_restricted) sign_restriction = '\\geq 0';
 
 
-    const prompt_string = `\\text{Solve for}~${letter_to_solve}${sign_restriction}\\text{:}~~${prompt_eq}`;
-    
+    const prompt_string = `{\\small \\text{Solve for}~${letter_to_solve}${sign_restriction}}\\text{:}~~${prompt_eq}`;
+
     return {
         question: prompt_string,
         answer: answer_eq
@@ -1306,22 +1385,10 @@ export const settings_fields = [
     'var_iso_allow_sign_rest'
 ];
 
-// export function get_presets() {
-//     return {
-//         var_iso_var_letters: 'rand_lower_except',
-//         var_iso_eq_type: 'random',
-//         var_iso_num_vars: 'random',
-//         var_iso_solving_var: 'any',
-//         var_iso_match_form: 'yes',
-//         var_iso_allow_exponents: 'yes',
-//         var_iso_allow_sign_rest: 'yes'
-//     };
-// }
-
 export function get_presets() {
     return {
         var_iso_var_letters: 'rand_lower_except',
-        var_iso_eq_type: 'pure_var_random_forms',
+        var_iso_eq_type: 'random',
         var_iso_num_vars: 'random',
         var_iso_solving_var: 'any',
         var_iso_match_form: 'yes',
@@ -1343,5 +1410,6 @@ export function get_rand_settings() {
 }
 
 export const size_adjustments = {
-    width: 1.12
+    width: 1.12,
+    height: 1.1
 };
