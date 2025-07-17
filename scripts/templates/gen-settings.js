@@ -899,8 +899,7 @@ export const var_iso_var_letters = {
         ['alpha_lower', 'Lowercase Alphabetical'],
         ['alpha_upper', 'Uppercase Alphabetical']
     ], 
-    tooltip: "How should the letters that represent the unknowns be picked?",
-    prelocked: true
+    tooltip: "How should the letters that represent the unknowns be picked?"
 };
 
 export const var_iso_match_form = {
