@@ -310,3 +310,9 @@ export function insertCopySaveButtons() {
     document.getElementById('Q-column').querySelector('.un-rendered-box-wrapper').insertAdjacentHTML('afterbegin', createSingleCopyButton('Q'));
     document.getElementById('A-column').querySelector('.un-rendered-box-wrapper').insertAdjacentHTML('afterbegin', createSingleCopyButton('A'));
 }
+
+export function endGeneration(pg_ui_state) {
+    pg_ui_state.first_pg_ui_open = false; // no longer the first generation
+    pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
+    pg_ui_state.is_currently_generating = false;
+}
