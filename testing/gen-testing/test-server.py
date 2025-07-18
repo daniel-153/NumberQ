@@ -3,6 +3,7 @@ import logging
 import flask
 import flask_cors
 import importlib
+import traceback
 
 # Start the flask server and enable it for all routes (that are defined below)
 app = flask.Flask(__name__)
@@ -14,73 +15,71 @@ flask_cors.CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-# variables that we need globally
-start_time = time.time()
-current_gen_name = None
-current_verifier = None
-failed_Q_list = []
-number_of_tests = 0
-number_of_fails = 0
+# info that is needed persistently
+module_state = {
+    "current_gen_name": None,
+    "current_verifier_func": None, 
+    "number_of_tests": 0,
+    "number_of_FAILED_tests": 0,
+    "failed_test_list": [],
+    "start_time": float('nan'),
+    "is_first_test": True # very first test in a sesssion (with any gen) (never goes back to true)
+}
 
-# Call recieve string when we get a POST or OPTIONS request
-@app.route('/receive-string', methods=['POST', 'OPTIONS'])  # Allow OPTIONS for a precheck that the chrome browser does
-def receive_string():
-    # handle the initial 'preflight' request (only happens at the start of a session)
-    if flask.request.method == 'OPTIONS':
-        # Explicitly allow the request with correct headers
-        response = flask.jsonify({'status': 'OK'})
-        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5500")
-        response.headers.add("Access-Control-Allow-Methods", "POST, OPTIONS")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        return response, 200  # Handle preflight request
+# handle the request from JS -> get the appropriate python verifier, and call + get result of its verify func
+@app.route('/dispatch_test', methods=['POST'])
+def dispatch_test():
+    if module_state["is_first_test"]: # set the start time on the very first test
+        module_state["start_time"] = time.time()
+    module_state["is_first_test"] = False
 
-    # handle the normal request for question verification
-    global current_gen_name, current_verifier, number_of_tests, number_of_fails 
+    request_content = flask.request.get_json()
 
-    recieved_json = flask.request.json  # Get JSON data (looks like { question, answer, settings, gen_name})
+    try: # update the verifer func if the gen changed
+        if (request_content["gen_name"] != module_state["current_gen_name"]):
+            module_state["current_gen_name"] = request_content["gen_name"]
+            module_state["current_verifier_func"] = importlib.import_module(f"gen-verifiers.ver{module_state["current_gen_name"][3:]}").verify
+    except Exception as e:
+        return flask.jsonify({"test_result": "not_performable", "error": f"could not get verifier module: {e}"})
 
-    # check if the current_gen_name needs to be set (if this is the first run or if we switched to a new gen)
-    if (current_gen_name is None or current_gen_name != recieved_json["gen_name"]): 
-        current_gen_name = recieved_json["gen_name"] # set to genAddSub, genMulDiv, etc
-        current_verifier = importlib.import_module(f"gen-verifiers.ver{current_gen_name[3:]}").verify # get the correct verify function
+    try: # call the verifier func + get its result
+        verifer_args = None
+        if (module_state["current_verifier_func"].__code__.co_argcount == 2): # verifer takes just a question and answer
+            verifer_args = [request_content["question"], request_content["answer"]]
+        elif (module_state["current_verifier_func"].__code__.co_argcount == 3): # verifier takes a question, answer, and settings
+            verifer_args = [request_content["question"], request_content["answer"], request_content["settings"]]
 
-    test_result = current_verifier(recieved_json["question"], recieved_json["answer"])
+        test_result = module_state["current_verifier_func"](*verifer_args)
+        module_state["number_of_tests"] += 1
 
-    number_of_tests += 1
-    if (test_result is not None): # answers DON'T match (and we need to log the incorrect info)
-        number_of_fails += 1
-
-        failed_Q_list.append(
-            [
-                ["question", recieved_json["question"]],
-                ["gens-answer", str(recieved_json["answer"])],
+        if (test_result is None): # successful math verification
+            return flask.jsonify({"test_result": "passed"})
+        else: # discrepency found in math
+            module_state["number_of_FAILED_tests"] += 1
+            module_state["failed_test_list"].append([
+                ["question", request_content["question"]],
+                ["gens-answer", request_content["answer"]],
                 ["sympy-answer", str(test_result)],
-                ["settings", recieved_json["settings"]], 
-                ["gen-name", current_gen_name],
-                ["_", "____________________________________________________________________________________"]
-            ]
-        )
-
-    response = flask.jsonify({"status": "processed"})  # Success response (indicate the question has been processed)
-    response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5500")
-
-    return response, 200  
-
-# if we get a GET request, call the get_status() function (this json (below) will be displayed in http://127.0.0.1:5000/status)
+                ["settings", request_content["settings"]],
+                ["gen-name", module_state["current_gen_name"]],
+                ["_", "________________________________________________________________________________"]
+            ])
+            return flask.jsonify({"test_result": "failed"})
+    except Exception as e:
+        return flask.jsonify({"test_result": "not_performable", "error": f"error inside verifier module function: {traceback.format_exc()}"})
+        
+# if we get a GET request, call the get_status() function (this json (below) will be displayed at http://127.0.0.1:5000/status)
 @app.route('/status', methods=['GET'])
 def get_status():        
-    return flask.jsonify({ 
-        "number_of_tests": number_of_tests,
-        "number_of_FAILED_tests": number_of_fails,
-        "runtime (mins)": (time.time() - start_time) / 60,
-        "failed_Q_list": failed_Q_list
+    return flask.jsonify({
+        "current_func_being_tested": module_state["current_gen_name"], 
+        "number_of_tests": module_state["number_of_tests"],
+        "number_of_FAILED_tests": module_state["number_of_FAILED_tests"],
+        "runtime (mins)": (time.time() - module_state["start_time"]) / 60,
+        "z_failed_test_list": module_state["failed_test_list"]
     })
 
 # This must be placed after all the app.route definitions
 if __name__ == '__main__':
     # Run the Flask app AFTER defining routes
     app.run(debug=True, host="127.0.0.1", port=5000)
-
-
-
-
