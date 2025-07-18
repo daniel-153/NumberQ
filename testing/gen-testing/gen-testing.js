@@ -1,353 +1,221 @@
-import * as settings_templates from '../../settings/setting_templates.js';
+import { createSettingsFields, preValidateSettings } from '../../scripts/helpers/form-helpers.js';
+import { integerArray, removeFromArray } from '../../scripts/math-gens/helpers/gen-helpers.js'; 
+import * as settings_templates_module from '../../scripts/templates/gen-settings.js';
 
-const gens = Object.fromEntries(
-    await Promise.all([
-        import('../../scripts/gen-modules/genAddSub.js').then(m => ['genAddSub', m]),
-        import('../../scripts/gen-modules/genMulDiv.js').then(m => ['genMulDiv', m]),
-        import('../../scripts/gen-modules/genLinEq.js').then(m => ['genLinEq', m]),
-        import('../../scripts/gen-modules/genFacQuad.js').then(m => ['genFacQuad', m]),
-        import('../../scripts/gen-modules/genSysEqs.js').then(m => ['genSysEqs', m]),
-        import('../../scripts/gen-modules/genSimRad.js').then(m => ['genSimRad', m]),
-        import('../../scripts/gen-modules/genTrigEx.js').then(m => ['genTrigEx', m]),
-        import('../../scripts/gen-modules/genRatEx.js').then(m => ['genRatEx', m]),
-        import('../../scripts/gen-modules/genPolArith.js').then(m => ['genPolArith', m]),
-        import('../../scripts/gen-modules/genComArith.js').then(m => ['genComArith', m])
-    ])
-);
+// quick-start template: const gen_testing = await import('http://127.0.0.1:5500/testing/gen-testing/gen-testing.js'); gen_testing.testGenerator('genAddSub', {starting_test_number: 1, max_number_of_tests: 1000, stop_on_failed_test: false});
 
-// methods to create the {name: value} pairs to make up the settings object being sent to the gen (including functionality for permutations) 
-const nameValueMakers = {
-    radio_buttons(setting_name) { // setting_name is the name of an object for a settings field from settings_templates   
-        const setting_obj = settings_templates[setting_name];
-        
-        return {
-            name: setting_name,
-            valid_input_list: setting_obj.radio_buttons.map(subarray => subarray[0]), // get an array of only the code names of the radio buttons (not the display names too)
-            current_index: 0,
-            get_current_value() {
-                return this.valid_input_list[this.current_index];
-            },
-            get_next_value() {
-                this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                return this.valid_input_list[this.current_index]; // return the code name for the current radio button 
-            }
-        };
-    },
-    check_boxes(setting_name) {
-        const setting_obj = settings_templates[setting_name];
-        
-        return {
-            name: setting_name,
-            valid_input_list: setting_obj.check_boxes.map(subarray => [subarray[0]]), // get an array of the code names for all the options (but there is one layer of nesting [[a],[b],[c]])
-            current_index: 0,
-            get_current_value() {
-                return this.valid_input_list[this.current_index];
-            },
-            get_next_value() {
-                this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                return this.valid_input_list[this.current_index]; // return the code name for the current check box (it will come in an array [name])
-            }
-        };
-    },
-    single_textbox(setting_name) {
-        const setting_obj = settings_templates[setting_name];
-        
-        function integerArray(min, max) { // helper
-            let result = [];
-            for (let i = min; i <= max; i++) {
-                result.push(i);
-            }
-            return result;
-        }
-    
-        function removeFromArray(elementsToRemove, array) { // helper
-            // Convert single number input to an array
-            if (!Array.isArray(elementsToRemove)) {
-                elementsToRemove = [elementsToRemove];
-            }
-        
-            return array.filter(item => !elementsToRemove.includes(item));
-        }
-        
-        let input_possibilities; // an array of every valid input to the textbox
-        
-        if (setting_obj.possible_values !== undefined) { // use the exhuastive list of all input possibilities if provided
-            input_possibilities = [...setting_obj.possible_values];
-        }
-        else { // otherwise create the list based on the min and max of the range & the excluded values
-            let excluded_values; // an array of invalid inputs (that would otherwise be valid because they are in the range (special cases))
-            
-            if (setting_obj.excluded_values !== undefined) { // excluded values were provided
-                excluded_values = [...setting_obj.excluded_values];
-            }
-            else excluded_values = []; // no excluded values were provided   
-    
-            // create the array of possibilities based on the range and excluded values
-            input_possibilities = removeFromArray(excluded_values, integerArray(setting_obj.range[0],setting_obj.range[1]));
-        }
-        
-        return {
-            name: setting_name,
-            valid_input_list: input_possibilities,
-            current_index: 0,
-            get_current_value() {
-                return this.valid_input_list[this.current_index];
-            },
-            get_next_value() {
-                this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
-            }
-        };
-    },
-    range_textboxes(setting_name) { // Important: creates TWO settings key-value pairs (since a 'rangeTextBoxes' is basically 2 settings fields)
-        const setting_obj = settings_templates[setting_name];
-        
-        function integerArray(min, max) { // helper
-            let result = [];
-            for (let i = min; i <= max; i++) {
-                result.push(i);
-            }
-            return result;
-        }
-        
-        let [ box_1_ID, box_2_ID ] = setting_obj.code_names; // get the names of the first and second textbox (strings)
-    
-        return [
-            {
-                name: box_1_ID,
-                valid_input_list: integerArray(-10, 10),
-                current_index: 0,
-                get_current_value() {
-                    return this.valid_input_list[this.current_index];
-                },
-                get_next_value() {
-                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                    return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
-                }
-            },
-            {
-                name: box_2_ID,
-                valid_input_list: integerArray(-10, 10),
-                current_index: 0,
-                get_current_value() {
-                    return this.valid_input_list[this.current_index];
-                },
-                get_next_value() {
-                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                    return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
-                }
-            },
-        ];
-    },
-    point_check_boxes(setting_name) { // only sysEqs has this at the moment also (Important): creates THREE settings key-value pairs
-        const setting_obj = settings_templates[setting_name];
-        
-        function integerArray(min, max) { // helper
-            let result = [];
-            for (let i = min; i <= max; i++) {
-                result.push(i);
-            }
-            return result;
-        }
-    
-        let [ box_1_ID, box_2_ID, checkbox_ID ] = setting_obj.code_names; // get the names of the first and second textbox (strings) & the randomize all checkbox
-    
-        return [
-            {
-                name: box_1_ID,
-                valid_input_list: integerArray(-10, 10),
-                current_index: 0,
-                get_current_value() {
-                    return this.valid_input_list[this.current_index];
-                },
-                get_next_value() {
-                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                    return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
-                }
-            },
-            {
-                name: box_2_ID,
-                valid_input_list: integerArray(-10, 10),
-                current_index: 0,
-                get_current_value() {
-                    return this.valid_input_list[this.current_index];
-                },
-                get_next_value() {
-                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                    return this.valid_input_list[this.current_index]; // return the next valid value for the checkbox
-                }
-            },
-            {
-                name: checkbox_ID, 
-                valid_input_list: ['is_checked', undefined], // special case for the randomize-box in the solution point for sys-eqs
-                current_index: 0,
-                get_current_value() {
-                    return this.valid_input_list[this.current_index];
-                },
-                get_next_value() {
-                    this.current_index = (this.current_index + 1) % this.valid_input_list.length; // move to the next option Or wrap around to index 0
-                    return this.valid_input_list[this.current_index]; // return the code name for the current check box (it will come in an array [name])
-                }
-            }
-        ];
+function _getValidValuesLog(gen_module) {
+    // placeholder form required to use createSettingsFields
+    let placeholder_form_el = document.getElementById('placeholder-form');
+    if (placeholder_form_el === null) { // form still needs to be created
+        placeholder_form_el = document.createElement('form');
+        placeholder_form_el.id = 'placeholder-form';
+        placeholder_form_el.style.display = 'none'
+        document.body.appendChild(placeholder_form_el);
     }
-}; // the purpose of all these functions is to standardize/generalize all settings into a 'name' and array of 'valid input values'
-
-// creates an array for all the settings in the following form [[name, settings_obj], [name, settings_obj], ...]
-function createSettingsArray(current_module) {
-    const setting_names = [...current_module.settings_fields]; // an array of all the names of the settings for the current gen
-
-    let settings_array = [];
-
-    // insert each setting into the settings_array as [name, obj] pairs
-    let current_type; // the type of whichever setting we are currently on (radio,checkbox,etc) NOTE: this is the official standard name
-    let current_obj; // the object/array comming out of nameValueMakers
-    let current_settings_obj; // the actual object storing the setting possibilities, index, and methods (might be the same as current_obj but also might not be)
-    for (let i = 0; i < setting_names.length; i++) {
-        current_type = settings_templates[setting_names[i]].type;
-
-        current_obj = nameValueMakers[current_type](setting_names[i]); // the object/array yielded by the nameValueMakers functions
-
-        if (Array.isArray(current_obj)) { // nameValueMakers yielded multiple settings fields (and we need to loop over them to insert)
-            for (let j = 0; j < current_obj.length; j++) {
-                current_settings_obj = current_obj[j];
-
-                settings_array.push([ current_settings_obj.name, current_settings_obj ]);
-            }
-        }
-        else { // nameValueMakers yielded just one settings field (and we can just insert it)
-            current_settings_obj = current_obj;
-            
-            settings_array.push([ current_settings_obj.name, current_settings_obj ]);
-        }
+    else { // form already exists (clear it)
+        placeholder_form_el.innerHTML = '';
     }
 
-    return settings_array;
-} // NOTE: settings_obj is the output of nameValueMakers and has the valid_input_list, current_index, and methods for dealing with these
+    return createSettingsFields(gen_module.settings_fields, settings_templates_module, 'placeholder-form')
+}
 
-// generator function to get one settings permutation at a time without pre-storing all of them
-function* generateCombinations(settingsArray) {
-    while (true) {
-        // Step 1: Create a settings array with current values
-        let combination = Object.fromEntries(
-            settingsArray.map(([name, settingObj]) => [name, settingObj.get_current_value()])
+async function getSettingsPermutator(gen_module) {
+    // go from raw_valid_values (which has implied ranges and excluded values) to a permutator with exhuastive lists of valid values
+    const raw_valid_values = await _getValidValuesLog(gen_module);
+    const settings_permutator = {
+        advanceToNextSettings: function() { // advance by one unit and rollover+carry (from right to left) if necessary (like an odometer)
+            let carry_to_next = true; // starts off true (imagine there is another dial before the first one that carried over and started the current cycle below)
+            for (let setting_obj_index = this.setting_objs.length - 1; (setting_obj_index >= 0) && (carry_to_next); setting_obj_index--) {
+                carry_to_next = this.setting_objs[setting_obj_index].advanceToNextValue(); // carry if rolled over
+            }
+        },
+        getCurrentSettings: function() {
+            const extracted_settings = {};
+            for (let settings_obj_index = 0; settings_obj_index < this.setting_objs.length; settings_obj_index++) {
+                const current_settings_name = this.setting_objs[settings_obj_index].setting_name;
+                const current_settings_value = this.setting_objs[settings_obj_index].getCurrentValue();
+                extracted_settings[current_settings_name] = current_settings_value;
+            }
+
+            return extracted_settings;
+        },
+        setting_objs: []
+    };
+
+    for (const [setting_name, log_entry] of Object.entries(raw_valid_values)) {
+        const valid_values = log_entry.valid_values;
+        
+        // resolve valid values into an exhuastive array
+        let all_possible_values;
+        if (valid_values[1] === '--') { // implied numerical range
+            all_possible_values = integerArray(valid_values[0], valid_values[2]);
+        }
+        else if (Array.isArray(valid_values[0]) && valid_values[0][0] === '__empty__') { // multi-select but NOT required checkbox group
+            throw new Error(`Could not create settings testing obj for ${setting_name}: no handling exists yet for non-required checkbox groups.`);  
+        }
+        else if (Array.isArray(valid_values[0])) { // required multi-select checkbox group
+            all_possible_values = [...valid_values];
+        }
+        else if (valid_values[0] === '__regex__') { // text input being validated by a regex
+            throw new Error(`Could not create settings testing obj for ${setting_name}: no handling exists yet for regex-validated text inputs.`);  
+        }
+        else if (typeof(valid_values[0]) === 'string') { // radio button group
+            all_possible_values = [...valid_values];
+        }
+
+        // remove any excluded values
+        if (
+            log_entry.excluded_values !== undefined && 
+            Array.isArray(log_entry.excluded_values) && 
+            log_entry.excluded_values.length >= 1
+        ) {
+            all_possible_values = removeFromArray(log_entry.excluded_values, all_possible_values);
+        }
+
+        // create the settings testing object
+        settings_permutator.setting_objs.push(
+            {
+                setting_name: setting_name,
+                current_index: 0,
+                possible_values: all_possible_values,
+                getCurrentValue: function() {
+                    return this.possible_values[this.current_index];
+                },
+                advanceToNextValue: function() {
+                    this.current_index++;
+                    
+                    let rolled_over = false;
+                    if (this.current_index === this.possible_values.length) { // need to roll over (went past the last index)
+                        this.current_index = 0;
+                        rolled_over = true;
+                    }
+
+                    return rolled_over;
+                }
+            }
         );
-        yield combination; // Yield the current combination
+    }
 
-        // Step 2: Advance to the next setting option (like an odometer)
-        let carry = true; // Track if we need to keep incrementing (like an odometer rollover)
-        for (let i = settingsArray.length - 1; i >= 0 && carry; i--) {
-            let [, settingObj] = settingsArray[i];
+    // (bubble) sort the settings objs by their number of possible values descending -> [most_possibilities, ..., least_possibilities]
+    for (let last_comparison_index = settings_permutator.setting_objs.length - 1; last_comparison_index >= 1; last_comparison_index--) {
+        for (let arr_index = 0; arr_index < last_comparison_index; arr_index++) {
+            let value_i_0 = settings_permutator.setting_objs[arr_index].possible_values.length;
+            let value_i_1 = settings_permutator.setting_objs[arr_index + 1].possible_values.length;
 
-            let prevIndex = settingObj.current_index;
-            settingObj.get_next_value();
-            carry = (settingObj.current_index === 0 && prevIndex !== 0); // If it wrapped, continue
+            if (value_i_0 < value_i_1) {
+                let temp = settings_permutator.setting_objs[arr_index];
+                settings_permutator.setting_objs[arr_index] = settings_permutator.setting_objs[arr_index + 1];
+                settings_permutator.setting_objs[arr_index + 1] = temp;
+            }
         }
+    }
+
+    return settings_permutator;
+}
+
+export async function logSettingsStats(gen_func_name) {
+    const gen_module = await import(`../../scripts/math-gens/gens/${gen_func_name}.js`);
+    const settings_permutator = await getSettingsPermutator(gen_module);
+
+    // get the total number of possible settings permuations for the current permutator
+    let total_permutations = 1;
+    settings_permutator.setting_objs.forEach(settings_testing_obj => {
+        total_permutations *= settings_testing_obj.possible_values.length;
+    });
+
+    const permutation_propotions = [];
+    settings_permutator.setting_objs.forEach(settings_testing_obj => {
+        const current_stats = {};
+        current_stats['setting_name'] = settings_testing_obj.setting_name;
+        current_stats['possible_values'] = settings_testing_obj.possible_values.length;
+        current_stats['percent_of_total_testing'] = ((Math.log(settings_testing_obj.possible_values.length) / Math.log(total_permutations))*100).toFixed(4) + '%';
+        permutation_propotions.push(current_stats);
+    });
+
+    console.log('Settings stats for: ',gen_func_name);
+    console.log('Total Permuations: ',total_permutations);
+    console.log('Permutation Breakdown:')
+    console.table(permutation_propotions);
+}
+
+async function _getBundledGenFunc(gen_module) { // prevalidate + validate + generate & resolve different output types
+    const valid_values_log = await _getValidValuesLog(gen_module);
+    
+    return async function(settings) {
+        const error_locations = new Set(); // a placeholder (only necessary to use functions below)
+        preValidateSettings(settings, valid_values_log, error_locations);
+        gen_module.validateSettings(settings, error_locations);
+        const gen_output = await gen_module.default(settings);
+
+        // use the TeX question and answer instead of question and answer for canvas (non-latex-string) output gens
+        const question = (typeof(gen_output.question) === 'object')? gen_output.TeXquestion : gen_output.question;
+        const answer = (typeof(gen_output.answer) === 'object')? gen_output.TeXanswer : gen_output.answer;
+
+        return { // String()s are required for when gens output numbers (which don't work with sympy.parsing.parse_latex later, which expects strings)
+            question: String(question),
+            answer: String(answer)
+        };
     }
 }
 
-async function beginTest(gen_name, start_number = 1, max_tests = undefined) {
-    const currentGen = gens[gen_name].default; // get the actual question generator function from the current module
-    const current_settings = generateCombinations(createSettingsArray(gens[gen_name])); // get a new generator object to iterate through settings
+export async function testGenerator(
+    gen_func_name, 
+    config = {
+        starting_test_number: 1,
+        max_number_of_tests: 100_000,
+        stop_on_failed_test: false,
+        
+    }
+) {
+    const gen_module = await import(`../../scripts/math-gens/gens/${gen_func_name}.js`);
+    const genFunc = await _getBundledGenFunc(gen_module); // simplified to just take a settings object and return a question and answer object (intermediate validiation bundled)
+    const settings_permutator = await getSettingsPermutator(gen_module);
     
-    for (let i = 1; i < start_number; i++) { // 'fast foward' to the permutation we want to start at (start_number)
-        current_settings.next();
+    // need to "fast foward" (not starting on the first test)
+    if (config.starting_test_number > 1) {
+        for (let i = 0; i < (config.starting_test_number - 1); i++) {
+            settings_permutator.advanceToNextSettings();
+        }
     }
 
-    // if a max number of tests was provided, stop at that number
-    let loop_condition; 
-    if (max_tests === undefined) loop_condition = true;
-    else loop_condition = false;
-    let number_of_tests = 0;
-
-    const start_time = performance.now();
-
-    // handle errors in sending/recieving
+    let stop_reason;
+    let completed_tests = 0;
     try {
-        while (loop_condition || ++number_of_tests <= max_tests) { // keep sending/recieiving from python app until an error happens, or we reach the number of tests
-            const new_settings = current_settings.next().value; // get the next permuation of settings
-            const new_question = currentGen(new_settings); // give the next permuation of settings to the gen
-
-            // send the question object to python (triggerring it's processing)
-            const response = await fetch('http://127.0.0.1:5000/receive-string', {
+        while (completed_tests < config.max_number_of_tests) {
+            const current_settings = settings_permutator.getCurrentSettings();
+            const gen_output_obj = await genFunc(current_settings);
+ 
+            const response_obj = await (await fetch('http://127.0.0.1:5000/dispatch_test', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    question: new_question.question,
-                    answer: new_question.answer,
-                    settings: new_settings,
-                    gen_name: gen_name
-                }),
-            });
+                body: JSON.stringify({
+                    question: gen_output_obj.question,
+                    answer: gen_output_obj.answer,
+                    settings: current_settings,
+                    gen_name: gen_func_name
+                })  
+            })).json();
 
-            // wait for python to respond (which indicates it has processed the question) before sending the next question 
-            await response.json(); 
+            if (response_obj.test_result === 'not_performable') { // always stop on tests with errors
+                stop_reason = 'error in test server';
+                throw new Error(`test could not be performed, test-server encountered an error: ${response_obj.error}`);
+            }
+            else if (response_obj.test_result === 'failed' && config.stop_on_failed_test) { // check for + handle a failed test
+                stop_reason = 'stopped on a math discrepency';
+                break;
+            }
+
+            completed_tests++;
+            settings_permutator.advanceToNextSettings();
         }
     } catch (error) {
-        console.error('Error in sending or recieving from test-server.py:', error);
-        throw error
+        console.error('Testing failed: ', error);
     }
 
-    const total_time = ((performance.now() - start_time) / 1000) / 60;
+    if (completed_tests === config.max_number_of_tests && stop_reason === undefined) {
+        stop_reason = 'max number of tests reached';
+    }
 
-    if (--number_of_tests === max_tests) console.log(number_of_tests + ' tests with ' + gen_name + ' were sent successfully in ' + total_time.toFixed(7) + ' minutes')
+    return {result: stop_reason};
 }
-
-async function testGens(test_schedule) {
-    const sampled_rates = { // (questions per minute) -> meant to provide a very rough estimate (since time is dependent on conditions)
-        'genAddSub': 4895.3533,
-        'genMulDiv': 6474.7218,
-        'genLinEq': 5458.6253,
-        'genFacQuad': 2512.4370,
-        'genSysEqs': 3192.3215,
-        'genSimRad': 2220.0389,
-        'genTrigEx': 7845.2897,
-        'genRatEx': 1188,
-        'genPolArith': 1050.6033,
-        'genComArith': 3827.2142
-    }
-
-    let running_sum = 0;
-    for (let i = 0; i < test_schedule.length; i++) {
-        if (sampled_rates[test_schedule[i][0]] !== undefined) { // we could find the rate
-            running_sum += (test_schedule[i][1] / sampled_rates[test_schedule[i][0]]) / 60; // add the time for the gen (in hours)
-        }
-        else { // we couldn't find the rate (it hasn't been logged yet)
-            running_sum = undefined;
-            console.log(`can't determine test time because no rate has been logged for ${sampled_rates[test_schedule[i][0]]}`);
-            break;
-        }
-    }
-    if (running_sum !== undefined) console.log(`Estimated Total Testing Time: ${running_sum} hours`);
-    
-    const start_time = performance.now();
-    
-    for (let i = 0; i < test_schedule.length; i++) { // run the tests for each gen
-        try {
-            await beginTest(test_schedule[i][0], 1, test_schedule[i][1])
-        }
-        catch (error) {
-            console.error('beginTest error: ',error)
-            return;
-        }   
-    }
-
-    const total_time = ((performance.now() - start_time) / 1000) / 3600
-
-    console.log(`All tests from test_schedule were sent successfully in ${total_time.toFixed(7)} hours`)
-}
-
-const test_schedule = [ // ['gen_name', # of tests]
-    ['genAddSub', 1],
-    ['genMulDiv', 1],
-    ['genLinEq', 1],
-    ['genFacQuad', 1],
-    ['genSysEqs', 1],
-    ['genSimRad', 1],
-    ['genTrigEx', 1],
-    ['genRatEx', 1],
-    ['genPolArith', 1],
-    ['genComArith', 1]
-]
-
-testGens(test_schedule);
