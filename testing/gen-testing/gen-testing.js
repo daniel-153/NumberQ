@@ -1,8 +1,8 @@
 import { createSettingsFields, preValidateSettings } from '../../scripts/helpers/form-helpers.js';
-import { integerArray, removeFromArray } from '../../scripts/math-gens/helpers/gen-helpers.js'; 
+import { randInt, integerArray, removeFromArray } from '../../scripts/math-gens/helpers/gen-helpers.js'; 
 import * as settings_templates_module from '../../scripts/templates/gen-settings.js';
 
-// quick-start template: const gen_testing = await import('http://127.0.0.1:5500/testing/gen-testing/gen-testing.js'); gen_testing.testGenerator('genAddSub', {starting_test_number: 1, max_number_of_tests: 1000, stop_on_failed_test: false});
+// quick-start template: const gen_testing = await import('http://127.0.0.1:5500/testing/gen-testing/gen-testing.js'); gen_testing.testGenerator('genAddSub', {starting_test_number: 1, max_number_of_tests: 1000, stop_on_failed_test: false, settings_progression: 'permutations'});
 
 function _getValidValuesLog(gen_module) {
     // placeholder form required to use createSettingsFields
@@ -35,6 +35,17 @@ async function getSettingsPermutator(gen_module) {
             for (let settings_obj_index = 0; settings_obj_index < this.setting_objs.length; settings_obj_index++) {
                 const current_settings_name = this.setting_objs[settings_obj_index].setting_name;
                 const current_settings_value = this.setting_objs[settings_obj_index].getCurrentValue();
+                extracted_settings[current_settings_name] = current_settings_value;
+            }
+
+            return extracted_settings;
+        },
+        getRandomSettings: function() {
+            const extracted_settings = {};
+            for (let settings_obj_index = 0; settings_obj_index < this.setting_objs.length; settings_obj_index++) {
+                const current_settings_name = this.setting_objs[settings_obj_index].setting_name;
+                const possible_values = this.setting_objs[settings_obj_index].possible_values;
+                const current_settings_value = possible_values[randInt(0, possible_values.length - 1)];
                 extracted_settings[current_settings_name] = current_settings_value;
             }
 
@@ -165,7 +176,7 @@ export async function testGenerator(
         starting_test_number: 1,
         max_number_of_tests: 100_000,
         stop_on_failed_test: false,
-        
+        settings_progression: 'permutations' // 'permutations' or 'random'
     }
 ) {
     const gen_module = await import(`../../scripts/math-gens/gens/${gen_func_name}.js`);
@@ -183,7 +194,9 @@ export async function testGenerator(
     let completed_tests = 0;
     try {
         while (completed_tests < config.max_number_of_tests) {
-            const current_settings = settings_permutator.getCurrentSettings();
+            let current_settings;
+            if (config.settings_progression === 'permutations') current_settings = settings_permutator.getCurrentSettings();
+            else if (config.settings_progression === 'random') current_settings = settings_permutator.getRandomSettings();
             const gen_output_obj = await genFunc(current_settings);
  
             const response_obj = await (await fetch('http://127.0.0.1:5000/dispatch_test', {
