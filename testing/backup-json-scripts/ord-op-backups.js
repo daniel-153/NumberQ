@@ -1,20 +1,21 @@
 import * as G from '../../scripts/math-gens/gens/genOrdOp.js';
 
 const validateSettings = function(settings_obj) { // technically a function of form_obj, and the error_locations set, but need to simplify here
-    G.processFormObj(settings_obj, new Set());
+    G.validateSettings(settings_obj, new Set());
     return settings_obj;
 }
 
 const genOrdOp = G.default;
 
-// Note: past this before the return statement in genOrdOp for this to work: "return '[' + final_template + ']';""
-// and remove the "i < max_templates && " in the outer sol search for-loop (for (let i = 0; i < max_templates && !sol_found; i++) {...})
-// (so that the sol-search runs until a solution is found - reguardless of attempts)
+// Note: paste the following right before the return statement in genOrdOp, and 
+// remove the "i < max_templates && " in the outer sol search for-loop (for (let i = 0; i < max_templates && !sol_found; i++) {...}) for this to work:
+// return JSON.stringify(final_template);
 
 // Note: the key simplification here is that every 'Allow _____' setting is assumed to be disallowed here (because allow != force)
 // (and this significantly decreases the number of permutations - since we're only permutating the operation counts)
 
-// http://127.0.0.1:5500/testing/gen-testing.html (make sure this <-- html file is loading THIS script)
+// The following runs createBackUps (paste it in the console):
+// (await import('http://127.0.0.1:5500/testing/backup-json-scripts/ord-op-backups.js')).createBackUps()
 
 const premutationGenerator = (function*() { // generator function to iterate over operation count permutations without pre-storing
     const max_operators = 3; // each operation is capped at 3 (max 3 additions, max 3 subtractions, ...)
@@ -40,7 +41,7 @@ function settingsAreSame(pre_validated_sets, post_validated_sets) {
     return settings_are_same;
 }
 
-function createBackUps() {
+export async function createBackUps() {
     const templates_per_backup = 2;
     const total_permutations = 1024; // each of a,s,m,d, and e can be in [0,3], so 4*4*4*4*4 = 4^5 = 1024
     let final_json = '{'; 
@@ -82,7 +83,7 @@ function createBackUps() {
         // final_json += ']';
 
         // use this if you just want one backup per permutation (to avoid using an array)
-        final_json += genOrdOp(current_settings); 
+        final_json += await genOrdOp(current_settings); 
 
         if (backup_num !== total_permutations) final_json += ',';
 
@@ -92,5 +93,3 @@ function createBackUps() {
 
     console.log(final_json);
 }
-
-createBackUps();
