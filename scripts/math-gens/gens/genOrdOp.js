@@ -477,11 +477,11 @@ const OOH = { // genOrdOp helpers
             const current_entry = expression_template[i];
 
             if (typeof(current_entry) === 'string') continue; // do nothing for strings => they are either operators or already parsed expressions/values
-            else if (typeof(current_entry) === 'object' && typeof(current_entry.value) === 'number') { // current entry is a {value: N} object
-                expression_template[i] = current_entry.value + ''; // overrite it with its value as a string
-            }
             else if (Array.isArray(current_entry)) { // current entry is an expression
                 expression_template[i] = OOH.templateToMath(current_entry); // recurse
+            }
+            else if (typeof(current_entry) === 'object') { // current entry is a {value: N} object
+                expression_template[i] = Number(current_entry.value) + ''; // overrite it with its value as a string
             }
         }
 
@@ -499,11 +499,21 @@ const OOH = { // genOrdOp helpers
         // then add parens around and return (as long as it isn't a single exponential)
         if (expression_template.length === 3 && expression_template[1] === 'e') return accum_string;
         else return '(' + accum_string + ')';
+    },
+    evaluateExprTexString: function(expression_tex_str) {
+        // convert the expression tex string to a valid js math expression (relatively simple process)
+        expression_tex_str = expression_tex_str.replace(/\\cdot/g, '*');
+        expression_tex_str = expression_tex_str.replace(/\\times/g, '*');
+        expression_tex_str = expression_tex_str.replace(/\\div/g, '/');
+        expression_tex_str = expression_tex_str.replace(/\^/g, '**')
+
+        return eval(expression_tex_str); // integer, decimal, or NaN
     }
 }
 export default async function genOrdOp(settings) {
     const max_term_size = 10; // max size of any single number in the expression 
     const max_expression_value = 100; // max size (+/- value) of the final expression (when simplified)
+    OOH.conversion_table["m"] = (settings.multiply_symbol === ' \\cdot ')? '\\cdot' : '\\times'; // resolve this at the start
 
     const getNewExpression = function() {
         const raw_template_obj = OOH.buildExpressionTemplate(OOH.buildNewOperationsList(settings), OOH.getNumExponents(settings))
@@ -695,15 +705,17 @@ export default async function genOrdOp(settings) {
 
         for (let j = 0; j < attempts_per_template && !sol_found; j++) {
             total_attempts++;
-            const expression_value = OOH.evaluateExpression(AST).value;
+            OOH.evaluateExpression(AST);
+            const expression_tex_string = OOH.templateToMath(JSON.parse(JSON.stringify(expression_template)));
+            let expression_value = OOH.evaluateExprTexString(expression_tex_string); // integer, decimal, or NaN
 
-            if (validExpressionSize(expression_value)) { // a completely valid solution was found
+            if (validExpressionSize(expression_value) && Number.isSafeInteger(expression_value)) { // a completely valid solution was found
                 sol_found = true;
                 final_value = expression_value;
                 final_template = expression_template;
                 break;
             }
-            else if (!Number.isNaN(expression_value) && expression_value < final_value) { // expression at least has a numerical value that is less than anything we've seen so far
+            else if (!Number.isNaN(expression_value) && expression_value < final_value && Number.isSafeInteger(expression_value)) { // expression at least has a numerical value that is less than anything we've seen so far
                 final_value = expression_value;
                 final_template = JSON.parse(JSON.stringify(expression_template)); // deep copy of the template when it has all its values filled in
             }
@@ -712,18 +724,15 @@ export default async function genOrdOp(settings) {
         }
     }
     // **Extremely** unlikely but theoretically possible if s or d is involved: not a single *integer* was found in the 25,000 trial search
-    if (final_template === undefined) { 
+    if (final_template === undefined) {
         if (backup_json === null) backup_json = (await import(`../backup-jsons/bkpOrdOp.js`)).default;
         final_template = JSON.parse(JSON.stringify(backup_json[`${settings.add_count}${settings.subtract_count}${settings.multiply_count}${settings.divide_count}${settings.exponent_count}`]));
         final_value = OOH.findExpressionValue(OOH.convertToAST(OOH.getReferenceCopy(final_template))).value;
     }
 
-    // Next step is the conversion to math
-    OOH.conversion_table["m"] = (settings.multiply_symbol === ' \\cdot ')? '\\cdot' : '\\times';
-
     // break off the parens around the base expression if they exist (only case when they wouldn't is a single exponential)
-    let final_prompt = OOH.templateToMath(final_template);
-    if (final_prompt.charAt(0) === '(') final_prompt = final_prompt.slice(1).slice(0, -1);
+    let final_prompt = OOH.templateToMath(JSON.parse(JSON.stringify(final_template)));
+    if (final_prompt.charAt(0) === '(' && final_prompt.charAt(final_prompt.length - 1) === ')') final_prompt = final_prompt.slice(1, -1);
 
     return {
         question: final_prompt,
