@@ -1,11 +1,10 @@
-from sympy import simplify
 from sympy.parsing.latex import parse_latex
 
-def verify(tex_question, tex_answer): 
+def verify(tex_question, tex_answer):
     question = parse_latex(tex_question)
     answer = parse_latex(tex_answer)
 
-    calculated_answer = simplify(question)
+    calculated_answer = question.doit()
 
     if answer == calculated_answer:
         return None # indicate success (no wrong answer to log)
