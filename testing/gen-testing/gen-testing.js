@@ -136,12 +136,16 @@ export async function logSettingsStats(gen_func_name) {
     });
 
     const permutation_propotions = [];
+    let running_permutations = total_permutations;
     settings_permutator.setting_objs.forEach(settings_testing_obj => {
         const current_stats = {};
         current_stats['setting_name'] = settings_testing_obj.setting_name;
         current_stats['possible_values'] = settings_testing_obj.possible_values.length;
         current_stats['percent_of_total_testing'] = ((Math.log(settings_testing_obj.possible_values.length) / Math.log(total_permutations))*100).toFixed(4) + '%';
+        current_stats['running_permutations'] = running_permutations;
         permutation_propotions.push(current_stats);
+
+        running_permutations /= settings_testing_obj.possible_values.length;
     });
 
     console.log('Settings stats for: ',gen_func_name);
@@ -163,9 +167,9 @@ async function _getBundledGenFunc(gen_module) { // prevalidate + validate + gene
         const question = (typeof(gen_output.question) === 'object')? gen_output.TeXquestion : gen_output.question;
         const answer = (typeof(gen_output.answer) === 'object')? gen_output.TeXanswer : gen_output.answer;
 
-        return { // String()s are required for when gens output numbers (which don't work with sympy.parsing.parse_latex later, which expects strings)
-            question: String(question),
-            answer: String(answer)
+        return { // String()s (never numbers) are required for sympy.parsing.parse_latex + presence of line breaks interferes with python string handling (so they are removed here) 
+            question: String(question).replace(/[\r\n]+/g, ''),
+            answer: String(answer).replace(/[\r\n]+/g, '')
         };
     }
 }
