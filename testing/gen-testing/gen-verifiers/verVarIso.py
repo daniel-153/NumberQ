@@ -1,63 +1,6 @@
-import re
-import random
-from sympy import simplify, zoo, nan, solve
+from sympy import simplify, solve
 from sympy.parsing.latex import parse_latex
-
-def get_adjusted_tex_str(tex_str): # helper
-   tex_str = re.sub(r'(?<=[a-zA-Z0-9])\(', r'\\cdot(', tex_str) # a(b+c) -> a\cdot(b+c) (parsed as a function by default)
-   tex_str = re.sub(r'\\[a-zA-Z]+', lambda m: '`'.join(m.group(0)), tex_str) # mark latex commands so they don't get replaced/modified in the following
-   tex_str = re.sub(r'(?<!`)d', r'{d}', tex_str) # d -> {d} as long as not in latex command (marked by `)
-   tex_str = tex_str.replace('`', '') # remove marking backticks
-
-   return tex_str
-
-def var_from_prompt(solve_for_statement):
-    var_to_solve_str = solve_for_statement.split('~')[1].split('}\\text{:}')[0]
-    if '\\geq 0' in var_to_solve_str: var_to_solve_str = var_to_solve_str.replace('\\geq 0', '') # remove the >= 0 if present
-
-    return var_to_solve_str
-
-def get_rand_int_dict(range_min, range_max, symbols_list): # helper
-    int_dict = {}
-
-    for var_obj in symbols_list:
-        int_dict[var_obj] = random.randint(range_min, range_max)
-
-    return int_dict
-
-def test_det_expr(det_expr, test_values_sign, num_tests): # helper
-    expr_vars_list = list(det_expr.free_symbols)
-
-    range_min = range_max = None
-    if test_values_sign == 'non-negative':
-        range_min = 0
-        range_max = 1000
-    elif test_values_sign == 'non-positive':
-        range_min = -1000
-        range_max = 0
-    elif test_values_sign == 'either':
-        range_min = -1000
-        range_max = 1000
-    
-    all_tests_passed = True # no non-zero (but still defined) values found
-    no_defined_values = True # not one single input was defined (test result un-interpretable)
-    for i in range(0, num_tests):
-        subs_dict = get_rand_int_dict(range_min, range_max, expr_vars_list)
-        current_det_value = det_expr.subs(subs_dict)
-        
-        if (current_det_value == zoo) or (current_det_value == nan): # inputs outside of domain
-            continue
-        else: # inputs yielded a number
-            no_defined_values = False
-
-            if (current_det_value != 0): # but that value wasn't equal to zero (test failed)
-                all_tests_passed = False
-                break
-
-    if no_defined_values:
-        raise Exception('Equation is untestable: no defined values could be found for det_func.')
-    
-    return all_tests_passed
+from .helpers import get_adjusted_tex_str, var_from_prompt, test_det_expr
 
 def verify(tex_question, tex_answer):
     # remove \\small(s) because they aren't parsed properly
