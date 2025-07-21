@@ -1,11 +1,13 @@
 import re
 import random
-from sympy import symbols, lambdify, simplify, zoo, nan, solve
+from sympy import simplify, zoo, nan, solve
 from sympy.parsing.latex import parse_latex
 
 def get_adjusted_tex_str(tex_str): # helper
-   tex_str = re.sub(r'(?<!\\)d([a-zA-Z]|\\[a-zA-Z]+)', r'{d}\\cdot{\1}', tex_str) # de ->(d)\cdot(e) (parsed as a differential by default)
    tex_str = re.sub(r'(?<=[a-zA-Z0-9])\(', r'\\cdot(', tex_str) # a(b+c) -> a\cdot(b+c) (parsed as a function by default)
+   tex_str = re.sub(r'\\[a-zA-Z]+', lambda m: '`'.join(m.group(0)), tex_str) # mark latex commands so they don't get replaced/modified in the following
+   tex_str = re.sub(r'(?<!`)d', r'{d}', tex_str) # d -> {d} as long as not in latex command (marked by `)
+   tex_str = tex_str.replace('`', '') # remove marking backticks
 
    return tex_str
 
@@ -15,14 +17,17 @@ def var_from_prompt(solve_for_statement):
 
     return var_to_solve_str
 
-def get_rand_list(range_min, range_max, length): # helper
-    rand_list = []
-    for i in range(0, length):
-        rand_list.append(random.randint(range_min, range_max))
+def get_rand_int_dict(range_min, range_max, symbols_list): # helper
+    int_dict = {}
 
-    return rand_list
+    for var_obj in symbols_list:
+        int_dict[var_obj] = random.randint(range_min, range_max)
 
-def test_det_func(det_func, num_inputs, test_values_sign, num_tests): # helper
+    return int_dict
+
+def test_det_expr(det_expr, test_values_sign, num_tests): # helper
+    expr_vars_list = list(det_expr.free_symbols)
+
     range_min = range_max = None
     if test_values_sign == 'non-negative':
         range_min = 0
@@ -37,8 +42,8 @@ def test_det_func(det_func, num_inputs, test_values_sign, num_tests): # helper
     all_tests_passed = True # no non-zero (but still defined) values found
     no_defined_values = True # not one single input was defined (test result un-interpretable)
     for i in range(0, num_tests):
-        inputs = get_rand_list(range_min, range_max, num_inputs)
-        current_det_value = det_func(*inputs)
+        subs_dict = get_rand_int_dict(range_min, range_max, expr_vars_list)
+        current_det_value = det_expr.subs(subs_dict)
         
         if (current_det_value == zoo) or (current_det_value == nan): # inputs outside of domain
             continue
@@ -55,13 +60,17 @@ def test_det_func(det_func, num_inputs, test_values_sign, num_tests): # helper
     return all_tests_passed
 
 def verify(tex_question, tex_answer):
+    # remove \\small(s) because they aren't parsed properly
+    tex_question = tex_question.replace('\\small', '')
+    tex_answer = tex_answer.replace('\\small', '')
+    
     # tex question starts off looking like "{\small \text{Solve for}~p}\text{:}~~q=\frac{p-f-5c}{7}"
-    solve_for_statement, prompt_eq_str = tex_question.replace('\\small', '').split('~~') # "{ \text{Solve for}~p}\text{:}" | "q=\frac{p-f-5c}{7}"
+    solve_for_statement, prompt_eq_str = tex_question.split('~~') # "{ \text{Solve for}~p}\text{:}" | "q=\frac{p-f-5c}{7}"
     var_to_solve_str = var_from_prompt(solve_for_statement)
     var_to_solve_obj = parse_latex(var_to_solve_str)
 
     prompt_eq_str = get_adjusted_tex_str(prompt_eq_str)
-    answer_eq_str = get_adjusted_tex_str(tex_answer.replace('\\small', ''))
+    answer_eq_str = get_adjusted_tex_str(tex_answer)
     prompt_eq = parse_latex(prompt_eq_str)
     answer_eq = parse_latex(answer_eq_str)
 
@@ -78,11 +87,8 @@ def verify(tex_question, tex_answer):
     if simplify(determinant_expr).is_zero is True: # will work for almost all equations
         return None
     else: # last chance to be correct is if the determinant expression (as a function of all its vars) is zero for every non-negative value it's defined for
-        vars_in_expr = list(determinant_expr.free_symbols)
-        f_det = lambdify(vars_in_expr, determinant_expr, modules="sympy") # turn into a function
-
         # test with random non-negative values (to catch cases where only the positive rearrangement was found like A=s^2 -> s=sqrt(A) -> s - sqrt(s^2) =? 0 -> only for s >= 0)
-        test_passed = test_det_func(f_det, len(vars_in_expr), 'non-negative', 100)
+        test_passed = test_det_expr(determinant_expr, 'non-negative', 100)
 
         if test_passed: return None
     
