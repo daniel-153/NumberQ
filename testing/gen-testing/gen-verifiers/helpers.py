@@ -1,7 +1,8 @@
 import re
 import random
-from sympy import zoo, nan, Matrix
+from sympy import zoo, nan, Matrix, Basic
 from sympy.parsing.latex import parse_latex
+from decimal import Decimal, ROUND_HALF_UP
 
 def get_adjusted_tex_str(tex_str): # helper
    tex_str = re.sub(r'(?<=[a-zA-Z0-9])\(', r'\\cdot(', tex_str) # a(b+c) -> a\cdot(b+c) (parsed as a function by default)
@@ -106,3 +107,65 @@ def parse_tex_mtrx_w_scalar(tex_str):
 
 def remove_whitespace(tex_str):
     return re.sub(r'\s+', '', tex_str)
+
+def round_with_format(number, places, keep_zeros=True):
+    full_exact = Decimal(str(number))
+    if places >= abs(full_exact.as_tuple().exponent): return str(full_exact) # number shouldn't end up with more places than it started with (don't round at all it the required places are more than/equal to what it has)
+    quant = Decimal('1.' + '0' * places) if places > 0 else Decimal('1') # enforces number of decimals in result ('1' -> 0, '1.0' -> 1, '1.00' -> 2, ...)
+    rounded = full_exact.quantize(quant, rounding=ROUND_HALF_UP)
+    if keep_zeros: return str(rounded)
+    else: return format(rounded.normalize(), 'f')
+
+def build_new_answer_comparer(settings, answer_form_callback):
+    def check_arg_types(gens_answer, sympy_answer): # helper
+        gens_answer_type = type(gens_answer).__name__
+        sympy_answer_type = type(sympy_answer).__name__
+        if gens_answer_type != 'str':
+            raise Exception(f"Only LaTeX strings are allowed in comparisons with sympy objects: '{gens_answer_type}' is not allowed.")
+        if not isinstance(sympy_answer, Basic):
+            raise Exception(f"Only Basic sympy objects are allowed for comparisons with gens LaTeX strings: '{sympy_answer_type}' is not allowed.")
+
+    # answer_form_callback determines whether provided gens answer needs to be exact or rounded based on settings
+    answer_form = answer_form_callback(settings)
+    if answer_form == 'exact':
+        def comparer(gens_answer_tex_string, sympy_answer_obj):
+            check_arg_types(gens_answer_tex_string, sympy_answer_obj)
+            
+            parsed_gens_answer = parse_latex(gens_answer_tex_string)
+            result = parsed_gens_answer.equals(sympy_answer_obj)
+
+            if result == True: return result
+            else: return False
+
+        return comparer
+    elif answer_form == 'rounded':
+        decimal_places = int(settings["decimal_places"]) # automatically throws if can't be converted to an integer
+        keep_rounded_zeros = None
+        if settings["keep_rounded_zeros"] == "is_checked":
+            keep_rounded_zeros = True
+        elif settings["keep_rounded_zeros"] == "undefined":
+            keep_rounded_zeros = False
+        else:
+            raise Exception(f"Could not resolve keep_rounded_zeros with a value of: '{settings["keep_rounded_zeros"]}'")
+
+        def comparer(gens_answer_tex_string, sympy_answer_obj):
+            check_arg_types(gens_answer_tex_string, sympy_answer_obj)
+
+            evaluated_sympy_answer = None
+
+            # try to convert the sympy obj to a number (int or float)
+            if (sympy_answer_obj.is_number is not True) or (sympy_answer_obj.is_real is not True):
+                raise Exception(f"Cannot convert sympy_answer_obj to a real number: '{sympy_answer_obj}'")
+            elif sympy_answer_obj.is_Integer: 
+                evaluated_sympy_answer = int(sympy_answer_obj)
+            else:
+                evaluated_sympy_answer = float(sympy_answer_obj)
+
+            rounded_sympy_result = round_with_format(evaluated_sympy_answer, decimal_places, keep_rounded_zeros)
+
+            if gens_answer_tex_string == rounded_sympy_result: return True # rounded answer strings must be exactly the same to be correct
+            else: return False
+
+        return comparer
+    else:
+        raise Exception(f"Could not resolve an answer form from answer_form_callback: '{answer_form}' is not equal to 'exact' or 'rounded'")
