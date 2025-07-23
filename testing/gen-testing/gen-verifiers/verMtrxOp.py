@@ -1,11 +1,15 @@
 from sympy.parsing.latex import parse_latex
-from .helpers import parse_tex_mtrx_w_scalar, build_new_answer_comparer, tex_matrix_to_py_list
+from .helpers import parse_tex_mtrx_w_scalar, build_new_answer_comparer, tex_matrix_to_py_list, remove_whitespace
 
 def answer_form_callback(settings):
     if settings["mtrx_op_answer_form"] == "decimals": return 'rounded'
     else: return "exact"
 
 def verify(tex_question, tex_answer, settings):
+    # whitespace removal necessary for parsing
+    tex_question = remove_whitespace(tex_question)
+    tex_answer = remove_whitespace(tex_answer)
+
     # extract the operation and the matrix from the question
     if tex_question.startswith('\\operatorname{rref}\\left('):
         operation = 'rref'
@@ -40,7 +44,7 @@ def verify(tex_question, tex_answer, settings):
             return calculated_answer_matrix
     elif operation == 'rref' or operation == 'inv': # matrix -> matrix | answer entries can be exact or decimals
         if operation == 'rref': 
-            calculated_answer_matrix = matrix_in_operation.rref()
+            calculated_answer_matrix = matrix_in_operation.rref()[0] # sympy_matrix.rref() returns a tuple (result matrix, pivots)
         elif operation == 'inv': # requires special checks because may not always exist
             det_proposed_mtrx_inv = matrix_in_operation.det() # determinant of the matrix proposed for the inverse operation (throws for non-square matrix)
 
@@ -63,7 +67,7 @@ def verify(tex_question, tex_answer, settings):
             else:
                 return calculated_answer_matrix
         elif settings["mtrx_op_answer_form"] == "decimals": # matrices are to be compared (entry-by-entry) for correct rounding
-            provided_answer_matrix = tex_matrix_to_py_list(tex_answer) # parse as a python nested list (keep entries as strings -- exactly as generated)
+            provided_answer_matrix = tex_matrix_to_py_list(tex_answer, False) # parse as a python nested list (False -> keep entries as strings -- exactly as generated)
             
             # first ensure the matrix dimensions are correct
             calced_answer_mtrx_shape = calculated_answer_matrix.shape
