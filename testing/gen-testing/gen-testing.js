@@ -175,13 +175,16 @@ async function _getBundledGenFunc(gen_module) { // prevalidate + validate + gene
 }
 
 function _stringifyUndefinedValues(settings_obj) { // "key": undefined -> "key": "undefined" (but only on the first level -- built for settings objs)
-    settings_obj = JSON.parse(JSON.stringify(settings_obj)); // copy to avoid mutation
+    const cleaned_settings_obj = {}; // copy to avoid mutation 
     
-    for (const [key, value] of Object.entries(settings_obj)) {
-        if (value === undefined) settings_obj[key] = 'undefined';
+    for (const [key, value] of Object.entries(settings_obj)) { // copy over first level values into cleaned_settings_obj, but change undefined to 'undefined'
+        if (value === undefined) {
+            cleaned_settings_obj[key] = 'undefined'
+        }
+        else cleaned_settings_obj[key] = value;
     }
 
-    return settings_obj;
+    return cleaned_settings_obj;
 }
 
 export async function testGenerator(
