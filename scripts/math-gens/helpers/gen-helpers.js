@@ -87,7 +87,7 @@ export function buildNewRounder(places, keep_rounded_zeros) {
         
         let number_as_string = number.toString();
         if (!number_as_string.includes('.')) return number; // no decimal places at all
-        else if (places === 0) return Math.round(number); // no need for extra logic
+        else if (places === 0) return Math.round(number) * ((is_negative)? -1 : 1); // no need for extra logic
 
         let [before_decimal, after_decimal] = number_as_string.split('.');
 
