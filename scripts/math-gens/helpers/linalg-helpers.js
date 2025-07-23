@@ -70,22 +70,74 @@ export const vector_operations = {
         if (array_1.every(entry => entry === 0) || array_2.every(entry => entry === 0)) return 'undefined';
         
         const dot_prod_result = this.dot(array_1, array_2);
-        const array_1_mag_squared = this.sum_squared_entries(array_1); // array_1's magnitude squared
+        const array_1_mag_squared = this.sum_squared_entries(array_1);
         const array_2_mag_squared = this.sum_squared_entries(array_2);
-        
-        let result;
-        if (array_1_mag_squared === dot_prod_result && array_2_mag_squared === dot_prod_result) { // acos arg is exactly 1
-            result = 0;
+
+        // find the exact value of the argument to acos if it is notable (results in a rational output in radians or degrees)
+        const acos_arg_sign = Math.sign(dot_prod_result);
+        const acos_num_squared = (dot_prod_result)**2;
+        const acos_den_squared = array_1_mag_squared * array_2_mag_squared;
+        let acos_arg_squared = {numer: null, denom: null};
+        if (acos_den_squared % 4 === 0 && (acos_den_squared / 4) * 3 === acos_num_squared) { // 3/4
+            acos_arg_squared.numer = 3;
+            acos_arg_squared.denom = 4;
         }
-        else if (array_1_mag_squared === -dot_prod_result && array_2_mag_squared === -dot_prod_result) { // acos arg is exactly -1
-            result = Math.PI;
+        else if (acos_den_squared % 4 === 0 && (acos_den_squared / 4) === acos_num_squared) { // 1/4
+            acos_arg_squared.numer = 1;
+            acos_arg_squared.denom = 4;
         }
-        else { // arg to acos is in (-1, 1) (not an edge case that is likely to cause a floating point error - by being outside acos's domain)
-            result = Math.acos(this.dot(array_1, array_2) / (this.magnitude(array_1) * this.magnitude(array_2))); // radians by default
+        else if (acos_den_squared % 2 === 0 && (acos_den_squared / 2) === acos_num_squared) { // 1/2
+            acos_arg_squared.numer = 1;
+            acos_arg_squared.denom = 2;
+        }
+        else if (acos_den_squared === acos_num_squared) { // 1
+            acos_arg_squared.numer = 1;
+            acos_arg_squared.denom = 1;
+        }
+        else if (acos_num_squared === 0) { // 0
+            acos_arg_squared.numer = 0;
+            acos_arg_squared.denom = 1;
         }
 
-        if (angular_unit === 'radians') return result;
-        else if (angular_unit === 'degrees') return (result * 180) / Math.PI;
+        if (angular_unit === 'radians') { // acos args of 1 (->0) and -1 (->pi) need to be handled (handling -1 because it is on the domain boundary of acos)
+            if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 1 && acos_arg_sign === 1) { // sqrt(1) = 1 -> 0
+                return 0;
+            }
+            else if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 1 && acos_arg_sign === -1) { // -sqrt(1) = -1 -> pi
+                return Math.PI;
+            }
+            else return Math.acos(this.dot(array_1, array_2) / (this.magnitude(array_1) * this.magnitude(array_2)));  // does not yield a notable acos radian value
+        }
+        else if (angular_unit === 'degrees') { // acos args that result in integer degree values [0,180] need to be handled
+            if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 1 && acos_arg_sign === 1) { // sqrt(1) = 1 -> 0
+                return 0;
+            }
+            else if (acos_arg_squared.numer === 3 && acos_arg_squared.denom === 4 && acos_arg_sign === 1) { // sqrt(3/4) = sqrt(3)/2 -> 30
+                return 30;
+            }
+            else if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 2 && acos_arg_sign === 1) { // sqrt(1/2) = sqrt(2)/2 -> 45
+                return 45;
+            }
+            else if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 4 && acos_arg_sign === 1) { // sqrt(1/4) = 1/2 -> 60
+                return 60;
+            }
+            else if (acos_arg_squared.numer === 0) { // sqrt(0) = 0 -> 90
+                return 90;
+            }
+            else if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 4 && acos_arg_sign === -1) { // -sqrt(1/4) = -1/2 -> 120
+                return 120;
+            }
+            else if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 2 && acos_arg_sign === -1) { // -sqrt(1/2) = -sqrt(2)/2 -> 135
+                return 135;
+            }
+            else if (acos_arg_squared.numer === 3 && acos_arg_squared.denom === 4 && acos_arg_sign === -1) { // -sqrt(3/4) = -sqrt(3)/2 -> 150
+                return 150;
+            }
+            else if (acos_arg_squared.numer === 1 && acos_arg_squared.denom === 1 && acos_arg_sign === -1) { // -sqrt(1) = -1 -> 180
+                return 180;
+            }
+            else return Math.acos(this.dot(array_1, array_2) / (this.magnitude(array_1) * this.magnitude(array_2))) * (180 / Math.PI); // does not yield a notable acos degree value
+        }
     }
 };
 
