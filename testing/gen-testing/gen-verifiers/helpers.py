@@ -60,12 +60,13 @@ def test_det_expr(det_expr, test_values_sign, num_tests): # helper
     
     return all_tests_passed
 
-def tex_matrix_to_py_list(tex_matrix_str):
+def tex_matrix_to_py_list(tex_matrix_str, parse = True):
     # example: \begin{bmatrix} -41&-35&1&-17\\-5&-8&-21&13\\-5&-33&5&-31\\16&-26&10&-30 \end{bmatrix}
     tex_matrix_str = tex_matrix_str.replace('\\begin{bmatrix}', '').replace('\\end{bmatrix}', '') # break off the '\begin{bmatrix}' and the '\end{bmatrix}'
     tex_matrix_str = tex_matrix_str.replace('\\begin{pmatrix}', '').replace('\\end{pmatrix}', '') # break off the '\begin{pmatrix}' and the '\end{pmatrix}'
 
-    return [[parse_latex(entry) for entry in row_str.split('&')] for row_str in tex_matrix_str.split('\\\\')]
+    if parse is True: return [[parse_latex(entry) for entry in row_str.split('&')] for row_str in tex_matrix_str.split('\\\\')]
+    else: return [[entry for entry in row_str.split('&')] for row_str in tex_matrix_str.split('\\\\')]
 
 def matrices_and_operator(expr_tex_str):
     end_matrix_str = None
