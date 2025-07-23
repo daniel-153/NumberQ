@@ -113,8 +113,9 @@ def round_with_format(number, places, keep_zeros=True):
     if places >= abs(full_exact.as_tuple().exponent): return str(full_exact) # number shouldn't end up with more places than it started with (don't round at all it the required places are more than/equal to what it has)
     quant = Decimal('1.' + '0' * places) if places > 0 else Decimal('1') # enforces number of decimals in result ('1' -> 0, '1.0' -> 1, '1.00' -> 2, ...)
     rounded = full_exact.quantize(quant, rounding=ROUND_HALF_UP)
-    if keep_zeros: return str(rounded)
-    else: return format(rounded.normalize(), 'f')
+    if keep_zeros: rounded_result = str(rounded)
+    else: rounded_result = format(rounded.normalize(), 'f')
+    return rounded_result if rounded_result != '-0' else '0' # handle the '-0' case
 
 def build_new_answer_comparer(settings, answer_form_callback):
     def check_arg_types(gens_answer, sympy_answer): # helper
