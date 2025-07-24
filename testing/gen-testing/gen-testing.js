@@ -254,7 +254,7 @@ export async function testGenerator(
     return {result: stop_reason};
 }
 
-export const testing_rates = {
+export const testing_rates = Object.freeze({
   "genAddSub": 158238.28047735215,
   "genMulDiv": 75944.56047085628,
   "genAddFrac": 243970.208527153,
@@ -272,7 +272,7 @@ export const testing_rates = {
   "genVecArith": 129739.31407523128,
   "genMtrxOp": 112234.84517818292,
   "genMtrxArith": 22076.368290246923
-}
+});
 
 export async function getSampledTestingRates(trials_per_gen = 2000, gen_name_list = ['__all__'], excluded_gens = ['genPyTheo', 'genLawSico', 'genSpTri']) { // -> {..."gen_func_name": (questions per hour)}
     // handle the 'all' case
@@ -328,4 +328,68 @@ export async function getSampledTestingRates(trials_per_gen = 2000, gen_name_lis
     }
 
     console.log(JSON.stringify(sampled_rates, null, 2));
+}
+
+export function getESTTotalTestingTime(schedule) {
+    let total_testing_time = 0;
+    let all_found = true;
+    schedule.forEach(func_config_pair => {
+        const func_name = func_config_pair[0];
+        if (testing_rates[func_name] !== undefined && typeof(testing_rates[func_name]) === 'number') { // rate has been sampled for the current func
+            const questions_per_hour = testing_rates[func_name];
+            const current_questions = func_config_pair[1].max_number_of_tests;
+            total_testing_time += current_questions / questions_per_hour;
+        }
+        else { // no known/stored rate for the current func (unknown)
+            all_found = false;
+            console.log('No testing rate has been sampled for: ',func_name);
+        }
+    });
+
+    if (!all_found) console.log('Testing time is NOT accurate because one of more rates could not be determined.');
+
+    console.log('Total Testing Time (hours): ',total_testing_time);
+
+    return total_testing_time;
+}
+
+export async function runTestSchedule(schedule, exit_on_error = true) {
+    // log the estimated time to run the whole schedule
+    getESTTotalTestingTime(schedule);
+    
+    let all_ran_successfully = true;
+    const schedule_start = performance.now()
+    for (let test_index = 0; test_index < schedule.length; test_index++) {
+        const current_func_name = schedule[test_index][0];
+        const current_config = schedule[test_index][1];
+
+        let result;
+        const current_start = performance.now();
+        try {
+            result = (await testGenerator(current_func_name, current_config)).result;
+        } catch (error) {
+            console.error('Error in running test schedule: ', error.stack);
+            result = 'Testing Error';
+        }
+        const current_time = performance.now() - current_start;
+
+        console.log(`Test with '${current_func_name}' stopped in [${current_time / 1000 / 60 / 60} hours]; reason: ${result}`);
+
+        if (result === 'max number of tests reached') {
+            console.log(`[${current_config.max_number_of_tests} tests] with ${current_func_name} completed successfully.`);
+        }
+        else if (result !== 'max number of tests reached' && result !== 'stopped on a math discrepency' && exit_on_error) {
+            all_ran_successfully = false;
+            console.error(`Exiting testing on error with '${current_func_name}'.`);
+            break;
+        }
+    }
+    const schedule_time = performance.now() - schedule_start;
+
+    if (all_ran_successfully) {
+        console.log(`All tests in schedule completed successfully in [${schedule_time / 1000 / 60 / 60} hours].`);
+    }
+    else {
+        console.log('*Failed* to complete one or more tests in schedule.');
+    }
 }
