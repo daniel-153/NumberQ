@@ -303,16 +303,43 @@ export function simplifyFraction(numer, denom) {
     return { numer: simplifiedNumer, denom: simplifiedDenom };
 }
 
-export function remainderDivision(a, b) {
-    // if (a < 0 && b < 0) {
-    //     a = -a;
-    //     b = -b;
-    // }
-    
+export function remainderDivision(a, b) {    
     let q = Math.floor(a / b);
     let r = a - b * q;
     return { quotient: q, remainder: r };
 } // returns the quotient and remainder of a division of positive or negative integers
+
+export function bigIntRemainderDivision(a, b) {
+    if (typeof(a) !== 'bigint' || typeof(b) !== 'bigint') {
+        console.error('One of more inputs to bigIntRemainderDivision() were not of type "bigint".');
+        return;
+    }
+
+    let q = a / b; // equal to floor(a / b) if (a / b) has positive sign
+    if (q < 0n && a % b !== 0n) q -= 1n; // negative sign -> needs adjustment to match floor(a / b)
+    let r = a - b * q;
+    return { quotient: q, remainder: r };
+} // same as remainderDivision above, but for big ints
+
+export function bigIntSimplifyFrac(numer, denom) {
+    if (typeof(numer) !== 'bigint' || typeof(denom) !== 'bigint') {
+        console.error('One of more inputs to bigIntSimplifyFrac() were not of type "bigint".');
+        return;
+    }
+
+    let a = numer;
+    let b = denom;
+    while (b !== 0n) {
+        const t = b;
+        b = a % b;
+        a = t;
+    }
+    const raw_result = {numer: numer / a, denom: denom / a};
+    const raw_result_sign = (raw_result.numer * raw_result.denom >= 0n)? 1n : -1n;
+    const absBigInt = (big_int) => (big_int < 0n)? (-1n) * big_int : big_int;
+    
+    return {numer: raw_result_sign * absBigInt(raw_result.numer), denom: absBigInt(raw_result.denom)};
+}
 
 export function addPolynomials(p1, p2) {
     // Determine the lengths of the input arrays
