@@ -256,7 +256,7 @@ export async function testGenerator(
 
 export const testing_rates = Object.freeze({
   "genAddSub": 158238.28047735215,
-  "genMulDiv": 75944.56047085628,
+  "genMulDiv": 79534.28258972461,
   "genAddFrac": 243970.208527153,
   "genOrdOp": 242253.76755000342,
   "genLinEq": 173308.97379443783,
