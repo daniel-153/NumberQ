@@ -44,25 +44,23 @@ export function validateSettings(form_obj, error_locations) {
     form_obj.decimal_places = SH.val_restricted_integer(form_obj.decimal_places, error_locations, 0, 4, 'decimal_places');
 
     // Handle an edge case (not an explicit error, but fields might need to change):
-    // clamp the range below [-3, 3] for inverses of 5x5's or greater (the entries can exceed max_safe_integers if the range is larger than [-3, 3])
-    if (
+    if ( // clamp the range below [-3, 3] for inverses of 5x5's or greater (the entries can exceed max_safe_integers if the range is larger than [-3, 3])
         form_obj.single_matrix_operation === 'inverse' && // operation => inverse
         Number(form_obj.matrix_cols) >= 5 && Number(form_obj.matrix_rows) >=5 && // 5x5 or greater
         (Math.abs(form_obj.mtrx_entry_range_min) > 3 || Math.abs(form_obj.mtrx_entry_range_max) > 3) // numbers can get larger than 3 (in magnitude)
     ) {
-        // preserve at least the sign of the user's range
-        if (form_obj.mtrx_entry_range_min >= 0 && form_obj.mtrx_entry_range_max >= 0) { // positive range
-            form_obj.mtrx_entry_range_min = 0;
-            form_obj.mtrx_entry_range_max = 3;
-        }
-        else if (form_obj.mtrx_entry_range_min <= 0 && form_obj.mtrx_entry_range_max <= 0) { // negative range
-            form_obj.mtrx_entry_range_min = -3;
-            form_obj.mtrx_entry_range_max = 0;
-        }
-        else { // mixed range
-            form_obj.mtrx_entry_range_min = -3;
-            form_obj.mtrx_entry_range_max = 3;
-        }
+        const clamped_range = SH.val_restricted_range(form_obj.mtrx_entry_range_min, Math.abs(form_obj.mtrx_entry_range_max), -3, 3, new Set());
+        form_obj.mtrx_entry_range_min = clamped_range.input_min;
+        form_obj.mtrx_entry_range_max = clamped_range.input_max;
+    }
+    else if ( // clamp the range below [-6,6] for a 5x6 rref (which is the largest number-producing rref + entries can exceed max safe integers)
+        form_obj.single_matrix_operation === 'rref' && // operation => rref
+        Number(form_obj.matrix_cols) === 6 && Number(form_obj.matrix_rows) === 5 && // 5x6 matrix
+        (Math.abs(form_obj.mtrx_entry_range_min) > 6 || Math.abs(form_obj.mtrx_entry_range_max) > 6) // numbers can get larger than 6 (in magnitude)
+    ) {
+        const clamped_range = SH.val_restricted_range(form_obj.mtrx_entry_range_min, Math.abs(form_obj.mtrx_entry_range_max), -6, 6, new Set());
+        form_obj.mtrx_entry_range_min = clamped_range.input_min;
+        form_obj.mtrx_entry_range_max = clamped_range.input_max;
     }
 }
 
