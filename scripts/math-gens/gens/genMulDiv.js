@@ -63,15 +63,15 @@ export default function genMulDiv(settings) {
 
 
     const multiply_symbol = settings.multiply_symbol;
-    let numer = 1;
-    let denom = 1;
+    let numer = 1n;
+    let denom = 1n;
     let productString = productElements_inMath[0];
     if (typeof(productElements[0]) === 'number') {
-        numer = numer * productElements[0];
+        numer = numer * BigInt(productElements[0]);
     } // the current element is an integer
     else {
-        numer = numer * productElements[0][0];
-        denom = denom * productElements[0][1];
+        numer = numer * BigInt(productElements[0][0]);
+        denom = denom * BigInt(productElements[0][1]);
     } // the current element is a fraction
 
 
@@ -82,22 +82,22 @@ export default function genMulDiv(settings) {
             productString = productString + multiply_symbol + productElements_inMath[i];
 
             if (typeof(productElements[i]) === 'number') {
-                numer = numer * productElements[i];
+                numer = numer * BigInt(productElements[i]);
             } // the current element is an integer
             else {
-                numer = numer * productElements[i][0];
-                denom = denom * productElements[i][1];
+                numer = numer * BigInt(productElements[i][0]);
+                denom = denom * BigInt(productElements[i][1]);
             } // the current element is a fraction
         }
         else if (operation_type === 'divide') {
             productString = productString + ' \\div ' + productElements_inMath[i];
 
             if (typeof(productElements[i]) === 'number') {
-                denom = denom * productElements[i];
+                denom = denom * BigInt(productElements[i]);
             } // the current element is an integer
             else {
-                numer = numer * productElements[i][1];
-                denom = denom * productElements[i][0];
+                numer = numer * BigInt(productElements[i][1]);
+                denom = denom * BigInt(productElements[i][0]);
             } // the current element is a fraction
         }
     }
@@ -106,17 +106,18 @@ export default function genMulDiv(settings) {
     let answer = '';
     if (settings.answer_form === 'factions & integers') {
         // simplify the numer and denom
-        const simplifiedFraction = PH.simplifyFraction(numer, denom);
+        const simplifiedFraction = PH.bigIntSimplifyFrac(numer, denom);
         numer = simplifiedFraction.numer;
         denom = simplifiedFraction.denom;
+        const abs_of_numer = (numer < 0n) ? (-1n) * numer : numer;
         
-        answer = '\\frac{' + Math.abs(numer) + '}{' + denom + '}';
+        answer = '\\frac{' + abs_of_numer + '}{' + denom + '}';
 
-        if (numer < 0) answer = '-' + answer;
-        if (denom === 1) answer = numer; 
+        if (numer < 0n) answer = '-' + answer;
+        if (denom === 1n) answer = numer; 
     }
     else if (settings.answer_form === 'whole part + remainder') {
-        const divisionResult = PH.remainderDivision(numer, denom);
+        const divisionResult = PH.bigIntRemainderDivision(numer, denom);
         const whole_part = divisionResult.quotient;
         const remainder = divisionResult.remainder;
         
