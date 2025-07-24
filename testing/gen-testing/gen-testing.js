@@ -62,6 +62,9 @@ async function getSettingsPermutator(gen_module) {
         if (valid_values[1] === '--') { // implied numerical range
             all_possible_values = integerArray(valid_values[0], valid_values[2]);
         }
+        else if (typeof(valid_values[0]) === 'number') { // exhuastive list of numbers
+            all_possible_values = [...valid_values];
+        }
         else if (Array.isArray(valid_values[0]) && valid_values[0][0] === '__empty__') { // multi-select but NOT required checkbox group
             throw new Error(`Could not create settings testing obj for ${setting_name}: no handling exists yet for non-required checkbox groups.`);  
         }
@@ -241,6 +244,7 @@ export async function testGenerator(
         }
     } catch (error) {
         console.error('Testing failed: ', error);
+        stop_reason = `error in testing: ${(stop_reason === undefined)? 'error in js testGenerator' : stop_reason}`;
     }
 
     if (completed_tests === config.max_number_of_tests && stop_reason === undefined) {
@@ -248,4 +252,80 @@ export async function testGenerator(
     }
 
     return {result: stop_reason};
+}
+
+export const testing_rates = {
+  "genAddSub": 158238.28047735215,
+  "genMulDiv": 75944.56047085628,
+  "genAddFrac": 243970.208527153,
+  "genOrdOp": 242253.76755000342,
+  "genLinEq": 173308.97379443783,
+  "genVarIso": 118173.82055952623,
+  "genFacQuad": 106483.35753850294,
+  "genSysEqs": 140297.8210966344,
+  "genSimRad": 100439.56258590535,
+  "genTrigEx": 343622.9311028203,
+  "genRatEx": 56564.46306179201,
+  "genPolArith": 36745.73634629745,
+  "genComArith": 93326.38570222467,
+  "genVecOp": 125586.06831923898,
+  "genVecArith": 129739.31407523128,
+  "genMtrxOp": 112234.84517818292,
+  "genMtrxArith": 22076.368290246923
+}
+
+export async function getSampledTestingRates(trials_per_gen = 2000, gen_name_list = ['__all__'], excluded_gens = ['genPyTheo', 'genLawSico', 'genSpTri']) { // -> {..."gen_func_name": (questions per hour)}
+    // handle the 'all' case
+    if (gen_name_list.length === 1 && gen_name_list[0] === '__all__') {
+        const topic_banners = (await import('../../scripts/templates/topic-banners.js')).templates;
+        gen_name_list = []
+        topic_banners.forEach(template_obj => {
+            gen_name_list.push(template_obj.function_name)
+        });
+    }
+
+    // remove any excluded gens
+    gen_name_list = removeFromArray(excluded_gens, gen_name_list);
+
+    const sampled_rates = {};
+    let all_sampled_successfully = true;
+    const failed_funcs = [];
+    for (let i = 0; i < gen_name_list.length; i++) {
+        const current_func_name = gen_name_list[i];
+
+        let test_result;
+        const start_time = performance.now()
+        try {
+            test_result = (await testGenerator(current_func_name, {
+                starting_test_number: 1,
+                max_number_of_tests: trials_per_gen,
+                stop_on_failed_test: false,
+                settings_progression: 'random'
+            })).result
+        } catch (error) {
+            test_result = `Uncaught exception in testGenerator(): ${error.stack}`;
+        }
+        const test_time_hrs = (performance.now() - start_time) / 1000 / 60 / 60; 
+
+        if (test_result === 'max number of tests reached') { // successful rate sampling
+            sampled_rates[current_func_name] = trials_per_gen / test_time_hrs;
+        }
+        else { // failed rate sampling
+            all_sampled_successfully = false;
+            sampled_rates[current_func_name] = null;
+            failed_funcs.push(current_func_name)
+            console.error(`Rate sampling with "${current_func_name}" failed: ${test_result}`);
+        }
+    }
+
+    if (all_sampled_successfully) {
+        console.log(`All gen function testing rates sampled successfully with ${trials_per_gen} tests per gen.`);
+        console.log('Rates (questions per hour):');
+    }
+    else {
+        console.log('One or more gen functions was NOT rate sampled successfully.')
+        console.log('Incomplete Rates (questions per hour):');
+    }
+
+    console.log(JSON.stringify(sampled_rates, null, 2));
 }
