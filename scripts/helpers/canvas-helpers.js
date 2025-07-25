@@ -137,6 +137,7 @@ const CH = {
                             string_factor_pairs.forEach(pair => {
                                 const mjx_container = document.createElement('div');
                                 mjx_container.innerHTML = '\\\\(' + pair[0] + '\\\\)';
+                                mjx_container.setAttribute('data-latex-code', pair[0]);
                                 mjx_container.setAttribute('data-scale-factor', pair[1]);
 
                                 document.body.appendChild(mjx_container);
@@ -149,6 +150,7 @@ const CH = {
                                 const svg = mjx_container.querySelector('svg');
                                 svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
                                 svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
+                                svg.setAttribute('data-latex-code', mjx_container.getAttribute('data-latex-code'));
 
                                 svg_string_array.push(svg.outerHTML);
                             });
@@ -238,6 +240,7 @@ const CH = {
         const mjx_images = await this.getMathJaxAsSvg(string_factor_pairs);
 
         return await Promise.all(mjx_images.map(async function(mjx_svg) { // convert the each svg to an image
+            const svg_latex_code = mjx_svg.getAttribute('data-latex-code');
             const svg_string = new XMLSerializer().serializeToString(mjx_svg);
             const encoded = btoa(new TextEncoder().encode(svg_string).reduce((data, byte) => data + String.fromCharCode(byte), ''));
             const img_src = "data:image/svg+xml;base64," + encoded;
@@ -254,6 +257,7 @@ const CH = {
                 throw err;
             }
 
+            img.setAttribute('data-latex-code', svg_latex_code);
             return img;
         }));
     },
