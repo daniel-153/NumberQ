@@ -315,8 +315,7 @@ export function bigIntRemainderDivision(a, b) {
         return;
     }
 
-    let q = a / b; // equal to floor(a / b) if (a / b) has positive sign
-    if (q < 0n && a % b !== 0n) q -= 1n; // negative sign -> needs adjustment to match floor(a / b)
+    let q = BigInt(Math.floor(Number(a) / Number(b)));
     let r = a - b * q;
     return { quotient: q, remainder: r };
 } // same as remainderDivision above, but for big ints
