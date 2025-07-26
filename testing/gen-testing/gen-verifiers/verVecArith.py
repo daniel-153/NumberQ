@@ -1,6 +1,7 @@
 from sympy import pi, acos
 from sympy.parsing.latex import parse_latex
-from .helpers import vectors_and_operation, parse_tex_vector_w_scalar, build_new_answer_comparer
+from .helpers.gen_helpers import build_new_answer_comparer
+from .helpers.linalg_helpers import vectors_and_operation, parse_tex_vector_w_scalar
 
 def answer_form_callback(settings):
     if settings["vector_operation"] == "angle": return 'rounded'

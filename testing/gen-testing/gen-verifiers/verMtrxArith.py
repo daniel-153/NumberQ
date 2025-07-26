@@ -1,4 +1,5 @@
-from .helpers import matrices_and_operator, parse_tex_mtrx_w_scalar, remove_whitespace
+from .helpers.gen_helpers import remove_whitespace
+from .helpers.linalg_helpers import matrices_and_operator, parse_tex_mtrx_w_scalar
 
 
 def verify(tex_question, tex_answer):

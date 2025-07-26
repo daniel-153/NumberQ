@@ -1,6 +1,6 @@
 from sympy import simplify, solve
 from sympy.parsing.latex import parse_latex
-from .helpers import get_adjusted_tex_str, var_from_prompt, test_det_expr
+from .helpers.gen_helpers import var_from_prompt, get_adjusted_tex_str, test_det_expr
 
 def verify(tex_question, tex_answer):
     # remove \\small(s) because they aren't parsed properly

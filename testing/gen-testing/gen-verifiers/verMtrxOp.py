@@ -1,5 +1,6 @@
 from sympy.parsing.latex import parse_latex
-from .helpers import parse_tex_mtrx_w_scalar, build_new_answer_comparer, tex_matrix_to_py_list, remove_whitespace
+from .helpers.gen_helpers import remove_whitespace, build_new_answer_comparer
+from .helpers.linalg_helpers import parse_tex_mtrx_w_scalar, tex_matrix_to_py_list
 
 def answer_form_callback(settings):
     if settings["mtrx_op_answer_form"] == "decimals": return 'rounded'

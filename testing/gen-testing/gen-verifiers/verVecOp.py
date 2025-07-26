@@ -1,5 +1,6 @@
 from sympy.parsing.latex import parse_latex
-from .helpers import parse_tex_vector_w_scalar, build_new_answer_comparer, tex_vector_to_py_list
+from .helpers.gen_helpers import build_new_answer_comparer
+from .helpers.linalg_helpers import parse_tex_vector_w_scalar, tex_vector_to_py_list
 
 def answer_form_callback(settings):
     if settings["vec_op_answer_form"] == "decimals":
