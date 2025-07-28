@@ -3,40 +3,100 @@ import * as geometry from '../math-gens/helpers/geom-helpers.js';
 let canvas = null;
 let C = null;
 
+function getProxiedCanvasContext(context) {
+    const stringfyArg = (arg) => { // helper
+        if (!(arg instanceof Object)) return arg;
+        if (arg instanceof Element) {
+            if (arg.nodeName === 'IMG') return `__obj:htmlElement__{<img src="__removed__" data-latex-code="${arg.getAttribute('data-latex-code')}">}`;
+            else return `__obj:htmlElement__{${arg.outerHTML}}`
+        }
+        if (arg instanceof Object) return `__obj__{${JSON.stringify(arg)}}`;
+    }
+    
+    return new Proxy(context, {
+        get: function(proxied_ctx, property_name) {
+            if (typeof(proxied_ctx[property_name]) === 'function') { // call canvas context prototype methods ([[Prototype]] CanvasRenderingContext2D) (.beginPath(), .stroke(), etc)
+                return function(...args) {
+                    canvas["__ctx_command_history__"].push({
+                        "action": "method_call",
+                        "method_name": property_name,
+                        "args": args.map(arg => stringfyArg(arg))
+                    });
+
+                    return proxied_ctx[property_name](...args);
+                }
+            }
+            else { // access canvas context properties (.lineWidth, .strokeStyle, etc)
+                return proxied_ctx[property_name]
+            }
+        },
+        set: function(proxied_ctx, key_name, new_value) { // change to a canvas context property (.lineWidth = 5, .strokeStyle = 'red', etc)
+            if (key_name in proxied_ctx) { // only allow setting canvas context properties that already exist (no ctx['aksdlfbj'] = 'asjkhb')
+                canvas["__ctx_command_history__"].push({
+                    "action": "property_set",
+                    "property_name": key_name,
+                    "new_value": new_value
+                });
+
+                proxied_ctx[key_name] = new_value;
+                return true;
+            }
+            else {
+                throw new Error(`Cannot set property '${key_name}' on ${proxied_ctx}: ${proxied_ctx} has no property '${key_name}'.`);
+            }
+        }
+    });
+}
+
 const CH = {
-    createCanvas: function(width_px, height_px, set_as_current = false) {
-        const canvas_el = document.createElement('canvas');
+    createCanvas: function(width_px, height_px, set_as_current = false, write_command_history = true) {
+        // save global canvas and context before temp (or perm) overwriting
+        const prev_canvas = canvas;
+        const prev_context = C;
+        
+        canvas = document.createElement('canvas');
+        C = canvas.getContext("2d");
+        if (write_command_history) {
+            canvas["__ctx_command_history__"] = [];
+            C = getProxiedCanvasContext(C);
+            canvas["__ctx_command_history__"].push({"action": "canvas_property_set", "property_name": "width", "new_value": width_px});
+            canvas["__ctx_command_history__"].push({"action": "canvas_property_set", "property_name": "height", "new_value": height_px});
+        }
+        const new_canvas_and_context = {element: canvas, context: C};
+
         const dpr = (window.devicePixelRatio > 1) ? window.devicePixelRatio : 1;
 
         // Set the correct canvas resolution (canvas px per css px)
-        canvas_el.width = width_px * dpr;
-        canvas_el.height = height_px * dpr;
+        canvas.width = width_px * dpr;
+        canvas.height = height_px * dpr;
 
         // Set CSS size (in layout pixels)
-        canvas_el.style.width = width_px + "px";
-        canvas_el.style.height = height_px + "px";
+        canvas.style.width = width_px + "px";
+        canvas.style.height = height_px + "px";
 
-        const context = canvas_el.getContext("2d");
-        context.scale(dpr, dpr); // scale the draw context according to the canvas resolution
+        // scale the draw context according to the canvas resolution
+        C.scale(dpr, dpr); 
 
-        if (set_as_current) {
-            this.setCurrentCanvas(canvas_el, context);
+        // store the actual "drawing" width and height
+        canvas["__draw_width__"] = width_px;
+        canvas["__draw_height__"] = height_px;
+
+        if (!set_as_current) { // if the new canvas should *Not* be set as current, restore the old canvas and context
+            canvas = prev_canvas;
+            C = prev_context;
         }
 
-        return {
-            element: canvas_el,
-            context: context
-        };
+        return new_canvas_and_context;
     },
     setCurrentCanvas: function(canvas_el, context) {
         canvas = canvas_el;
         C = context;
     },
     canvasHeight: function() {
-        return Number(canvas.style.height.slice(0, -2));
+        return canvas["__draw_height__"];
     },
     canvasWidth: function() {
-        return Number(canvas.style.width.slice(0, -2));
+        return canvas["__draw_width__"];
     },
     drawPolygon: function(point_set_obj) {
         C.save();
