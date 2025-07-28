@@ -536,3 +536,23 @@ export function correctSettingOverflow(form_ID) {
         }
     })
 }
+
+export function getAllSetSubsets(set, include_empty_set = true, include_set_itself = false) { // bitmasking -> {'a','b'} -> 00, 01, 10, 11 -> {}, {'a'}, {'b'}, {'a','b'}
+    const arr = Array.from(set);
+    const n = arr.length;
+    const subsets = [];
+
+    for (let mask = 0; mask < (1 << n); mask++) {
+        const subset = new Set();
+        for (let i = 0; i < n; i++) {
+            if (mask & (1 << i)) subset.add(arr[i]);
+        }
+
+        if ((!include_empty_set && subset.size === 0) ||
+            (!include_set_itself && subset.size === n)) continue;
+
+        subsets.push(subset);
+    }
+
+    return subsets;
+} // used for settings permutations
