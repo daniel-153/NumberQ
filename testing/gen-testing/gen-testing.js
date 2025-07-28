@@ -1,4 +1,4 @@
-import { createSettingsFields, preValidateSettings } from '../../scripts/helpers/form-helpers.js';
+import { createSettingsFields, preValidateSettings, getAllSetSubsets } from '../../scripts/helpers/form-helpers.js';
 import { randInt, integerArray, removeFromArray } from '../../scripts/math-gens/helpers/gen-helpers.js'; 
 import * as settings_templates_module from '../../scripts/templates/gen-settings.js';
 
@@ -66,7 +66,7 @@ async function getSettingsPermutator(gen_module) {
             all_possible_values = [...valid_values];
         }
         else if (Array.isArray(valid_values[0]) && valid_values[0][0] === '__empty__') { // multi-select but NOT required checkbox group
-            throw new Error(`Could not create settings testing obj for ${setting_name}: no handling exists yet for non-required checkbox groups.`);  
+            all_possible_values = Array.from(getAllSetSubsets(new Set(valid_values.slice(1).map(subarr => subarr[0])), true, true)).map(set => Array.from(set));
         }
         else if (Array.isArray(valid_values[0])) { // required multi-select checkbox group
             all_possible_values = [...valid_values];
@@ -166,13 +166,15 @@ async function _getBundledGenFunc(gen_module) { // prevalidate + validate + gene
         gen_module.validateSettings(settings, error_locations);
         const gen_output = await gen_module.default(settings);
 
-        // use the TeX question and answer instead of question and answer for canvas (non-latex-string) output gens
-        const question = (typeof(gen_output.question) === 'object')? gen_output.TeXquestion : gen_output.question;
-        const answer = (typeof(gen_output.answer) === 'object')? gen_output.TeXanswer : gen_output.answer;
+        // use the command history instead of question and answer for canvas (non-latex-string) output gens
+        const question = (gen_output.question instanceof Element && gen_output.question.nodeName === 'CANVAS')? 
+            gen_output.question["__ctx_command_history__"] : String(gen_output.question).replace(/[\r\n]+/g, ''); // remove newlines
+        const answer = (gen_output.answer instanceof Element && gen_output.answer.nodeName === 'CANVAS')? 
+            gen_output.answer["__ctx_command_history__"] : String(gen_output.answer).replace(/[\r\n]+/g, ''); // remove newlines;
 
         return { // String()s (never numbers) are required for sympy.parsing.parse_latex + presence of line breaks interferes with python string handling (so they are removed here) 
-            question: String(question).replace(/[\r\n]+/g, ''),
-            answer: String(answer).replace(/[\r\n]+/g, '')
+            question: question,
+            answer: answer
         };
     }
 }
@@ -348,7 +350,7 @@ export function getESTTotalTestingTime(schedule) {
 
     if (!all_found) console.log('Testing time is NOT accurate because one of more rates could not be determined.');
 
-    console.log('Total Testing Time (hours): ',total_testing_time);
+    console.log('Total Testing Time est. (hours): ',total_testing_time);
 
     return total_testing_time;
 }
