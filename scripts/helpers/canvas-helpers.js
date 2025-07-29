@@ -4,13 +4,19 @@ let canvas = null;
 let C = null;
 
 function getProxiedCanvasContext(context) {
-    const stringfyArg = (arg) => { // helper
+    const processArg = (arg) => { // helper
         if (!(arg instanceof Object)) return arg;
-        if (arg instanceof Element) {
-            if (arg.nodeName === 'IMG') return `__obj:htmlElement__{<img src="__removed__" data-latex-code="${arg.getAttribute('data-latex-code')}">}`;
-            else return `__obj:htmlElement__{${arg.outerHTML}}`
+        else {
+            if (arg instanceof Element) {
+                if (arg.nodeName === 'IMG' && arg.hasAttribute('data-latex-code')) {
+                    return {"identifier_note": "mjx_image", "data": {"latex_code": arg.getAttribute('data-latex-code')}};
+                }
+                else if (arg.nodeName === 'CANVAS' && arg.getAttribute('is_null_image') === 'true') {
+                    return {"identifier_note": "null_image", "data": null};
+                }
+            }
+            if (arg instanceof Object) return {"identifier_note": "object_not_identified", "data": {"string_of_object": String(arg)}};
         }
-        if (arg instanceof Object) return `__obj__{${JSON.stringify(arg)}}`;
     }
     
     return new Proxy(context, {
@@ -20,7 +26,7 @@ function getProxiedCanvasContext(context) {
                     canvas["__ctx_command_history__"].push({
                         "action": "method_call",
                         "method_name": property_name,
-                        "args": args.map(arg => stringfyArg(arg))
+                        "args": args.map(arg => processArg(arg))
                     });
 
                     return proxied_ctx[property_name](...args);
@@ -59,8 +65,8 @@ const CH = {
         if (write_command_history) {
             canvas["__ctx_command_history__"] = [];
             C = getProxiedCanvasContext(C);
-            canvas["__ctx_command_history__"].push({"action": "canvas_property_set", "property_name": "width", "new_value": width_px});
-            canvas["__ctx_command_history__"].push({"action": "canvas_property_set", "property_name": "height", "new_value": height_px});
+            canvas["__ctx_command_history__"].push({"action": "canvas_modification", "property_name": "width", "new_value": width_px});
+            canvas["__ctx_command_history__"].push({"action": "canvas_modification", "property_name": "height", "new_value": height_px});
         }
         const new_canvas_and_context = {element: canvas, context: C};
 
@@ -331,6 +337,7 @@ const CH = {
         const empty_canvas = document.createElement('canvas');
         empty_canvas.width = 1;
         empty_canvas.height = 1;
+        empty_canvas.setAttribute('is_null_image', 'true');
 
         C.drawImage(empty_canvas, 0, 0, 0, 0); // occupies zero space on the canvas
     },
