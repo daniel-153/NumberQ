@@ -1,4 +1,4 @@
-import { createSettingsFields, preValidateSettings, getAllSetSubsets } from '../../scripts/helpers/form-helpers.js';
+import { createSettingsFields, preValidateSettings, getAllSetSubsets, getAllCombinedPermutations } from '../../scripts/helpers/form-helpers.js';
 import { randInt, integerArray, removeFromArray } from '../../scripts/math-gens/helpers/gen-helpers.js'; 
 import * as settings_templates_module from '../../scripts/templates/gen-settings.js';
 
@@ -71,8 +71,8 @@ async function getSettingsPermutator(gen_module) {
         else if (Array.isArray(valid_values[0])) { // required multi-select checkbox group
             all_possible_values = [...valid_values];
         }
-        else if (valid_values[0] === '__regex__') { // text input being validated by a regex
-            throw new Error(`Could not create settings testing obj for ${setting_name}: no handling exists yet for regex-validated text inputs.`);  
+        else if (valid_values[0] === '__char_slots__') { // text input being validated by char slots
+            all_possible_values = getAllCombinedPermutations(...Object.values(valid_values[1])).map(char_arr => char_arr.reduce((acc, curr_val) => acc + curr_val, ''))
         }
         else if (typeof(valid_values[0]) === 'string') { // radio button group
             all_possible_values = [...valid_values];

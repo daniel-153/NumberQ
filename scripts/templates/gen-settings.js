@@ -710,8 +710,14 @@ export const mtrx_op_answer_form = {
 export const triangle_length_unit = {
     type: 'single_textbox',
     display_name: 'Unit of Length',
-    tooltip: 'What length unit should the triangle sides be in (in, cm, m, km, etc)? Enter 1-2 letters or leave blank for no unit.',
-    valid_values: ["__regex__", "^([a-z]{1,2})?$"],
+    tooltip: 'What length unit should the triangle sides be in (in, cm, m, km, etc)? Enter 1-2 lowercase letters or leave blank for no unit.',
+    valid_values: [
+        "__char_slots__", 
+        {
+            "0": ['','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'],
+            "1": ['','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+        }
+    ],
     default_value: '',
     prelocked: true
 };

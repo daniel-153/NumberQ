@@ -449,10 +449,23 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
         // get the first entry in the valid values log (to determine the correct type for the setting)
         const first_valid_value = valid_values_log[setting_name].valid_values[0];
         
-        if (first_valid_value === '__regex__') { // text input being validated by a regular expression
-            const regular_expression = valid_values_log[setting_name].valid_values[1]; // second entry is the regex string
+        if (first_valid_value === '__char_slots__') { // text input being validated by char slots            
+            const max_valid_chars = Math.max(...Object.keys(valid_values_log[setting_name].valid_values[1]).map(int_str => Number(int_str))) + 1;
+            let is_valid_input = true;
 
-            if (!(new RegExp(regular_expression).test(setting_value))) { // if the inputted value does NOT conform to the regular expression
+            if (setting_value.length > max_valid_chars) is_valid_input = false; // inputted string too long
+            else { // check each character of inputted string (to ensure it is included in the valid characters for that index)
+                for (let char_index = 0; char_index < max_valid_chars; char_index++) {
+                    const current_input_char = setting_value.charAt(char_index);
+
+                    if (!valid_values_log[setting_name].valid_values[1][String(char_index)].includes(current_input_char)) { // char is not valid for the current index
+                        is_valid_input = false;
+                        break;
+                    }
+                }
+            }
+
+            if (!is_valid_input) { // inputted value does NOT conform to the char slots
                 error_locations.add(setting_name);
                 setting_value = valid_values_log[setting_name].default_value;
             }
@@ -537,7 +550,7 @@ export function correctSettingOverflow(form_ID) {
     })
 }
 
-export function getAllSetSubsets(set, include_empty_set = true, include_set_itself = false) { // bitmasking -> {'a','b'} -> 00, 01, 10, 11 -> {}, {'a'}, {'b'}, {'a','b'}
+export function getAllSetSubsets(set, include_empty_set = true, include_set_itself = false) { // uses bitmasking -> {'a','b'} -> 00, 01, 10, 11 -> {}, {'a'}, {'b'}, {'a','b'}
     const arr = Array.from(set);
     const n = arr.length;
     const subsets = [];
@@ -555,4 +568,28 @@ export function getAllSetSubsets(set, include_empty_set = true, include_set_itse
     }
 
     return subsets;
+} // used for settings permutations
+
+export function getAllCombinedPermutations(...sets) { // uses "odometer rollover" method
+    sets = sets.map(set => Array.from(set)); // convert sets to arrays for easier usage
+    const all_permutations = [];
+    const num_permutations = sets.reduce((prod, curr_arr) => prod * curr_arr.length, 1);
+
+    const current_indices = new Array(sets.length).fill(0);; // current "odometer state" (starts as [0,0,0,...])
+    for (let i = 0; i < num_permutations; i++) {
+        all_permutations.push(sets.map((set, set_index) => set[current_indices[set_index]]));
+        
+        let rolled_over = true;
+        for (let j = 0; j < sets.length && rolled_over; j++) {
+            current_indices[j]++;
+            rolled_over = false;
+
+            if (current_indices[j] > sets[j].length - 1) { // rolled over
+                current_indices[j] = 0;
+                rolled_over = true;
+            }
+        }
+    }
+
+    return all_permutations;
 } // used for settings permutations
