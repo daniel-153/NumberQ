@@ -257,7 +257,7 @@ export default async function genPyTheo(settings) {
         if (unknown_side === 'c') marker_for_unknown = 'c';
         else marker_for_unknown = 'b';
     }
-    else if (settings.py_theo_unknown_marker === 'nothing') marker_for_unknown = '';
+    else if (settings.py_theo_unknown_marker === 'nothing') marker_for_unknown = null;
     const prompt_labels = {a: null, b: null, c: null};
     for (const [key, _] of Object.entries(prompt_labels)) {
         let side_label;
