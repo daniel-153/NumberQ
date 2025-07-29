@@ -327,6 +327,13 @@ const CH = {
             y1: location.y, y2: location.y + image.height
         };
     },
+    drawNullImage: function() { // no effect on canvas, but places a .drawImage call on the command stack (which is necessary for later reading)
+        const empty_canvas = document.createElement('canvas');
+        empty_canvas.width = 1;
+        empty_canvas.height = 1;
+
+        C.drawImage(empty_canvas, 0, 0, 0, 0); // occupies zero space on the canvas
+    },
     drawImage: function(image, bounding_rect) { // images expand rightward and downward (by their size) from their specified location
         const actual_bouding_rect = this.getImageBoundingRect(image);
         if ((actual_bouding_rect.x2 - actual_bouding_rect.x1) > (bounding_rect.x2 - bounding_rect.x1 + 0.1) ||
@@ -387,7 +394,13 @@ const CH = {
 
         // get the image for each side label
         const string_factor_pairs = [];
+        const skipped_image_indices = [];
         ['a','b','c'].forEach(side_letter => {
+            if (side_labels_obj[side_letter] === null) { // don't get empty images for sides that aren't labeled
+                skipped_image_indices.push(side_letter.charCodeAt(0) - 97);
+                return;
+            }
+
             const label_string = side_labels_obj[side_letter];
             const pair = [];
             pair[0] = label_string;
@@ -407,18 +420,26 @@ const CH = {
 
         // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
         const label_spacing = 17.25; // distance of the labels from the sides (px)
-        const label_bounding_rects = {a: null, b: null, c: null};
-        const label_images = {a: null, b: null, c: null};
-        for (const [key, _] of Object.entries(label_images)) {
-            label_images[key] = mjx_images[key.charCodeAt(0) - 97];
-            label_bounding_rects[key] = CH.getImageBoundingRect(label_images[key]);
+        const label_bounding_rects = {};
+        const label_images = {};
+        for (let image_index = 0; image_index < 3; image_index++) {
+            const side_letter = String.fromCharCode(97 + image_index);
 
-            geometry.positionPolygonSideLabel(
-                label_bounding_rects[key],
-                triangle_ps,
-                side_name_key[key],
-                label_spacing
-            );
+            if (skipped_image_indices.includes(image_index)) { // no image created for the current side
+                mjx_images.splice(image_index, 0, null);
+                label_images[side_letter] = null;
+            }
+            else { // current side has a corresponding image
+                label_images[side_letter] = mjx_images[image_index];
+                label_bounding_rects[side_letter] = CH.getImageBoundingRect(label_images[side_letter]);
+
+                geometry.positionPolygonSideLabel(
+                    label_bounding_rects[side_letter],
+                    triangle_ps,
+                    side_name_key[side_letter],
+                    label_spacing
+                );
+            }
         }
 
         // next step is to fit the whole apparatus (triangle with three labels) to the canvas *without changing the font size*
@@ -426,9 +447,7 @@ const CH = {
         const original_bounding_rect = geometry.getBoundingRect(
             geometry.getCombinedPointSet(
                 triangle_ps,
-                geometry.getBoundingRectRectangle(label_bounding_rects.a),
-                geometry.getBoundingRectRectangle(label_bounding_rects.b),
-                geometry.getBoundingRectRectangle(label_bounding_rects.c)
+                ...Object.values(label_bounding_rects).map(bounding_rect => geometry.getBoundingRectRectangle(bounding_rect))
             )
         );
         const test_scale_factor = 0.9;
@@ -445,9 +464,7 @@ const CH = {
         const post_test_bounding_rect = geometry.getBoundingRect(
             geometry.getCombinedPointSet(
                 triangle_ps,
-                geometry.getBoundingRectRectangle(label_bounding_rects.a),
-                geometry.getBoundingRectRectangle(label_bounding_rects.b),
-                geometry.getBoundingRectRectangle(label_bounding_rects.c)
+                ...Object.values(label_bounding_rects).map(bounding_rect => geometry.getBoundingRectRectangle(bounding_rect))
             )
         );
         const x_change = (post_test_bounding_rect.x2 - post_test_bounding_rect.x1) - (original_bounding_rect.x2 - original_bounding_rect.x1);
@@ -461,6 +478,7 @@ const CH = {
         );
 
         // now we know the triangle and its labels must fit in a 1000x1000 bounding rect, but the entire apparatus needs to be put in the Q1 1000x1000 rect
+        const bounding_rect_rectangles = {};
         for (const [key, bounding_rect] of Object.entries(label_bounding_rects)) { 
             geometry.positionPolygonSideLabel( // position the labels on the final scaled (but mispositioned) triangle
                 bounding_rect,
@@ -468,18 +486,15 @@ const CH = {
                 side_name_key[key],
                 label_spacing
             );
+
+            bounding_rect_rectangles[key] = geometry.getBoundingRectRectangle(bounding_rect);
         }
-        const a_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.a);
-        const b_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.b);
-        const c_rectangle = geometry.getBoundingRectRectangle(label_bounding_rects.c);
 
         // correctly position the entire apparatus as one big point set
         geometry.fitPointSet(
             geometry.getCombinedPointSet(
                 triangle_ps,
-                a_rectangle,
-                b_rectangle,
-                c_rectangle
+                ...Object.values(bounding_rect_rectangles)
             ),
             {x1: 0, x2: 1000, y1: 0, y2: 1000},
             'center',
@@ -487,24 +502,29 @@ const CH = {
         );
 
         // update the bounding rect positions
-        label_bounding_rects.a = geometry.getBoundingRect(a_rectangle);
-        label_bounding_rects.b = geometry.getBoundingRect(b_rectangle);
-        label_bounding_rects.c = geometry.getBoundingRect(c_rectangle); 
+        for (const [key, _] of Object.entries(label_bounding_rects)) {
+            label_bounding_rects[key] = geometry.getBoundingRect(bounding_rect_rectangles[key]);
+        }
 
         // last step is to actually draw everything in
         // draw the triangle => get the original triangle back from the bounding triangle
         C.lineWidth = triangle_line_width;
         CH.drawPolygon(geometry.getBoundingTriangle(triangle_ps, triangle_line_width, 'inner'));
 
-        // insert the images for the labels
-        CH.drawImage(label_images.a, label_bounding_rects.a);
-        CH.drawImage(label_images.b, label_bounding_rects.b);
-        CH.drawImage(label_images.c, label_bounding_rects.c);
-
         // draw the right angle label
         const right_angle_label = geometry.getRightAngleLabel(triangle_ps);
         C.lineWidth = 3;
         CH.connectPointsWithLine(right_angle_label);
+
+        // insert the images for the side labels
+        for (const [side_name, image_value] of Object.entries(label_images)) {
+            if (image_value === null) { // no side label image associated with the side -> insert a "null image"
+                CH.drawNullImage();
+            }
+            else { // side has a label image -> insert it
+                CH.drawImage(image_value, label_bounding_rects[side_name]);
+            }
+        }
 
         return {
             outer_bound_triangle: triangle_ps,
@@ -576,6 +596,9 @@ const CH = {
 
             CH.drawImage(current_mjx_image, bounding_rect);
         }
+
+        // if only one of the 30-60 or 45-45 angles were given, insert a semantic (null) image for the other one
+        if (given_angles.length === 1) CH.drawNullImage();
     },
     drawGeneralTriangle: async function(
         triangle_info_obj, label_vertices = true, rotation = 0, 
@@ -780,19 +803,28 @@ const CH = {
         CH.drawPolygon(middle_triangle);
 
         // draw the side labels
-        for (const [side_name, side_b_rect] of Object.entries(side_image_b_rects)) {
-            CH.drawImage(side_images[side_name], side_b_rect);
-        }
+        ['a','b','c'].forEach(side_name => {
+            if (side_images[side_name] !== undefined && side_images[side_name] !== null) {
+                CH.drawImage(side_images[side_name], side_image_b_rects[side_name])
+            }
+            else CH.drawNullImage();
+        });
 
         // draw the vertex labels
-        for (const [vertex_name, vertex_b_rect] of Object.entries(vertex_image_b_rects)) {
-            CH.drawImage(vertex_images[vertex_name], vertex_b_rect);
-        }
+        ['A','B','C'].forEach(vertex_name => {
+            if (vertex_images[vertex_name] !== undefined && vertex_images[vertex_name] !== null) {
+                CH.drawImage(vertex_images[vertex_name], vertex_image_b_rects[vertex_name]);
+            }
+            else CH.drawNullImage();
+        });
 
         // draw the angle labels
-        for (const [angle_name, angle_b_rect] of Object.entries(angle_image_b_rects)) {
-            CH.drawImage(angle_images[angle_name], angle_b_rect);
-        }
+        ['A','B','C'].forEach(angle_name => {
+            if (angle_images[angle_name] !== undefined && angle_images[angle_name] !== null) {
+                CH.drawImage(angle_images[angle_name], angle_image_b_rects[angle_name]);
+            }
+            else CH.drawNullImage();
+        });
 
         // draw the written prompt
         CH.drawImage(prompt_image, prompt_image_b_rect);
