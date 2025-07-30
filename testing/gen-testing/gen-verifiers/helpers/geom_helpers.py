@@ -34,7 +34,7 @@ def triangle_info_from_points(point_A, point_B, point_C): # organize useful tria
         "polygon_obj": Polygon([(point.x, point.y) for point in [point_A, point_B, point_C]])
     }
 
-def match_triangle_side_labels(triangle_info, labeling_commands, canvas_height): # match each determined label to a side (the side that a label corresponds to is assumed to be one that it is closest to)
+def match_triangle_side_labels(triangle_info, labeling_commands, canvas_height): # match each determined label to a side (the side that a label corresponds to is assumed to be one it's midpoint is closest to)
     # only parse mjx_image(s) (not null_image(s) -- which are considered to be 'free' undetermined labels)
     determined_labels = [parse_contenful_label(label_cmd['args'], canvas_height) for label_cmd in labeling_commands if label_cmd['args'][0]['identifier_note'] == 'mjx_image']
 
@@ -47,7 +47,7 @@ def match_triangle_side_labels(triangle_info, labeling_commands, canvas_height):
     for label in determined_labels:
         side_distances = {'a': None, 'b': None, 'c': None}
         for side_name, side_segment in triangle_info['sides'].items():
-            side_distances[side_name] = side_segment.distance(label['rectangle'])
+            side_distances[side_name] = side_segment.distance(label['rectangle'].centroid)
 
         min_distance = min(list(side_distances.values()))
         sides_with_min_distance = [] # should only be one if valid
@@ -55,7 +55,7 @@ def match_triangle_side_labels(triangle_info, labeling_commands, canvas_height):
             if side_distance == min_distance: sides_with_min_distance.append(side_name)
 
         if (len(sides_with_min_distance) != 1):
-            raise  Exception(f"Side label could not be determined to be closest to a particular side: {label}.")
+            raise  Exception(f"Side label could not be determined to be closest to a particular side: [label rect: {label['rectangle']}], [triangle: {triangle_info['polygon_obj']}].")
         else:
             side_label_strings[sides_with_min_distance[0]] = label['latex_content']
             matched_sides.append(sides_with_min_distance[0])
