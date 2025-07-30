@@ -18,7 +18,8 @@ log.setLevel(logging.ERROR)
 # info that is needed persistently
 module_state = {
     "current_gen_name": None,
-    "current_verifier_func": None, 
+    "current_verifier_func": None,
+    "inner_verify_func": None, 
     "number_of_tests": 0,
     "number_of_FAILED_tests": 0,
     "failed_test_list": [],
@@ -38,15 +39,53 @@ def dispatch_test():
     try: # update the verifer func if the gen changed
         if (request_content["gen_name"] != module_state["current_gen_name"]):
             module_state["current_gen_name"] = request_content["gen_name"]
-            module_state["current_verifier_func"] = importlib.import_module(f"gen-verifiers.ver{module_state["current_gen_name"][3:]}").verify
+            module_state["current_gen_output_type"] = request_content["gen_output_type"]
+            verifer_module = importlib.import_module(f"gen-verifiers.ver{module_state["current_gen_name"][3:]}")
+            module_state["inner_verify_func"] = verifer_module.verify
+    
+            # wrap the verifer function based on its output type
+            if module_state["current_gen_output_type"] == 'latex-Q|latex-A': # no additional wrapping
+                def wrapped_verifier(*args):
+                    return module_state["inner_verify_func"](*args) 
+            elif module_state["current_gen_output_type"] == 'canvas-Q|latex-A':
+                q_canvas_validator = verifer_module.question_cmds_validator
+
+                def wrapped_verifier(*args):
+                    if q_canvas_validator(args[0]) is not True:
+                        return f"Question canvas command history is not valid; command history: \n {args[0]}"
+                    else: return module_state["inner_verify_func"](*args)       
+            elif module_state["current_gen_output_type"] == 'latex-Q|canvas-A':
+                a_canvas_validator = verifer_module.answer_cmds_validator
+
+                def wrapped_verifier(*args):
+                    if a_canvas_validator(args[1]) is not True:
+                        return f"Answer canvas command history is not valid; command history: \n {args[1]}"
+                    else: return module_state["inner_verify_func"](*args) 
+            elif module_state["current_gen_output_type"] == 'canvas-Q|canvas-A':
+                q_canvas_validator = verifer_module.question_cmds_validator
+                a_canvas_validator = verifer_module.answer_cmds_validator
+
+                def wrapped_verifier(*args):
+                    q_canvas_verify_result = q_canvas_validator(args[0])
+                    a_canvas_verify_result = a_canvas_validator(args[1])
+                    verification_message = '\n'
+                    if q_canvas_verify_result is not True: verification_message += f"Question canvas command history is not valid; command history: \n {args[0]} \n"
+                    if a_canvas_verify_result is not True: verification_message += f"Answer canvas command history is not valid; command history: \n {args[1]} \n"
+
+                    if (q_canvas_verify_result is not True) or (a_canvas_verify_result is not True):
+                        return verification_message
+                    else: module_state["inner_verify_func"](*args) 
+            else: raise Exception(f":Gen output type could not be determined; '{request_content["gen_output_type"]}' is not recognized as a valid output type.")
+
+            module_state["current_verifier_func"] = wrapped_verifier
     except Exception as e:
         return flask.jsonify({"test_result": "not_performable", "error": f"could not get verifier module: {e}"})
 
     try: # call the verifier func + get its result
         verifer_args = None
-        if (module_state["current_verifier_func"].__code__.co_argcount == 2): # verifer takes just a question and answer
+        if (module_state["inner_verify_func"].__code__.co_argcount == 2): # verifer takes just a question and answer
             verifer_args = [request_content["question"], request_content["answer"]]
-        elif (module_state["current_verifier_func"].__code__.co_argcount == 3): # verifier takes a question, answer, and settings
+        elif (module_state["inner_verify_func"].__code__.co_argcount == 3): # verifier takes a question, answer, and settings
             verifer_args = [request_content["question"], request_content["answer"], request_content["settings"]]
 
         test_result = module_state["current_verifier_func"](*verifer_args)
@@ -57,8 +96,8 @@ def dispatch_test():
         else: # discrepency found in math
             module_state["number_of_FAILED_tests"] += 1
             module_state["failed_test_list"].append([
-                ["question", request_content["question"]],
-                ["gens-answer", request_content["answer"]],
+                ["question", (request_content["question"] if module_state["current_gen_output_type"].startswith('latex-Q') else '__canvas_command_stack__')],
+                ["gens-answer", (request_content["answer"] if module_state["current_gen_output_type"].endswith('latex-A') else '__canvas_command_stack__')],
                 ["sympy-answer", str(test_result)],
                 ["settings", request_content["settings"]],
                 ["gen-name", module_state["current_gen_name"]],
@@ -72,7 +111,8 @@ def dispatch_test():
 @app.route('/status', methods=['GET'])
 def get_status():        
     return flask.jsonify({
-        "current_func_being_tested": module_state["current_gen_name"], 
+        "current_func_being_tested": module_state["current_gen_name"],
+        "current_func_output_type": module_state["current_gen_output_type"], 
         "number_of_tests": module_state["number_of_tests"],
         "number_of_FAILED_tests": module_state["number_of_FAILED_tests"],
         "runtime (mins)": (time.time() - module_state["start_time"]) / 60,
