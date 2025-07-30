@@ -125,3 +125,15 @@ def build_new_answer_comparer(settings, answer_form_callback):
         return comparer
     else:
         raise Exception(f"Could not resolve an answer form from answer_form_callback: '{answer_form}' is not equal to 'exact' or 'rounded'")
+    
+def exact_decimal_to_frac(exact_decimal_str):
+    # ensure the decimal str is valid
+    if not isinstance(exact_decimal_str, str): raise Exception(f"exact_decimal_to_frac only handles strings; input was of type: '{type(exact_decimal_str)}'")
+    float(exact_decimal_str) # throws if not possible to convert to a number
+    if 'e' in exact_decimal_str: raise Exception(f"Numbers in e-notation are not valid exact decimal strings; input: '{exact_decimal_str}'")
+    if not '.' in exact_decimal_str: return int(exact_decimal_str) # no decimal places at all
+
+    before_decimal, after_decimal = exact_decimal_str.split('.')
+    num_decimal_places = len(after_decimal)
+
+    return '\\frac{' + str(int(before_decimal + after_decimal)) + '}{' + '1' + ('0' * num_decimal_places) + '}'
