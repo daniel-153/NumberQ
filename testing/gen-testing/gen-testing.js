@@ -192,6 +192,11 @@ function _stringifyUndefinedValues(settings_obj) { // "key": undefined -> "key":
     return cleaned_settings_obj;
 }
 
+function _getGenOutputType(gen_module) {
+    if (gen_module.gen_type !== undefined) return gen_module.gen_type;
+    else return 'latex-Q|latex-A';
+}
+
 export async function testGenerator(
     gen_func_name, 
     config = {
@@ -204,6 +209,7 @@ export async function testGenerator(
     const gen_module = await import(`../../scripts/math-gens/gens/${gen_func_name}.js`);
     const genFunc = await _getBundledGenFunc(gen_module); // simplified to just take a settings object and return a question and answer object (intermediate validiation bundled)
     const settings_permutator = await getSettingsPermutator(gen_module);
+    const gen_output_type = _getGenOutputType(gen_module);
     
     // need to "fast foward" (not starting on the first test)
     if (config.starting_test_number > 1) {
@@ -228,7 +234,8 @@ export async function testGenerator(
                     question: gen_output_obj.question,
                     answer: gen_output_obj.answer,
                     settings: _stringifyUndefinedValues(current_settings),
-                    gen_name: gen_func_name
+                    gen_name: gen_func_name,
+                    gen_output_type: gen_output_type
                 })  
             })).json();
 
