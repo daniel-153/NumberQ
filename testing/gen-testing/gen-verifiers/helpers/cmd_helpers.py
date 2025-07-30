@@ -65,3 +65,11 @@ def cmd_history_is_valid(cmd_history, cmd_history_validator):
             running_cmd_stack.append(actual_cmd) # only reachable if command was valid
 
     return True # only reachable if all commands were valid
+
+def build_cmd_history_validator(cmd_history_validator_list):
+    def validator(cmd_history):
+        return cmd_history_is_valid(cmd_history, cmd_history_validator_list)
+    
+    return validator
+
+
