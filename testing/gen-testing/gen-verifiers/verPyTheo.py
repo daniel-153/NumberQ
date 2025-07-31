@@ -85,11 +85,11 @@ def verify(question_cmds, answer_cmds, settings):
 
     # ensure the corners underwent a uniform scaling and no rotation 
     if abs((q_AC.norm() / a_AC.norm()) - (q_AB.norm() / a_AB.norm())) > diff_threshold: # detectable scaling mismatch between AC, AB and AC', AB'
-        return "Orientation Mismatch between question and answer triangles: detectable scaling mismatch between AC, AB and AC', AB'"
+        return f"Orientation Mismatch between question and answer triangles: detectable scaling mismatch between AC, AB and AC', AB' -> [AC/AC': {(q_AC.norm() / a_AC.norm())}, AB/AB': {(q_AB.norm() / a_AB.norm())}]"
     if abs( q_AC.dot(a_AC) / (q_AC.norm()*a_AC.norm()) - 1) > diff_threshold: # detectable rotation between AC and AC'
-        return "Orientation Mismatch between question and answer triangles: detectable rotation between AC and AC'"
+        return f"Orientation Mismatch between question and answer triangles: detectable rotation between AC and AC' -> [angle acos arg: {q_AC.dot(a_AC) / (q_AC.norm()*a_AC.norm())}]"
     if abs( q_AB.dot(a_AB) / (q_AB.norm()*a_AB.norm()) - 1) > diff_threshold: # detectable rotation between AB and AB'
-        return "Orientation Mismatch between question and answer triangles: detectable rotation between AB and AB'"
+        return f"Orientation Mismatch between question and answer triangles: detectable rotation between AB and AB' -> [angle acos arg: {q_AB.dot(a_AC) / (q_AB.norm()*a_AB.norm())}]"
     
     # last check for correct orientation is that the known labels are in exactly the same place in the question and answer (it follows that all labels are in exactly the same place)
     triangle_knowns = [letter for letter in ['a','b','c'] if (not letter in q_triangle_unknowns)]
@@ -152,6 +152,9 @@ def verify(question_cmds, answer_cmds, settings):
     # sides now must satisfy the pythagorean theorem, final check is that they also satisfy the triangle inequalities
     # get provided side 3 in a manner that is safe for both the exact and inexact cases
     provided_side_3 = parse_latex(answer_for_unknown_side.replace('\\approx', '')) if not '.' in answer_for_unknown_side else parse_latex(exact_decimal_to_frac(answer_for_unknown_side.replace('\\approx', '')))
+
+    if any(side <= 0 for side in [provided_side_1, provided_side_2, provided_side_3]):
+        return 'One or more side lengths in answer and/or question triangle are negative.'
 
     if (
         provided_side_1 + provided_side_2 > provided_side_3 and
