@@ -49,6 +49,7 @@ def cmd_history_is_valid(cmd_history, cmd_history_validator):
                 if validator_cmd['method_name'] != actual_cmd['method_name']: return False # method names don't match 
                 
                 validator_args_arr = validator_cmd['args']
+                if len(validator_args_arr) != len(actual_cmd['args']): return False # number of args in validator and actual differ
                 for arg_index in range(0, len(validator_args_arr)):
                     actual_arg = actual_cmd['args'][arg_index]
                     validator_arg = validator_cmd['args'][arg_index]
