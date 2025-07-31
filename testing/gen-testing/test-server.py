@@ -4,12 +4,22 @@ import flask
 import flask_cors
 import importlib
 import traceback
+import socket
 
 # Start the flask server and enable it for all routes (that are defined below)
 app = flask.Flask(__name__)
 
-# Enable CORS for http://127.0.0.1:5500 (this is what live server has been hosting on; you have to make sure this matches the live server url)
-flask_cors.CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
+# needed to dynamically insert the IP local host url (x.x.x.x:5500) at runtime without hardcoding it
+def get_local_ip(): 
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    finally:
+        s.close()
+
+# Enable CORS for http://127.0.0.1:5500 (local host) and http://[ip]:5500 (requests can only be recieved from these origins)
+flask_cors.CORS(app, resources={r"/*": {"origins": ["http://127.0.0.1:5500", f"http://{get_local_ip()}:5500"]}})
 
 # Only log requests with errors (instead of making a log every time a request happens)
 log = logging.getLogger('werkzeug')
@@ -74,7 +84,7 @@ def dispatch_test():
 
                     if (q_canvas_verify_result is not True) or (a_canvas_verify_result is not True):
                         return verification_message
-                    else: module_state["inner_verify_func"](*args) 
+                    else: return module_state["inner_verify_func"](*args) 
             else: raise Exception(f":Gen output type could not be determined; '{request_content["gen_output_type"]}' is not recognized as a valid output type.")
 
             module_state["current_verifier_func"] = wrapped_verifier
