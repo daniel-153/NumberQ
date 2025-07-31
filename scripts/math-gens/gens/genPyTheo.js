@@ -5,6 +5,11 @@ import { CH } from '../../helpers/canvas-helpers.js';
 export const gen_type = 'canvas-Q|canvas-A';
 
 export function validateSettings(form_obj, error_locations) {
+    // if rounding rules requires that all decimals be rounded to whole numbers, don't allow decimal side lengths
+    if (form_obj.decimal_places === 0) {
+        form_obj.triangle_number_type = 'integers_only';
+    }
+    
     // ensure the side length size isn't too small (for the desired type of side lengths)
     if (
         form_obj.force_py_theo_triples === 'always' && 
@@ -21,11 +26,6 @@ export function validateSettings(form_obj, error_locations) {
     ) {
         error_locations.add('triangle_length_size')
         form_obj.triangle_length_size = 2;
-    }
-
-    // if rounding rules requires that all decimals be rounded to whole numbers, don't allow decimal side lengths
-    if (form_obj.decimal_places === 0) {
-        form_obj.triangle_number_type = 'integers_only';
     }
     
     // not an explicit error, but if the number type allows decimals, it doesn't make sense for the final answer to be a root expression like √1.5
@@ -80,6 +80,38 @@ const PTH = {
         }
 
         return possible_triples;
+    },
+    exactDecimalToFrac: function(decimal) {
+        if (Number.isInteger(decimal)) return {numer: decimal, denom: 1};
+        else {
+            const [before_decimal, after_decimal] = String(decimal).split('.');
+
+            return {
+                numer: Number(before_decimal + after_decimal), 
+                denom: Number('1' + '0'.repeat(after_decimal.length))
+            }
+        }
+    },
+    exactSqrtA2pmB2: function(A, B, plus_or_minus) {
+        const A_frac = PTH.exactDecimalToFrac(A);
+        const B_frac = PTH.exactDecimalToFrac(B);
+
+        let frac_in_root;
+        if (plus_or_minus === 'plus') {
+            frac_in_root = PH.simplifyFraction((A_frac.numer**2)*(B_frac.denom**2) + (A_frac.denom**2)*(B_frac.numer**2), (A_frac.denom**2)*(B_frac.denom**2))
+        }
+        else if (plus_or_minus === 'minus') {
+            frac_in_root = PH.simplifyFraction((A_frac.numer**2)*(B_frac.denom**2) - (A_frac.denom**2)*(B_frac.numer**2), (A_frac.denom**2)*(B_frac.denom**2))
+        }
+        
+        const numer_root = PH.simplifySQRT(frac_in_root.numer);
+        const denom_root = PH.simplifySQRT(frac_in_root.denom); 
+        if (numer_root.numberUnderRoot === 1 && denom_root.numberUnderRoot === 1) { // "exact" case (things like 1/9 -> 1/3 -> 0.333333333333334)
+            return numer_root.numberInFront / denom_root.numberInFront;
+        }
+        else { // inexact case
+            return Math.sqrt(frac_in_root.numer / frac_in_root.denom);
+        }
     }
 };
 export default async function genPyTheo(settings) {
@@ -174,21 +206,24 @@ export default async function genPyTheo(settings) {
     if (triple[0] === 'r') {
         numerical_side_lengths.b = triple[1];
         numerical_side_lengths.c = triple[2];
-        numerical_side_lengths.a = Math.sqrt(numerical_side_lengths.c**2 - numerical_side_lengths.b**2);
+        // numerical_side_lengths.a = Math.sqrt(numerical_side_lengths.c**2 - numerical_side_lengths.b**2);
+        numerical_side_lengths.a = PTH.exactSqrtA2pmB2(numerical_side_lengths.c, numerical_side_lengths.b, 'minus');
 
         unknown_side = 'a';
     }
     else if (triple[1] === 'r') {
         numerical_side_lengths.a = triple[0];
         numerical_side_lengths.c = triple[2];
-        numerical_side_lengths.b = Math.sqrt(numerical_side_lengths.c**2 - numerical_side_lengths.a**2);
+        // numerical_side_lengths.b = Math.sqrt(numerical_side_lengths.c**2 - numerical_side_lengths.a**2);
+        numerical_side_lengths.b = PTH.exactSqrtA2pmB2(numerical_side_lengths.c, numerical_side_lengths.a, 'minus');
 
         unknown_side = 'b';
     }
     else if (triple[2] === 'r') {
         numerical_side_lengths.a = triple[0];
         numerical_side_lengths.b = triple[1];
-        numerical_side_lengths.c = Math.sqrt(numerical_side_lengths.a**2 + numerical_side_lengths.b**2);
+        // numerical_side_lengths.c = Math.sqrt(numerical_side_lengths.a**2 + numerical_side_lengths.b**2);
+        numerical_side_lengths.c = PTH.exactSqrtA2pmB2(numerical_side_lengths.a, numerical_side_lengths.b, 'plus');
 
         unknown_side = 'c';
     }
@@ -198,13 +233,13 @@ export default async function genPyTheo(settings) {
     const round = H.buildNewRounder(settings.decimal_places, settings.keep_rounded_zeros);
     for (const [side_name, _] of Object.entries(display_side_lengths)) {
         if (side_name === unknown_side) { // the unknown side might not be a rational (exactly representable) number
-            let pre_root_value;
-            if (side_name === 'c') pre_root_value = numerical_side_lengths.a**2 + numerical_side_lengths.b**2;
-            else if (side_name === 'a') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.b**2;
-            else if (side_name === 'b') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.a**2;
-
             if (settings.py_theo_answer_form === 'decimal_answers') {
-                display_side_lengths[side_name] = round(Math.sqrt(pre_root_value));
+                let pre_root_value;
+                if (side_name === 'c') pre_root_value = PTH.exactSqrtA2pmB2(numerical_side_lengths.a, numerical_side_lengths.b, 'plus');
+                else if (side_name === 'a') pre_root_value = PTH.exactSqrtA2pmB2(numerical_side_lengths.c, numerical_side_lengths.b, 'minus');
+                else if (side_name === 'b') pre_root_value = PTH.exactSqrtA2pmB2(numerical_side_lengths.c, numerical_side_lengths.a, 'minus');
+
+                display_side_lengths[side_name] = round(pre_root_value);
 
                 // the following is to handle the case where rounding creates an "impossible" triangle
                 // for example, in a=2-b=42-c=?, c (rounded to 1 place) would be 42! (but - even though it follows the settings - a 2-42-42 right triangle is very glaringly wrong)
@@ -218,21 +253,27 @@ export default async function genPyTheo(settings) {
                     // this is guarunteed never to yield more than 4 places - because the most extreme triangle 0.1-100-100.00005 is safe when rounded to 4 places
                     let problem_side;
                     const equal_side = (current_side === other_two_sides[0])? other_two_sides[0] : other_two_sides[1];
-                    const exact_value = Math.sqrt(pre_root_value);
+                    const exact_value = pre_root_value;
                     let decimal_places = settings.decimal_places;
                     do {
                         problem_side = H.buildNewRounder(++decimal_places, settings.keep_rounded_zeros)(exact_value);
                     } while (Number(problem_side) === equal_side);
 
                     display_side_lengths[side_name] = problem_side; // overwrite with the fixed value
+                    settings.decimal_places = decimal_places; // update settings value (rounding to a different number of places than required (more or fewer) is considered an error)
                 }
 
                 // make sure to add a 'roughly equal' symbol if not exactly equal anymore 
-                if (Number(display_side_lengths[side_name]) !== Math.sqrt(pre_root_value)) {
+                if (Number(display_side_lengths[side_name]) !== pre_root_value) {
                     display_side_lengths[side_name] = '\\approx' + display_side_lengths[side_name];
                 }
             }
             else if (settings.py_theo_answer_form === 'exact_answers') {
+                let pre_root_value;
+                if (side_name === 'c') pre_root_value = numerical_side_lengths.a**2 + numerical_side_lengths.b**2;
+                else if (side_name === 'a') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.b**2;
+                else if (side_name === 'b') pre_root_value = numerical_side_lengths.c**2 - numerical_side_lengths.a**2;
+
                 if (settings.triangle_number_type === 'integers_only') { // expression inside Math.sqrt guarunteed to be exact
                     display_side_lengths[side_name] = PH.simplifiedSqrtString(pre_root_value);
                 }
