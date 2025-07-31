@@ -20,7 +20,7 @@ def parse_contenful_label(five_arg_list, canvas_height):
     }
 
 def triangle_info_from_points(point_A, point_B, point_C): # organize useful triangle info from shapely points
-    return {
+    triangle_info = {
         "vertices": {
             "A": point_A,
             "B": point_B,
@@ -33,6 +33,16 @@ def triangle_info_from_points(point_A, point_B, point_C): # organize useful tria
         },
         "polygon_obj": Polygon([(point.x, point.y) for point in [point_A, point_B, point_C]])
     }
+
+    # ensure the points actually do form a triangle by checking the triangle inequalities
+    a = triangle_info["sides"]["a"].length
+    b = triangle_info["sides"]["b"].length
+    c = triangle_info["sides"]["c"].length
+
+    if (a + b > c) and (a + c > b) and (b + c > a):
+        return triangle_info
+    else:
+        raise Exception(f"The three provided points do not form a valid triangle: [point_A: {point_A}, point_B: {point_B}, point_C: {point_C}]")
 
 def match_triangle_side_labels(triangle_info, labeling_commands, canvas_height): # match each determined label to a side (the side that a label corresponds to is assumed to be one it's midpoint is closest to)
     # only parse mjx_image(s) (not null_image(s) -- which are considered to be 'free' undetermined labels)
