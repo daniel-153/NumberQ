@@ -1,5 +1,5 @@
 from .helpers.cmd_helpers import CmdPath, number, pos_number, image, build_cmd_history_validator
-from .helpers.geom_helpers import triangle_info_from_points, match_triangle_side_labels, match_right_symbol_to_vertex
+from .helpers.geom_helpers import triangle_info_from_points, match_side_angle_vertex_labels, match_right_symbol_to_vertex
 from .helpers.gen_helpers import build_new_answer_comparer, exact_decimal_to_frac
 from shapely import Point
 from sympy import Matrix, sqrt
@@ -51,7 +51,10 @@ def verify(question_cmds, answer_cmds, settings):
     # gather info for the question (prompt) triangle
     try:
         q_triangle_info = triangle_info_from_points(*[Point(command['args'][0], command['args'][1]) for command in question_cmds[11:13 + 1]])
-        q_side_labels = match_triangle_side_labels(q_triangle_info, question_cmds[29:31 + 1], question_cmds[1]['new_value']) # triangle_info, labeling_cmds, canvas_height
+        q_side_labels = match_side_angle_vertex_labels(
+            q_triangle_info, question_cmds[29:31 + 1], 
+            question_cmds[1]['new_value'], angle_labels_allowed=False, vertex_labels_allowed=False
+        )["sides"]
         q_right_vertex = match_right_symbol_to_vertex(q_triangle_info, question_cmds[24:26 + 1])
     except Exception as e:
         raise Exception(f"Failed to gather info for Question triangle: {e}")
@@ -65,7 +68,10 @@ def verify(question_cmds, answer_cmds, settings):
     # gather info for the answer triangle
     try:
         a_triangle_info = triangle_info_from_points(*[Point(command['args'][0], command['args'][1]) for command in answer_cmds[11:13 + 1]])
-        a_side_labels = match_triangle_side_labels(a_triangle_info, answer_cmds[29:31 + 1], answer_cmds[1]['new_value']) # triangle_info, labeling_cmds, canvas_height
+        a_side_labels = match_side_angle_vertex_labels(
+            a_triangle_info, answer_cmds[29:31 + 1], 
+            answer_cmds[1]['new_value'], angle_labels_allowed=False, vertex_labels_allowed=False
+        )["sides"]
         a_right_vertex = match_right_symbol_to_vertex(a_triangle_info, answer_cmds[24:26 + 1])
     except Exception as e:
         raise Exception(f"Failed to gather info for Answer triangle: {e}")
