@@ -1,3 +1,5 @@
+from sympy import symbols, sympify
+from sympy.core.relational import Relational
 from shapely import box, Polygon, LineString, Point
 
 def parse_contenful_label(five_arg_list, canvas_height):
@@ -94,3 +96,48 @@ def match_right_symbol_to_vertex(triangle_info, right_symbol_cmds): # match the 
         raise  Exception(f"Right angle label could not be determined to be closest to a particular vertex: {right_symbol_cmds}.")
 
     return vertex_with_min_distance[0]
+
+def match_side_vertex_angle_labels(triangle_info, labeling_commands, canvas_height): # for a label set of 9 or fewer labels, try to match the labels to triangle sides, vertices, & angles
+    def flip_inequality(ineq): # helper
+        reversed_op = {'<': '>', '>': '<'}
+        return Relational(ineq.rhs, ineq.lhs, reversed_op[ineq.rel_op])
+    
+    # set up linear equalities to model the triangle's sides to sort the points
+    point_in_triangle = triangle_info['polygon_obj'].representative_point() # cheaply computed point that is guaranteed to be within the triangle
+    side_inequalities = []
+    x, y = symbols('x y')
+    for line_string in triangle_info['sides'].values():
+        x0, y0 = line_string.coords[0]
+        x1, y1 = line_string.coords[1]
+
+        if x1 == x0: # vertical inequality
+            side_inequality = ( x < x0 )
+        else: # non-vertical (regular line)
+            m = (y1 - y0) / (x1 - x0)
+            side_inequality = ( y - y0 < m * (x - x0) )
+
+        # make sure the point_in_triangle satisfies the inequality (otherwise the < needs to be flipped to >)
+        if side_inequality.subs({x: point_in_triangle.x, y: point_in_triangle.y}) is True: # no flip
+            side_inequalities.append(lambda x_sub, y_sub, ineq = side_inequality: ineq.subs({x: x_sub, y: y_sub}))
+        else: # flip
+            side_inequalities.append(lambda x_sub, y_sub, ineq = flip_inequality(side_inequality): ineq.subs({x: x_sub, y: y_sub}))
+
+    # a given point in the xy plane must satisfy 3 (inside the triangle), 2 (in a side zone), or 1 (in a vertex zone) of the inequalities (together, they cover the entire plane)
+    angle_labels = [] # inside the triangle (max of 3) | 3 in-eqs satisfied
+    side_labels = [] # outside the triangle (max of 3) | 2 in-eqs satisfied
+    vertex_labels = [] # outside the triangle (max of 3) | 1 in-eq satisfied
+    # only parse mjx_image(s) (not null_image(s) -- which are considered to be 'free' undetermined labels)
+    determined_labels = [parse_contenful_label(label_cmd['args'], canvas_height) for label_cmd in labeling_commands if label_cmd['args'][0]['identifier_note'] == 'mjx_image']
+    for label in determined_labels:
+        label_centroid = label['rectangle'].centroid
+        satisfied_ineq_count = sum([1 for inequality in side_inequalities if inequality(label_centroid.x, label_centroid.y) is True])
+
+        if satisfied_ineq_count == 3: angle_labels.append(label)
+        elif satisfied_ineq_count == 2: side_labels.append(label)
+        elif satisfied_ineq_count == 1: vertex_labels.append(label)
+
+    if len(angle_labels) > 3: raise Exception(f"Triangle has too many ({len(angle_labels)}) angle (inside) labels; [triangle_info: {triangle_info}, labeling_cmds: {labeling_commands}].")
+    if len(side_labels) > 3: raise Exception(f"Triangle has too many ({len(side_labels)}) side (side region) labels; [triangle_info: {triangle_info}, labeling_cmds: {labeling_commands}].")
+    if len(vertex_labels) > 3: raise Exception(f"Triangle has too many ({len(vertex_labels)}) vertex (vertex region) labels; [triangle_info: {triangle_info}, labeling_cmds: {labeling_commands}].")
+
+
