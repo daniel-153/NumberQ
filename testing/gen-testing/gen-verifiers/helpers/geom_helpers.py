@@ -1,7 +1,7 @@
 from shapely import box, Polygon, LineString, Point
 from numpy import sign, True_
 
-def parse_contenful_label(five_arg_list, canvas_height):
+def parse_contentful_label(five_arg_list, canvas_height):
     image_metadata, x0, y0, d_width, d_height = five_arg_list
     
     bbox = { 
@@ -138,7 +138,7 @@ def match_side_angle_vertex_labels(
     side_labels = [] # outside the triangle (max of 3) | 2 in-eqs satisfied
     vertex_labels = [] # outside the triangle (max of 3) | 1 in-eq satisfied
     # only parse mjx_image(s) (not null_image(s) -- which are considered to be 'free' undetermined labels)
-    determined_labels = [parse_contenful_label(label_cmd['args'], canvas_height) for label_cmd in labeling_commands if label_cmd['args'][0]['identifier_note'] == 'mjx_image']
+    determined_labels = [parse_contentful_label(label_cmd['args'], canvas_height) for label_cmd in labeling_commands if label_cmd['args'][0]['identifier_note'] == 'mjx_image']
     for label in determined_labels:
         label_centroid = label['rectangle'].centroid
         satisfied_ineq_count = sum([1 for inequality in side_inequalities if inequality(label_centroid.x, label_centroid.y) is True_])
