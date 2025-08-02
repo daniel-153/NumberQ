@@ -167,10 +167,20 @@ async function _getBundledGenFunc(gen_module) { // prevalidate + validate + gene
         const gen_output = await gen_module.default(settings);
 
         // use the command history instead of question and answer for canvas (non-latex-string) output gens
-        const question = (gen_output.question instanceof Element && gen_output.question.nodeName === 'CANVAS')? 
-            gen_output.question["__ctx_command_history__"] : String(gen_output.question).replace(/[\r\n]+/g, ''); // remove newlines
-        const answer = (gen_output.answer instanceof Element && gen_output.answer.nodeName === 'CANVAS')? 
-            gen_output.answer["__ctx_command_history__"] : String(gen_output.answer).replace(/[\r\n]+/g, ''); // remove newlines;
+        let question; 
+        if (gen_output.question instanceof Element && gen_output.question.nodeName === 'CANVAS') { // cavnas Q
+            question = gen_output.question["__ctx_command_history__"];
+        }
+        else { // latex Q
+            question = String(gen_output.question).replace(/[\r\n]+/g, ''); // remove newlines
+        }
+        let answer;
+        if (gen_output.answer instanceof Element && gen_output.answer.nodeName === 'CANVAS') { // canvas A
+            answer = gen_output.answer["__ctx_command_history__"];
+        }
+        else { // latex A
+            answer = String(gen_output.answer).replace(/[\r\n]+/g, ''); // remove newlines;
+        }
 
         return { // String()s (never numbers) are required for sympy.parsing.parse_latex + presence of line breaks interferes with python string handling (so they are removed here) 
             question: question,
