@@ -457,7 +457,7 @@ const CH = {
                 ...Object.values(label_bounding_rects).map(bounding_rect => geometry.getBoundingRectRectangle(bounding_rect))
             )
         );
-        const test_scale_factor = 0.9;
+        const test_scale_factor = 100;
         const incenter = geometry.getTriangleIncenter(triangle_ps);
         geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, test_scale_factor);
         for (const [key, bounding_rect] of Object.entries(label_bounding_rects)) { // position the labels on the slightly scaled triangle
@@ -755,7 +755,7 @@ const CH = {
         const x0 = triangle_content_b_rect.x2 - triangle_content_b_rect.x1;
         const y0 = triangle_content_b_rect.y2 - triangle_content_b_rect.y1;
 
-        const test_scale_factor = 0.9;
+        const test_scale_factor = 100;
         const incenter = geometry.getTriangleIncenter(triangle_ps);
         geometry.transformations.transformPointSet(triangle_ps, 'dilate', incenter, test_scale_factor);
         geometry.positionAllTriangleSideLabels(side_image_b_rects, triangle_ps, side_label_spacing);
