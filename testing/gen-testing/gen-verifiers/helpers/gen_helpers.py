@@ -137,3 +137,41 @@ def exact_decimal_to_frac(exact_decimal_str):
     num_decimal_places = len(after_decimal)
 
     return '\\frac{' + str(int(before_decimal + after_decimal)) + '}{' + '1' + ('0' * num_decimal_places) + '}'
+
+def str_is_int_or_decimal(string):
+    if '.' in string: 
+        if string.count('.') > 1: return False
+        else: return string.replace('.', '').isdigit()
+    else: return string.isdigit()
+
+def attempt_known_side_label_parse(label_tex_str, sorted_labels_dict, side_name):
+    if label_tex_str.count('\\,\\mathrm') == 1 and str_is_int_or_decimal(label_tex_str.split('\\,\\mathrm')[0]):
+        sorted_labels_dict[side_name] = {
+            'type': 'labeled_known',
+            'tex_str': label_tex_str,
+            'numerical_value': parse_latex(exact_decimal_to_frac(label_tex_str.split('\\,\\mathrm')[0]))
+        }
+
+        return True
+    elif str_is_int_or_decimal(label_tex_str):
+        sorted_labels_dict[side_name] = {
+            'type': 'labeled_known',
+            'tex_str': label_tex_str,
+            'numerical_value': parse_latex(exact_decimal_to_frac(label_tex_str))
+        }
+
+        return True
+    else:
+        return False # not parse-able or invalid
+    
+def attempt_known_angle_label_parse(label_tex_str, sorted_labels_dict, angle_name):
+    if label_tex_str.count('^\\circ') == 1 and str_is_int_or_decimal(label_tex_str.split('^\\circ')[0]):
+        sorted_labels_dict[angle_name] = {
+            'type': 'labeled_known',
+            'tex_str': label_tex_str,
+            'numerical_value': parse_latex(exact_decimal_to_frac(label_tex_str.split('^\\circ')[0]))
+        }
+
+        return True
+    else:
+        return False # not parse-able or invalid

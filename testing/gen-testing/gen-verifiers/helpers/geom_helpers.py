@@ -168,3 +168,34 @@ def match_side_angle_vertex_labels(
         "angles": match_triangle_angle_labels(triangle_info, angle_labels),
         "vertices": match_triangle_vertex_labels(triangle_info, vertex_labels)
     }
+
+def get_triangle_graph(a=None, b=None, c=None, A=None, B=None, C=None):
+    return ''.join([
+        ('A' if A is not None else '_'),
+        ('S' if c is not None else '_'),
+        ('A' if B is not None else '_'),
+        ('S' if a is not None else '_'),
+        ('A' if C is not None else '_'),
+        ('S' if b is not None else '_'),
+        ('A' if A is not None else '_'),
+        ('S' if c is not None else '_'),
+    ])
+
+def match_triangle_congruence(triangle_graph, congruence_type):
+    if congruence_type == 'SSS': congruence_type = 'S_S_S'
+    elif congruence_type == 'AAS': congruence_type = 'A_AS'
+
+    graph_to_letter_mapping = [
+        'A',
+        'c',
+        'B',
+        'a',
+        'C',
+        'b',
+        'A',
+        'c'
+    ]
+
+    start_index = triangle_graph.find(congruence_type)
+
+    return graph_to_letter_mapping[start_index:start_index + len(congruence_type)]
