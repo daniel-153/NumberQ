@@ -107,15 +107,11 @@ def build_new_answer_comparer(settings, answer_form_callback):
         def comparer(gens_answer_tex_string, sympy_answer_obj):
             check_arg_types(gens_answer_tex_string, sympy_answer_obj)
 
-            evaluated_sympy_answer = None
+            evaluated_sympy_answer = sympy_answer_obj.evalf()
 
-            # try to convert the sympy obj to a number (int or float)
-            if (sympy_answer_obj.is_number is not True) or (sympy_answer_obj.is_real is not True):
-                raise Exception(f"Cannot convert sympy_answer_obj to a real number: '{sympy_answer_obj}'")
-            elif sympy_answer_obj.is_Integer: 
-                evaluated_sympy_answer = int(sympy_answer_obj)
-            else:
-                evaluated_sympy_answer = float(sympy_answer_obj)
+            # ensure the sympy answer is a real number
+            if (evaluated_sympy_answer.is_number is not True) or (evaluated_sympy_answer.is_real is not True):
+                raise Exception(f"Cannot represent sympy_answer_obj as a real number: '{sympy_answer_obj}'")
 
             rounded_sympy_result = round_with_format(evaluated_sympy_answer, decimal_places, keep_rounded_zeros)
 
@@ -149,7 +145,7 @@ def attempt_known_side_label_parse(label_tex_str, sorted_labels_dict, side_name)
         sorted_labels_dict[side_name] = {
             'type': 'labeled_known',
             'tex_str': label_tex_str,
-            'numerical_value': parse_latex(exact_decimal_to_frac(label_tex_str.split('\\,\\mathrm')[0]))
+            'numerical_value': parse_latex(str(exact_decimal_to_frac(label_tex_str.split('\\,\\mathrm')[0])))
         }
 
         return True
@@ -157,7 +153,7 @@ def attempt_known_side_label_parse(label_tex_str, sorted_labels_dict, side_name)
         sorted_labels_dict[side_name] = {
             'type': 'labeled_known',
             'tex_str': label_tex_str,
-            'numerical_value': parse_latex(exact_decimal_to_frac(label_tex_str))
+            'numerical_value': parse_latex(str(exact_decimal_to_frac(label_tex_str)))
         }
 
         return True
@@ -169,7 +165,7 @@ def attempt_known_angle_label_parse(label_tex_str, sorted_labels_dict, angle_nam
         sorted_labels_dict[angle_name] = {
             'type': 'labeled_known',
             'tex_str': label_tex_str,
-            'numerical_value': parse_latex(exact_decimal_to_frac(label_tex_str.split('^\\circ')[0]))
+            'numerical_value': parse_latex(str(exact_decimal_to_frac(label_tex_str.split('^\\circ')[0])))
         }
 
         return True
