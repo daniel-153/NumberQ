@@ -93,8 +93,80 @@ def match_triangle_vertex_labels(triangle_info, parsed_deter_label_list): # matc
 
     return vertex_label_strings
 
-def match_triangle_angle_labels(triangle_info, parsed_deter_label_list): # process is indentical to matching vertex labels (comparing distances to vertices + validation)
-    return match_triangle_vertex_labels(triangle_info, parsed_deter_label_list)
+def match_triangle_angle_labels(triangle_info, parsed_deter_label_list): # process here is more complex due to edge cases (corresponding label isn't always closest to its vertex)
+    angle_label_strings = {'A': None, 'B': None, 'C': None}
+    
+    # construct and extend the three angle bisector rays (for each vertex)
+    incenter_point = triangle_info['polygon_obj'].centroid
+    Ix, Iy = [incenter_point.x, incenter_point.y]
+    bisector_lines = {}
+    for vertex_name in angle_label_strings.keys():
+        current_vertex_point = triangle_info['vertices'][vertex_name]
+
+        Vx, Vy = [current_vertex_point.x, current_vertex_point.y]
+
+        # (x(0), y(0)) is at the incenter, (x(1), y(1)) is at the vertex (large delta_t certainly extends the line outside of the triangle)
+        x = lambda t: Vx*t + Ix*(1 - t)
+        y = lambda t: Vy*t + Iy*(1 - t)
+
+        delta_t = 10e6
+
+        x0, y0 = [x(-delta_t), y(-delta_t)]
+        x1, y1 = [x(delta_t), y(delta_t)]
+
+        bisector_lines[vertex_name] = LineString([(x0, y0), (x1, y1)])
+
+    # for each label, try to match it to a vertex by being closest to the vertex's extended bisector line
+    matched_vertices = []
+    unmatched_label_index = None # only relevant if one single label out of 3 couldn't be matched
+    for label_index in range(0, len(parsed_deter_label_list)):
+        label_info = parsed_deter_label_list[label_index]
+        bisector_distances = {'A': None, 'B': None, 'C': None}
+        for vertex_name, bisector_line in bisector_lines.items():
+            bisector_distances[vertex_name] = bisector_line.distance(label_info['rectangle'].centroid)
+
+        min_bisector_distance = min(list(bisector_distances.values()))
+        if list(bisector_distances.values()).count(min_bisector_distance) > 1: # label rect center is equidistant from multiple bisectors (skip for now)
+            unmatched_label_index = label_index
+            continue
+
+        # find the corresponding vertex name for the min distance
+        for vertex_name, bisector_distance in bisector_distances.items():
+            if bisector_distance == min_bisector_distance:
+                matched_vertices.append(vertex_name)
+                angle_label_strings[vertex_name] = label_info['latex_content']
+                break
+    
+    # ensure there are no repeats in matched_vertices (multiple labels corresponding to a single vertex)
+    if len(matched_vertices) != len(set(matched_vertices)):
+        raise Exception(f"Multiple labels correspond a single vertex in the triangle; [triangle: {triangle_info['vertices']}, labels: {parsed_deter_label_list}]")
+    
+    # check if one label still remains to be matched at this point (try again to match it now that some of the bisector lines can be removed)
+    if len(matched_vertices) == len(parsed_deter_label_list) - 1:
+        unmatched_label_info = parsed_deter_label_list[unmatched_label_index]
+        
+        for vertex_name in matched_vertices: # remove all bisector lines that have already been matched
+            del bisector_lines[vertex_name]
+
+        # try to find the closest bisector line of those remaining
+        bisector_distances = {}
+        for vertex_name, bisector_line in bisector_lines.items():
+            bisector_distances[vertex_name] = bisector_line.distance(unmatched_label_info['rectangle'].centroid)
+
+        # check if there is a unique min (last chance to match the unmatched label)
+        min_bisector_distance = min(list(bisector_distances.values()))
+        if list(bisector_distances.values()).count(min_bisector_distance) == 1:
+            # find the name of the vertex with the min distance
+            for vertex_name, distance in bisector_distances.items():
+                if distance == min_bisector_distance:
+                    matched_vertices.append(vertex_name)
+                    angle_label_strings[vertex_name] = unmatched_label_info['latex_content']
+                    break
+
+    if len(matched_vertices) < len(parsed_deter_label_list): # not all labels were matched to a vertex
+        raise Exception(f"Not all angle labels could be matched to a vertex in the triangle; [triangle: {triangle_info['vertices']}, labels: {parsed_deter_label_list}]")
+
+    return angle_label_strings
 
 def match_right_symbol_to_vertex(triangle_info, right_symbol_cmds): # match the right angle label to a side (the side it corresponds to is assumed to be the one it's closest to)
     # model the right symbol "corner" as a full rectangle (point_A is an endpoint, point_B is the corner point, and point_C is another endpoint)
@@ -169,33 +241,48 @@ def match_side_angle_vertex_labels(
         "vertices": match_triangle_vertex_labels(triangle_info, vertex_labels)
     }
 
-def get_triangle_graph(a=None, b=None, c=None, A=None, B=None, C=None):
-    return ''.join([
-        ('A' if A is not None else '_'),
-        ('S' if c is not None else '_'),
-        ('A' if B is not None else '_'),
-        ('S' if a is not None else '_'),
-        ('A' if C is not None else '_'),
-        ('S' if b is not None else '_'),
-        ('A' if A is not None else '_'),
-        ('S' if c is not None else '_'),
-    ])
+def match_congruence_form(
+        triangle_measures = {'a': None, 'b': None, 'c': None, 'A': None, 'B': None, 'C': None}
+    ): # assumes the triangle has exactly three knowns -> tries to match those three knowns to SSS, SAS, ASA, or AAS
+    known_side_names = [measure_name for measure_name in triangle_measures.keys() if (triangle_measures[measure_name] is not None) and measure_name.islower()]
+    known_angle_names = [measure_name for measure_name in triangle_measures.keys() if (triangle_measures[measure_name] is not None) and measure_name.isupper()]
 
-def match_triangle_congruence(triangle_graph, congruence_type):
-    if congruence_type == 'SSS': congruence_type = 'S_S_S'
-    elif congruence_type == 'AAS': congruence_type = 'A_AS'
+    num_known_sides = len(known_side_names)
+    num_known_angles = len(known_angle_names)
 
-    graph_to_letter_mapping = [
-        'A',
-        'c',
-        'B',
-        'a',
-        'C',
-        'b',
-        'A',
-        'c'
-    ]
-
-    start_index = triangle_graph.find(congruence_type)
-
-    return graph_to_letter_mapping[start_index:start_index + len(congruence_type)]
+    if num_known_sides == 3 and num_known_angles == 0: # SSS
+        return {
+            'congruence_type': 'SSS', 
+            'measure_names': ['a','b','c'], 
+            'measure_values': [triangle_measures[letter] for letter in ['a','b','c']]
+        }
+    elif num_known_sides == 2 and num_known_angles == 1: # potential SAS
+        # only SAS if angle is a different letter from the two side letters (meaning it is between them)
+        if not (known_angle_names[0].lower() in known_side_names):
+            return {
+                'congruence_type': 'SAS', 
+                'measure_names': [known_side_names[0], known_angle_names[0], known_side_names[1]], 
+                'measure_values': [triangle_measures[letter] for letter in [known_side_names[0], known_angle_names[0], known_side_names[1]]]
+            }
+    elif num_known_sides == 1 and num_known_angles == 2: # guarunteed ASA or AAS
+        if not (known_side_names[0].upper() in known_angle_names): # side between angles (ASA)
+            return {
+                'congruence_type': 'ASA', 
+                'measure_names': [known_angle_names[0], known_side_names[0], known_angle_names[1]], 
+                'measure_values': [triangle_measures[letter] for letter in [known_angle_names[0], known_side_names[0], known_angle_names[1]]]
+            }
+        else: # side adjacent to angles (AAS) -> requires special handling for order
+            if known_side_names[0].upper() == known_angle_names[0]:
+                adjacent_angle_letter = known_angle_names[1]
+                other_angle_letter = known_angle_names[0]
+            elif known_side_names[0].upper() == known_angle_names[1]:
+                adjacent_angle_letter = known_angle_names[0]
+                other_angle_letter = known_angle_names[1]
+            
+            return {
+                'congruence_type': 'AAS', 
+                'measure_names': [other_angle_letter, adjacent_angle_letter, known_side_names[0]], 
+                'measure_values': [triangle_measures[letter] for letter in [other_angle_letter, adjacent_angle_letter, known_side_names[0]]]
+            }
+    else:
+        raise Exception(f"Triangle measures could not be classified into SSS, SAS, ASA, AAS, or SAA congruence forms: '{triangle_measures}'")
