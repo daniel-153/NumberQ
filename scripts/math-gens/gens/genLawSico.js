@@ -16,6 +16,7 @@ export function validateSettings(form_obj, error_locations) {
     // ensure that decimal places is at least 2 (required for genLawSico due to multistep, error producing calculations)
     if (form_obj.decimal_places < 2) {
         form_obj.decimal_places = 2;
+        error_locations.add('decimal_places');
     }
 }
 
