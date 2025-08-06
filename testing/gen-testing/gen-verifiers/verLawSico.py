@@ -336,6 +336,10 @@ def verify(question_cmds, tex_answer, settings):
     else:
         return f"Prompt tex str is malformed: '{prompt_tex_str}'"
     
+    # ensure that at least one unknown was requested (otherwise the following check will be incorrectly skipped)
+    if len(requested_values) == 0:
+        return f"Requested unknowns could not be determined from prompt: '${prompt_tex_str}'."
+
     # for every unknown that was requested, ensure the provided value matches the sympy value (+ usage of '=' and 'approx' is correct)
     is_rounded_correctly = build_new_answer_comparer(settings, answer_form_callback)
     for requested_value_info_dict in requested_values:
