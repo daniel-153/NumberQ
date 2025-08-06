@@ -12,6 +12,11 @@ export function validateSettings(form_obj, error_locations) {
 
     // handle random rotation
     if (form_obj.randomize_rotation === 'is_checked') form_obj.rotation_deg = H.randInt(0, 360);
+
+    // ensure that decimal places is at least 2 (required for genLawSico due to multistep, error producing calculations)
+    if (form_obj.decimal_places < 2) {
+        form_obj.decimal_places = 2;
+    }
 }
 
 const LSH = { // genLawSico helpers
@@ -308,7 +313,7 @@ export default async function genLawSico(settings) {
         const rounded = round(calced_triangle_measures[`${measure_type}s`][solved_unknown_letter]);
 
         let value;
-        if (Math.abs(calced_triangle_measures[`${measure_type}s`][solved_unknown_letter] - Number(rounded)) < 1e-9) {
+        if (Math.abs(calced_triangle_measures[`${measure_type}s`][solved_unknown_letter] - Number(rounded)) < 1e-12) {
             value = '=' + rounded;
         }
         else value = '\\approx' + rounded;

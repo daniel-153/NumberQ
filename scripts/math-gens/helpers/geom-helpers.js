@@ -789,7 +789,7 @@ export function positionAngleLabelFixedSize(label_bounding_rect, vertex_letter, 
 
             // now, if all 3 other points satisfy the inequality (are within the vertex), this is the correct scalar (out of the possible 8)
             let all_satisfied = true;
-            ['A','B','C','D'].filter(letter => letter !== vertex_letter).forEach(other_vertex_letter => {
+            ['A','B','C','D'].forEach(other_vertex_letter => {
                 const vertex_vector = {x: rect[other_vertex_letter].x - rect_center.x, y: rect[other_vertex_letter].y - rect_center.y};
 
                 const point_location = addVectors(rect_center_on_bisector, vertex_vector);
