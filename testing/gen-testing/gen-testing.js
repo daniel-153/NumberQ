@@ -20,7 +20,7 @@ function _getValidValuesLog(gen_module) {
     return createSettingsFields(gen_module.settings_fields, settings_templates_module, 'placeholder-form')
 }
 
-async function getSettingsPermutator(gen_module) {
+export async function getSettingsPermutator(gen_module) {
     // go from raw_valid_values (which has implied ranges and excluded values) to a permutator with exhuastive lists of valid values
     const raw_valid_values = await _getValidValuesLog(gen_module);
     const settings_permutator = {
