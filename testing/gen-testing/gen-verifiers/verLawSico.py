@@ -60,7 +60,6 @@ def verify(question_cmds, tex_answer, settings):
     
     # sort info on prompt triangle (for all of sides and angles -> labeling_type: labeled_known, labeled_unknown, not_labeled | label_tex_str | numerical_value)
     side_labels_sorted = {}
-    labeling_error = False
     for side_name, label_value in q_triangle_labels['sides'].items():
         if settings['sico_solve_for'] == 'one_unknown':
             if settings['sico_labels'] == 'all_vert':
@@ -71,7 +70,7 @@ def verify(question_cmds, tex_answer, settings):
                         'numerical_value': None
                     }
                 else:
-                    labeling_error = not attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
+                    attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
             elif settings['sico_labels'] == 'all_vert_and_unknown':
                     if label_value is None:
                         side_labels_sorted[side_name] = {
@@ -86,7 +85,7 @@ def verify(question_cmds, tex_answer, settings):
                             'numerical_value': None
                         }
                     else:
-                        labeling_error = not attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
+                        attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
             elif settings['sico_labels'] == 'only_unknown':
                     if label_value is None:
                         side_labels_sorted[side_name] = {
@@ -101,7 +100,7 @@ def verify(question_cmds, tex_answer, settings):
                             'numerical_value': None
                         }
                     else:
-                        labeling_error = not attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
+                        attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
         elif settings['sico_solve_for'] == 'whole_triangle':
             if settings['sico_labels'] == 'all_vert':
                 if label_value is None:
@@ -111,10 +110,10 @@ def verify(question_cmds, tex_answer, settings):
                             'numerical_value': None
                         }
                 else:
-                    labeling_error = not attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
+                    attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
             elif settings['sico_labels'] == 'all_vert_and_unknown':
                 if label_value is None:
-                    labeling_error = True
+                    return f"Labeling setting was 'all_vert_and_unknown' but one or more sides was left unlabeled; [side labels: {q_triangle_labels['sides']}]"
                 elif label_value in ['a','b','c']:
                     side_labels_sorted[side_name] = {
                             'type': 'labeled_unknown',
@@ -122,12 +121,9 @@ def verify(question_cmds, tex_answer, settings):
                             'numerical_value': None
                         }
                 else:
-                    labeling_error = not attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
+                    attempt_known_side_label_parse(label_value, side_labels_sorted, side_name)
             elif settings['sico_labels'] == 'only_unknown':
-                labeling_error = True
-
-    if labeling_error:
-        return f"Labeling error: side labels are not valid or parse-able [side labels: {q_triangle_labels['sides']}]." 
+                return "Labeling setting was 'only_unknown' but the prompt was to solve for the 'whole_triangle'"
     
     angle_labels_sorted = {}
     for angle_name, label_value in q_triangle_labels['angles'].items():
@@ -139,7 +135,7 @@ def verify(question_cmds, tex_answer, settings):
                     'numerical_value': None
                 }
             else:
-                labeling_error = attempt_known_angle_label_parse(label_value, angle_labels_sorted, angle_name)
+                attempt_known_angle_label_parse(label_value, angle_labels_sorted, angle_name)
         elif settings['sico_labels'] == 'only_unknown':
             if label_value is None:
                 angle_labels_sorted[angle_name] = {
@@ -154,7 +150,7 @@ def verify(question_cmds, tex_answer, settings):
                     'numerical_value': None
                 }
             else:
-                labeling_error = attempt_known_angle_label_parse(label_value, angle_labels_sorted, angle_name)
+                attempt_known_angle_label_parse(label_value, angle_labels_sorted, angle_name)
 
     # combine sorted side and angle labels
     sorted_labels = side_labels_sorted.copy()
@@ -341,7 +337,6 @@ def verify(question_cmds, tex_answer, settings):
         return f"Prompt tex str is malformed: '{prompt_tex_str}'"
     
     # for every unknown that was requested, ensure the provided value matches the sympy value (+ usage of '=' and 'approx' is correct)
-    all_matched_correctly = True
     is_rounded_correctly = build_new_answer_comparer(settings, answer_form_callback)
     for requested_value_info_dict in requested_values:
         equality_type = provided_solved_vars[requested_value_info_dict['tex_str']]['equality_type']
@@ -365,17 +360,17 @@ def verify(question_cmds, tex_answer, settings):
         if equality_type == 'exact': # exact equals ('=') was used
             provided_ans = parse_latex(str(exact_decimal_to_frac(provided_ans_unitless)))
 
-            all_matched_correctly = (
+            current_var_matched_correctly = (
                 provided_ans.equals(sympy_calced_ans) or # exact symbolic equality
                 provided_ans.evalf(20) == sympy_calced_ans.evalf(20) # correct to 20 places (needed for things like 180*acos(sqrt(2 - 2*cos(41*pi/90))/2)/pi (= to 49) which sympy won't reduce to an integer)
             )
         elif equality_type == 'approx':
-            all_matched_correctly = ( # approx equals ('\\approx') was used
+            current_var_matched_correctly = ( # approx equals ('\\approx') was used
                 is_rounded_correctly(provided_ans_unitless, sympy_calced_ans) and # correct by rounding
                 not (parse_latex(str(exact_decimal_to_frac(provided_ans_unitless))).equals(sympy_calced_ans)) # not exactly equal (approx should not have been used if exactly equal)
             )
 
-        if all_matched_correctly is not True:
+        if current_var_matched_correctly is not True: # as soon as the comparison fails with any var, note the discrepency + exit
             return f"Answer discrepency: [sympy: {requested_value_info_dict['tex_str']}={sympy_calced_ans}] does not match [gens: {requested_value_info_dict['tex_str']} '{equality_type}' {tex_str_value}] with [places: {settings['decimal_places']}, keep_rounded_zeros: {settings['keep_rounded_zeros']}]."
 
     return None

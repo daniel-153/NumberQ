@@ -147,18 +147,14 @@ def attempt_known_side_label_parse(label_tex_str, sorted_labels_dict, side_name)
             'tex_str': label_tex_str,
             'numerical_value': parse_latex(str(exact_decimal_to_frac(label_tex_str.split('\\,\\mathrm')[0])))
         }
-
-        return True
     elif str_is_int_or_decimal(label_tex_str):
         sorted_labels_dict[side_name] = {
             'type': 'labeled_known',
             'tex_str': label_tex_str,
             'numerical_value': parse_latex(str(exact_decimal_to_frac(label_tex_str)))
         }
-
-        return True
     else:
-        return False # not parse-able or invalid
+        raise Exception(f"Known side label not parse-able or is invalid: '{label_tex_str}'")
     
 def attempt_known_angle_label_parse(label_tex_str, sorted_labels_dict, angle_name):
     if label_tex_str.count('^\\circ') == 1 and str_is_int_or_decimal(label_tex_str.split('^\\circ')[0]):
@@ -167,7 +163,5 @@ def attempt_known_angle_label_parse(label_tex_str, sorted_labels_dict, angle_nam
             'tex_str': label_tex_str,
             'numerical_value': parse_latex(str(exact_decimal_to_frac(label_tex_str.split('^\\circ')[0])))
         }
-
-        return True
     else:
-        return False # not parse-able or invalid
+        raise Exception(f"Known angle label not parse-able or is invalid: '{label_tex_str}'")
