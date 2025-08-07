@@ -1,166 +1,79 @@
 import * as TB from '../templates/topic-banners.js';
 
-export function updateElementMath(elementID, latexCode, initial_font_size) {
-    /*
-     This function can be used in three different ways: 
-     (1) All three args passed -> insert new TeX in a certain element and start at a specific max font size
-     (2) Only elementID and latexCode passed -> insert new TeX in a certain element and start at 3vw (10vw on mobile) max font size
-     (3) Only elementID is passed -> downsize the pre-existing TeX (must have been inserted by this function) and start at 3vw (10vw on mobile)
-     */
-    
-    const element = document.getElementById(elementID);
+export function updateElementMath(math_container_id, latex_str, initial_font_size_vw) { // insert math into element, make adjustments (if needed) to ensure it doesn't overflow    
+    const math_container = document.getElementById(math_container_id);
+    initial_font_size_vw = parseFloat(initial_font_size_vw); // break off the 'vw'
+    latex_str = String(latex_str); // ensure string input (some gens output numbers)
 
-    // re-set any style that may have been changed to accomodate overflow in the last run of this function
-    element.style.display = '';
-    element.style.overflowX = 'hidden';
-    element.style.overflowY = 'hidden';
-    element.style.alignItems = '';
-    element.style.justifyContent = '';
+    // clear previously applied styles before running this func
+    math_container.style.fontSize = '';
+    math_container.style.display = '';
+    math_container.style.overflowX = 'hidden';
+    math_container.style.overflowY = 'hidden';
+    math_container.style.justifyContent = '';
+    math_container.style.alignItems = '';
 
-    // use newly provided TeX or previously inserted TeX
-    latexCode = latexCode !== undefined ? latexCode : element.getAttribute('data-latexcode'); // previously inserted LaTeX
-    if (latexCode === null) {
-        console.error('updateElementMath error: provided element does not have a data-latexcode attribute');
-        return;
+    // make some adjustments to the initial font size based on special cases (latex contains fractions, or smaller screen size detected)
+    const frac_upscale = (latex_str.includes('\\frac')) ? 1.3 : 1;
+    initial_font_size_vw *= frac_upscale;
+    if (document.documentElement.clientWidth > 900 && document.documentElement.clientWidth <= 1700) { // laptops and tablets
+        initial_font_size_vw *= (4/3);
+    }
+    else if (document.documentElement.clientWidth < 900) { // phones + small tablets
+        initial_font_size_vw *= (10/3);
     }
 
-    let defaultFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Default font size
-    if (window.innerWidth <= 900) defaultFontSize = "10vw";
+    // apply the resolved initial font size and do the intial typeset
+    math_container.innerHTML = '<div class="inner-math-wrapper" style="width: fit-content; height: fit-content; max-width: fit-content; max-height: fit-content;">\\(' + latex_str + '\\)</div>';
+    const inner_math_container = math_container.firstElementChild;
+    inner_math_container.style.fontSize = initial_font_size_vw + 'vw';
+    math_container.setAttribute('data-latexcode', latex_str); // expose the LaTeX so it's still accessible after rendering
+    MathJax.typesetPromise([inner_math_container]).then(() => {
+        const hasXOverflow = () => inner_math_container.clientWidth > math_container.clientWidth;
+        const hasYOverflow = () => inner_math_container.clientHeight > math_container.clientHeight;
+        const hasXorYOverflow = () => hasXOverflow() || hasYOverflow();
 
-    // Determine if the LaTeX code contains a fraction
-    let adjustedFontSize;
-    if (String(latexCode).includes("\\frac") && window.innerWidth > 900) {
-        adjustedFontSize = "4.2vw";
-    }
-    else if (String(latexCode).includes("\\frac") && window.innerWidth <= 900) {
-        adjustedFontSize = "13vw";
-    }
-    else {
-        adjustedFontSize = defaultFontSize;
-    }
+        if (hasXorYOverflow()) {
+            // needed factor is the most extreme out of (available x-space/total x-space with scroll) and (available y-space/total y-space with scroll)
+            let needed_downscale_factor = Math.min(math_container.clientWidth/inner_math_container.clientWidth, math_container.clientHeight/inner_math_container.clientHeight);
+            needed_downscale_factor -= needed_downscale_factor * (1 / 100); // add an additional 1% 
+            inner_math_container.style.fontSize = (initial_font_size_vw * needed_downscale_factor) + 'vw';
 
-    // Automatically insert delimiters around the LaTeX code
-    const wrappedLatexCode = '\\(' + latexCode + '\\)';
-
-    // Set the initial font size before rendering
-    element.style.fontSize = adjustedFontSize;
-
-    // Insert the LaTeX code into the element
-    element.innerHTML = wrappedLatexCode;
-
-    // expose the LaTeX so it's still accessible after rendering
-    element.setAttribute('data-latexcode', latexCode);
-
-    // Render the content with MathJax
-    MathJax.typesetPromise([element]).then(() => {
-        // After rendering, adjust font size to fit the container
-        fitTextToDiv(element, adjustedFontSize);
-    });
-
-    // Function to adjust font size dynamically
-    function fitTextToDiv(container, originalFontSize) {
-        container.style.fontSize = originalFontSize; // Reset to original font size
-
-        // Detect overflow
-        const isOverflowing = () =>
-            container.scrollHeight > container.clientHeight || container.scrollWidth > container.clientWidth;
-
-        while (isOverflowing()) {
-            // Calculate how much to downsize
-            const heightRatio = container.clientHeight / container.scrollHeight;
-            const widthRatio = container.clientWidth / container.scrollWidth;
-            const scaleFactor = Math.min(heightRatio, widthRatio);
-
-            // Apply scale factor
-            const currentFontSize = parseFloat(getComputedStyle(container).fontSize);
-            const newFontSize = currentFontSize * scaleFactor;
-            container.style.fontSize = newFontSize + "px"; // modify font here
-            // container.style.fontSize = (newFontSize / Window.innerWidth) * 100 + 'vw';
-
-            // Break loop if scale factor is 1 (the text isn't overflowing anymore), or we shrunk the text too small (below 16px)
-            if (scaleFactor >= 1 || newFontSize < 16) break; 
-        }
-
-        // ensure font size is >= 16px
-        if (parseFloat(getComputedStyle(container).fontSize) < 16) container.style.fontSize = 16 + 'px';
-
-        if (isOverflowing()) { // if the container is still overflowing at the minimum font size (16px) apply scroll bars
-            container.style.display = 'flex';
-            const applyYStyleUpdates = () => {container.style.overflowY = 'auto'; container.style.alignItems = 'flex-start';}
-            const applyXStyleUpdates = () => {container.style.overflowX = 'auto'; container.style.justifyContent = 'left';}
-            if (container.scrollHeight > container.clientHeight && container.scrollWidth > container.clientWidth) { // y-overflow and x-overflow (apply scrolls at same time - no special handling)
-                applyYStyleUpdates();
-                applyXStyleUpdates(); 
+            // ensure the font size never shrinks below 16px
+            if (((initial_font_size_vw * needed_downscale_factor)/100) * document.documentElement.clientWidth < 16) {
+                inner_math_container.style.fontSize = (16 / document.documentElement.clientWidth) * 100 + 'vw';
             }
-            else if (container.scrollHeight > container.clientHeight) { // only y-overflow (before scroll bar)
-                applyYStyleUpdates();
-                requestAnimationFrame(() => {
-                    if (container.scrollWidth > container.clientWidth) { // scroll bar caused x-overflow
+
+            // settle (apply) all styles then check if there is still overflow (in which case, scroll bars are needed)
+            requestAnimationFrame(() => {
+                if (hasXorYOverflow()) {
+                    math_container.style.display = 'flex';
+                    const applyYStyleUpdates = () => {math_container.style.overflowY = 'auto'; math_container.style.alignItems = 'flex-start'; math_container.scrollTop = 0;}
+                    const applyXStyleUpdates = () => {math_container.style.overflowX = 'auto'; math_container.style.justifyContent = 'left'; math_container.scrollLeft = 0;}
+
+                    if (hasXOverflow() && hasYOverflow()) { // both directions overflowed (just apply both scroll bars at the same time)
                         applyXStyleUpdates();
-                    }
-                });
-            }
-            else if (container.scrollWidth > container.clientWidth) { // only x-overflow (before scroll bar)                
-                applyXStyleUpdates(); 
-                requestAnimationFrame(() => {
-                    if (container.scrollHeight > container.clientHeight) { // scroll bar caused y-overflow
                         applyYStyleUpdates();
                     }
-                });
-            }
-            
-            container.innerHTML = `
-            <div class="clipped-tex-container"> 
-                <div class="clipped-tex-wrapper">
-                    \\[${latexCode}\\]
-                </div>    
-            </div>
-            <style>
-                .clipped-tex-container {
-                    width: fit-content;
-                }
+                    else if (hasXOverflow()) { // only x overflowed
+                        applyXStyleUpdates();
 
-                #${elementID} {
-                --scrollbar-size: max(0.52vw, 7.5px);
-                --scrollbar-radius: max(0.26vw, 4px);
-                }
+                        requestAnimationFrame(() => { // check if the x scroll bar caused y overflow
+                            if (hasYOverflow()) applyYStyleUpdates();
+                        });
+                    }
+                    else if (hasYOverflow()) { // only y overflowed
+                        applyYStyleUpdates();
 
-                #${elementID}::-webkit-scrollbar {
-                    width: var(--scrollbar-size);
-                    height: var(--scrollbar-size);
+                        requestAnimationFrame(() => { // check if the y scroll bar caused x overflow
+                            if (hasXOverflow()) applyXStyleUpdates();
+                        });
+                    }
                 }
-
-                #${elementID}::-webkit-scrollbar-thumb {
-                    background-color: #555;
-                    border-radius: var(--scrollbar-radius);
-                }
-
-                #${elementID}::-webkit-scrollbar-thumb:hover {
-                    background-color: #666; 
-                }
-
-                #${elementID}::-webkit-scrollbar-track {
-                    background: #2222223d;
-                    border-radius: var(--scrollbar-radius); 
-                }
-
-                #${elementID}::-webkit-scrollbar-corner {
-                    background-color: #2222223d;
-                    border-radius: var(--scrollbar-radius); 
-                }
-            </style>
-            `;
-            MathJax.typesetPromise(document.querySelectorAll(".clipped-tex-container"));
+            });
         }
-
-        // make sure the final font size we set is in vw, not px
-        container.style.fontSize = (parseFloat(getComputedStyle(container).fontSize) / document.documentElement.clientWidth) * 100 + 'vw';
-
-        // make sure the scroll is reset every time (all the way back to the top-left)
-        container.scrollLeft = 0;
-        container.scrollTop = 0;
-    }
-} // uncollapse for explanation
+    });
+}
 
 export function addTextAutofitter(element, initial_font_size, method) {
     let originalFontSize = initial_font_size !== undefined ? initial_font_size : "3vw"; // Define your original font size
