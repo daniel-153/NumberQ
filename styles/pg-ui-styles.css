@@ -113,6 +113,35 @@
     border: 0.6vw solid rgba(0, 0, 0, 0);
 }
 
+.rendered-box {
+    --scrollbar-size: max(0.52vw, 7.5px);
+    --scrollbar-radius: max(0.26vw, 4px);
+}
+
+.rendered-box::-webkit-scrollbar {
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
+}
+
+.rendered-box::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: var(--scrollbar-radius);
+}
+
+.rendered-box::-webkit-scrollbar-thumb:hover {
+    background-color: #666; 
+}
+
+.rendered-box::-webkit-scrollbar-track {
+    background: #2222223d;
+    border-radius: var(--scrollbar-radius); 
+}
+
+.rendered-box::-webkit-scrollbar-corner {
+    background-color: #2222223d;
+    border-radius: var(--scrollbar-radius); 
+}
+
 .output-box {
     display: flex;
     justify-content: center;
