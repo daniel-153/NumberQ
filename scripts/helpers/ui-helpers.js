@@ -11,8 +11,11 @@ export function updateElementMath(elementID, latexCode, initial_font_size) {
     const element = document.getElementById(elementID);
 
     // re-set any style that may have been changed to accomodate overflow in the last run of this function
+    element.style.display = '';
     element.style.overflowX = 'hidden';
-    element.style.justifyContent = 'center';
+    element.style.overflowY = 'hidden';
+    element.style.alignItems = '';
+    element.style.justifyContent = '';
 
     // use newly provided TeX or previously inserted TeX
     latexCode = latexCode !== undefined ? latexCode : element.getAttribute('data-latexcode'); // previously inserted LaTeX
@@ -81,10 +84,30 @@ export function updateElementMath(elementID, latexCode, initial_font_size) {
         // ensure font size is >= 16px
         if (parseFloat(getComputedStyle(container).fontSize) < 16) container.style.fontSize = 16 + 'px';
 
-        if (isOverflowing()) {
-            container.style.overflowX = 'auto';
+        if (isOverflowing()) { // if the container is still overflowing at the minimum font size (16px) apply scroll bars
             container.style.display = 'flex';
-            container.style.justifyContent = 'left';
+            const applyYStyleUpdates = () => {container.style.overflowY = 'auto'; container.style.alignItems = 'flex-start';}
+            const applyXStyleUpdates = () => {container.style.overflowX = 'auto'; container.style.justifyContent = 'left';}
+            if (container.scrollHeight > container.clientHeight && container.scrollWidth > container.clientWidth) { // y-overflow and x-overflow (apply scrolls at same time - no special handling)
+                applyYStyleUpdates();
+                applyXStyleUpdates(); 
+            }
+            else if (container.scrollHeight > container.clientHeight) { // only y-overflow (before scroll bar)
+                applyYStyleUpdates();
+                requestAnimationFrame(() => {
+                    if (container.scrollWidth > container.clientWidth) { // scroll bar caused x-overflow
+                        applyXStyleUpdates();
+                    }
+                });
+            }
+            else if (container.scrollWidth > container.clientWidth) { // only x-overflow (before scroll bar)                
+                applyXStyleUpdates(); 
+                requestAnimationFrame(() => {
+                    if (container.scrollHeight > container.clientHeight) { // scroll bar caused y-overflow
+                        applyYStyleUpdates();
+                    }
+                });
+            }
             
             container.innerHTML = `
             <div class="clipped-tex-container"> 
@@ -94,20 +117,16 @@ export function updateElementMath(elementID, latexCode, initial_font_size) {
             </div>
             <style>
                 .clipped-tex-container {
-                    width: calc(100% + fit-content);
-                    border-right: 4mm solid rgba(0,0,0,0);
-                }
-                
-                .clipped-tex-wrapper {
-                    border-left: 4mm solid rgba(0,0,0,0);
+                    width: fit-content;
                 }
 
-                :root {
+                #${elementID} {
                 --scrollbar-size: max(0.52vw, 7.5px);
                 --scrollbar-radius: max(0.26vw, 4px);
                 }
 
                 #${elementID}::-webkit-scrollbar {
+                    width: var(--scrollbar-size);
                     height: var(--scrollbar-size);
                 }
 
@@ -124,32 +143,22 @@ export function updateElementMath(elementID, latexCode, initial_font_size) {
                     background: #2222223d;
                     border-radius: var(--scrollbar-radius); 
                 }
+
+                #${elementID}::-webkit-scrollbar-corner {
+                    background-color: #2222223d;
+                    border-radius: var(--scrollbar-radius); 
+                }
             </style>
             `;
             MathJax.typesetPromise(document.querySelectorAll(".clipped-tex-container"));
         }
 
         // make sure the final font size we set is in vw, not px
-        container.style.fontSize = (parseFloat(getComputedStyle(container).fontSize) / window.innerWidth) * 100 + 'vw';
+        container.style.fontSize = (parseFloat(getComputedStyle(container).fontSize) / document.documentElement.clientWidth) * 100 + 'vw';
 
-        // make sure the scroll is reset every time (all the way back to the left)
+        // make sure the scroll is reset every time (all the way back to the top-left)
         container.scrollLeft = 0;
-
-        // special case for the fullscreen answer (which shouldn't have a scrollbar when hidden)
-        if (
-            elementID === 'fullscreen-answer' && 
-            document.getElementById('show-hide-button').getAttribute('data-status') === 'show'
-        ) {
-            container.style.overflowX = 'hidden';
-        }
-        
-        // if we overflowed in the y-direction but not the x-direction, don't pull the text to the left
-        if (container.scrollHeight > container.clientHeight && !(container.scrollWidth > container.clientWidth)) {
-            container.style.justifyContent = "center";
-            
-            // since real y-direction overflows only seem to happen on mobile (& possibly small ipads), add this special case to deal with this 
-            if (window.innerWidth <= 1200) observeTextChanges(container, '13vw', 'run_once');
-        }
+        container.scrollTop = 0;
     }
 } // uncollapse for explanation
 
