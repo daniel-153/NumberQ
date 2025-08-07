@@ -689,6 +689,24 @@ export default async function genOrdOp(settings) {
             );
         }
     }
+
+    // patch to filter expressions that still contain 0 when settings.allow_zero === 'no'
+    let followsAllowZeroRule;
+    if (settings.allow_zero === 'yes') {
+        followsAllowZeroRule = () => true;
+    }
+    else if (settings.allow_zero === 'no') {
+        const mul0 = settings.multiply_symbol.slice(1, -1) + '0';
+        followsAllowZeroRule = function(expr_tex_str) {
+            if (expr_tex_str.charAt(0) === '0') return false;
+            else return ( // try to match '+0', '-0', '[mul_sym]0', or '(0'
+                !expr_tex_str.includes('-0') &&
+                !expr_tex_str.includes(mul0) &&
+                !expr_tex_str.includes('+0') &&
+                !expr_tex_str.includes('(0')
+            );
+        }
+    }
     
     // Next step is the solution search
     const attempts_per_template = 100;
@@ -708,16 +726,18 @@ export default async function genOrdOp(settings) {
             OOH.evaluateExpression(AST);
             const expression_tex_string = OOH.templateToMath(JSON.parse(JSON.stringify(expression_template)));
             let expression_value = OOH.evaluateExprTexString(expression_tex_string); // integer, decimal, or NaN
-
-            if (validExpressionSize(expression_value) && Number.isSafeInteger(expression_value)) { // a completely valid solution was found
-                sol_found = true;
-                final_value = expression_value;
-                final_template = expression_template;
-                break;
-            }
-            else if (!Number.isNaN(expression_value) && expression_value < final_value && Number.isSafeInteger(expression_value)) { // expression at least has a numerical value that is less than anything we've seen so far
-                final_value = expression_value;
-                final_template = JSON.parse(JSON.stringify(expression_template)); // deep copy of the template when it has all its values filled in
+            
+            if (followsAllowZeroRule(expression_tex_string)) {
+                if (validExpressionSize(expression_value) && Number.isSafeInteger(expression_value)) { // a completely valid solution was found
+                    sol_found = true;
+                    final_value = expression_value;
+                    final_template = expression_template;
+                    break;
+                }
+                else if (!Number.isNaN(expression_value) && expression_value < final_value && Number.isSafeInteger(expression_value)) { // expression at least has a numerical value that is less than anything we've seen so far
+                    final_value = expression_value;
+                    final_template = JSON.parse(JSON.stringify(expression_template)); // deep copy of the template when it has all its values filled in
+                }
             }
 
             OOH.clearOperandValues(operand_list); // reset all of the coef's values to null
