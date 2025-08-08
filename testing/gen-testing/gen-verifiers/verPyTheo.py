@@ -41,13 +41,11 @@ question_cmds_validator = build_cmd_history_validator([
     {'action': 'method_call', 'method_name': 'drawImage', 'args': [image, number, number, number, number]} # 31
 ])
 
-answer_cmds_validator = question_cmds_validator
-
 def answer_form_callback(settings):
     if settings["py_theo_answer_form"] == "decimal_answers": return 'rounded'
     else: return "exact"
 
-def verify(question_cmds, answer_cmds, settings):
+def verify(question_cmds, tex_answer, settings):
     # gather info for the question (prompt) triangle
     try:
         q_triangle_info = triangle_info_from_points(*[Point(command['args'][0], command['args'][1]) for command in question_cmds[11:13 + 1]])
@@ -65,49 +63,25 @@ def verify(question_cmds, answer_cmds, settings):
         if side_label in ['?', 'x', 'b', 'c', None]: q_triangle_unknowns.append(side_name)
     if len(q_triangle_unknowns) != 1: return f"Question triangle has too few or too many unknowns: [unknowns: {len(q_triangle_unknowns)}]"
 
-    # gather info for the answer triangle
-    try:
-        a_triangle_info = triangle_info_from_points(*[Point(command['args'][0], command['args'][1]) for command in answer_cmds[11:13 + 1]])
-        a_side_labels = match_side_angle_vertex_labels(
-            a_triangle_info, answer_cmds[29:31 + 1], 
-            answer_cmds[1]['new_value'], angle_labels_allowed=False, vertex_labels_allowed=False
-        )["sides"]
-        a_right_vertex = match_right_symbol_to_vertex(a_triangle_info, answer_cmds[24:26 + 1])
-    except Exception as e:
-        raise Exception(f"Failed to gather info for Answer triangle: {e}")
-    
-    # (q) and (a) triangle are not drawn identically, but they must only differ by two properties: a scaling and a translation (strategy below compares the two right corners to determine this)
-    if q_right_vertex != a_right_vertex: 
-        return f"Orientation Mismatch between question and answer triangles: vertex with the right angle in the question and answer triangle are not the same: [question right vertex: {q_right_vertex}], [answer right vertex: {a_right_vertex}]."
-
-    # calling the right vertex 'A' for convenience below
-    right_vertex_letter = q_right_vertex
-    other_vertices = [vertex_letter for vertex_letter in ['A','B','C'] if vertex_letter != right_vertex_letter]
-    q_AC = Matrix([q_triangle_info['vertices'][other_vertices[0]].x - q_triangle_info['vertices'][right_vertex_letter].x, q_triangle_info['vertices'][other_vertices[0]].y - q_triangle_info['vertices'][right_vertex_letter].y])
-    q_AB = Matrix([q_triangle_info['vertices'][other_vertices[1]].x - q_triangle_info['vertices'][right_vertex_letter].x, q_triangle_info['vertices'][other_vertices[1]].y - q_triangle_info['vertices'][right_vertex_letter].y])
-    a_AC = Matrix([a_triangle_info['vertices'][other_vertices[0]].x - a_triangle_info['vertices'][right_vertex_letter].x, a_triangle_info['vertices'][other_vertices[0]].y - a_triangle_info['vertices'][right_vertex_letter].y])
-    a_AB = Matrix([a_triangle_info['vertices'][other_vertices[1]].x - a_triangle_info['vertices'][right_vertex_letter].x, a_triangle_info['vertices'][other_vertices[1]].y - a_triangle_info['vertices'][right_vertex_letter].y])
-    diff_threshold = 0.01 # difference of 0.01 or below is considered to be arbitrary for canvas drawing purposes
-
-    # ensure the corners underwent a uniform scaling and no rotation 
-    if abs((q_AC.norm() / a_AC.norm()) - (q_AB.norm() / a_AB.norm())) > diff_threshold: # detectable scaling mismatch between AC, AB and AC', AB'
-        return f"Orientation Mismatch between question and answer triangles: detectable scaling mismatch between AC, AB and AC', AB' -> [AC/AC': {(q_AC.norm() / a_AC.norm())}, AB/AB': {(q_AB.norm() / a_AB.norm())}]"
-    if abs( q_AC.dot(a_AC) / (q_AC.norm()*a_AC.norm()) - 1) > diff_threshold: # detectable rotation between AC and AC'
-        return f"Orientation Mismatch between question and answer triangles: detectable rotation between AC and AC' -> [angle acos arg: {q_AC.dot(a_AC) / (q_AC.norm()*a_AC.norm())}]"
-    if abs( q_AB.dot(a_AB) / (q_AB.norm()*a_AB.norm()) - 1) > diff_threshold: # detectable rotation between AB and AB'
-        return f"Orientation Mismatch between question and answer triangles: detectable rotation between AB and AB' -> [angle acos arg: {q_AB.dot(a_AC) / (q_AB.norm()*a_AB.norm())}]"
-    
-    # last check for correct orientation is that the known labels are in exactly the same place in the question and answer (it follows that all labels are in exactly the same place)
-    triangle_knowns = [letter for letter in ['a','b','c'] if (not letter in q_triangle_unknowns)]
-    if (
-        q_side_labels[triangle_knowns[0]] != a_side_labels[triangle_knowns[0]] or
-        q_side_labels[triangle_knowns[1]] != a_side_labels[triangle_knowns[1]]
-    ): return "Orientation Mismatch between question and answer triangles: known side labels are not in the same location in the question and answer triangles."
-
     # now that proper orientation and non-degenerate labeling have been established, the answer can be verified computationally (as in latex verifiers)
+    triangle_knowns = [letter for letter in ['a','b','c'] if (not letter in q_triangle_unknowns)]
     known_side_1 = q_side_labels[triangle_knowns[0]]
     known_side_2 = q_side_labels[triangle_knowns[1]]
-    answer_for_unknown_side = a_side_labels[q_triangle_unknowns[0]]
+
+    # try to extract (parse) the unknown side length out of the tex_answer
+    if ( # an x=, b=, c= answer type
+        q_side_labels[q_triangle_unknowns[0]] is not None and
+        (tex_answer.startswith(q_side_labels[q_triangle_unknowns[0]] + '=') or 
+        tex_answer.startswith(q_side_labels[q_triangle_unknowns[0]] + '\\approx'))
+    ):         
+        answer_for_unknown_side = tex_answer[1:] # break off the x, b, c...
+    elif ( # an unknown (unlabeled) side answer type
+        (q_side_labels[q_triangle_unknowns[0]] is None or q_side_labels[q_triangle_unknowns[0]] == '?') and
+        tex_answer.startswith('{\\scriptstyle \\mathrm{Unknown~Side}}')
+    ): 
+        answer_for_unknown_side = tex_answer.replace('{\\scriptstyle \\mathrm{Unknown~Side}}', '') # break off the 'Unknown Side' label
+    else:
+        return f"Could not parse tex answer or match it to the unknown side: {tex_answer}"
 
     # handle side lengths with units
     unit_matches = re.findall(r'(?:~\\mathrm\{[a-z]{1,2}\})', known_side_1)
@@ -141,13 +115,14 @@ def verify(question_cmds, answer_cmds, settings):
     provided_side_2 = parse_latex(known_side_2) if not '.' in known_side_2 else parse_latex(exact_decimal_to_frac(known_side_2))
     calculated_side_3 = get_third_side(provided_side_1, provided_side_2)
 
-    if (settings['py_theo_answer_form'] == 'exact_answers' or (not '\\approx' in answer_for_unknown_side)): # answers to be compared exactly
+    if (settings['py_theo_answer_form'] == 'exact_answers' or (answer_for_unknown_side.startswith('='))): # answers to be compared exactly
+        answer_for_unknown_side = answer_for_unknown_side.replace('=', '')
         provided_side_3 = parse_latex(answer_for_unknown_side) if not '.' in answer_for_unknown_side else parse_latex(exact_decimal_to_frac(answer_for_unknown_side))
 
         if provided_side_3.equals(calculated_side_3) is not True:
-            return calculated_side_3
+            return str(calculated_side_3)
     elif settings['py_theo_answer_form'] == 'decimal_answers':
-        if (not '\\approx' in answer_for_unknown_side):
+        if (not answer_for_unknown_side.startswith('\\approx')):
             return 'Approximate symbol not present in an inexact answer.'
         
         if build_new_answer_comparer(settings, answer_form_callback)(answer_for_unknown_side.replace('\\approx', ''), calculated_side_3) is not True:
