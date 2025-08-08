@@ -2,7 +2,7 @@ import * as H from '../helpers/gen-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
 import { CH } from '../../helpers/canvas-helpers.js';
 
-export const gen_type = 'canvas-Q|canvas-A';
+export const gen_type = 'canvas-Q|latex-A';
 
 export function validateSettings(form_obj, error_locations) {
     // if rounding rules requires that all decimals be rounded to whole numbers, don't allow decimal side lengths
@@ -308,11 +308,6 @@ export default async function genPyTheo(settings) {
         prompt_labels[key] = side_label;
     }
 
-    const answer_labels = {a: null, b: null, c: null};
-    for (const [key, _] of Object.entries(answer_labels)) {
-        answer_labels[key] = display_side_lengths[key] + ((settings.triangle_length_unit === '')? '' : `~\\mathrm{${settings.triangle_length_unit}}`);
-    }
-
     // before drawing the triangles, ensure the (drawn) size difference between the legs never gets too extreme (some triangles like 1-100-r(10001) won't be to scale anymore)
     const max_size_diff = 4.25;
     if (
@@ -335,14 +330,26 @@ export default async function genPyTheo(settings) {
     const prompt_canvas = new_canvas.element;
     await CH.drawRightTriangle(numerical_side_lengths, prompt_labels, settings.rotation_deg);
 
-    // create the answer canvas and draw the answer triangle on it
-    new_canvas = CH.createCanvas(1000, 1000, true);
-    const answer_canvas = new_canvas.element;
-    await CH.drawRightTriangle(numerical_side_lengths, answer_labels, settings.rotation_deg);
+    let answer_tex_string = '';
+
+    // resolve the symbol for the unknown (x=, b=, c=, etc)
+    if (marker_for_unknown === null || marker_for_unknown === '?') answer_tex_string += '{\\scriptstyle \\mathrm{Unknown~Side}}'; // unknown side has no label
+    else answer_tex_string += marker_for_unknown;
+
+    // resolve the type of equals sign to use
+    if (
+        typeof(display_side_lengths[unknown_side]) === 'string' &&
+        display_side_lengths[unknown_side].startsWith('\\approx')
+    ) {
+        answer_tex_string += display_side_lengths[unknown_side];
+    }
+    else answer_tex_string += ('=' + display_side_lengths[unknown_side]);
+
+    answer_tex_string += ((settings.triangle_length_unit === '')? '' : `~\\mathrm{${settings.triangle_length_unit}}`); // add on units
     
     return {
         question: prompt_canvas,
-        answer: answer_canvas
+        answer: answer_tex_string
     }
 }
 
