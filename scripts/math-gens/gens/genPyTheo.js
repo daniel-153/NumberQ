@@ -309,7 +309,7 @@ export default async function genPyTheo(settings) {
     }
 
     // before drawing the triangles, ensure the (drawn) size difference between the legs never gets too extreme (some triangles like 1-100-r(10001) won't be to scale anymore)
-    const max_size_diff = 4.25;
+    const max_size_diff = 3;
     if (
         numerical_side_lengths.a / numerical_side_lengths.b > max_size_diff ||
         numerical_side_lengths.a / numerical_side_lengths.b < 1 / max_size_diff
