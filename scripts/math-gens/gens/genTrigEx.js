@@ -445,7 +445,8 @@ export default function genTrigEx(settings) {
     else if (angleType === 'degrees' && argumentSign === 'negative') promptIndex = H.randInt(50,65);
 
     const selectedPrompt = TEH.trigFunctions[currentTrigFunction].prompts[promptIndex];
-    const selectedAnswer = TEH.trigFunctions[currentTrigFunction].answers[promptIndex]; 
+    let selectedAnswer = TEH.trigFunctions[currentTrigFunction].answers[promptIndex]; 
+    if (selectedAnswer === 'undefined') selectedAnswer = '\\text{undefined}'
 
     return {
         question: selectedPrompt,
