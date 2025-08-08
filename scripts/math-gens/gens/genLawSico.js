@@ -315,7 +315,7 @@ export default async function genLawSico(settings) {
 
         let value;
         if (Math.abs(calced_triangle_measures[`${measure_type}s`][solved_unknown_letter] - Number(rounded)) < 1e-12) {
-            value = '=' + rounded;
+            value = '=' + Number(rounded);
         }
         else value = '\\approx' + rounded;
 
