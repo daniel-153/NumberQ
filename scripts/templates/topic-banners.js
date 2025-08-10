@@ -4,7 +4,7 @@ export const templates = [
         category_class_name: 'arithmetic-gen',
         display_name: 'Addition & Subtraction',
         display_category: 'arithmetic',
-        example_problem: '4-6+8-5',
+        example_problem: '3+7=10',
         short_name: 'add-subtract'
     },
     {
