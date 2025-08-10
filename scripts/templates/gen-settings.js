@@ -1057,6 +1057,39 @@ export const wrap_negatives = {
         ['always','Always'],
         ['only_middle','Only When Needed']
     ], 
-    tooltip: "Should parentheses always be placed around negative numbers ((-1)+(-2)), or only when negative are in the middle of the expression (-1+(-2))?",
+    tooltip: "Should parentheses always be placed around negative numbers ((-1)+(-2)), or only when negatives are in the middle of the expression (-1+(-2))?",
     prelocked: true
+};
+
+const muldiv_notation = {
+    type: 'radio_buttons',
+    display_name: 'Notation',
+    radio_buttons: [
+        ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{\\times~b}}\\end{array} \\)'],
+        ['flat_with_eq','\\( a\\times b= \\) &nbsp;'],
+        ['flat_with_eq_and_q','\\( a\\times b=\\:? \\) &nbsp;'],
+        ['flat_without_eq','\\( a\\times b \\)']
+    ], 
+    tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers)",
+    prelocked: true
+};
+
+const muldiv_allow_zero = {
+    type: 'radio_buttons',
+    display_name: 'Allow Zero',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should products with zero (like 0 &times; 3 or 7 &times; 0) be allowed?"
+};
+
+const stacked_notation_rule = {
+    type: 'radio_buttons',
+    display_name: 'Stacking \\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{+~b}}\\end{array} \\)',
+    radio_buttons: [
+        ['a_geq_b','\\( \\operatorname{digits}(a)\\geq\\operatorname{digits}(b) \\)'],
+        ['no_restriction','No Restriction']
+    ], 
+    tooltip: "Should the upper number always have the same or more digits than the lower number in stacked multiplication notation?"
 };
