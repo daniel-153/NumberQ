@@ -1039,7 +1039,7 @@ export const addsub_notation = {
         ['flat_with_eq_and_q','\\( a+b=\\:? \\) &nbsp;'],
         ['flat_without_eq','\\( a+b \\)']
     ], 
-    tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers where digits(a)&nbsp;&ge;&nbsp;digits(b))",
+    tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers)",
     prelocked: true
 };
 
