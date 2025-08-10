@@ -977,3 +977,84 @@ export const var_iso_eq_type = {
     ], 
     tooltip: "What type of equations should be used? (random forms like ab+c=d, or ones from specific topics)?"
 };
+
+export const first_term_range = {
+    type: 'range_textboxes',
+    code_names: ['first_term_range_min','first_term_range_max'],
+    display_name: 'First Term Range',
+    tooltip: 'How big or small should the first term be? (create a range with integers from -9999 to 9999)',
+    valid_values: {
+        'first_term_range_min': [-9999, '--', 9999],
+        'first_term_range_max': [-9999, '--', 9999]
+    },
+    default_value: {
+        'first_term_range_min': 1,
+        'first_term_range_max': 9
+    }
+};
+
+export const second_term_range = {
+    type: 'range_textboxes',
+    code_names: ['second_term_range_min','second_term_range_max'],
+    display_name: 'Second Term Range',
+    tooltip: 'How big or small should the second term be? (create a range with integers from -9999 to 9999)',
+    valid_values: {
+        'second_term_range_min': [-9999, '--', 9999],
+        'second_term_range_max': [-9999, '--', 9999]
+    },
+    default_value: {
+        'second_term_range_min': 1,
+        'second_term_range_max': 9
+    }
+};
+
+export const allow_zero_terms = {
+    type: 'radio_buttons',
+    display_name: 'Allow Zero',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should sums or differences with zero (like 0 + 3 or 7 - 0) be allowed?"
+};
+
+export const force_non_neg_sub = {
+    type: 'radio_buttons',
+    display_name: 'Force Non-Negative Subtraction',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should subtractions with non-negative numbers always stay non-negative? (this prevents subtractions like 3 - 5, which result in negative numbers)"
+};
+
+export const addsub_notation = {
+    type: 'radio_buttons',
+    display_name: 'Notation',
+    radio_buttons: [
+        ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{+~b}}\\end{array} \\)'],
+        ['flat_with_eq','\\( a+b= \\) &nbsp;'],
+        ['flat_with_eq_and_q','\\( a+b=\\:? \\) &nbsp;'],
+        ['flat_without_eq','\\( a+b \\)']
+    ], 
+    tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers where digits(a)&nbsp;&ge;&nbsp;digits(b))",
+    prelocked: true
+};
+
+export const addsub_operation = {
+    type: 'radio_buttons',
+    display_name: 'Operation',
+    radio_buttons: [['add','Addition'],['subtract','Subtraction'],['either','Either']], 
+    tooltip: 'Which operation should be between the numbers?'
+};
+
+export const wrap_negatives = {
+    type: 'radio_buttons',
+    display_name: 'Wrap Negative Numbers',
+    radio_buttons: [
+        ['always','Always'],
+        ['only_middle','Only When Needed']
+    ], 
+    tooltip: "Should parentheses always be placed around negative numbers ((-1)+(-2)), or only when negative are in the middle of the expression (-1+(-2))?",
+    prelocked: true
+};
