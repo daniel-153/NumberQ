@@ -990,7 +990,8 @@ export const first_term_range = {
     default_value: {
         'first_term_range_min': 1,
         'first_term_range_max': 9
-    }
+    },
+    number_range_class: 'wide-range-box'
 };
 
 export const second_term_range = {
@@ -1005,7 +1006,8 @@ export const second_term_range = {
     default_value: {
         'second_term_range_min': 1,
         'second_term_range_max': 9
-    }
+    },
+    number_range_class: 'wide-range-box'
 };
 
 export const allow_zero_terms = {

@@ -158,11 +158,11 @@ const CSH = { // createSettingsFields helpers
                     from:&thinsp;<input
                     type="text"
                     name="${settings.code_names[0]}"
-                    class="settings-text-box number-range-box"
+                    class="settings-text-box number-range-box ${(settings.number_range_class !== undefined)? settings.number_range_class : ''}"
                     />&thinsp;to:&thinsp;<input
                     type="text"
                     name="${settings.code_names[1]}"
-                    class="settings-text-box number-range-box"
+                    class="settings-text-box number-range-box ${(settings.number_range_class !== undefined)? settings.number_range_class : ''}"
                     />
                 </div>
             `;

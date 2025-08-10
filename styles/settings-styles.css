@@ -461,6 +461,11 @@
   width: 4vw;
 }
 
+.wide-range-box {
+  width: 3.3vw;
+  font-size: 1.4vw;
+}
+
 /* Special radio button styles */
 
 .radio-math {
@@ -586,6 +591,11 @@
 
   .settings-text-box:focus {
     border-width: 0.25vw;
+  }
+
+  .wide-range-box {
+    width: 5.5vw;
+    font-size: 2.4vw;
   }
 
   .settings-info-button {
@@ -724,6 +734,10 @@
 
   .number-range-box {
     font-size: 11.5vw;
+  }
+
+  .wide-range-box {
+    font-size: 8vw;
   }
 
   .settings-text-box:focus {
