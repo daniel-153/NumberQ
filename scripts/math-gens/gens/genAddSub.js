@@ -23,17 +23,14 @@ export function validateSettings(form_obj, error_locations) {
         }
     }
 
-    // if either range allows negative numbers or first term could have fewer digits than the second, ensure the arithmetic notation isn't stacked
+    // if either range allows negative numbers, ensure the arithmetic notation isn't stacked
     if (
         form_obj.addsub_notation === 'stacked' &&
-        ( 
-            ( // any term range input is negative
-                form_obj.first_term_range_min < 0 ||
-                form_obj.first_term_range_max < 0 ||
-                form_obj.second_term_range_min < 0 ||
-                form_obj.second_term_range_max < 0
-            ) ||
-            !(String(form_obj.first_term_range_min).length >= String(form_obj.second_term_range_max).length) // first term could have fewer digits than the second
+        ( // any term range input is negative
+            form_obj.first_term_range_min < 0 ||
+            form_obj.first_term_range_max < 0 ||
+            form_obj.second_term_range_min < 0 ||
+            form_obj.second_term_range_max < 0
         )
     ) form_obj.addsub_notation = 'flat_with_eq';
 }
@@ -89,14 +86,22 @@ export default function genAddSub(settings) {
     }
 
     // resolve the question and answer
-    const answer_tex_str = String( (selected_operation === 'add')? (first_term + second_term) : (first_term - second_term) );
+    let answer_tex_str = String( (selected_operation === 'add')? (first_term + second_term) : (first_term - second_term) );
     let question_tex_str;
     if (settings.addsub_notation === 'stacked') { // negative values not possible (no handling needed)
-        // if the second term is shorter than the first term, \phantom digits need to be added so everything stays aligned
-        const first_term_str = String(first_term);
+        let first_term_str = String(first_term);
         let second_term_str = String(second_term);
 
-        if (first_term_str.length > second_term_str.length) { // pad the second term with phantom digits of the first term (matching up in columns)
+        // if the first term is shorter than the second term, the terms need to be swapped (having a higher term with fewer digits than the lower one is unconventional)
+        if (first_term_str.length < second_term_str.length) { 
+            [first_term, second_term] = [second_term, first_term];
+            [first_term_str, second_term_str] = [second_term_str, first_term_str];
+            answer_tex_str = String( (selected_operation === 'add')? (first_term + second_term) : (first_term - second_term) ); // recompute the result
+        }
+        
+        // if the second term is shorter than the first term, \phantom digits need to be added so everything stays aligned
+        if (first_term_str.length > second_term_str.length) { 
+            // pad the second term with phantom digits of the first term (matching up in columns)
             let second_term_pad_digits = '';
             for (let i = 0; i < (first_term_str.length - second_term_str.length); i++) {
                 second_term_pad_digits += first_term_str.charAt(i);
