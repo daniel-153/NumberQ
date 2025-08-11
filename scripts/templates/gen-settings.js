@@ -1061,7 +1061,7 @@ export const wrap_negatives = {
     prelocked: true
 };
 
-const muldiv_notation = {
+export const muldiv_notation = {
     type: 'radio_buttons',
     display_name: 'Notation',
     radio_buttons: [
@@ -1070,11 +1070,11 @@ const muldiv_notation = {
         ['flat_with_eq_and_q','\\( a\\times b=\\:? \\) &nbsp;'],
         ['flat_without_eq','\\( a\\times b \\)']
     ], 
-    tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers)",
+    tooltip: "Which multiplication notation should be used? (note that stacked notation only applies to non-negative numbers)",
     prelocked: true
 };
 
-const muldiv_allow_zero = {
+export const muldiv_allow_zero = {
     type: 'radio_buttons',
     display_name: 'Allow Zero',
     radio_buttons: [
@@ -1084,12 +1084,13 @@ const muldiv_allow_zero = {
     tooltip: "Should products with zero (like 0 &times; 3 or 7 &times; 0) be allowed?"
 };
 
-const stacked_notation_rule = {
+export const stacked_notation_rule = {
     type: 'radio_buttons',
-    display_name: 'Stacking \\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{+~b}}\\end{array} \\)',
+    display_name: 'Stacking',
     radio_buttons: [
         ['a_geq_b','\\( \\operatorname{digits}(a)\\geq\\operatorname{digits}(b) \\)'],
         ['no_restriction','No Restriction']
     ], 
-    tooltip: "Should the upper number always have the same or more digits than the lower number in stacked multiplication notation?"
+    tooltip: "Should the upper number always have the same or more digits than the lower number in stacked multiplication notation?",
+    prelocked: true
 };
