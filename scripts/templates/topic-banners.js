@@ -8,12 +8,12 @@ export const templates = [
         short_name: 'add-subtract'
     },
     {
-        function_name: 'genMulDiv',
+        function_name: 'genMulInt',
         category_class_name: 'arithmetic-gen',
-        display_name: 'Multiplication & Division',
+        display_name: 'Multiplication',
         display_category: 'arithmetic',
-        example_problem: '4\\cdot\\frac{1}{6}\\cdot3\\cdot\\frac{1}{2}',
-        short_name: 'multiply-divide' 
+        example_problem: '6 \\times 9=54',
+        short_name: 'multiplication' 
     },
     {
         function_name: 'genAddFrac',
