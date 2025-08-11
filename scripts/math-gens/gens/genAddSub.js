@@ -72,7 +72,7 @@ export default function genAddSub(settings) {
             second_term = H.randFromList(second_term_values.filter(value => value <= first_term));
         }
         else { // pick second term first
-            second_term = H.randFromList(second_term_values);
+            second_term = H.randFromList(second_term_values.filter(value => value <= settings.first_term_range_max));
             first_term = H.randFromList(first_term_values.filter(value => value >= second_term));
         }
     }
@@ -164,9 +164,9 @@ export function get_presets() {
 
 export function get_rand_settings() {
     return {
-        first_term_range_min: H.randInt(-25, -1),
+        first_term_range_min: H.randInt(1, 25),
         first_term_range_max: H.randInt(1, 25),
-        second_term_range_min: H.randInt(-25, -1),
+        second_term_range_min: H.randInt(1, 25),
         second_term_range_max: H.randInt(1, 25),
         addsub_operation: '__random__',
         addsub_notation: 'flat_with_eq',
