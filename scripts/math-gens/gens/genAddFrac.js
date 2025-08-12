@@ -40,6 +40,12 @@ export function validateSettings(form_obj, error_locations) {
         min_sum_value = (2 * form_obj.numer_range_min * form_obj.denom_range_max - form_obj.numer_range_min) / (form_obj.denom_range_max**2 - form_obj.denom_range_max);
     }
     if (min_sum_value >= 1) form_obj.allow_improper_fracs = 'yes'; // allow if forced in the result
+
+    // patch: if frac_operations doesn't exist in the form (meaning nothing was selected) create frac_operations and select 'add'
+    if (form_obj.frac_operations === undefined) form_obj.frac_operations = ['add'];
+
+    // if the operations include division, force improper fracs to be allowed
+    if (form_obj.frac_operations.includes('divide')) form_obj.allow_improper_fracs = 'yes';
 }
 
 export default function genAddFrac(settings) {    
@@ -201,14 +207,14 @@ export default function genAddFrac(settings) {
 
     // Note: we can switch to subtraction without having to recheck conditions because 
     // if N1*D2 + N2*D1 < D1*D2 then |N1*D2 - N2*D1| < D1*D2 where N1,N2,D1,D2 > 0 (the subtraction case is enclosed within the addition case)
-    const prompt_type = (settings.addsub_operation_type === 'both') ? H.randFromList(['add','subtract']) : settings.addsub_operation_type;
+    const prompt_type = H.randFromList(settings.frac_operations);
     let operation_symbol;
     let final_numer, final_denom;
-    final_denom = den1 * den2;
     if (prompt_type === 'add') {
         operation_symbol = '+';
-
+        
         final_numer = num1 * den2 + num2 * den1;
+        final_denom = den1 * den2;
     }
     else if (prompt_type === 'subtract') {
         operation_symbol = '-';
@@ -226,9 +232,25 @@ export default function genAddFrac(settings) {
             den1 = den2;
             den2 = temp;   
         }
+
+        final_denom = den1 * den2;
+    }
+    else if (prompt_type === 'multiply') {
+        operation_symbol = settings.multiply_symbol.slice(1, -1);
+
+        final_numer = num1 * num2;
+        final_denom = den1 * den2;
+    }
+    else if (prompt_type === 'divide') {
+        operation_symbol = '\\div';
+
+        final_numer = num1 * den2;
+        final_denom = den1 * num2;
     }
 
-    const final_prompt = '\\frac{' + num1 + '}{' + den1 + '}' + operation_symbol + '\\frac{' + num2 + '}{' + den2 + '}';
+    let final_prompt = '\\frac{' + num1 + '}{' + den1 + '}' + operation_symbol + '\\frac{' + num2 + '}{' + den2 + '}';
+    if (settings.add_equals_sign === 'yes') final_prompt += '=';
+
     let final_answer;
     if (settings.add_frac_answer_form === 'fractions' || final_numer < final_denom) {
         final_answer = PH.simplifiedFracString(final_numer, final_denom);
@@ -251,9 +273,11 @@ export const settings_fields = [
     'numer_range',
     'denom_range',
     'allow_improper_fracs',
-    'addsub_operation_type',
+    'frac_operations',
     'add_frac_answer_form',
-    'like_denoms'
+    'like_denoms',
+    'multiply_symbol',
+    'add_equals_sign'
 ];
 
 export const prelocked_settings = [
@@ -269,7 +293,9 @@ export function get_presets() {
         allow_improper_fracs: 'no',
         like_denoms: 'sometimes',
         add_frac_answer_form: 'fractions',
-        addsub_operation_type: 'add'
+        frac_operations: ['add'],
+        multiply_symbol: ' \\times ',
+        add_equals_sign: 'no'
     };
 }
 
@@ -299,8 +325,10 @@ export function get_rand_settings() {
         denom_range_max: den_max_rand,
         allow_improper_fracs: '__random__',
         like_denoms: '__random__',
-        add_frac_answer_form: '__random__',
-        addsub_operation_type: '__random__'
+        add_frac_answer_form: 'fractions',
+        frac_operations: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
+        multiply_symbol: ' \\times ',
+        add_equals_sign: 'no'
     }; 
 }
 
