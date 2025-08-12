@@ -60,7 +60,7 @@ export const general_operation_types = {
     type: 'check_boxes',
     display_name: 'Operations',
     check_boxes: [['add','Addition'],['subtract','Subtraction'],['multiply','Multiplication'],['divide','Division']], 
-    tooltip: 'What operations should be done on the expressions?' 
+    tooltip: 'Which operations should be done on the expressions?' 
 };
 
 export const randomize_order = {
@@ -1094,3 +1094,21 @@ export const stacked_notation_rule = {
     tooltip: "Should the upper number always have the same or more digits than the lower number in stacked multiplication notation?",
     prelocked: true
 };
+
+export const frac_operations = {
+    type: 'check_boxes',
+    display_name: 'Operations',
+    check_boxes: [['add','Addition'],['subtract','Subtraction'],['multiply','Multiplication'],['divide','Division']], 
+    tooltip: 'Which operations should be done on the fractions? (note that division requires improper fractions to be allowed)'
+}
+
+export const add_equals_sign = {
+    type: 'radio_buttons',
+    display_name: 'Add Equals Sign',
+    radio_buttons: [
+        ['yes','Yes \\( \\frac{a}{b}+\\frac{c}{d}= \\)&nbsp;'],
+        ['no','No \\( \\frac{a}{b}+\\frac{c}{d} \\)&nbsp;']
+    ], 
+    tooltip: "Should an equals sign be added at the end of the prompt?",
+    prelocked: true
+}
