@@ -16,9 +16,9 @@ export const templates = [
         short_name: 'multiplication' 
     },
     {
-        function_name: 'genAddFrac',
+        function_name: 'genFracArith',
         category_class_name: 'arithmetic-gen',
-        display_name: 'Adding Fractions',
+        display_name: 'Fraction Arithmetic',
         display_category: 'arithmetic',
         example_problem: '\\frac{3}{4}+\\frac{2}{5}',
         short_name: 'fraction'
