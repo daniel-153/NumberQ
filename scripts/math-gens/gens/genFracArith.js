@@ -48,7 +48,7 @@ export function validateSettings(form_obj, error_locations) {
     if (form_obj.frac_operations.includes('divide')) form_obj.allow_improper_fracs = 'yes';
 }
 
-export default function genAddFrac(settings) {    
+export default function genFracArith(settings) {    
     let num1, num2, den1, den2;
 
     if (settings.allow_improper_fracs === 'yes') { // no additional restrictions
