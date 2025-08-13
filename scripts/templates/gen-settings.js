@@ -1034,10 +1034,10 @@ export const addsub_notation = {
     type: 'radio_buttons',
     display_name: 'Notation',
     radio_buttons: [
-        ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{+~b}}\\end{array} \\)'],
-        ['flat_with_eq','\\( a+b= \\) &nbsp;'],
-        ['flat_with_eq_and_q','\\( a+b=\\:? \\) &nbsp;'],
-        ['flat_without_eq','\\( a+b \\)']
+        ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{+~b}}\\end{array} \\)&thinsp;'],
+        ['flat_with_eq','\\( a+b= \\)&thinsp;'],
+        ['flat_with_eq_and_q','\\( a+b=\\:? \\)&thinsp;'],
+        ['flat_without_eq','\\( a+b \\)&thinsp;']
     ], 
     tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers)",
     prelocked: true
@@ -1065,10 +1065,10 @@ export const muldiv_notation = {
     type: 'radio_buttons',
     display_name: 'Notation',
     radio_buttons: [
-        ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{\\times~b}}\\end{array} \\)'],
-        ['flat_with_eq','\\( a\\times b= \\) &nbsp;'],
-        ['flat_with_eq_and_q','\\( a\\times b=\\:? \\) &nbsp;'],
-        ['flat_without_eq','\\( a\\times b \\)']
+        ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{\\times~b}}\\end{array} \\)&thinsp;'],
+        ['flat_with_eq','\\( a\\times b= \\)&thinsp;'],
+        ['flat_with_eq_and_q','\\( a\\times b=\\:? \\)&thinsp;'],
+        ['flat_without_eq','\\( a\\times b \\)&thinsp;']
     ], 
     tooltip: "Which multiplication notation should be used? (note that stacked notation only applies to non-negative numbers)",
     prelocked: true
@@ -1100,15 +1100,83 @@ export const frac_operations = {
     display_name: 'Operations',
     check_boxes: [['add','Addition'],['subtract','Subtraction'],['multiply','Multiplication'],['divide','Division']], 
     tooltip: 'Which operations should be done on the fractions? (note that division requires improper fractions to be allowed)'
-}
+};
 
 export const add_equals_sign = {
     type: 'radio_buttons',
     display_name: 'Add Equals Sign',
     radio_buttons: [
-        ['yes','Yes \\( \\frac{a}{b}+\\frac{c}{d}= \\)&nbsp;'],
-        ['no','No \\( \\frac{a}{b}+\\frac{c}{d} \\)&nbsp;']
+        ['yes','Yes \\( \\frac{a}{b}+\\frac{c}{d}= \\)&thinsp;'],
+        ['no','No \\( \\frac{a}{b}+\\frac{c}{d} \\)&thinsp;']
     ], 
     tooltip: "Should an equals sign be added at the end of the prompt?",
     prelocked: true
-}
+};
+
+export const dividend_range = {
+    type: 'range_textboxes',
+    code_names: ['dividend_range_min','dividend_range_max'],
+    display_name: 'Dividend Range',
+    tooltip: 'How big or small should the dividend, (a) in a &divide; b, be? (create a range with integers from -9999 to 9999)',
+    valid_values: {
+        'dividend_range_min': [-9999, '--', 9999],
+        'dividend_range_max': [-9999, '--', 9999]
+    },
+    default_value: {
+        'dividend_range_min': 1,
+        'dividend_range_max': 9
+    },
+    number_range_class: 'wide-range-box'
+};
+
+export const divisor_range = {
+    type: 'range_textboxes',
+    code_names: ['divisor_range_min','divisor_range_max'],
+    display_name: 'Divisor Range',
+    tooltip: 'How big or small should the divisor, (b) in a &divide; b, be? (create a range with integers from -999 to 999)',
+    valid_values: {
+        'divisor_range_min': [-999, '--', 999],
+        'divisor_range_max': [-999, '--', 999]
+    },
+    default_value: {
+        'divisor_range_min': 1,
+        'divisor_range_max': 9
+    },
+    number_range_class: 'wide-range-box'
+};
+
+export const divide_evenly = {
+    type: 'radio_buttons',
+    display_name: 'Divide Evenly',
+    radio_buttons: [
+        ['always','Always'],
+        ['sometimes','Sometimes'],
+        ['never','Never']
+    ], 
+    tooltip: "Should the numbers always, sometimes, or never divide evenly? (note that this may modify the dividend range and 'always' is required for negative numbers)"
+};
+
+export const divint_notation = {
+    type: 'radio_buttons',
+    display_name: 'Notation',
+    radio_buttons: [
+        ['flat_without_eq','\\( a\\div b \\) &nbsp;'],
+        ['long_div','\\( b \\enclose{longdiv}{a} \\) &nbsp;'],
+        ['flat_with_eq','\\( a\\div b= \\) &nbsp;'],
+        ['flat_with_eq_and_q','\\( a\\div b=\\:? \\) &nbsp;'],
+    ], 
+    tooltip: "Which division notation should be used?",
+    prelocked: true
+};
+
+export const divint_zero_rule = {
+    type: 'radio_buttons',
+    display_name: 'Allow Zero',
+    radio_buttons: [
+        ['never','Never'],
+        ['only_dividend','Only in Dividends'],
+        ['only_divisor','Only in Divisors'],
+        ['either','Dividends or Divisors']
+    ], 
+    tooltip: "Should zero be allowed in the division? (note that if the divisor is zero, the answer will be 'undefined')"
+};
