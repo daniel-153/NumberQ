@@ -1,6 +1,7 @@
 import * as UH from '../../helpers/ui-helpers.js';
 import * as FH from '../../helpers/form-helpers.js';
 import * as UAH from './ui-actions.js'; 
+import { CH } from "../../helpers/canvas-helpers.js";
 
 export function insertGenTitle(gen_title, element_id) {
     document.getElementById(element_id).innerHTML = gen_title;
@@ -322,7 +323,37 @@ export async function loadMjxExtensions(gen_module, pg_ui_state) {
 
     if (gen_module.required_mjx_extensions === undefined) return; // gen module doesn't specify any extensions to load
     else {
+        // load the extensions for the MathJax instance in the main window
         pg_ui_state.required_mjx_extensions = [...gen_module.required_mjx_extensions];
-        await MathJax.loader.load(...pg_ui_state.required_mjx_extensions);
+        try {
+            await MathJax.loader.load(...pg_ui_state.required_mjx_extensions);
+        } catch (error) { // failure (log but don't throw to avoid putting the gen-sequence/pg-ui in a bad state)
+            console.error(`Failed to load mjx-components '${pg_ui_state.required_mjx_extensions}': ${error}`);
+            return;
+        }
+        
+        // load the extensions for the MathJax instance in the mjx-svg-loader iframe window
+        let iframe_el;
+        if ((await CH.MIH.getIframeStatus()) === null) {
+            iframe_el = await CH.MIH.initIframe();
+        }
+        else {
+            iframe_el = document.getElementById('mjx-svg-loader');
+        }
+
+        await new Promise((resolve) => {
+            CH.MIH.awaitIframeResponse(iframe_el, (response_data) => { // sets an event listener on the window that waits for the iframe response, calls the handler, then disposes the listener
+                if (response_data !== 'done') { // failure (log but don't throw to avoid putting the gen-sequence/pg-ui in a bad state)
+                    console.error(`Failed to load mjx-components '${pg_ui_state.required_mjx_extensions}' in mjx-svg-loader: ${response_data}.`)
+                }
+                
+                resolve();
+            });
+
+            iframe_el.contentWindow.postMessage({
+                message_type: 'load_mjx_components', 
+                component_paths: pg_ui_state.required_mjx_extensions
+            }, window.location.origin);
+        });
     }
 }
