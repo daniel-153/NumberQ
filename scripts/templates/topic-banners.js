@@ -16,6 +16,14 @@ export const templates = [
         short_name: 'multiplication' 
     },
     {
+        function_name: 'genDivInt',
+        category_class_name: 'arithmetic-gen',
+        display_name: 'Division',
+        display_category: 'arithmetic',
+        example_problem: '132\\div 11=12',
+        short_name: 'division' 
+    },
+    {
         function_name: 'genFracArith',
         category_class_name: 'arithmetic-gen',
         display_name: 'Fraction Arithmetic',
