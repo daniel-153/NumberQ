@@ -316,3 +316,13 @@ export function endGeneration(pg_ui_state) {
     pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
     pg_ui_state.is_currently_generating = false;
 }
+
+export async function loadMjxExtensions(gen_module, pg_ui_state) {
+    pg_ui_state.required_mjx_extensions.length = 0; // clear previous extensions
+
+    if (gen_module.required_mjx_extensions === undefined) return; // gen module doesn't specify any extensions to load
+    else {
+        pg_ui_state.required_mjx_extensions = [...gen_module.required_mjx_extensions];
+        await MathJax.loader.load(...pg_ui_state.required_mjx_extensions);
+    }
+}

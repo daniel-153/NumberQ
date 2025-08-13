@@ -29,7 +29,8 @@ const pg_ui_state = {
         force_square: null,
         q_font_size: null,
         a_font_size: null
-    }
+    },
+    required_mjx_extensions: []
 };
 
 export async function generate(func_name, display_name = '') {
@@ -46,6 +47,7 @@ export async function generate(func_name, display_name = '') {
         await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
         PH.insertGenTitle(display_name, "generator-name");
         PH.resolveSizeAdjustments(pg_ui_state.current_module, pg_ui_state);
+        await PH.loadMjxExtensions(pg_ui_state.current_module, pg_ui_state);
         pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
         FH.correctSettingOverflow('settings-form');
         PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
