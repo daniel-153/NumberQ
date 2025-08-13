@@ -239,6 +239,14 @@ const CH = {
                                     iframe_parent_origin
                                 );
                             }
+                            else if (event.data.message_type === 'load_mjx_components') {
+                                try {
+                                    await MathJax.loader.load(...event.data.component_paths);
+                                    window.parent.postMessage('done', iframe_parent_origin);
+                                } catch (error) {
+                                    window.parent.postMessage('failed: ' + error, iframe_parent_origin);
+                                } 
+                            }
                         });
 
                         window.parent.postMessage('ready', iframe_parent_origin);
