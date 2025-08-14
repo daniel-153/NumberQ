@@ -1036,7 +1036,7 @@ export const addsub_notation = {
     radio_buttons: [
         ['stacked','\\( \\begin{array}{@{}r@{}}a\\\\[-0.4em]\\underline{\\smash[b]{+~b}}\\end{array} \\)&thinsp;'],
         ['flat_with_eq','\\( a+b= \\)&thinsp;'],
-        ['flat_with_eq_and_q','\\( a+b=\\:? \\)&thinsp;'],
+        ['flat_with_eq_and_q','\\( a+b=\\:? \\) &thinsp;'],
         ['flat_without_eq','\\( a+b \\)&thinsp;']
     ], 
     tooltip: "Which arithmetic notation should be used? (note that stacked notation only applies to non-negative numbers)",
