@@ -509,6 +509,7 @@ const OOH = { // genOrdOp helpers
         
         // precheck: if decimals aren't allowed and the expression contains any decimal points, it is invalid (no further checks)
         if (!allow_decimals && expression_tex_str.includes('.')) return {value: NaN, is_valid: false};
+        if (expression_tex_str.includes('Infinity')) return {value: NaN, is_valid: false};
 
         // scan the first level for sub expressions 1-3+(....) <-  (evaluate all parens so that the expression is 'flat')
         for (let expr_idx = 0; expr_idx < expression_tex_str.length; expr_idx++) {
@@ -638,7 +639,7 @@ const OOH = { // genOrdOp helpers
 
                         const result = base**exponent;
 
-                        if ((result % 1 !== 0) && !allow_decimals) {
+                        if (((result % 1 !== 0) && !allow_decimals) || !Number.isFinite(result)) {
                             return {value: NaN, is_valid: false}; // decimal found
                         }
                         else {
@@ -675,7 +676,8 @@ const OOH = { // genOrdOp helpers
                         // check if conditions are still met
                         if (
                             ((result < 0) && !allow_negatives) ||
-                            ((result % 1 !== 0) && !allow_decimals)
+                            ((result % 1 !== 0) && !allow_decimals) ||
+                            !Number.isFinite(result)
                         ) {
                             return {value: NaN, is_valid: false}; // invalid intermediate value found
                         }
