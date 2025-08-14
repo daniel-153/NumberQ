@@ -11,11 +11,10 @@ def verify(tex_question, tex_answer):
 
         copy_tex_question = copy_tex_question.split('\\smash[b]{')[1][0:-2] # +~6
 
-        operator = copy_tex_question.split('~')[0]
-
-        lower_stacked_value = copy_tex_question.split('~')[1]
+        operator, lower_stacked_value = copy_tex_question.split('~')
         if 'phantom' in lower_stacked_value:
-            operand_2 = sympify(lower_stacked_value.split('}')[1])
+            _, operand_2 = lower_stacked_value.split('}')
+            operand_2 = sympify(operand_2)
         else:
             operand_2 = sympify(lower_stacked_value)
 
