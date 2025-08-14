@@ -30,7 +30,7 @@ export function validateSettings(form_obj, error_locations) {
 
 let backup_json = null;
 
-export const OOH = { // genOrdOp helpers
+const OOH = { // genOrdOp helpers
     conversion_table: {
         "a": '+',
         "s": '-',
@@ -500,15 +500,6 @@ export const OOH = { // genOrdOp helpers
         if (expression_template.length === 3 && expression_template[1] === 'e') return accum_string;
         else return '(' + accum_string + ')';
     },
-    evaluateExprTexString: function(expression_tex_str) {
-        // convert the expression tex string to a valid js math expression (relatively simple process)
-        expression_tex_str = expression_tex_str.replace(/\\cdot/g, '*');
-        expression_tex_str = expression_tex_str.replace(/\\times/g, '*');
-        expression_tex_str = expression_tex_str.replace(/\\div/g, '/');
-        expression_tex_str = expression_tex_str.replace(/\^/g, '**')
-
-        return eval(expression_tex_str); // integer, decimal, or NaN
-    },
     validateExprTexString: function( 
         expression_tex_str, 
         allow_negatives = false, // determines whether negatives can appear at *any level* of evaluating the expression 
@@ -516,6 +507,9 @@ export const OOH = { // genOrdOp helpers
     ) {
         const slice = (str, start_index, end_index) => str.slice(start_index, end_index + 1); 
         
+        // precheck: if decimals aren't allowed and the expression contains any decimal points, it is invalid (no further checks)
+        if (!allow_decimals && expression_tex_str.includes('.')) return {value: NaN, is_valid: false};
+
         // scan the first level for sub expressions 1-3+(....) <-  (evaluate all parens so that the expression is 'flat')
         for (let expr_idx = 0; expr_idx < expression_tex_str.length; expr_idx++) {
             if (expression_tex_str[expr_idx] === '(') { // subexpression found -> find the closing ')'
@@ -615,40 +609,42 @@ export const OOH = { // genOrdOp helpers
             let curr_sub_expr = expression_sections[section_idx];
             curr_sub_expr = curr_sub_expr.replace(/s/g, '-'); // remaining negatives are negative numbers (if they were allowed) - no longer minus operators
 
-            // start by evaluating all of the exponents
-            for (let sub_expr_idx = 0; sub_expr_idx < curr_sub_expr.length; sub_expr_idx++) {
-                if (curr_sub_expr[sub_expr_idx] === 'e') {
-                    // walk back until another operator (besides '-') is found (extract the base)
-                    let back_step_index = sub_expr_idx;
-                    while (
-                        !Number.isNaN(Number(slice(curr_sub_expr, back_step_index - 1, sub_expr_idx - 1))) &&
-                        back_step_index > 0
-                    ) {
-                        back_step_index--;
-                    }
-                    const base = Number(slice(curr_sub_expr, back_step_index, sub_expr_idx - 1));
+            // start by evaluating all of the exponents (if there are any)
+            while (curr_sub_expr.includes('e')) {
+                for (let sub_expr_idx = 0; sub_expr_idx < curr_sub_expr.length; sub_expr_idx++) {
+                    if (curr_sub_expr[sub_expr_idx] === 'e') {
+                        // walk back until another operator (besides '-') is found (extract the base)
+                        let back_step_index = sub_expr_idx;
+                        while (
+                            !Number.isNaN(Number(slice(curr_sub_expr, back_step_index - 1, sub_expr_idx - 1))) &&
+                            back_step_index > 0
+                        ) {
+                            back_step_index--;
+                        }
+                        const base = Number(slice(curr_sub_expr, back_step_index, sub_expr_idx - 1));
 
-                    // walk foward until another operator (besides '-') is found (extract the exponent)
-                    let foward_step_index = sub_expr_idx;
-                    while (
-                        (
-                            !Number.isNaN(Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1))) || 
-                            slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1) === '-'
-                        ) &&
-                        foward_step_index < curr_sub_expr.length - 1
-                    ) {
-                        foward_step_index++;
-                    }
-                    const exponent = Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index));
+                        // walk foward until another operator (besides '-') is found (extract the exponent)
+                        let foward_step_index = sub_expr_idx;
+                        while (
+                            (
+                                !Number.isNaN(Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1))) || 
+                                slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1) === '-'
+                            ) &&
+                            foward_step_index < curr_sub_expr.length - 1
+                        ) {
+                            foward_step_index++;
+                        }
+                        const exponent = Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index));
 
-                    const result = base**exponent;
+                        const result = base**exponent;
 
-                    if ((result % 1 !== 0) && !allow_decimals) {
-                        return {value: NaN, is_valid: false}; // decimal found
-                    }
-                    else {
-                        curr_sub_expr = slice(curr_sub_expr, 0, back_step_index - 1) + result + slice(curr_sub_expr, foward_step_index + 1, curr_sub_expr.length - 1);
-                        sub_expr_idx = foward_step_index + 1;
+                        if ((result % 1 !== 0) && !allow_decimals) {
+                            return {value: NaN, is_valid: false}; // decimal found
+                        }
+                        else {
+                            curr_sub_expr = slice(curr_sub_expr, 0, back_step_index - 1) + result + slice(curr_sub_expr, foward_step_index + 1, curr_sub_expr.length - 1);
+                            break;
+                        }
                     }
                 }
             }
@@ -685,6 +681,7 @@ export const OOH = { // genOrdOp helpers
                         }
                         else { // valid result -> replace in the sub expression
                             curr_sub_expr = result + slice(curr_sub_expr, foward_step_index + 1, curr_sub_expr.length - 1);
+                            break;
                         }
                     }
                 }
@@ -914,6 +911,7 @@ export default async function genOrdOp(settings) {
     // Next step is the solution search
     const attempts_per_template = 100;
     const max_templates = 250;
+    const allow_negatives = (settings.allow_negatives === 'yes');
     let sol_found = false;
     let final_template; 
     let final_value = Infinity;
@@ -928,9 +926,10 @@ export default async function genOrdOp(settings) {
             total_attempts++;
             OOH.evaluateExpression(AST);
             const expression_tex_string = OOH.templateToMath(JSON.parse(JSON.stringify(expression_template)));
-            let expression_value = OOH.evaluateExprTexString(expression_tex_string); // integer, decimal, or NaN
+            const validation_result = OOH.validateExprTexString(expression_tex_string, allow_negatives);
+            let expression_value = validation_result.value; // integer or NaN
             
-            if (followsAllowZeroRule(expression_tex_string)) {
+            if (validation_result.is_valid && followsAllowZeroRule(expression_tex_string)) {
                 if (validExpressionSize(expression_value) && Number.isSafeInteger(expression_value)) { // a completely valid solution was found
                     sol_found = true;
                     final_value = expression_value;
@@ -950,7 +949,7 @@ export default async function genOrdOp(settings) {
     if (final_template === undefined) {
         if (backup_json === null) backup_json = (await import(`../backup-jsons/bkpOrdOp.js`)).default;
         final_template = JSON.parse(JSON.stringify(backup_json[`${settings.add_count}${settings.subtract_count}${settings.multiply_count}${settings.divide_count}${settings.exponent_count}`]));
-        final_value = OOH.findExpressionValue(OOH.convertToAST(OOH.getReferenceCopy(final_template))).value;
+        final_value = OOH.validateExprTexString(OOH.templateToMath(JSON.parse(JSON.stringify(final_template)))).value;
     }
 
     // break off the parens around the base expression if they exist (only case when they wouldn't is a single exponential)
@@ -1017,5 +1016,3 @@ export function get_rand_settings() {
 export const size_adjustments = {
     width: 1.12
 };
-
-// const validateExpr = (await import('http://10.0.0.244:5500/scripts/math-gens/gens/genOrdOp.js')).OOH.validateExprTexString;
