@@ -30,7 +30,7 @@ export function validateSettings(form_obj, error_locations) {
 
 let backup_json = null;
 
-const OOH = { // genOrdOp helpers
+export const OOH = { // genOrdOp helpers
     conversion_table: {
         "a": '+',
         "s": '-',
@@ -508,6 +508,209 @@ const OOH = { // genOrdOp helpers
         expression_tex_str = expression_tex_str.replace(/\^/g, '**')
 
         return eval(expression_tex_str); // integer, decimal, or NaN
+    },
+    validateExprTexString: function( 
+        expression_tex_str, 
+        allow_negatives = false, // determines whether negatives can appear at *any level* of evaluating the expression 
+        allow_decimals = false // determines whether decimals can appear at *any level* of evaluating the expression 
+    ) {
+        const slice = (str, start_index, end_index) => str.slice(start_index, end_index + 1); 
+        
+        // scan the first level for sub expressions 1-3+(....) <-  (evaluate all parens so that the expression is 'flat')
+        for (let expr_idx = 0; expr_idx < expression_tex_str.length; expr_idx++) {
+            if (expression_tex_str[expr_idx] === '(') { // subexpression found -> find the closing ')'
+                const sub_expr_start_idx = expr_idx; // includes opening paren
+                let paren_nesting_level = 1;
+
+                let sub_expr_end_idx; // includes closing paren
+                for (expr_idx = expr_idx + 1; expr_idx < expression_tex_str.length; expr_idx++) {
+                    if (expression_tex_str[expr_idx] === ')' && paren_nesting_level === 1) {
+                        sub_expr_end_idx = expr_idx;
+                        break;
+                    }
+                    else if (expression_tex_str[expr_idx] === ')') paren_nesting_level--;
+                    else if (expression_tex_str[expr_idx] === '(') paren_nesting_level++;
+                }
+                
+                const sub_expr_validation_result = OOH.validateExprTexString(
+                    slice(expression_tex_str, sub_expr_start_idx + 1, sub_expr_end_idx - 1),
+                    allow_negatives, allow_decimals
+                );
+
+                if (sub_expr_validation_result.is_valid) {
+                    // replace the nested paren expression with its value, then continue looking for paren expressions in the expression_tex_str (if needed)
+                    expression_tex_str = slice(expression_tex_str, 0, sub_expr_start_idx - 1) + sub_expr_validation_result.value + slice(expression_tex_str, sub_expr_end_idx + 1, expression_tex_str.length - 1);
+                    expr_idx = (slice(expression_tex_str, 0, sub_expr_start_idx - 1) + sub_expr_validation_result.value).length;
+                }
+                else {
+                    return {value: NaN, is_valid: false}; // subexpression was not valid
+                }
+            }
+        }
+        
+        // convert the traditional operators to single characters (tokenize)
+        expression_tex_str = expression_tex_str.replace(/\\times/g, 'm');
+        expression_tex_str = expression_tex_str.replace(/\\cdot/g, 'm');
+        expression_tex_str = expression_tex_str.replace(/\\div/g, 'd');
+        expression_tex_str = expression_tex_str.replace(/\^/g, 'e');
+        expression_tex_str = expression_tex_str.replace(/\+/g, 'a');
+        expression_tex_str = expression_tex_str.replace(/-/g, 's');
+
+        // the expr tex str is now 'flat' (only numbers and operands, no parens) at the current level
+        if (!allow_negatives) { // check if the expression already contains negatives when it shouldn't (before evaluation)
+            for (let expr_idx = expression_tex_str.length - 1; expr_idx >= 0; expr_idx--) { 
+                // negatives are always found in two forms: [operator, 's', number] or [undefined, 's', number] (second is the very start of the expr)
+                const i_0 = expression_tex_str[expr_idx];
+                const i_minus_1 = expression_tex_str[expr_idx - 1];
+                const i_minus_2 = expression_tex_str[expr_idx - 2];
+
+                if (
+                    (!Number.isNaN(Number(i_0)) && i_minus_1 === 's') &&
+                    (i_minus_2 === undefined || i_minus_2 === 'a' || i_minus_2 === 's' || i_minus_2 === 'd' || i_minus_2 === 'e' || i_minus_2 === 'm')
+                ) {
+                    return {value: NaN, is_valid: false}; // negative found
+                }
+            }
+        }
+
+        // now the expression needs to be sectioned off by its '+'s and '-'s (to conduct EMD in PEMDAS)
+        const expression_sections = [{operator: null, index: -1}];
+        for (let expr_idx = 0; expr_idx < expression_tex_str.length; expr_idx++) {
+            if (
+                expression_tex_str[expr_idx] === 'a' || // plus operator or
+                (
+                    expression_tex_str[expr_idx] === 's' && // negative operator preceeded by a number (A-B to avoid catching A+-B, A--B, etc)
+                    !Number.isNaN(Number(expression_tex_str[expr_idx - 1]))
+                )
+            ) {
+                expression_sections.push(
+                    slice(expression_tex_str, expression_sections[expression_sections.length - 1].index + 1, expr_idx - 1)
+                );
+
+                expression_sections.push({
+                    operator: expression_tex_str[expr_idx],
+                    index: expr_idx
+                });
+            }
+        }
+        expression_sections.shift(); // remove the first placeholder operand
+
+        // if the last entry is an operator, there is still a final operand section that needs to be extracted
+        if (
+            typeof(expression_sections[expression_sections.length - 1]) === 'object' &&
+            expression_sections[expression_sections.length - 1] !== null
+        ) {
+            expression_sections.push(slice(
+                expression_tex_str,
+                expression_sections[expression_sections.length - 1].index + 1, expression_tex_str.length - 1
+            ));
+        }
+
+        if (expression_sections.length === 0) { // handle the case of one expression block of EMD with no AS
+            expression_sections.push(expression_tex_str);
+        }
+
+        // evaluate every even index of the expression sections and check conditions
+        for (let section_idx = 0; section_idx < expression_sections.length; section_idx += 2) {
+            let curr_sub_expr = expression_sections[section_idx];
+            curr_sub_expr = curr_sub_expr.replace(/s/g, '-'); // remaining negatives are negative numbers (if they were allowed) - no longer minus operators
+
+            // start by evaluating all of the exponents
+            for (let sub_expr_idx = 0; sub_expr_idx < curr_sub_expr.length; sub_expr_idx++) {
+                if (curr_sub_expr[sub_expr_idx] === 'e') {
+                    // walk back until another operator (besides '-') is found (extract the base)
+                    let back_step_index = sub_expr_idx;
+                    while (
+                        !Number.isNaN(Number(slice(curr_sub_expr, back_step_index - 1, sub_expr_idx - 1))) &&
+                        back_step_index > 0
+                    ) {
+                        back_step_index--;
+                    }
+                    const base = Number(slice(curr_sub_expr, back_step_index, sub_expr_idx - 1));
+
+                    // walk foward until another operator (besides '-') is found (extract the exponent)
+                    let foward_step_index = sub_expr_idx;
+                    while (
+                        (
+                            !Number.isNaN(Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1))) || 
+                            slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1) === '-'
+                        ) &&
+                        foward_step_index < curr_sub_expr.length - 1
+                    ) {
+                        foward_step_index++;
+                    }
+                    const exponent = Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index));
+
+                    const result = base**exponent;
+
+                    if ((result % 1 !== 0) && !allow_decimals) {
+                        return {value: NaN, is_valid: false}; // decimal found
+                    }
+                    else {
+                        curr_sub_expr = slice(curr_sub_expr, 0, back_step_index - 1) + result + slice(curr_sub_expr, foward_step_index + 1, curr_sub_expr.length - 1);
+                        sub_expr_idx = foward_step_index + 1;
+                    }
+                }
+            }
+
+            // at this point, the current sub expression has only multiplication and division (no exponents) --- or no operations at all
+            while (curr_sub_expr.includes('m') || curr_sub_expr.includes('d')) {
+                for (let sub_expr_idx = 0; sub_expr_idx < curr_sub_expr.length; sub_expr_idx++) {
+                    if (curr_sub_expr[sub_expr_idx] === 'm' || curr_sub_expr[sub_expr_idx] === 'd') {
+                        // extract the two operands -> walk foward until another operator (besides '-') is found (extract the second operator)
+                        const operand_1 = Number(slice(curr_sub_expr, 0, sub_expr_idx - 1));
+                        
+                        let foward_step_index = sub_expr_idx;
+                        while (
+                            (
+                                !Number.isNaN(Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1))) || 
+                                slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index + 1) === '-'
+                            ) &&
+                            foward_step_index < curr_sub_expr.length - 1
+                        ) {
+                            foward_step_index++;
+                        }
+                        const operand_2 = Number(slice(curr_sub_expr, sub_expr_idx + 1, foward_step_index));
+
+                        let result;
+                        if (curr_sub_expr[sub_expr_idx] === 'm') result = operand_1 * operand_2;
+                        else if (curr_sub_expr[sub_expr_idx] === 'd') result = operand_1 / operand_2;
+
+                        // check if conditions are still met
+                        if (
+                            ((result < 0) && !allow_negatives) ||
+                            ((result % 1 !== 0) && !allow_decimals)
+                        ) {
+                            return {value: NaN, is_valid: false}; // invalid intermediate value found
+                        }
+                        else { // valid result -> replace in the sub expression
+                            curr_sub_expr = result + slice(curr_sub_expr, foward_step_index + 1, curr_sub_expr.length - 1);
+                        }
+                    }
+                }
+            }
+            
+            // the current sub expression is now a single number -> update its value in the array of sub expressions
+            expression_sections[section_idx] = curr_sub_expr;
+        }
+
+        // now every expression in the expression_sections is a single number (separated by + and - operators)
+        let acc = Number(expression_sections[0]);
+        for (let section_idx = 2; section_idx < expression_sections.length; section_idx += 2) {
+            const current_operator = expression_sections[section_idx - 1].operator;
+            const operand = Number(expression_sections[section_idx]);
+
+            if (current_operator === 'a') acc += operand;
+            else if (current_operator === 's') acc -= operand;
+
+            // check that conditions are still met
+            if (acc < 0 && !allow_negatives) {
+                return {value: NaN, is_valid: false}; // negative intermediate value
+            }
+        }
+
+        //  if this point was reached, the expression is valid and acc is the final value
+        return {value: acc, is_valid: true};
     }
 }
 export default async function genOrdOp(settings) {
@@ -770,6 +973,7 @@ export const settings_fields = [
 ];
 
 export const prelocked_settings = [
+    'allow_negatives',
     'multiply_symbol',
     'allow_nesting'
 ];
@@ -813,3 +1017,5 @@ export function get_rand_settings() {
 export const size_adjustments = {
     width: 1.12
 };
+
+// const validateExpr = (await import('http://10.0.0.244:5500/scripts/math-gens/gens/genOrdOp.js')).OOH.validateExprTexString;
