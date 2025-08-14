@@ -1,7 +1,7 @@
 from sympy.parsing.latex import parse_latex
 
 def verify(tex_question, tex_answer):
-    question = parse_latex(tex_question)
+    question = parse_latex(tex_question.replace('=', '', 1))
 
     # determine if the answer is in fraction, integer, or mixed number form
     answer = None
