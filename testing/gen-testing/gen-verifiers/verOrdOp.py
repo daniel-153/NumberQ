@@ -1,12 +1,13 @@
-from sympy.parsing.latex import parse_latex
+from sympy import sympify
 
 def verify(tex_question, tex_answer):
-    question = parse_latex(tex_question)
-    answer = parse_latex(tex_answer)
+    provided_answer = sympify(tex_answer)
+    try:
+        calculated_answer = eval(tex_question.replace('\\times', '*').replace('\\cdot', '*').replace('\\div', '/').replace('^', '**'))
+    except Exception as e:
+        return f"Failed to evaluate tex_question: '{tex_question}', error: '{e}'"
 
-    calculated_answer = question.doit()
-
-    if answer == calculated_answer:
-        return None # indicate success (no wrong answer to log)
+    if provided_answer.equals(calculated_answer) is True:
+        return None
     else:
-        return calculated_answer # answer that didn't match
+        return calculated_answer
