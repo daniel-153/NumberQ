@@ -17,6 +17,7 @@ let test_state = {
     current_question_info: null,
     num_completed_tests: 0,
     max_number_of_tests: 500,
+    stratify_numerical_ranges: true,
     test_is_primed: false
 };
 test_state.default_state = JSON.parse(JSON.stringify(test_state));
@@ -52,7 +53,7 @@ export async function primeTest() {
 
     test_state.current_gen_name = document.getElementById('generate-button').getAttribute('data-gen-func-name');
     test_state.current_gen_module = await import(`../../scripts/math-gens/gens/${test_state.current_gen_name}.js`);
-    test_state.current_settings_permutator = await GT.getSettingsPermutator(test_state.current_gen_module);
+    test_state.current_settings_permutator = await GT.getSettingsPermutator(test_state.current_gen_module, test_state.stratify_numerical_ranges);
 
     test_state.testLoopHandler = async function() {
         const current_settings = test_state.current_settings_permutator.getRandomSettings();
@@ -193,6 +194,16 @@ export function updateMaxNumberOfTests(new_max_tests) {
     }
     else {
         throw new Error(`Cannot set max number of tests to '${new_max_tests}' typeof '${typeof(new_max_tests)}'; max number of tests must be a positive integer.`)
+    }
+}
+
+// change whether numerical ranges are stratified
+export function updateSettingsStratification(stratify_numerical_ranges) {
+    if (typeof(stratify_numerical_ranges) === 'boolean') {
+        test_state.stratify_numerical_ranges = stratify_numerical_ranges;
+    }
+    else {
+        throw new Error(`Cannot set stratify_numerical_ranges to '${stratify_numerical_ranges}' typeof '${typeof(stratify_numerical_ranges)}'; stratify_numerical_ranges must be a boolean.`)
     }
 }
 
