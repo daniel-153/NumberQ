@@ -20,7 +20,7 @@ function _getValidValuesLog(gen_module) {
     return createSettingsFields(gen_module.settings_fields, settings_templates_module, 'placeholder-form')
 }
 
-export async function getSettingsPermutator(gen_module) {
+export async function getSettingsPermutator(gen_module, stratify_numerical_ranges = false) {
     // go from raw_valid_values (which has implied ranges and excluded values) to a permutator with exhuastive lists of valid values
     const raw_valid_values = await _getValidValuesLog(gen_module);
     const settings_permutator = {
@@ -61,6 +61,38 @@ export async function getSettingsPermutator(gen_module) {
         let all_possible_values;
         if (valid_values[1] === '--') { // implied numerical range
             all_possible_values = integerArray(valid_values[0], valid_values[2]);
+
+            if (stratify_numerical_ranges === true) { // ensure all place values are equally represented
+                const values_at_place_value = {}
+
+                all_possible_values.forEach(value => { // sort the possible values by place value
+                    const place_value = 10 ** (String(Math.abs(value)).length - 1);
+
+                    if (values_at_place_value[place_value] === undefined) {
+                        values_at_place_value[place_value] = [];
+                    }
+
+                    values_at_place_value[place_value].push(value);
+                });
+
+                // determine the place value that contains the largest number of values
+                let most_values = -Infinity; // number of values found at the place value with the most entries
+                for (const [_, values_arr] of Object.entries(values_at_place_value)) {
+                    if (values_arr.length > most_values) {
+                        most_values = values_arr.length;
+                    }
+                }
+
+                // randomly extend all the other place values to match the place value with the most entries
+                for (const [_, values_arr] of Object.entries(values_at_place_value)) {
+                    for (let i = values_arr.length; i < most_values; i++) {
+                        values_arr.push(values_arr[randInt(0, values_arr.length - 1)]);
+                    }
+                }
+
+                // update all possible values to be its stratified version based on place value
+                all_possible_values = Object.values(values_at_place_value).flat();
+            }
         }
         else if (typeof(valid_values[0]) === 'number') { // exhuastive list of numbers
             all_possible_values = [...valid_values];
@@ -213,12 +245,13 @@ export async function testGenerator(
         starting_test_number: 1,
         max_number_of_tests: 100_000,
         stop_on_failed_test: false,
+        stratify_numerical_ranges: false,
         settings_progression: 'permutations' // 'permutations' or 'random'
     }
 ) {
     const gen_module = await import(`../../scripts/math-gens/gens/${gen_func_name}.js`);
     const genFunc = await _getBundledGenFunc(gen_module); // simplified to just take a settings object and return a question and answer object (intermediate validiation bundled)
-    const settings_permutator = await getSettingsPermutator(gen_module);
+    const settings_permutator = await getSettingsPermutator(gen_module, config.stratify_numerical_ranges);
     const gen_output_type = _getGenOutputType(gen_module);
     
     // need to "fast foward" (not starting on the first test)
