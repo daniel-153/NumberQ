@@ -3,7 +3,7 @@ from sympy.parsing.latex import parse_latex
 
 def verify(tex_question, tex_answer):        
     if (tex_answer == '\\text{undefined}'): # handle the undefined case
-        answer = simplify('zoo')
+        answer = sympify('zoo')
     else:
         answer = parse_latex(tex_answer)
     
