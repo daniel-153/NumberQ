@@ -108,12 +108,13 @@ def build_new_answer_comparer(settings, answer_form_callback):
             check_arg_types(gens_answer_tex_string, sympy_answer_obj)
 
             evaluated_sympy_answer = sympy_answer_obj.evalf()
+            sympy_answer_rep = int(sympy_answer_obj) if (sympy_answer_obj.is_Integer is True) else float(sympy_answer_obj)
 
             # ensure the sympy answer is a real number
             if (evaluated_sympy_answer.is_number is not True) or (evaluated_sympy_answer.is_real is not True):
                 raise Exception(f"Cannot represent sympy_answer_obj as a real number: '{sympy_answer_obj}'")
 
-            rounded_sympy_result = round_with_format(evaluated_sympy_answer, decimal_places, keep_rounded_zeros)
+            rounded_sympy_result = round_with_format(sympy_answer_rep, decimal_places, keep_rounded_zeros)
 
             if gens_answer_tex_string == rounded_sympy_result: return True # rounded answer strings must be exactly the same to be correct
             else: return False
