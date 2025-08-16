@@ -35,11 +35,11 @@ def verify(tex_question, tex_answer):
         # if the first sols match, the seconds sols must match; is the first and seconds sols match, the seconds and first sols must match
         if (simplify(sol_1 - calculated_sol_1) == 0):
             if (simplify(sol_2 - calculated_sol_2) == 0):
-                return None
+                return True
                 
         elif (simplify(sol_1 - calculated_sol_2) == 0):
             if (simplify(sol_2 - calculated_sol_1) == 0):
-                return None
+                return True
 
         # if we made it past the if-else above (didn't return), the solution sets don't match (so we return the sympy answer)
         return variable_letter + '=' + str(calculated_sol_1) + ',' + str(calculated_sol_2)
@@ -48,6 +48,6 @@ def verify(tex_question, tex_answer):
         calculated_answer = factor(parse_latex(tex_question))
 
         if (simplify(answer - calculated_answer) == 0):
-            return None
+            return True
         else:
             return calculated_answer

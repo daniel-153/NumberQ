@@ -30,6 +30,6 @@ def verify(tex_question, tex_answer):
             provided_eq_calced = (provided_quotient.equals(calced_quotient) is True)
         
     if provided_eq_calced is True:
-        return None
+        return True
     else:
         return str(operand_1 / operand_2)

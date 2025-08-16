@@ -22,7 +22,7 @@ def verify(tex_question, tex_answer, settings):
         # first handle the possibility of an undefined angle caused by A and/or B being a zero vector 
         if (vector_A.is_zero_matrix is True) or (vector_B.is_zero_matrix is True): # the expected result should be 'is undefined' in the answer
             if '~~is~~undefined' in tex_answer:
-                return None
+                return True
             else: # answer was a number (or not '~~is~~undefined') when it shouldn't have been
                 return "Answer was not '~~is~~undefined', but one or both vectors in the angle operation were equal to the zero vector."
         elif ('~~is~~undefined' in tex_answer) and not ((vector_A.is_zero_matrix is True) or (vector_B.is_zero_matrix is True)): # answer was '~~is~~undefined' when it shouldn't have been
@@ -64,12 +64,12 @@ def verify(tex_question, tex_answer, settings):
 
         if comparison == 'exact':
             if parse_latex(provided_angle_str).equals(calculated_angle) is True:
-                return None
+                return True
             else:
                 return calculated_angle
         elif comparison == 'approx':
             if build_new_answer_comparer(settings, answer_form_callback)(provided_angle_str, calculated_angle) is True:
-                return None
+                return True
             else:
                 return f"Sympy calculated answer of [sympy: {calculated_angle}] does not round to [gens: {provided_angle_str}] with [places: {settings["decimal_places"]}, keep_rounded_zeros: {settings["keep_rounded_zeros"]}]."
     elif operator == '+' or operator == '-' or operator == '\\times': # vectors -> vectors operations | answers always exact
@@ -84,7 +84,7 @@ def verify(tex_question, tex_answer, settings):
             calculated_answer_vector = vector_A.cross(vector_B)
 
         if provided_answer_vector == calculated_answer_vector:
-            return None
+            return True
         else: 
             return calculated_answer_vector
     elif operator == '\\cdot': # vectors -> scalars operations | answers always exact
@@ -92,6 +92,6 @@ def verify(tex_question, tex_answer, settings):
         calculated_dot_prod = vector_A.dot(vector_B)
 
         if provided_dot_prod == calculated_dot_prod:
-            return None
+            return True
         else:
             return calculated_dot_prod

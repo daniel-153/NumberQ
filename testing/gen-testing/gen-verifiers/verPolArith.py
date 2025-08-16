@@ -19,13 +19,13 @@ def verify(tex_question, tex_answer):
         provided_rem = parse_latex(tex_answer.split('=')[1]) # 'R=5' -> 5
 
         if (simplify(calculated_rem - provided_rem) == 0):
-            return None
+            return True
         else:
             return 'R=' + str(calculated_rem)
     else: # the expressions can be compared for algebriac equality
         calculated_answer = simplify(parse_latex(tex_question))
 
         if (simplify(calculated_answer - parse_latex(tex_answer)) == 0):
-            return None
+            return True
         else:
             return calculated_answer

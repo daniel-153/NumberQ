@@ -33,6 +33,6 @@ def verify(tex_question, tex_answer):
     provided_answer_matrix = parse_tex_mtrx_w_scalar(tex_answer)
 
     if operation_result == provided_answer_matrix:
-        return None
+        return True
     else:
         return operation_result    

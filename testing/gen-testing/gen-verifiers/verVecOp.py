@@ -22,12 +22,12 @@ def verify(tex_question, tex_answer, settings):
             gens_rounded_value = tex_answer.replace('\\approx', '') # break off the roughly equals symbol to expose just the number
             
             if build_new_answer_comparer(settings, answer_form_callback)(gens_rounded_value, calculated_answer) is True:
-                return None
+                return True
             else:
                 return f"Sympy calculated answer of [sympy: {calculated_answer}] does not round to [gens: {gens_rounded_value}] with [places: {settings["decimal_places"]}, keep_rounded_zeros: {settings["keep_rounded_zeros"]}]."
         else: # answers are to be compared exactly
             if parse_latex(tex_answer).equals(calculated_answer) is True:
-                return None
+                return True
             else:
                 return calculated_answer
     elif tex_question.startswith('\\widehat{'): # unit_vector | answer entries could be decimals or exact depending on settings
@@ -36,7 +36,7 @@ def verify(tex_question, tex_answer, settings):
         # catch the case of a zero vector before calulating the norm
         if vec_in_operation.is_zero_matrix: # if the vector trying to be normed is a zero vector, the gens answer must be 'is undefined'
             if tex_answer.endswith('\\mathrm{~~is~~undefined}'):
-                return None
+                return True
             else:
                 return f"The answer for the unit vector of a zero vector was not in proper form to indicate 'undefined': {tex_answer}."
         elif tex_answer.endswith('\\mathrm{~~is~~undefined}') and not (vec_in_operation.is_zero_matrix): # answer is 'undefined' when it shouldn't have been (non-zero vectors can always be normed)
@@ -68,14 +68,14 @@ def verify(tex_question, tex_answer, settings):
                     break
 
             if all_passed is True:
-                return None
+                return True
             else:
                 return f"Sympy calculated vector [sympy: {calculated_answer_vector}] does not round to [gens: {provided_answer_vec_list}] with [places: {settings["decimal_places"]}, keep_rounded_zeros: {settings["keep_rounded_zeros"]}]."
         else: # vectors are to be compared exactly
             provided_answer_vector = parse_tex_vector_w_scalar(tex_answer)
             
             if provided_answer_vector.equals(calculated_answer_vector) is True:
-                return None
+                return True
             else:
                 return calculated_answer_vector
     else: # scale | answer always exact (integer scalars on integer vectors)
@@ -83,6 +83,6 @@ def verify(tex_question, tex_answer, settings):
         provided_answer_vector = parse_tex_vector_w_scalar(tex_answer)
 
         if provided_answer_vector.equals(calculated_answer_vector) is True:
-            return None
+            return True
         else:
             return calculated_answer_vector

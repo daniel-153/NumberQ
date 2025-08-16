@@ -377,4 +377,4 @@ def verify(question_cmds, tex_answer, settings):
         if current_var_matched_correctly is not True: # as soon as the comparison fails with any var, note the discrepency + exit
             return f"Answer discrepency: [sympy: {requested_value_info_dict['tex_str']}={sympy_calced_ans}] does not match [gens: {requested_value_info_dict['tex_str']} '{equality_type}' {tex_str_value}] with [places: {settings['decimal_places']}, keep_rounded_zeros: {settings['keep_rounded_zeros']}]."
 
-    return None
+    return True

@@ -32,7 +32,7 @@ def verify(tex_question, tex_answer, settings):
         provided_det = parse_latex(tex_answer)
 
         if provided_det.equals(calculated_det) is True:
-            return None
+            return True
         else:
             return calculated_det
     elif operation == 'T': # matrix -> matrix | always exact 
@@ -40,7 +40,7 @@ def verify(tex_question, tex_answer, settings):
         provided_answer_matrix = parse_tex_mtrx_w_scalar(tex_answer)
 
         if provided_answer_matrix.equals(calculated_answer_matrix) is True:
-            return None
+            return True
         else:
             return calculated_answer_matrix
     elif operation == 'rref' or operation == 'inv': # matrix -> matrix | answer entries can be exact or decimals
@@ -51,7 +51,7 @@ def verify(tex_question, tex_answer, settings):
 
             if det_proposed_mtrx_inv.is_zero is True: # if determinant is zero, answer must be that the matrix has no inverse
                 if tex_answer == '\\mathrm{no~~inverse}':
-                    return None
+                    return True
                 else:
                     return f"Matrix in the inverse (A^-1) operation had a determinant of zero, but gens answer was not or not clearly 'no inverse' [gens: {tex_answer}]."
             elif (tex_answer == '\\mathrm{no~~inverse}') and (det_proposed_mtrx_inv.is_nonzero is True): # answer was 'no inverse' when the inverse actually did exist
@@ -64,7 +64,7 @@ def verify(tex_question, tex_answer, settings):
             provided_answer_matrix = parse_tex_mtrx_w_scalar(tex_answer) # parse as sympy matrix
 
             if provided_answer_matrix.equals(calculated_answer_matrix) is True:
-                return None
+                return True
             else:
                 return calculated_answer_matrix
         elif settings["mtrx_op_answer_form"] == "decimals": # matrices are to be compared (entry-by-entry) for correct rounding
@@ -92,7 +92,7 @@ def verify(tex_question, tex_answer, settings):
                 if all_passed is not True: break
 
             if all_passed is True:
-                return None
+                return True
             else:
                 return f"Sympy calculated matrix [sympy: {calculated_answer_matrix}] does not round to [gens: {provided_answer_matrix}] with [places: {settings["decimal_places"]}, keep_rounded_zeros: {settings["keep_rounded_zeros"]}]."
         else:

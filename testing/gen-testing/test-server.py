@@ -101,7 +101,7 @@ def dispatch_test():
         test_result = module_state["current_verifier_func"](*verifer_args)
         module_state["number_of_tests"] += 1
 
-        if (test_result is None): # successful math verification
+        if (test_result is True): # successful math verification
             return flask.jsonify({"test_result": "passed"})
         else: # discrepency found in math
             module_state["number_of_FAILED_tests"] += 1

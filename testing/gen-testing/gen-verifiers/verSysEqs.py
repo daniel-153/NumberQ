@@ -16,7 +16,7 @@ def verify(tex_question, tex_answer):
     y_sol = parse_latex(tex_answer.split(',')[1].replace(')',''))
 
     if (simplify(x_sol - calculated_sols[x]) == 0 and simplify(y_sol - calculated_sols[y]) == 0):
-        return None
+        return True
     else:
         return '(' + str(calculated_sols[x]) + ', ' + str(calculated_sols[y]) + ')'
 

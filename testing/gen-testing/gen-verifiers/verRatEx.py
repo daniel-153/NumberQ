@@ -44,7 +44,7 @@ def verify(tex_question, tex_answer):
     all_denom_zeros = {str(expr) for expr in all_denom_zeros}
 
     if (simplify(answer - calculated_answer) == 0 and parsed_set == all_denom_zeros):
-        return None
+        return True
     else:
         if ('{\\script' in tex_answer):
             return str(calculated_answer) + '  , x!=' + str(all_denom_zeros)

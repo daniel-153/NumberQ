@@ -23,6 +23,6 @@ def verify(tex_question, tex_answer):
             return 'no sol'
 
     if (simplify(solution - calculated_solution) == 0):
-        return None
+        return True
     else:
         return variable_letter + '=' + str(calculated_solution)

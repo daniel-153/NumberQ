@@ -28,6 +28,6 @@ def verify(tex_question, tex_answer):
         calculated_answer = sympify(copy_tex_question.split('=')[0])
 
     if provided_answer.equals(calculated_answer) is True:
-        return None
+        return True
     else:
         return calculated_answer

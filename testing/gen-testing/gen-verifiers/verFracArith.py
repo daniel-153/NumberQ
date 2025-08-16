@@ -17,6 +17,6 @@ def verify(tex_question, tex_answer):
     calculated_answer = question.doit()
 
     if answer.doit() == calculated_answer:
-        return None
+        return True
     else:
         return calculated_answer

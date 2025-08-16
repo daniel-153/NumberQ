@@ -28,12 +28,12 @@ def verify(tex_question, tex_answer):
 
     # check if it can already be simplified to 0
     if simplify(determinant_expr).is_zero is True: # will work for almost all equations
-        return None
+        return True
     else: # last chance to be correct is if the determinant expression (as a function of all its vars) is zero for every non-negative value it's defined for
         # test with random non-negative values (to catch cases where only the positive rearrangement was found like A=s^2 -> s=sqrt(A) -> s - sqrt(s^2) =? 0 -> only for s >= 0)
         test_passed = test_det_expr(determinant_expr, 'non-negative', 100)
 
-        if test_passed: return None
+        if test_passed: return True
     
     # if this point was reached (haven't returned yet, the rearrangement was incorrect)
     return solve(prompt_eq, var_to_solve_obj) # sympy's answer/answers

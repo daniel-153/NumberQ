@@ -8,6 +8,6 @@ def verify(tex_question, tex_answer):
         return f"Failed to evaluate tex_question: '{tex_question}', error: '{e}'"
 
     if provided_answer.equals(calculated_answer) is True:
-        return None
+        return True
     else:
         return calculated_answer

@@ -15,13 +15,13 @@ def verify(tex_question, tex_answer):
         calculated_value = sympify(trig_function + '(' + degree_value + '* pi / 180)')
 
         if (simplify(calculated_value - answer) == 0 or calculated_value == answer): # calculated_value == answer handles the 'zoo' (undefined) case
-            return None
+            return True
         else:
             return calculated_value
     else: # trig value is in radians
         calculated_value = simplify(str(parse_latex(tex_question)))
 
         if (simplify(calculated_value - answer) == 0 or calculated_value == answer):
-            return None
+            return True
         else:
             return calculated_value

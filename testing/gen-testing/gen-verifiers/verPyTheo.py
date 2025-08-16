@@ -142,6 +142,6 @@ def verify(question_cmds, tex_answer, settings):
         provided_side_1 + provided_side_3 > provided_side_2 and
         provided_side_2 + provided_side_3 > provided_side_1
     ):
-        return None
+        return True
     else:
         return 'Sides in answer triangle do not satisfy the triangle inequalities (they do not form a possible triangle).'

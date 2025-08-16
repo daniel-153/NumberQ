@@ -175,6 +175,6 @@ def verify(question_cmds, tex_answer):
         (provided_first_var_value.equals(calculated_side_values[first_var]) is True) and
         (provided_second_var_value.equals(calculated_side_values[second_var]) is True)
     ):
-        return None
+        return True
     else:
         return f"{first_var} = {calculated_side_values[first_var]} | {second_var} = {calculated_side_values[second_var]}"

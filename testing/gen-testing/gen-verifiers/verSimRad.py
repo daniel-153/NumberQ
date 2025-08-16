@@ -5,6 +5,6 @@ def verify(tex_question, tex_answer):
     calculated_answer = simplify(parse_latex(tex_question))
 
     if (simplify(parse_latex(tex_answer) - calculated_answer) == 0):
-        return None
+        return True
     else:
         return calculated_answer
