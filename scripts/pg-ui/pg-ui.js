@@ -23,13 +23,7 @@ const pg_ui_state = {
     randomize_all: false,
     first_pg_ui_open: true, // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
     first_with_current_gen: false, // first generation with the current module,
-    sizes: {
-        width: null,
-        height: null,
-        force_square: null,
-        q_font_size: null,
-        a_font_size: null
-    },
+    sizes: {},
     required_mjx_extensions: []
 };
 
