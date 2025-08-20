@@ -164,11 +164,11 @@ const SAH = { // resolveSizeAdjustments helpers
         
         // max width for a single column on desktop (gap between needs to be accounted for)
         const flex_gap = parseFloat(getComputedStyle(document.getElementById('Q-A-container')).gap);
-        max_gen_col_width = (pg_ui_banner_width - flex_gap) / 2 - 0.01 * vw; // 1vw away from the edge of pg-ui banner
+        max_gen_col_width = ( (pg_ui_banner_width - flex_gap) / 2 - 0.01 * vw ) / vw * 100; // 1vw away from the edge of pg-ui banner
         output_widths['desktop'] = max_gen_col_width - 2*this.default_sizes_vw.desktop.__preset__.rendered_box_border - 2*this.default_sizes_vw.desktop.__preset__.rendered_box_wrap_border;
         
         // max width for a single column on mobile (layout switches to vertically stacking gen-cols)
-        max_gen_col_width = pg_ui_banner_width - 0.06 * vw; // 6vw less than the pg-ui banner width
+        max_gen_col_width = ( pg_ui_banner_width - 0.06 * vw ) / vw * 100; // 6vw less than the pg-ui banner width
         output_widths['mobile'] = max_gen_col_width - 2*this.default_sizes_vw.mobile.__preset__.rendered_box_border - 2*this.default_sizes_vw.mobile.__preset__.rendered_box_wrap_border;
         
         return output_widths;
@@ -182,13 +182,11 @@ const SAH = { // resolveSizeAdjustments helpers
         }
 
         const max_rendered_box_widths = SAH.getMaxRenderedBoxWidthsVw();
-        const gencol_width_desktop = Math.min(
-            final_sizes_vw.desktop.width + 2*final_sizes_vw.desktop.__preset__.rendered_box_border + 2*final_sizes_vw.desktop.__preset__.rendered_box_wrap_border,
-            max_rendered_box_widths.desktop
+        const gencol_width_desktop = ( Math.min(final_sizes_vw.desktop.width, max_rendered_box_widths.desktop)
+            + 2*final_sizes_vw.desktop.__preset__.rendered_box_border + 2*final_sizes_vw.desktop.__preset__.rendered_box_wrap_border
         );
-        const gencol_width_mobile = Math.min(
-            final_sizes_vw.mobile.width + 2*final_sizes_vw.mobile.__preset__.rendered_box_border + 2*final_sizes_vw.mobile.__preset__.rendered_box_wrap_border,
-            max_rendered_box_widths.mobile
+        const gencol_width_mobile = ( Math.min(final_sizes_vw.mobile.width, max_rendered_box_widths.mobile)
+            + 2*final_sizes_vw.mobile.__preset__.rendered_box_border + 2*final_sizes_vw.mobile.__preset__.rendered_box_wrap_border
         );
         const pad_ratio = 0.1;
         const latex_box_pad_desktop = pad_ratio * gencol_width_desktop;

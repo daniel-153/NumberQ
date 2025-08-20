@@ -302,6 +302,9 @@
     height: 2.2vw;
     box-sizing: border-box;
     background-color: #2868a0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .un-rendered-copy-image-wrapper:hover {
