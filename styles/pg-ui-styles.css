@@ -95,7 +95,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    width: fit-content;
 }
 
 .math-output-wrapper {
@@ -154,13 +154,14 @@
 
 .latex-box {
     border: 0.1vw solid #5ab8b8;
+    background-color: whitesmoke;
     overflow: hidden;
-    width: 31.7vw;
-    height: 2vw;
+    height: 2.2vw;
     white-space: nowrap;
     overflow-x: hidden;
     font-size: 1.2vw;
     border-radius: calc(0.08 * 5vw);
+    box-sizing: border-box;
 }
 
 #generate-button {
@@ -189,12 +190,12 @@
 }
 
 .rendered-box-wrapper {
-    width: 100%;
+    width: fit-content;
     position: relative;
 }
 
 .un-rendered-box-wrapper {
-    width: 100%;
+    width: fit-content;
     position: relative;
     height: fit-content;
     margin-top: 1vw;
@@ -298,7 +299,8 @@
     border-radius: calc(0.08 * 5vw);
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
-    height: 2vw;
+    height: 2.2vw;
+    box-sizing: border-box;
     background-color: #2868a0;
 }
 

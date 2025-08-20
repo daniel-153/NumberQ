@@ -97,15 +97,22 @@ export function updatePGQABoxes(question_obj, sizes_obj, question_type, answer_t
         
         // rendered box requires handling with size adjustments and output types
         if (output_type === 'latex') {
-            UH.updateElementMath(`rendered-${Q_or_A}`, question_obj[box_type], sizes_obj[`${Q_or_A.toLowerCase()}_font_size`]);
+            let starting_font_size;
+            if (document.documentElement.clientWidth <= 900) { // mobile
+                starting_font_size = sizes_obj.mobile[`${Q_or_A.toLowerCase()}_font_size`] + 'vw';
+            }
+            else { // all sizes larger than mobile
+                starting_font_size = sizes_obj.desktop[`${Q_or_A.toLowerCase()}_font_size`] + 'vw';
+            }
+
+            UH.updateElementMath(`rendered-${Q_or_A}`, question_obj[box_type], starting_font_size);
         }
         else if (output_type === 'canvas') {
-            const output_box_size = document.getElementById(`rendered-${Q_or_A}`).style.width;
-
             const output_canvas = question_obj[box_type];
 
-            output_canvas.style.width = output_box_size;
-            output_canvas.style.height = output_box_size;
+            output_canvas.style.width = '100%';
+            output_canvas.style.height = '';
+            output_canvas.style.aspectRatio = '1';
 
             document.getElementById(`rendered-${Q_or_A}`).innerHTML = '';
             document.getElementById(`rendered-${Q_or_A}`).appendChild(output_canvas);
@@ -127,78 +134,134 @@ export function prelockSettings(form_ID, gen_module) {
 }
 
 const SAH = { // resolveSizeAdjustments helpers
-    default_sizes: null,
-    getDefaultSizes: function () {
-        const view_width_px = document.documentElement.clientWidth;
-
-        // clear previously applied inline styles
-        const rendered_Q = document.getElementById('rendered-Q');
-        const rendered_A = document.getElementById('rendered-A');
-        document.getElementById('rendered-Q').removeAttribute('style');
-        document.getElementById('rendered-A').removeAttribute('style');
-
-        // get the necessary information
-        SAH.default_sizes = {};
-        SAH.default_sizes.width = rendered_Q.clientWidth / view_width_px * 100 + 'vw';
-        SAH.default_sizes.height = rendered_Q.clientHeight / view_width_px * 100 + 'vw';
-        SAH.default_sizes.q_font_size = parseFloat(getComputedStyle(rendered_Q).fontSize) / view_width_px * 100 + 'vw';
-        SAH.default_sizes.a_font_size = parseFloat(getComputedStyle(rendered_A).fontSize) / view_width_px * 100 + 'vw';
+    default_sizes_vw: {
+        desktop: {
+            width: 30.5,
+            height: 6, 
+            q_font_size: 3,
+            a_font_size: 3,
+            __preset__: {
+                rendered_box_border: 0.61,
+                rendered_box_wrap_border: 0.13
+            }
+        },
+        mobile: {
+            width: 73,
+            height: 14.36, 
+            q_font_size: 7,
+            a_font_size: 7,
+            __preset__: {
+                rendered_box_border: 1.46,
+                rendered_box_wrap_border: 0.31
+            }
+        }
     },
-    setFinalSize: function(size_name, scale_factor, pg_ui_state) {
-        pg_ui_state.sizes[size_name] = Number(SAH.default_sizes[size_name].slice(0, -2)) * scale_factor + 'vw';
-    },
-    getMaxWidth: function(pg_ui_box_type) {
+    getMaxRenderedBoxWidthsVw: function() { // max width for a gen-col on both desktop and mobile
+        const output_widths = {};
         const vw = document.documentElement.clientWidth;
         const pg_ui_banner_width = document.getElementById('generation-container').clientWidth;
-
-        // need to handle the layout change on mobile
-        let max_single_box_width; // in px to start
-        if (vw > 900) { // not mobile
-            const flex_gap = parseFloat(getComputedStyle(document.getElementById('Q-A-container')).gap);
-
-            max_single_box_width = (pg_ui_banner_width - flex_gap) / 2 - 0.01 * vw; // 1vw away from the edge of pg-ui banner
-        }
-        else { // mobile
-            max_single_box_width = pg_ui_banner_width - 0.06 * vw; // 6vw less than the pg-ui banner width
-        }
+        let max_gen_col_width; // max width of a gen column (which is sized to fit the rendered box width + its padding + the outer border)
         
-        if (pg_ui_box_type === 'rendered') {
-            return ((max_single_box_width / 1.04) / vw) * 100 + 'vw';
-        }
-        else if (pg_ui_box_type === 'un-rendered') {
-            return (max_single_box_width / vw) * 100 + 'vw';
-        }
+        // max width for a single column on desktop (gap between needs to be accounted for)
+        const flex_gap = parseFloat(getComputedStyle(document.getElementById('Q-A-container')).gap);
+        max_gen_col_width = (pg_ui_banner_width - flex_gap) / 2 - 0.01 * vw; // 1vw away from the edge of pg-ui banner
+        output_widths['desktop'] = max_gen_col_width - 2*this.default_sizes_vw.desktop.__preset__.rendered_box_border - 2*this.default_sizes_vw.desktop.__preset__.rendered_box_wrap_border;
+        
+        // max width for a single column on mobile (layout switches to vertically stacking gen-cols)
+        max_gen_col_width = pg_ui_banner_width - 0.06 * vw; // 6vw less than the pg-ui banner width
+        output_widths['mobile'] = max_gen_col_width - 2*this.default_sizes_vw.mobile.__preset__.rendered_box_border - 2*this.default_sizes_vw.mobile.__preset__.rendered_box_wrap_border;
+        
+        return output_widths;
     },
-    applyFinalSizes: function(sizes_obj) {
-        // Only the width and height need to be manually applied here (font changes are applied each time math is inserted)
-        const mathoutput_border = Number(sizes_obj.width.slice(0, -2)) * 0.02 + 'vw';
-        const total_gencol_width = Number(sizes_obj.width.slice(0, -2)) + 2 * Number(mathoutput_border.slice(0, -2)) + 'vw';
-        
-        ['rendered-Q','rendered-A'].forEach(element_id => {
-            const element = document.getElementById(element_id);
-            element.style.width = sizes_obj.width;
-            element.style.height = sizes_obj.height;
-            element.style.borderWidth = mathoutput_border;
-            element.style.maxWidth = SAH.getMaxWidth('rendered');
-        });
+    applyFinalSizes: function(final_sizes_vw) {
+        let adjusted_pgui_styles = document.getElementById('adjusted-pgui-styles');
+        if (adjusted_pgui_styles === null) {
+            adjusted_pgui_styles = document.createElement('style');
+            adjusted_pgui_styles.id = 'adjusted-pgui-styles';
+            document.getElementById('Q-A-container').appendChild(adjusted_pgui_styles);
+        }
 
-        ['un-rendered-Q', 'un-rendered-A'].forEach(element_id => {
-            const element = document.getElementById(element_id);
-            element.style.width = total_gencol_width;
-            element.style.maxWidth = SAH.getMaxWidth('un-rendered');
-        })
+        const max_rendered_box_widths = SAH.getMaxRenderedBoxWidthsVw();
+        const gencol_width_desktop = Math.min(
+            final_sizes_vw.desktop.width + 2*final_sizes_vw.desktop.__preset__.rendered_box_border + 2*final_sizes_vw.desktop.__preset__.rendered_box_wrap_border,
+            max_rendered_box_widths.desktop
+        );
+        const gencol_width_mobile = Math.min(
+            final_sizes_vw.mobile.width + 2*final_sizes_vw.mobile.__preset__.rendered_box_border + 2*final_sizes_vw.mobile.__preset__.rendered_box_wrap_border,
+            max_rendered_box_widths.mobile
+        );
+        const pad_ratio = 0.1;
+        const latex_box_pad_desktop = pad_ratio * gencol_width_desktop;
+        const latex_box_pad_mobile = pad_ratio * gencol_width_mobile;
+
+        adjusted_pgui_styles.innerHTML = `
+            .math-output-wrapper {
+                border-width: ${final_sizes_vw.desktop.__preset__.rendered_box_wrap_border}vw;
+            }
+        
+            .rendered-box {
+                width: ${final_sizes_vw.desktop.width}vw;
+                max-width: ${max_rendered_box_widths.desktop}vw;
+                height: ${final_sizes_vw.desktop.height}vw;
+                border-width: ${final_sizes_vw.desktop.__preset__.rendered_box_border}vw;
+            }
+
+            .latex-box {
+                width: ${gencol_width_desktop}vw;
+                padding: 0 ${latex_box_pad_desktop}vw 0 ${latex_box_pad_desktop}vw;
+            }
+
+            #rendered-Q {
+                font-size: ${final_sizes_vw.desktop.q_font_size}vw;
+            }
+
+            #rendered-A {
+                font-size: ${final_sizes_vw.desktop.a_font_size}vw;
+            }
+
+            @media (max-width: 900px) {
+                .math-output-wrapper {
+                    border-width: ${final_sizes_vw.mobile.__preset__.rendered_box_wrap_border}vw;
+                }
+            
+                .rendered-box {
+                    width: ${final_sizes_vw.mobile.width}vw;
+                    max-width: ${max_rendered_box_widths.mobile}vw;
+                    height: ${final_sizes_vw.mobile.height}vw;
+                    border-width: ${final_sizes_vw.mobile.__preset__.rendered_box_border}vw;
+                }
+
+                .latex-box {
+                    width: ${gencol_width_mobile}vw;
+                    padding: 0 ${latex_box_pad_mobile}vw 0 ${latex_box_pad_mobile}vw;
+                }
+
+                #rendered-Q {
+                    font-size: ${final_sizes_vw.mobile.q_font_size}vw;
+                }
+
+                #rendered-A {
+                    font-size: ${final_sizes_vw.mobile.a_font_size}vw;
+                }
+            }
+        `;
     }
 };
 export function resolveSizeAdjustments(gen_module, pg_ui_state) {
-    SAH.getDefaultSizes();
+    const scaled_sizes_vw = {
+        desktop: {},
+        mobile: {}
+    }
 
     if (gen_module.size_adjustments !== undefined) { // there is at least one size adjustment in the gen module
         ['width', 'height', 'q_font_size', 'a_font_size'].forEach(size_name => {
             if (gen_module.size_adjustments[size_name] !== undefined) { // non-1 scale factor provided
-                SAH.setFinalSize(size_name, gen_module.size_adjustments[size_name], pg_ui_state);
+                scaled_sizes_vw.desktop[size_name] = SAH.default_sizes_vw.desktop[size_name] * gen_module.size_adjustments[size_name];
+                scaled_sizes_vw.mobile[size_name] = SAH.default_sizes_vw.mobile[size_name] * gen_module.size_adjustments[size_name];
             }
-            else { // no scale factor provided (1 ==> use the default size)
-                SAH.setFinalSize(size_name, 1, pg_ui_state);
+            else { // no scale factor provided ==> use the default size
+                scaled_sizes_vw.desktop[size_name] = SAH.default_sizes_vw.desktop[size_name];
+                scaled_sizes_vw.mobile[size_name] = SAH.default_sizes_vw.mobile[size_name];
             }
         });
 
@@ -207,22 +270,32 @@ export function resolveSizeAdjustments(gen_module, pg_ui_state) {
                 gen_module.size_adjustments.width !== undefined &&
                 gen_module.size_adjustments.height === undefined
             ) { // (only width provided) => force height to match width
-                pg_ui_state.sizes.height = pg_ui_state.sizes.width;
+                scaled_sizes_vw.desktop.height = scaled_sizes_vw.desktop.width;
+                scaled_sizes_vw.mobile.height = scaled_sizes_vw.mobile.width;
             }
             else if (
                 gen_module.size_adjustments.height !== undefined &&
                 gen_module.size_adjustments.width === undefined
             ) { // (only height provided) => force width to match height
-                pg_ui_state.sizes.width = pg_ui_state.sizes.height;
+                scaled_sizes_vw.desktop.width = scaled_sizes_vw.desktop.height;
+                scaled_sizes_vw.mobile.width = scaled_sizes_vw.mobile.height;
             }
             else console.error('Cannot force square with unspecified width and height or if both a width and height were provided.');
         }
+
+        scaled_sizes_vw.desktop['__preset__'] = JSON.parse(JSON.stringify(SAH.default_sizes_vw.desktop.__preset__));
+        scaled_sizes_vw.mobile['__preset__'] = JSON.parse(JSON.stringify(SAH.default_sizes_vw.mobile.__preset__));
     }
     else { // no size adjustments (use all defaults)
-        pg_ui_state.sizes = SAH.default_sizes;
+        scaled_sizes_vw.desktop = JSON.parse(JSON.stringify(SAH.default_sizes_vw.desktop));
+        scaled_sizes_vw.mobile = JSON.parse(JSON.stringify(SAH.default_sizes_vw.mobile));
     }
 
-    SAH.applyFinalSizes(pg_ui_state.sizes);
+    SAH.applyFinalSizes(scaled_sizes_vw);
+
+    // update the values in the pg-ui-state
+    pg_ui_state.sizes['desktop'] = JSON.parse(JSON.stringify(scaled_sizes_vw.desktop));
+    pg_ui_state.sizes['mobile'] = JSON.parse(JSON.stringify(scaled_sizes_vw.mobile));
 }
 
 export function insertCanvases(question_obj) {
