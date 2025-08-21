@@ -136,8 +136,8 @@ export function prelockSettings(form_ID, gen_module) {
 const SAH = { // resolveSizeAdjustments helpers
     default_sizes_vw: {
         desktop: {
-            width: 30.5,
-            height: 6, 
+            width: 30.6,
+            height: 6.05, 
             q_font_size: 3,
             a_font_size: 3,
             __preset__: {
@@ -146,8 +146,8 @@ const SAH = { // resolveSizeAdjustments helpers
             }
         },
         mobile: {
-            width: 73,
-            height: 14.36, 
+            width: 73.2,
+            height: 14.4, 
             q_font_size: 7,
             a_font_size: 7,
             __preset__: {
