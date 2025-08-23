@@ -10,7 +10,7 @@ const event_listeners = [
                 UH.toggleVisibility(['generation-content'], ['home-page-content', 'presenation-content']);
                 window.scrollTo(0, 0);
                 history.pushState({ page: 'generator' }, '', '');
-                document.getElementById('randomize-all-checkbox').checked = false; // make sure randomize-all always starts unchecked
+                document.getElementById('settings-preset-checkbox').checked = false; // make sure randomize-all always starts unchecked
                 document.getElementById('settings-container').scrollTop = 0; // reset the scroll on the settings group
                 document.getElementById('generate-button').setAttribute('data-gen-func-name', event.target.getAttribute('data-gen-func-name'));
                 PG.generate(event.target.getAttribute('data-gen-func-name'), event.target.getAttribute('data-gen-type'));
@@ -55,6 +55,10 @@ const event_listeners = [
             if (event.target.matches('.settings-lock') || event.target.matches('.settings-lock-image')) {
                 PGH.toggleSettingsLock(event.target.closest('.settings-lock'));
             }
+        });
+
+        document.getElementById('presets-menu-toggle-btn').addEventListener('click', () => {
+            PGH.togglePresetMenu();
         });
     },
 
