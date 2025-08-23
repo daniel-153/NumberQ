@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles/presentation-styles.css" />
     <link rel="stylesheet" href="styles/faq-styles.css" />
     <link rel="stylesheet" href="styles/export-ui-styles.css" />
+    <link rel="stylesheet" href="styles/presets-styles.css" />
   </head>
   <body>
     <div id="home-page-content">
@@ -100,8 +101,13 @@
             </button>
           </div>
           <div id="settings-container-wrapper">
-            <div id="randomize-all-tab">
-              <input type="checkbox" id="randomize-all-checkbox" />Randomize All
+            <div id="settings-presets-tab">
+              <input type="checkbox" id="settings-preset-checkbox" />
+              <span id="settings-preset-label">Randomize All</span>
+              <button class="settings-info-button" id="presets-menu-toggle-btn" data-tooltip="Change">
+                <div id="presets-menu-triangle"></div>
+              </button>
+              <div id="preset-list-wrapper"></div>
             </div>
             <div id="settings-container">
               <form id="settings-form" autocomplete="off"></form>
