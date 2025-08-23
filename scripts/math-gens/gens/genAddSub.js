@@ -148,33 +148,49 @@ export const settings_fields = [
     'wrap_negatives'
 ];
 
-export function get_presets() {
-    return {
-        first_term_range_min: 1,
-        first_term_range_max: 9,
-        second_term_range_min: 1,
-        second_term_range_max: 9,
-        addsub_operation: 'add',
-        addsub_notation: 'flat_with_eq',
-        force_non_neg_sub: 'yes',
-        allow_zero_terms: 'yes',
-        wrap_negatives: 'only_middle'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        first_term_range_min: H.randInt(1, 25),
-        first_term_range_max: H.randInt(1, 25),
-        second_term_range_min: H.randInt(1, 25),
-        second_term_range_max: H.randInt(1, 25),
-        addsub_operation: '__random__',
-        addsub_notation: 'flat_with_eq',
-        force_non_neg_sub: '__random__',
-        allow_zero_terms: '__random__',
-        wrap_negatives: 'only_middle'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            first_term_range_min: 1,
+            first_term_range_max: 9,
+            second_term_range_min: 1,
+            second_term_range_max: 9,
+            addsub_operation: 'add',
+            addsub_notation: 'flat_with_eq',
+            force_non_neg_sub: 'yes',
+            allow_zero_terms: 'yes',
+            wrap_negatives: 'only_middle'
+        };
+    },
+    random: function() {
+        return {
+            first_term_range_min: H.randInt(1, 25),
+            first_term_range_max: H.randInt(1, 25),
+            second_term_range_min: H.randInt(1, 25),
+            second_term_range_max: H.randInt(1, 25),
+            addsub_operation: '__random__',
+            force_non_neg_sub: '__random__',
+            allow_zero_terms: '__random__'
+        };
+    },
+    topic_presets: [
+        {
+            name: 'one_digit_addition', 
+            display_title: 'One Digit Addition',
+            example_problem: '3+5=\\:?',
+            description: 'Add numbers between 0 and 9.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: 9,
+                    second_term_range_min: 0,
+                    second_term_range_max: 9,
+                    addsub_operation: 'add'
+                };
+            }
+        }
+    ]
+};
 
 export const size_adjustments = {
     width: 0.9,
