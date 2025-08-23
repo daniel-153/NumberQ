@@ -24,7 +24,8 @@ const pg_ui_state = {
     first_pg_ui_open: true, // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
     first_with_current_gen: false, // first generation with the current module,
     sizes: {},
-    required_mjx_extensions: []
+    required_mjx_extensions: [],
+    preset_funcs: {}
 };
 
 export async function generate(func_name, display_name = '') {
@@ -43,6 +44,7 @@ export async function generate(func_name, display_name = '') {
         PH.resolveSizeAdjustments(pg_ui_state.current_module, pg_ui_state);
         await PH.loadMjxExtensions(pg_ui_state.current_module, pg_ui_state);
         pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
+        await PH.createSettingsPresets(pg_ui_state.current_module, pg_ui_state);
         FH.correctSettingOverflow('settings-form');
         PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
     }

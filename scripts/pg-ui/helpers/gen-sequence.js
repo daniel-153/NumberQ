@@ -428,3 +428,82 @@ export async function loadMjxExtensions(gen_module, pg_ui_state) {
         });
     }
 }
+
+const CPH = { // createSettingsPresets helpers
+    createPresetHtml: function(preset_obj, preset_class = 'topic_preset') {
+        let display_title, example_problem, description, name;
+        if (preset_class === 'topic_preset') { // custom presets specific to the current gen module
+            ({ display_title, example_problem, description, name } = preset_obj);
+        }
+        else if (preset_class === 'default_preset') { // the single default preset in every module
+            display_title = 'Use Defaults';
+            example_problem = '[\\mathrm{Default}]';
+            description = 'Use the default settings for this generator.';
+            
+        }
+        else if (preset_class === 'random_preset') { // the single random preset in every module
+            display_title = 'Randomize All';
+            example_problem = '[\\mathrm{Random}]';
+            description = 'Randomize each setting. Note that "Locked" settings are not affected by randomization.'
+        }
+
+        return `
+            <div class="preset-option-wrapper">
+                <div class="preset-option-inner-wrapper">
+                    <input type="radio" name="settings-preset" id="${name}" class="settings-preset-radio-btn"/>
+                    <label for="${name}" class="preset-option-label">${display_title}</label>
+                </div>
+                <div class="preset-example-btn-wrapper">
+                    <div class="settings-info-button settings-preset-example-btn">?</div>
+                    <div class="preset-tooltip-wrapper">
+                        <div class="preset-tooltip-content">
+                            <h3 class="preset-descriptor preset-tooltip-title">${display_title}:</h3>
+                            <div class="preset-descriptor preset-tooltip-math">\\( ${example_problem} \\)</div>
+                            <p class="preset-descriptor preset-tooltip-description">${description}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+};
+export async function createSettingsPresets(gen_module, pg_ui_state) {
+    pg_ui_state.preset_funcs = {}; // clear previous
+    
+    // ensure that at least a presents obj and the default preset are present (otherwise, generation is impossible)
+    if (!(typeof(gen_module.presets) === 'object' && gen_module.presets !== null)) {
+        throw new Error('Current gen module does not contain a [presets object].');
+    }
+    else if (typeof(gen_module.presets.default) !== 'function') {
+        throw new Error('Gen module presets object does not specify [default] preset function.');
+    }
+    
+    // default preset
+    let output_html = '<div id="settings-presets-list">';
+    pg_ui_state.preset_funcs.default = gen_module.presets.default;
+    output_html += CPH.createPresetHtml({}, 'default_preset');
+
+    // random preset (must be present, but generation is still possible if it isn't)
+    if (typeof(gen_module.presets.random) === 'function') {
+        pg_ui_state.preset_funcs.random = gen_module.presets.random;
+        output_html += CPH.createPresetHtml({}, 'random_preset');
+    }
+    else {
+        console.error('Gen module presets object does not specify [random] preset function.');
+    }
+
+    // all the other module specific presets
+    if (Array.isArray(gen_module.presets.topic_presets)) {
+        gen_module.presets.topic_presets.forEach(preset_obj => {
+            pg_ui_state.preset_funcs[preset_obj.name] = preset_obj.get_settings;
+            output_html += CPH.createPresetHtml(preset_obj);
+        });;
+    }
+
+    // insert and typeset any mjx
+    output_html += '</div>';
+    const preset_container = document.getElementById('preset-list-wrapper');
+    preset_container.innerHTML = output_html;
+
+    await MathJax.typesetPromise([preset_container]);
+}
