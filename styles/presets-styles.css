@@ -1,0 +1,328 @@
+#settings-container-wrapper {
+  position: relative;
+  width: fit-content;
+  height: fit-content;
+  margin-bottom: 0.4vw;
+}
+
+#settings-presets-tab {
+  --tab-height: clamp(20px, 1.5vw, 1.5vw);
+  position: absolute;
+  left: 0;
+  top: calc((-1) * var(--tab-height));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  height: var(--tab-height);
+  background-color: rgb(149, 52, 52);
+  border: 2px solid rgb(75, 20, 20);
+  border-bottom-color: transparent;
+  border-bottom-width: 0;
+  border-radius: 0.2vw;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  padding: 0 7.5px 0 7.5px;
+}
+
+#settings-presets-tab[data-preset-menu-status="shown"] {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+#settings-preset-checkbox {
+  width: 1vw;
+  height: 1vw;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+#settings-preset-checkbox:hover {
+  cursor: pointer;
+}
+
+#settings-preset-label {
+  height: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(13px, 0.9vw, 0.9vw);
+  color: white;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  box-sizing: border-box;
+  padding: 0 7.5px 0 7.5px;
+  margin: 0 8.5px 0 8.5px;
+  border: 1px solid rgba(245, 245, 245, 0.617);
+  border-bottom-width: 0;
+  border-top-width: 0;
+}
+
+#presets-menu-toggle-btn {
+  --triangle-color: rgb(9, 9, 54);
+  height: 75%;
+  aspect-ratio: 1;
+  background-color: transparent;
+  padding: 0;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  margin: 0;
+  width: auto;
+  z-index: 9;
+}
+
+#presets-menu-toggle-btn::before {
+    left: 50%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 400;
+    width: fit-content;
+    height: min-content;
+    line-height: 0.8;
+    padding-left: 30px;
+    padding-right: 30px;
+    font-size: 33px;
+    bottom: calc(100% + 18.5px);
+}
+
+#presets-menu-toggle-btn::after {
+    bottom: calc(100% + 7.5px);
+    border-left-width: 12.8px;
+    border-right-width: 12.8px;
+    border-top-width: 12.8px;
+}
+
+#presets-menu-toggle-btn[data-preset-menu-status="shown"]::after,
+#presets-menu-toggle-btn[data-preset-menu-status="shown"]::before {
+  display: none;
+}
+
+#presets-menu-toggle-btn:hover {
+    outline: 1px solid black;
+    --triangle-color: rgb(0, 0, 176);
+}
+
+#presets-menu-triangle {
+    height: 100%;
+    aspect-ratio: 1;
+    clip-path: polygon(50% 0, 0 100%, 100% 100%);
+    background-color: var(--triangle-color);
+    transition: transform 75ms ease-in-out;
+}
+
+#presets-menu-triangle[data-preset-menu-status="shown"] {
+  transform: rotate(180deg);
+}
+
+#preset-list-wrapper {
+    position: absolute;
+    bottom: calc(100% + 2px);
+    max-height: calc(var(--tab-height) * 7);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(30%);
+    transition: opacity 75ms ease-in-out, transform 75ms ease-in-out;
+    pointer-events: none;  
+}
+
+#preset-list-wrapper[data-preset-menu-status="shown"] {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+#settings-presets-list {
+  min-width: 100%;
+  width: fit-content;
+  height: fit-content;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: visible;
+  background-color: #919191;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  direction: rtl;
+  border: 4px solid rgb(58, 9, 81);
+  box-sizing: border-box;
+  border-radius: 2.5%;
+}
+
+.preset-option-wrapper {
+  direction: ltr;
+  width: fit-content;
+  min-width: 100%;
+  height: fit-content;
+  min-height: fit-content;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(59, 76, 93);
+  border: 1px solid rgb(15, 15, 21);
+  border-width: 1px 2px;
+  gap: 30px;
+  box-sizing: border-box;
+  padding: 8px 10px;
+}
+
+.preset-option-wrapper:first-child {
+    border-top-width: 2px;
+}
+
+.preset-option-wrapper:last-child {
+    border-bottom-width: 2px;
+}
+
+.preset-option-inner-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  gap: 10px;
+}
+
+.preset-option-label {
+  font-size: clamp(16px, 1vw, 1vw);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 600;
+  color: white;
+  width: fit-content;
+  white-space: nowrap;
+}
+
+.settings-preset-radio-btn {
+  width: 1vw;
+  height: 1vw;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+.settings-preset-radio-btn:hover {
+  cursor: pointer;
+}
+
+.preset-example-btn-wrapper {
+    --tooltip-visibility: hidden;
+    --tooltip-opacity: 0;
+}
+
+.preset-example-btn-wrapper:hover {
+    --tooltip-visibility: visible;
+    --tooltip-opacity: 1;
+}
+
+.settings-preset-example-btn {
+    margin: 0;
+    background-color: rgb(165, 63, 0);
+    outline: 1px solid rgb(255, 115, 0);
+}
+
+.settings-preset-example-btn:hover {
+    outline-color: rgb(30, 0, 255);
+}
+
+.settings-preset-example-btn::before,
+.settings-preset-example-btn::after {
+    display: none;
+}
+
+#settings-presets-list::-webkit-scrollbar {
+  width: 13px;
+}
+
+#settings-presets-list::-webkit-scrollbar-thumb {
+  background-color: #414141;
+  border-radius: 6px;
+  border: 2px solid rgb(206, 206, 206);
+}
+
+#settings-presets-list::-webkit-scrollbar-thumb:hover {
+  background-color: #2e2e2e;
+}
+
+#settings-presets-list::-webkit-scrollbar-track {
+  background: rgb(206, 206, 206);
+}
+
+.preset-tooltip-wrapper {
+    --tooltip-arrow-size: clamp(25px, 1vw, 1vw);
+    position: absolute;
+    top: 50%;
+    left: calc(100% + var(--tooltip-arrow-size));
+    transform: translateY(-50%);
+    min-width: 300px;
+    width: fit-content;
+    height: fit-content;
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-radius: 10px;
+    padding: 5%;
+
+    visibility: var(--tooltip-visibility);
+    opacity: var(--tooltip-opacity);
+    transition: opacity 0.15s ease;
+}
+
+.preset-tooltip-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    width: 0; 
+    height: 0; 
+    border-top: var(--tooltip-arrow-size) solid transparent;
+    border-bottom: var(--tooltip-arrow-size) solid transparent; 
+    border-right: var(--tooltip-arrow-size) solid #333; 
+}
+
+.preset-tooltip-content {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.preset-descriptor {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 7.5px;
+}
+
+.preset-tooltip-title {
+  font-size: max(30px, 1.25vw);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 600;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.488);
+  background-color: #2e2e2e;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.preset-tooltip-math {
+    background-color: whitesmoke;
+    padding: 5% 15px;
+    font-size: max(30px, 2vw);
+    border-radius: 10px;
+}
+
+.preset-tooltip-description {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 600;
+  font-size: max(20px, 1vw);
+  color: white;
+}
