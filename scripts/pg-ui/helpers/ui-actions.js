@@ -127,3 +127,24 @@ export async function handleCopyClick(r_or_u_Q_or_A) {
         copy_button_el._timeoutId = null; 
     }, 2000);
 }
+
+export function togglePresetMenu() {
+    const menu_toggle_btn = document.getElementById('presets-menu-toggle-btn');
+    
+    let updated_menu_status;
+    if (menu_toggle_btn.getAttribute('data-preset-menu-status') === 'shown') { // menu is currently shown -> hide it
+        updated_menu_status = 'hidden';
+    }
+    else { // menu is not shown -> reveal it
+        updated_menu_status = 'shown';
+    }
+
+    [
+        menu_toggle_btn, 
+        document.getElementById('settings-presets-tab'),
+        document.getElementById('preset-list-wrapper'),
+        document.getElementById('presets-menu-triangle')
+    ].forEach(el => {
+        el.setAttribute('data-preset-menu-status', updated_menu_status);
+    })
+}
