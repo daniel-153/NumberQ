@@ -11,6 +11,11 @@
   overflow-y: auto;
   padding: 1vw;
   padding-top: 1.25vw;
+  transition: border-color 150ms ease-in-out;
+}
+
+#settings-container[data-use-preset-status="applied"] {
+  border-color: rgb(15, 129, 129);
 }
 
 #settings-form {

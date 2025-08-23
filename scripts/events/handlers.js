@@ -60,6 +60,10 @@ const event_listeners = [
         document.getElementById('presets-menu-toggle-btn').addEventListener('click', () => {
             PGH.togglePresetMenu();
         });
+
+        document.getElementById('settings-preset-checkbox').addEventListener('click', () => {
+            PGH.toggleUsePresetIndicator();
+        });
     },
 
     function presentationPage() {

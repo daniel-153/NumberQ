@@ -25,11 +25,16 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   padding: 0 7.5px 0 7.5px;
+  transition: border-color 150ms ease-in-out;
 }
 
 #settings-presets-tab[data-preset-menu-status="shown"] {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+#settings-presets-tab[data-use-preset-status="applied"] {
+    border-color: rgb(15, 129, 129);
 }
 
 #settings-preset-checkbox {

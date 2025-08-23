@@ -146,5 +146,24 @@ export function togglePresetMenu() {
         document.getElementById('presets-menu-triangle')
     ].forEach(el => {
         el.setAttribute('data-preset-menu-status', updated_menu_status);
-    })
+    });
+}
+
+export function toggleUsePresetIndicator() {
+    const preset_tab = document.getElementById('settings-presets-tab');
+    
+    let updated_status;
+    if (preset_tab.getAttribute('data-use-preset-status') === 'applied') { // preset is applied -> remove indicator
+        updated_status = 'not-applied';
+    }
+    else { // preset is not applied -> apply indicator
+        updated_status = 'applied';
+    }
+
+    [
+        preset_tab,
+        document.getElementById('settings-container')
+    ].forEach(el => {
+        el.setAttribute('data-use-preset-status', updated_status);
+    });
 }
