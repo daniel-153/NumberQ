@@ -64,6 +64,12 @@ const event_listeners = [
         document.getElementById('settings-preset-checkbox').addEventListener('click', () => {
             PGH.toggleUsePresetIndicator();
         });
+
+        document.getElementById('preset-list-wrapper').addEventListener('change', (event) => {
+            if (event.target.matches('input[type="radio"].settings-preset-radio-btn[name="settings-preset"]')) {
+                PGH.focusPresetOption(event.target);
+            }
+        })
     },
 
     function presentationPage() {
