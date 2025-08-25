@@ -167,3 +167,9 @@ export function toggleUsePresetIndicator() {
         el.setAttribute('data-use-preset-status', updated_status);
     });
 }
+
+export function focusPresetOption(targeted_input_el) {
+    targeted_input_el.checked = true;
+    document.getElementById('settings-presets-tab').setAttribute('data-focused-preset', targeted_input_el.value);
+    document.getElementById('settings-preset-label').innerHTML = document.querySelector(`label[for="${targeted_input_el.id}"]`).innerHTML;
+}
