@@ -79,7 +79,7 @@ export function getCurrentSettings(pg_ui_state, form_id) {
             for (const [setting_name, setting_form_value] of Object.entries(new_form_obj)) {
                 const setting_preset_value = preset_settings[setting_name];
 
-                if (setting_preset_value !== undefined) { // preset func specificed a value for the current setting -> use it
+                if (Object.prototype.hasOwnProperty.call(preset_settings, setting_name)) { // preset func specificed a value for the current setting -> use it
                     pg_ui_state.current_settings[setting_name] = setting_preset_value;
                 }
                 else { // no value for the current settings is found in the preset -> use the value in the form
@@ -90,35 +90,6 @@ export function getCurrentSettings(pg_ui_state, form_id) {
     }
     else { // entered form values are to be used
         pg_ui_state.current_settings = new_form_obj;
-    }
-}
-
-export function _getCurrentSettings(pg_ui_state, form_ID) {
-    if (pg_ui_state.first_pg_ui_open || pg_ui_state.first_with_current_gen) { 
-        pg_ui_state.current_settings = FH.resolveRandSettings(pg_ui_state.current_module.get_presets(), pg_ui_state.valid_settings_log);
-    }
-    else { 
-        if (pg_ui_state.randomize_all) {
-            const current_form_values = FH.getFormObject(form_ID);
-            const rand_form_values = FH.resolveRandSettings(pg_ui_state.current_module.get_rand_settings(), pg_ui_state.valid_settings_log);
-            const form_field_statuses = FH.getFormFieldStatuses(form_ID);
-            pg_ui_state.current_settings = {}; // need to turn into an object because we are assigning properties one-by-one
-
-            for (const [key, value] of Object.entries(form_field_statuses)) {
-                if (
-                    value || // the current setting is locked => use value in the form ('value' is either true or false)
-                    rand_form_values[key] === undefined // Or: get_rand_settings didn't include this setting (it shouldn't be randomized)
-                ) { 
-                    pg_ui_state.current_settings[key] = current_form_values[key]
-                }
-                else { // current settings is unlocked => use the random value from get_rand_settings()
-                    pg_ui_state.current_settings[key] = rand_form_values[key];
-                }
-            }    
-        }
-        else {
-            pg_ui_state.current_settings = FH.getFormObject(form_ID);  
-        }
     }
 }
 
