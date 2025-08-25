@@ -20,12 +20,13 @@ const pg_ui_state = {
         TeXanswer: null,
     },
     error_locations: null,
-    randomize_all: false,
     first_pg_ui_open: true, // very first time any 'generate' button on a mode banner is clicked (first time the pg-ui pops up in a session)
     first_with_current_gen: false, // first generation with the current module,
     sizes: {},
     required_mjx_extensions: [],
-    preset_funcs: {}
+    preset_funcs: {},
+    focused_preset: null,
+    preset_is_applied: false
 };
 
 export async function generate(func_name, display_name = '') {
@@ -47,9 +48,10 @@ export async function generate(func_name, display_name = '') {
         await PH.createSettingsPresets(pg_ui_state.current_module, pg_ui_state);
         FH.correctSettingOverflow('settings-form');
         PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
+        PH.updatePresetStatus('default', true, pg_ui_state); // focus the 'default' preset and apply it for the first generation
     }
-    
-    PH.updateRandomizeAll(pg_ui_state, 'randomize-all-checkbox'); // update randomize all to true if it was checked (false if not)
+
+    PH.getPresetStatus(pg_ui_state);
 
     PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into current_settings
     
@@ -66,8 +68,12 @@ export async function generate(func_name, display_name = '') {
     FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
 
     // all settings have the potential to be changed (corrected) by the validator function
-    if (!pg_ui_state.randomize_all) { // don't flash invalid random settings (just correct them) (only flash if randomize_all wasn't used)
+    if (!pg_ui_state.preset_is_applied) { // if a preset is currently applied, don't flash invalid settings that were corrected (some presets make use of auto-correction for simplicity)
         FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form'); 
+    }
+
+    if (pg_ui_state.first_with_current_gen) {
+        PH.updatePresetStatus('random', false, pg_ui_state); // after the initial generation, focus the Randomize All preset (without applying it)
     }
     
     PH.endGeneration(pg_ui_state); // first_pg_ui_open, first_with_current_gen, is_currently_generating -> false
