@@ -21,50 +21,6 @@ export function flashFormElements(element_name_array, form_ID) {
     });
 }
 
-export function updateFormValues(form_values_object, form_ID) {
-    const form = document.getElementById(form_ID);
-
-    for (const [setting_name, value] of Object.entries(form_values_object)) {
-        const elements = form.elements[setting_name];
-
-        // prevent these two fields from being randomized (as long as they aren't listed in get_rand_settings())
-        if ((setting_name === 'decimal_places' || setting_name === 'keep_rounded_zeros') && value === undefined) continue;
-
-        // if the element isn't found, don't try to update its value
-        if (!elements) {
-            continue;
-        }
-
-        // Handle collections of checkboxes
-        if (elements.length && elements[0].type === 'checkbox') {
-            for (const checkbox of elements) {
-                checkbox.checked = Array.isArray(value) && value.includes(checkbox.value);
-            }
-        } 
-        // Handle single checkboxes
-        else if (elements.type === 'checkbox') {
-            elements.checked = Boolean(value);
-        } 
-        // Handle radio buttons
-        else if (elements.type === 'radio') {
-            const radio = form.querySelector(`input[name="${setting_name}"][value="${value}"]`);
-            if (radio) {
-                radio.checked = true;
-            }
-        } 
-        // Handle multi-select dropdowns
-        else if (elements.type === 'select-multiple') {
-            for (const option of elements.options) {
-                option.selected = Array.isArray(value) && value.includes(option.value);
-            }
-        } 
-        // Default case: set value for text inputs, number inputs, select-one, etc.
-        else {
-            elements.value = value;
-        }
-    }
-} // used to manually set/preset (autofill) a form; form_values_object is just the names of the form elements and their desired values in an obj
-
 const CSH = { // createSettingsFields helpers
     getMarginB(number_of_elements) {
         let margin_bottom;
@@ -385,30 +341,147 @@ export async function createSettingsFields(settings_field_names, settings_templa
 } // create and insert the settings fields with names in settings_field_names, from settings_templates_module, into form with ID of form_ID
 
 export function getFormObject(form_ID) {
-    const form = document.getElementById(form_ID);
-    const formData = new FormData(form);
-    const formObject = {};
+    const form_obj = {};
 
-    for (const [key, value] of formData.entries()) {
-        const inputElements = form.elements[key];
-
-        // Check if the input type is a collection of checkboxes
-        const isCheckboxGroup = inputElements && inputElements[0]?.type === "checkbox";
-
-        if (formObject.hasOwnProperty(key)) {
-            // Only enforce an array for checkboxes
-            if (isCheckboxGroup) {
-                formObject[key] = [].concat(formObject[key], value);
-            } else {
-                formObject[key] = value; // Ensure radios remain a single value
+    // extract all the input elements and their values from the form (textboxes, individual radio buttons, etc)
+    Array.from(document.getElementById(form_ID).elements).forEach(form_sub_el => {
+        if (form_sub_el.type === 'text') {
+            form_obj[form_sub_el.name] = form_sub_el.value;
+        }
+        else if (form_sub_el.type === 'radio') {
+            if (form_obj[form_sub_el.name] === undefined) { // first encountered radio button of the group
+                form_obj[form_sub_el.name] = {
+                    type: 'radio',
+                    sub_values: {}
+                };
             }
-        } else {
-            formObject[key] = isCheckboxGroup ? [value] : value;
+            
+            form_obj[form_sub_el.name].sub_values[form_sub_el.value] = form_sub_el.checked;
+        }
+        else if (form_sub_el.type === 'checkbox') {
+            if (form_obj[form_sub_el.name] === undefined) { // first encountered checkbox of the group (assuming there is a group)
+                form_obj[form_sub_el.name] = {
+                    type: 'checkbox',
+                    sub_values: {}
+                };
+            }
+
+            form_obj[form_sub_el.name].sub_values[form_sub_el.value] = form_sub_el.checked;
+        }
+    });
+
+    // resolve radio buttons and checkbox values
+    for (const [form_input_name, value] of Object.entries(form_obj)) {
+        if (typeof(value) === 'object' && value !== null) {
+            // determine which inputs (radio or checkbox) were selected (if any)
+            const checked_values = [];
+            for (const [input_value, input_is_checked] of Object.entries(value.sub_values)) {
+                if (input_is_checked) checked_values.push(input_value);
+            }
+            
+            if (value.type === 'radio') {
+                if (checked_values.length > 1) {
+                    throw new Error('Cannot resolve a radio button group with multiple checked options.');
+                }
+                else if (checked_values.length === 1) {
+                    form_obj[form_input_name] = checked_values[0];
+                }
+                else if (checked_values.length === 0) {
+                    form_obj[form_input_name] = undefined;
+                }
+            }
+            else if (value.type === 'checkbox') {
+                if (Object.values(value.sub_values).length === 1) { // single checkbox
+                    if (checked_values.length === 0) form_obj[form_input_name] = undefined;
+                    else form_obj[form_input_name] = checked_values[0];
+                }
+                else { // multi checkbox group
+                    if (checked_values.length === 0) form_obj[form_input_name] = [];
+                    else form_obj[form_input_name] = [...checked_values];
+                }
+            }
         }
     }
 
-    return formObject;
+    return form_obj;
 } // get the {field name: value} object for the form with the provided ID
+
+export function updateFormValues(new_values_obj, form_ID) {
+    const form_el = document.getElementById(form_ID);
+    const form_sub_elements = Array.from(form_el.elements);
+
+    for (const [field_name, new_field_value] of Object.entries(new_values_obj)) {
+        const field_inputs = Array.from(form_el.querySelectorAll(`input[name="${field_name}"]`));
+
+        if (field_inputs.length === 0) {
+            console.error(`Could not update form value with name '${field_name}': no inputs matching '${field_name}' are present in the form with id '${form_ID}'.`);
+        }
+        else {
+            const input_type = field_inputs[0].type;
+
+            if (input_type === 'text') {
+                if (typeof(new_field_value) === 'string' || typeof(new_field_value) === 'number') {
+                    form_sub_elements.find(input => input.name === field_name).value = new_field_value;
+                }
+                else {
+                    console.error(`Could not update form text input with name '${field_name}' to '${new_field_value}' typeof '${typeof(new_field_value)}'; text inputs must be of type 'string' or 'number'.`);
+                }
+            }
+            else if (input_type === 'radio') {
+                if (typeof(new_field_value) === 'string') {
+                    const radio_group_inputs = form_sub_elements.filter(input => input.name === field_name);
+                    radio_group_inputs.forEach(input => input.checked === false);
+                    const new_radio_option = radio_group_inputs.find(input => input.value === new_field_value);
+
+                    if (new_radio_option === undefined) {
+                        console.error(`Could not update form radio group with name '${field_name}' to '${new_field_value}' typeof '${typeof(new_field_value)}'; no radio button with value '${new_field_value}' is present in the group.`);
+                    }
+                    else {
+                        new_radio_option.checked = true;
+                    }
+                }
+                else {
+                    console.error(`Could not update form radio group with name '${field_name}' to '${new_field_value}' typeof '${typeof(new_field_value)}'; radio inputs must be of type 'string'.`);
+                }
+            }
+            else if (input_type === 'checkbox') {
+                const checkbox_group_inputs = form_sub_elements.filter(input => input.name === field_name);
+
+                if (checkbox_group_inputs.length === 1) {
+                    const single_checkbox = checkbox_group_inputs[0];
+
+                    if (new_field_value === undefined) single_checkbox.checked = false;
+                    else if (new_field_value === single_checkbox.value) single_checkbox.checked = true;
+                    else {
+                        console.error(`Could not update form single checkbox with name '${field_name}' to '${new_field_value}' typeof '${typeof(new_field_value)}'; the value for a single checkbox must be either undefined or its checked-state value.`);
+                    }
+                }
+                else if (checkbox_group_inputs.length > 1) {
+                    if (Array.isArray(new_field_value)) {
+                        const copy_new_checked_values = [...new_field_value];
+                        
+                        checkbox_group_inputs.forEach(checkbox_input => {
+                            if (new_field_value.includes(checkbox_input.value)) {
+                                checkbox_input.checked = true;
+                                copy_new_checked_values.splice(copy_new_checked_values.indexOf(checkbox_input.value), 1);
+                            }
+                            else {
+                                checkbox_input.checked = false;
+                            }
+
+                            if (copy_new_checked_values.length !== 0) {
+                                console.error(`Checkbox values [${String(copy_new_checked_values)}] could not be checked because they weren't found in the checkbox group with name '${field_name}'.`);
+                            }
+                        });
+                    }
+                    else {
+                        console.error(`Could not update form multi checkbox group with name '${field_name}' to '${new_field_value}' typeof '${typeof(new_field_value)}'; the value for a multi checkbox group must be an array of the checkbox values to check.`);
+                    }
+                }
+            }
+        }
+    }
+}
 
 export function getFormFieldStatuses(form_ID) {
     const lock_element_array = Array.from(document.getElementById(form_ID).querySelectorAll('.settings-lock'));
@@ -423,7 +496,7 @@ export function getFormFieldStatuses(form_ID) {
     return form_field_statuses;
 } // status of each field in the form => locked or unlocked
 
-export function resolveRandSettings(rand_settings_obj, valid_values_log) {
+export function resolvePresetFuncSettings(rand_settings_obj, valid_values_log) {
     const resolved_settings = {};
     
     for (const [code_name, value] of Object.entries(rand_settings_obj)) {
@@ -445,12 +518,12 @@ export function resolveRandSettings(rand_settings_obj, valid_values_log) {
 }
 
 export function preValidateSettings(form_obj, valid_values_log, error_locations) {
-    for (let [setting_name, setting_value] of Object.entries(form_obj)) {
-        // get the first entry in the valid values log (to determine the correct type for the setting)
-        const first_valid_value = valid_values_log[setting_name].valid_values[0];
+    for (let [setting_name, log_entry] of Object.entries(valid_values_log)) {
+        let setting_value = form_obj[setting_name];
+        const first_valid_value = log_entry.valid_values[0]; // get the first entry in the valid values log (to determine the correct type for the setting)
         
         if (first_valid_value === '__char_slots__') { // text input being validated by char slots            
-            const max_valid_chars = Math.max(...Object.keys(valid_values_log[setting_name].valid_values[1]).map(int_str => Number(int_str))) + 1;
+            const max_valid_chars = Math.max(...Object.keys(log_entry.valid_values[1]).map(int_str => Number(int_str))) + 1;
             let is_valid_input = true;
 
             if (setting_value.length > max_valid_chars) is_valid_input = false; // inputted string too long
@@ -458,7 +531,7 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
                 for (let char_index = 0; char_index < max_valid_chars; char_index++) {
                     const current_input_char = setting_value.charAt(char_index);
 
-                    if (!valid_values_log[setting_name].valid_values[1][String(char_index)].includes(current_input_char)) { // char is not valid for the current index
+                    if (!log_entry.valid_values[1][String(char_index)].includes(current_input_char)) { // char is not valid for the current index
                         is_valid_input = false;
                         break;
                     }
@@ -467,7 +540,7 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
 
             if (!is_valid_input) { // inputted value does NOT conform to the char slots
                 error_locations.add(setting_name);
-                setting_value = valid_values_log[setting_name].default_value;
+                setting_value = log_entry.default_value;
             }
         }
         else if (typeof(first_valid_value) === 'number') { // numerical text input
@@ -478,62 +551,62 @@ export function preValidateSettings(form_obj, valid_values_log, error_locations)
 
             if (
                 ( // check with explicit valid values (exhuastive list)
-                    valid_values_log[setting_name].valid_values[1] !== '--' && // no sign of implied range
+                    log_entry.valid_values[1] !== '--' && // no sign of implied range
                     ( // And: 
-                        !valid_values_log[setting_name].valid_values.includes(setting_value) || // exhuative list doesn't include the entered value
+                        !log_entry.valid_values.includes(setting_value) || // exhuative list doesn't include the entered value
                         ( // Or: there is an excluded values array in the log entry && it included the current value
-                            valid_values_log[setting_name].excluded_values !== undefined &&
-                            valid_values_log[setting_name].excluded_values.includes(setting_value)
+                            log_entry.excluded_values !== undefined &&
+                            log_entry.excluded_values.includes(setting_value)
                         )
                     )
                 ) ||
                 ( // check with implicit valid values (an implied range)
-                    valid_values_log[setting_name].valid_values[1] === '--' && // dealing with an implied range
+                    log_entry.valid_values[1] === '--' && // dealing with an implied range
                     ( // And:
                         !Number.isSafeInteger(setting_value) || // provided value isn't an integer
-                        setting_value < valid_values_log[setting_name].valid_values[0] || // Or: it's less than the min
-                        setting_value > valid_values_log[setting_name].valid_values[2] || // Or: it's greater than the max
+                        setting_value < log_entry.valid_values[0] || // Or: it's less than the min
+                        setting_value > log_entry.valid_values[2] || // Or: it's greater than the max
                         ( // Or: there is an excluded values array in the log entry && it included the current value
-                            valid_values_log[setting_name].excluded_values !== undefined &&
-                            valid_values_log[setting_name].excluded_values.includes(setting_value)
+                            log_entry.excluded_values !== undefined &&
+                            log_entry.excluded_values.includes(setting_value)
                         ) 
                     )
                 )
             ) { // provided value is NOT included in the valid values
                 error_locations.add(setting_name);
 
-                if (setting_value < valid_values_log[setting_name].valid_values[0]) { // less than the min
-                    setting_value = valid_values_log[setting_name].valid_values[0]; // use the min
+                if (setting_value < log_entry.valid_values[0]) { // less than the min
+                    setting_value = log_entry.valid_values[0]; // use the min
                 }
                 else if ( // greater than the max
-                    setting_value > valid_values_log[setting_name].
-                    valid_values[valid_values_log[setting_name].
+                    setting_value > log_entry.
+                    valid_values[log_entry.
                     valid_values.length - 1]
                 ) {
-                    setting_value = valid_values_log[setting_name].valid_values[valid_values_log[setting_name].valid_values.length - 1]; // use the max
+                    setting_value = log_entry.valid_values[log_entry.valid_values.length - 1]; // use the max
                 }
                 else { // NaN or not the correct type of number (like a decimal where an integer was needed)
-                    setting_value = valid_values_log[setting_name].default_value;
+                    setting_value = log_entry.default_value;
                 }
             }
         }
         else if (typeof(first_valid_value) === 'string') { // radio buttons + string text input + single checkbox (if checked => 'is_checked')
             // In practice, it's only really possible for string text inputs to be invalid here, but the following works in general
-            if (!valid_values_log[setting_name].valid_values.includes(setting_value)) { // provided value is NOT in the valid values array
+            if (!log_entry.valid_values.includes(setting_value)) { // provided value is NOT in the valid values array
                 error_locations.add(setting_name);
 
-                setting_value = valid_values_log[setting_name].default_value; // use the default
+                setting_value = log_entry.default_value; // use the default
             }
         }
         else if (Array.isArray(first_valid_value)) { // checkbox groups (multiselect)
             // the only way to be invalid here is to leave the entire multiselect blank *when it's a required one - which is almost all of them*
             if (
                 (setting_value === undefined || setting_value.length === 0) && 
-                valid_values_log[setting_name].valid_values[0][0] !== '__empty__'
+                log_entry.valid_values[0][0] !== '__empty__'
             ) { // not allowed to be empty
                 error_locations.add(setting_name);
 
-                setting_value = valid_values_log[setting_name].default_value; // use the default
+                setting_value = log_entry.default_value; // use the default
             }
         }
         
