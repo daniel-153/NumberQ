@@ -49,7 +49,51 @@ export async function switchGenInfo(pg_ui_state, func_name, display_name) {
     }
 }
 
-export function getCurrentSettings(pg_ui_state, form_ID) {
+export function getCurrentSettings(pg_ui_state, form_id) {
+    const new_form_obj = FH.getFormObject(form_id);
+    
+    if (pg_ui_state.preset_is_applied) { // some preset function is to be used
+        const preset_name = pg_ui_state.focused_preset;
+        const preset_func = pg_ui_state.preset_funcs[preset_name];
+        pg_ui_state.current_settings = {}; // reset/initialize
+
+        if (preset_name === 'random') { // 'Randomize All' preset -> need to account for Locking
+            const form_field_statuses = FH.getFormFieldStatuses(form_id);
+            const new_rand_settings = FH.resolvePresetFuncSettings(preset_func(), pg_ui_state.valid_settings_log);
+
+            for (const [setting_name, is_locked] of Object.entries(form_field_statuses)) {
+                if (
+                    is_locked || // the current setting is locked => use value in the form ('value' is either true or false)
+                    new_rand_settings[setting_name] === undefined // Or: get_rand_settings didn't include this setting (it shouldn't be randomized)
+                ) { 
+                    pg_ui_state.current_settings[setting_name] = new_form_obj[setting_name];
+                }
+                else { // current settings is unlocked And a random value was provided => use the random value
+                    pg_ui_state.current_settings[setting_name] = new_rand_settings[setting_name];
+                }
+            }
+        }
+        else { // all other presets -> Locking can be ignored
+            const preset_settings = FH.resolvePresetFuncSettings(preset_func(), pg_ui_state.valid_settings_log);
+
+            for (const [setting_name, setting_form_value] of Object.entries(new_form_obj)) {
+                const setting_preset_value = preset_settings[setting_name];
+
+                if (setting_preset_value !== undefined) { // preset func specificed a value for the current setting -> use it
+                    pg_ui_state.current_settings[setting_name] = setting_preset_value;
+                }
+                else { // no value for the current settings is found in the preset -> use the value in the form
+                    pg_ui_state.current_settings[setting_name] = setting_form_value;
+                }
+            }
+        }
+    }
+    else { // entered form values are to be used
+        pg_ui_state.current_settings = new_form_obj;
+    }
+}
+
+export function _getCurrentSettings(pg_ui_state, form_ID) {
     if (pg_ui_state.first_pg_ui_open || pg_ui_state.first_with_current_gen) { 
         pg_ui_state.current_settings = FH.resolveRandSettings(pg_ui_state.current_module.get_presets(), pg_ui_state.valid_settings_log);
     }
@@ -439,19 +483,20 @@ const CPH = { // createSettingsPresets helpers
             display_title = 'Use Defaults';
             example_problem = '[\\mathrm{Default}]';
             description = 'Use the default settings for this generator.';
-            
+            name = 'default';
         }
         else if (preset_class === 'random_preset') { // the single random preset in every module
             display_title = 'Randomize All';
             example_problem = '[\\mathrm{Random}]';
-            description = 'Randomize each setting. Note that "Locked" settings are not affected by randomization.'
+            description = 'Randomize each setting. Note that "Locked" settings are not affected by randomization.';
+            name = 'random';
         }
 
         return `
             <div class="preset-option-wrapper">
                 <div class="preset-option-inner-wrapper">
-                    <input type="radio" name="settings-preset" id="${name}" class="settings-preset-radio-btn"/>
-                    <label for="${name}" class="preset-option-label">${display_title}</label>
+                    <input type="radio" name="settings-preset" id="settings-preset-option-${name}" value="${name}" class="settings-preset-radio-btn"/>
+                    <label for="settings-preset-option-${name}" class="preset-option-label">${display_title}</label>
                 </div>
                 <div class="preset-example-btn-wrapper">
                     <div class="settings-info-button settings-preset-example-btn">?</div>
@@ -506,4 +551,17 @@ export async function createSettingsPresets(gen_module, pg_ui_state) {
     preset_container.innerHTML = output_html;
 
     await MathJax.typesetPromise([preset_container]);
+}
+
+export function updatePresetStatus(preset_name, apply_preset, pg_ui_state) {
+    pg_ui_state.focused_preset = preset_name;
+    UAH.focusPresetOption(document.getElementById(`settings-preset-option-${preset_name}`));
+
+    pg_ui_state.preset_is_applied = apply_preset;
+    document.getElementById('settings-preset-checkbox').checked = apply_preset;
+}
+
+export function getPresetStatus(pg_ui_state) {
+    pg_ui_state.focused_preset = document.getElementById('settings-presets-tab').getAttribute('data-focused-preset');
+    pg_ui_state.preset_is_applied = document.getElementById('settings-preset-checkbox').checked;
 }
