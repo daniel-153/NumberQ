@@ -468,11 +468,11 @@ export function updateFormValues(new_values_obj, form_ID) {
                             else {
                                 checkbox_input.checked = false;
                             }
-
-                            if (copy_new_checked_values.length !== 0) {
-                                console.error(`Checkbox values [${String(copy_new_checked_values)}] could not be checked because they weren't found in the checkbox group with name '${field_name}'.`);
-                            }
                         });
+
+                        if (copy_new_checked_values.length !== 0) {
+                            console.error(`Checkbox values [${String(copy_new_checked_values)}] could not be checked because they weren't found in the checkbox group with name '${field_name}'.`);
+                        }
                     }
                     else {
                         console.error(`Could not update form multi checkbox group with name '${field_name}' to '${new_field_value}' typeof '${typeof(new_field_value)}'; the value for a multi checkbox group must be an array of the checkbox values to check.`);
