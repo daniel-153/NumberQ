@@ -636,7 +636,7 @@
 @media (max-width: 900px) {
   #settings-container {
     height: 110vw;
-    border-width: 0.4vw;
+    border-width: 3px;
     border-radius: 1.5vw;
     border-top-left-radius: 0;
   }
@@ -648,10 +648,10 @@
   }
 
   .setting-box {
-    width: 81vw;
-    height: 81vw;
-    min-width: 81vw;
-    min-height: 81vw;
+    width: 75vw;
+    height: 75vw;
+    min-width: 75vw;
+    min-height: 75vw;
     border-width: 0.2vw;
     border-radius: calc(0.05 * 81vw);
     margin: 2vw;
