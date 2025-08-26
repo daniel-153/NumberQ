@@ -1,22 +1,20 @@
 #settings-container-wrapper {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   width: fit-content;
   height: fit-content;
   margin-bottom: 0.4vw;
 }
 
 #settings-presets-tab {
-  --tab-height: max(30px, 1.5vw);
-  position: absolute;
-  left: 0;
-  top: calc((-1) * var(--tab-height));
+  position: relative;
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   width: fit-content;
-  height: var(--tab-height);
+  height: fit-content;
   background-color: rgb(149, 52, 52);
   border: 2px solid rgb(75, 20, 20);
   border-bottom-color: transparent;
@@ -24,8 +22,9 @@
   border-radius: 5px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  padding: 0 7.5px 0 7.5px;
+  padding: 3px 7.5px;
   transition: border-color 150ms ease-in-out;
+  max-width: 43%;
 }
 
 #settings-presets-tab[data-preset-menu-status="shown"] {
@@ -63,11 +62,12 @@
   border: 1px solid rgba(245, 245, 245, 0.617);
   border-bottom-width: 0;
   border-top-width: 0;
+  text-align: center;
 }
 
 #presets-menu-toggle-btn {
   --triangle-color: rgb(9, 9, 54);
-  height: 75%;
+  height: 29px;
   aspect-ratio: 1;
   background-color: transparent;
   padding: 0;
@@ -125,14 +125,13 @@
 #preset-list-wrapper {
     position: absolute;
     bottom: calc(100% + 2px);
-    max-height: calc(var(--tab-height) * 7);
+    max-height: 700%;
     display: flex;
     flex-direction: column;
     opacity: 0;
     transform: translateY(30%);
     transition: opacity 75ms ease-in-out, transform 75ms ease-in-out;
     pointer-events: none;  
-    margin-bottom: -0.5px;
 }
 
 #preset-list-wrapper[data-preset-menu-status="shown"] {
@@ -143,7 +142,7 @@
 
 #settings-presets-list {
   min-width: 100%;
-  width: fit-content;
+  width: min(75vw, 350px);
   height: fit-content;
   max-height: 100%;
   overflow-y: auto;
@@ -162,17 +161,15 @@
 
 .preset-option-wrapper {
   direction: ltr;
-  width: fit-content;
-  min-width: 100%;
+  width: 100%;
   height: fit-content;
   min-height: fit-content;
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
   background-color: rgb(52, 64, 81);
   border: 1px solid rgb(15, 15, 21);
   border-width: 1px 2px;
-  gap: 30px;
   box-sizing: border-box;
   padding: 8px 10px;
 }
@@ -185,35 +182,31 @@
     border-bottom-width: 2px;
 }
 
-.preset-option-inner-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: fit-content;
-  gap: 10px;
-}
-
-.preset-option-label {
-  font-size: clamp(16px, 1vw, 1vw);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-weight: 600;
-  color: white;
-  width: fit-content;
-  white-space: nowrap;
-}
-
 .settings-preset-radio-btn {
   width: 1vw;
   height: 1vw;
   min-width: 20px;
   min-height: 20px;
+  margin-right: 10px;
+  flex: 0 0 auto;
 }
 
 .settings-preset-radio-btn:hover {
   cursor: pointer;
 }
 
+.preset-option-label {
+  font-size: max(16px, 0.9vw);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 600;
+  text-align: left;
+  color: white;
+  flex: 1 1 auto;
+}
+
 .preset-example-btn-wrapper {
+  margin-left: 20px;
+  flex: 0 0 auto;
     --tooltip-visibility: hidden;
     --tooltip-opacity: 0;
 }
@@ -350,12 +343,24 @@
         font-size: max(27.5px, 1.75vw);
     }
 
+    #presets-menu-toggle-btn {
+        height: 23px;
+    }
+
     #presets-menu-toggle-btn::before {
         font-size: 25px;
+    }
+
+    #settings-presets-list {
+        width: min(75vw, 300px);
     }
 }
 
 @media (max-width: 900px) {
+    #settings-container-wrapper {
+      align-items: center;
+    }
+  
     #presets-menu-toggle-btn::before {
         display: none;
     }
@@ -369,14 +374,11 @@
     }
 
     #settings-presets-list {
-        max-width: 73vw;
+        max-width: 74vw;
     }
 
     #settings-presets-tab {
-        left: 0;
-        right: 0;
-        margin: auto;
-        max-width: 73vw;
+        max-width: 72vw;
     }
 
     #settings-presets-tab[data-preset-menu-status="shown"] {
@@ -391,5 +393,24 @@
 
     #presets-menu-triangle {
         clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+    }
+
+    .preset-tooltip-wrapper {
+        bottom: 0;
+        right: 0;
+        top: calc(100% + var(--tooltip-arrow-size));
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .preset-tooltip-wrapper::before {
+        top: unset;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-right: var(--tooltip-arrow-size) solid transparent;
+        border-left: var(--tooltip-arrow-size) solid transparent;
+        border-bottom: var(--tooltip-arrow-size) solid #333; 
+        border-top: unset;
     }
 }

@@ -465,10 +465,8 @@ const CPH = { // createSettingsPresets helpers
 
         return `
             <div class="preset-option-wrapper">
-                <div class="preset-option-inner-wrapper">
-                    <input type="radio" name="settings-preset" id="settings-preset-option-${name}" value="${name}" class="settings-preset-radio-btn"/>
-                    <label for="settings-preset-option-${name}" class="preset-option-label">${display_title}</label>
-                </div>
+                <input type="radio" name="settings-preset" id="settings-preset-option-${name}" value="${name}" class="settings-preset-radio-btn"/>
+                <label for="settings-preset-option-${name}" class="preset-option-label">${display_title}</label>
                 <div class="preset-example-btn-wrapper">
                     <div class="settings-info-button settings-preset-example-btn">?</div>
                     <div class="preset-tooltip-wrapper">
