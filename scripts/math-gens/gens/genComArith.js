@@ -265,25 +265,26 @@ export const settings_fields = [
     'force_ints_in_div'
 ];
 
-export function get_presets() {
-    return {
-        term_range_min: H.randInt(-5, -1),
-        term_range_max: H.randInt(1, 5),
-        general_operation_types: ['multiply','divide'],
-        randomize_order: 'yes',
-        force_ints_in_div: 'yes'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        term_range_min: H.randInt(-9, -1),
-        term_range_max: H.randInt(1, 9),
-        general_operation_types: '__random__',
-        randomize_order: '__random__',
-        force_ints_in_div: '__random__'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            term_range_min: H.randInt(-5, -1),
+            term_range_max: H.randInt(1, 5),
+            general_operation_types: ['multiply','divide'],
+            randomize_order: 'yes',
+            force_ints_in_div: 'yes'
+        };
+    },
+    random: function() {
+        return {
+            term_range_min: H.randInt(-9, -1),
+            term_range_max: H.randInt(1, 9),
+            general_operation_types: '__random__',
+            randomize_order: '__random__',
+            force_ints_in_div: '__random__'
+        };
+    }
+};
 
 export const size_adjustments = {
     height: 1.1,

@@ -262,30 +262,32 @@ export const settings_fields = [
     'sp_tri_given_angles'
 ];
 
-export function get_presets() {
-    return {
-        sp_tri_side_length: 'matched_to_triangle',
-        right_triangle_type: '30-60-90',
-        sp_tri_unknowns: 'x_y',
-        sp_tri_number_size: 15,
-        rotation_deg: 0,
-        triangle_reflection: [],
-        sp_tri_given_angles: 'both'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        sp_tri_side_length: '__random__',
-        right_triangle_type: '__random__',
-        sp_tri_unknowns: '__random__',
-        sp_tri_number_size: H.randInt(1, 15),
-        rotation_deg: H.randInt(0, 360),
-        triangle_reflection: H.randFromList([['horizontal'],['vertical'],['horizontal', 'vertical']]),
-        sp_tri_given_angles: '__random__',
-        randomize_rotation: 'is_checked'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            sp_tri_side_length: 'matched_to_triangle',
+            right_triangle_type: '30-60-90',
+            sp_tri_unknowns: 'x_y',
+            sp_tri_number_size: 15,
+            rotation_deg: 0,
+            triangle_reflection: [],
+            sp_tri_given_angles: 'both',
+            randomize_rotation: undefined
+        };
+    },
+    random: function() {
+        return {
+            sp_tri_side_length: '__random__',
+            right_triangle_type: '__random__',
+            sp_tri_unknowns: '__random__',
+            sp_tri_number_size: H.randInt(1, 15),
+            rotation_deg: H.randInt(0, 360),
+            triangle_reflection: H.randFromList([['horizontal'],['vertical'],['horizontal', 'vertical']]),
+            sp_tri_given_angles: '__random__',
+            randomize_rotation: 'is_checked'
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 0.8,

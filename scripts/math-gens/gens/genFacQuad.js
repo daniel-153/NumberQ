@@ -468,30 +468,23 @@ export const prelocked_settings = [
     'qf_answer_type'
 ];
 
-export function get_presets() {
-    return {
-        factor_size: 5, // (+ or -) whatever value is here
-        types_of_quadratics: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares'],
-        leading_coef: 1,
-        quadratic_prompt_type: '__random__',
-        qf_answer_type: 'single_expression'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        factor_size: H.randInt(2,8), // (+ or -) whatever value is here
-        types_of_quadratics: '__random__',
-        leading_coef: H.randFromList(H.removeFromArray(0, H.integerArray(-3,3))),
-        quadratic_prompt_type: '__random__',
-        qf_answer_type: '__random__'
-    }; 
-}
-
-
-
-
-
-
-
-
+export const presets = {
+    default: function() {
+        return {
+            factor_size: 5, // (+ or -) whatever value is here
+            types_of_quadratics: ['two_integer_factors','two_non_integer_factors','perf_square','diff_squares'],
+            leading_coef: 1,
+            quadratic_prompt_type: '__random__',
+            qf_answer_type: 'single_expression'
+        };
+    },
+    random: function() {
+        return {
+            factor_size: H.randInt(2,8), // (+ or -) whatever value is here
+            types_of_quadratics: '__random__',
+            leading_coef: H.randFromList(H.removeFromArray(0, H.integerArray(-3,3))),
+            quadratic_prompt_type: '__random__',
+            qf_answer_type: '__random__'
+        };
+    }
+};

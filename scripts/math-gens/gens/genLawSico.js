@@ -365,34 +365,35 @@ export const settings_fields = [
     'triangle_reflection'
 ];
 
-export function get_presets() {
-    return {
-        triangle_length_size: 50,
-        law_sin_or_cos: 'random',
-        sico_labels: 'all_vert',
-        triangle_number_type: 'integers_only',
-        sico_solve_for: 'one_unknown',
-        decimal_places: 2,
-        triangle_length_unit: '',
-        rotation_deg: 0,
-        randomize_rotation: 'is_checked',
-        triangle_reflection: []
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        triangle_length_size: H.randInt(20, 100),
-        law_sin_or_cos: '__random__',
-        sico_labels: '__random__',
-        triangle_number_type: '__random__',
-        sico_solve_for: '__random__',
-        triangle_length_unit: H.randFromList(['in', 'ft', 'yd', 'mi', 'mm', 'cm', 'm', 'km']),
-        rotation_deg: H.randInt(0, 360),
-        randomize_rotation: 'is_checked',
-        triangle_reflection: H.randFromList([['horizontal'],['vertical'],['horizontal', 'vertical']])
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            triangle_length_size: 50,
+            law_sin_or_cos: 'random',
+            sico_labels: 'all_vert',
+            triangle_number_type: 'integers_only',
+            sico_solve_for: 'one_unknown',
+            decimal_places: 2,
+            triangle_length_unit: '',
+            rotation_deg: 0,
+            randomize_rotation: 'is_checked',
+            triangle_reflection: []
+        };
+    },
+    random: function() {
+        return {
+            triangle_length_size: H.randInt(20, 100),
+            law_sin_or_cos: '__random__',
+            sico_labels: '__random__',
+            triangle_number_type: '__random__',
+            sico_solve_for: '__random__',
+            triangle_length_unit: H.randFromList(['in', 'ft', 'yd', 'mi', 'mm', 'cm', 'm', 'km']),
+            rotation_deg: H.randInt(0, 360),
+            randomize_rotation: 'is_checked',
+            triangle_reflection: H.randFromList([['horizontal'],['vertical'],['horizontal', 'vertical']])
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 0.85,

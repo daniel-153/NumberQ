@@ -126,66 +126,67 @@ export const prelocked_settings = [
     'matrix_notation'
 ];
 
-export function get_presets() {
-    return {
-        matrix_A_rows: 2,
-        matrix_A_cols: 2,
-        matrix_B_rows: 2,
-        matrix_B_cols: 2,
-        matrix_operation: 'add',
-        mtrx_entry_range_min: -5,
-        mtrx_entry_range_max: 5,
-        allow_matrix_scalars: 'yes',
-        matrix_multiply_symbol: 'no_symbol',
-        matrix_notation: 'brackets'
-    };
-}
+export const presets = {
+    default: function() {
+        return {
+            matrix_A_rows: 2,
+            matrix_A_cols: 2,
+            matrix_B_rows: 2,
+            matrix_B_cols: 2,
+            matrix_operation: 'add',
+            mtrx_entry_range_min: -5,
+            mtrx_entry_range_max: 5,
+            allow_matrix_scalars: 'yes',
+            matrix_multiply_symbol: 'no_symbol',
+            matrix_notation: 'brackets'
+        };
+    },
+    random: function() {
+        const operation = H.randFromList(['add','sub','mul']);
+        const dimensions = [];
+        if (operation === 'add' || operation === 'sub') {
+            if (H.randInt(0, 1) === 0) { // randomly pick A's dimensions, ensure they can't both = 1, and treat them equally
+                dimensions[0] = H.randInt(1, 3);
+                dimensions[1] = (dimensions[0] === 1)? H.randInt(2, 3) : H.randInt(1, 3);
+            }
+            else {
+                dimensions[1] = H.randInt(1, 3);
+                dimensions[0] = (dimensions[1] === 1)? H.randInt(2, 3) : H.randInt(1, 3);
+            }
 
-export function get_rand_settings() {
-    const operation = H.randFromList(['add','sub','mul']);
-    const dimensions = [];
-    if (operation === 'add' || operation === 'sub') {
-        if (H.randInt(0, 1) === 0) { // randomly pick A's dimensions, ensure they can't both = 1, and treat them equally
-            dimensions[0] = H.randInt(1, 3);
-            dimensions[1] = (dimensions[0] === 1)? H.randInt(2, 3) : H.randInt(1, 3);
+            // copy A's dimensions to B's dimensions
+            dimensions[2] = dimensions[0];
+            dimensions[3] = dimensions[1];
         }
-        else {
-            dimensions[1] = H.randInt(1, 3);
-            dimensions[0] = (dimensions[1] === 1)? H.randInt(2, 3) : H.randInt(1, 3);
-        }
+        else if (operation === 'mul') {
+            dimensions[1] = H.randInt(1, 3); // pick C1
+            dimensions[2] = dimensions[1]; // copy into to R2
 
-        // copy A's dimensions to B's dimensions
-        dimensions[2] = dimensions[0];
-        dimensions[3] = dimensions[1];
+            // prevent 1x1's if needed
+            if (dimensions[1] === 1) {
+                dimensions[0] = H.randInt(2, 3);
+                dimensions[3] = H.randInt(2, 3);
+            }
+            else {
+                dimensions[0] = H.randInt(1, 3);
+                dimensions[3] = H.randInt(1, 3);
+            }
+        }
+        
+        return {
+            matrix_A_rows: dimensions[0],
+            matrix_A_cols: dimensions[1],
+            matrix_B_rows: dimensions[2],
+            matrix_B_cols: dimensions[3],
+            matrix_operation: operation,
+            mtrx_entry_range_min: H.randInt(-5, 0),
+            mtrx_entry_range_max: H.randInt(1, 5),
+            allow_matrix_scalars: '__random__',
+            matrix_multiply_symbol: '__random__',
+            matrix_notation: '__random__'
+        };
     }
-    else if (operation === 'mul') {
-        dimensions[1] = H.randInt(1, 3); // pick C1
-        dimensions[2] = dimensions[1]; // copy into to R2
-
-        // prevent 1x1's if needed
-        if (dimensions[1] === 1) {
-            dimensions[0] = H.randInt(2, 3);
-            dimensions[3] = H.randInt(2, 3);
-        }
-        else {
-            dimensions[0] = H.randInt(1, 3);
-            dimensions[3] = H.randInt(1, 3);
-        }
-    }
-    
-    return {
-        matrix_A_rows: dimensions[0],
-        matrix_A_cols: dimensions[1],
-        matrix_B_rows: dimensions[2],
-        matrix_B_cols: dimensions[3],
-        matrix_operation: operation,
-        mtrx_entry_range_min: H.randInt(-5, 0),
-        mtrx_entry_range_max: H.randInt(1, 5),
-        allow_matrix_scalars: '__random__',
-        matrix_multiply_symbol: '__random__',
-        matrix_notation: '__random__'
-    };
-}
+};
 
 export const size_adjustments = {
     width: 1.2,

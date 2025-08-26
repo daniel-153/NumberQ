@@ -168,38 +168,39 @@ export const prelocked_settings = [
     'decimal_places'
 ];
 
-export function get_presets() {
-    return {
-        matrix_rows: 3,
-        matrix_cols: 4,
-        mtrx_entry_range_min: -5,
-        mtrx_entry_range_max: 5,
-        single_matrix_operation: 'rref',
-        matrix_notation: 'brackets',
-        mtrx_op_answer_form: 'exact',
-        decimal_places: 1
-    };
-}
-
-export function get_rand_settings() {
-    const operation = H.randFromList(['rref','det','inverse','transpose']);
-    let rows = H.randInt(2, 4);
-    let cols;
-    if (operation === 'rref') {
-        cols = H.randIntExcept(rows + 1, 5, rows); // in rref, ensure cols > rows but still <= 5
+export const presets = {
+    default: function() {
+        return {
+            matrix_rows: 3,
+            matrix_cols: 4,
+            mtrx_entry_range_min: -5,
+            mtrx_entry_range_max: 5,
+            single_matrix_operation: 'rref',
+            matrix_notation: 'brackets',
+            mtrx_op_answer_form: 'exact',
+            decimal_places: 1
+        };
+    },
+    random: function() {
+        const operation = H.randFromList(['rref','det','inverse','transpose']);
+        let rows = H.randInt(2, 4);
+        let cols;
+        if (operation === 'rref') {
+            cols = H.randIntExcept(rows + 1, 5, rows); // in rref, ensure cols > rows but still <= 5
+        }
+        else cols = H.randInt(2, 4);
+        
+        return {
+            matrix_rows: rows,
+            matrix_cols: cols,
+            mtrx_entry_range_min: H.randInt(-5, 0),
+            mtrx_entry_range_max: H.randInt(1, 5),
+            single_matrix_operation: operation,
+            matrix_notation: '__random__',
+            mtrx_op_answer_form: '__random__'
+        };
     }
-    else cols = H.randInt(2, 4);
-    
-    return {
-        matrix_rows: rows,
-        matrix_cols: cols,
-        mtrx_entry_range_min: H.randInt(-5, 0),
-        mtrx_entry_range_max: H.randInt(1, 5),
-        single_matrix_operation: operation,
-        matrix_notation: '__random__',
-        mtrx_op_answer_form: '__random__'
-    };
-}
+};
 
 export const size_adjustments = {
     width: 1.12,

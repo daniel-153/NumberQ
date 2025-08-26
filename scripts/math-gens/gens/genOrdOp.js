@@ -979,41 +979,42 @@ export const prelocked_settings = [
     'allow_nesting'
 ];
 
-export function get_presets() {
-    return {
-        allow_negatives: 'no',
-        add_count: 1,
-        subtract_count: 1,
-        multiply_count: 1,
-        divide_count: 1,
-        exponent_count: 1,
-        allow_parentheses: 'yes',
-        allow_nesting: 'no',
-        allow_zero: 'no',
-        multiply_symbol: ' \\times ' 
-    };
-}
-
-export function get_rand_settings() {
-    const counts = [1,1,1,1,1]; // all counts are 1 to start
-    const two_count_index = H.randInt(0, 4); // pick a count to bump to 2
-    const zero_count_index = H.randIntExcept(0, 4, two_count_index); // pick a different count to bump to 0
-    counts[two_count_index]++;
-    counts[zero_count_index]--;
-    
-    return {
-        add_count: counts[0],
-        subtract_count: counts[1],
-        multiply_count: counts[2],
-        divide_count: counts[3],
-        exponent_count: counts[4],
-        allow_negatives: '__random__',
-        allow_parentheses: '__random__',
-        allow_nesting: '__random__',
-        allow_zero: '__random__',
-        multiply_symbol: '__random__' 
-    };
-}
+export const presets = {
+    default: function() {
+        return {
+            allow_negatives: 'no',
+            add_count: 1,
+            subtract_count: 1,
+            multiply_count: 1,
+            divide_count: 1,
+            exponent_count: 1,
+            allow_parentheses: 'yes',
+            allow_nesting: 'no',
+            allow_zero: 'no',
+            multiply_symbol: ' \\times ' 
+        };
+    },
+    random: function() {
+        const counts = [1,1,1,1,1]; // all counts are 1 to start
+        const two_count_index = H.randInt(0, 4); // pick a count to bump to 2
+        const zero_count_index = H.randIntExcept(0, 4, two_count_index); // pick a different count to bump to 0
+        counts[two_count_index]++;
+        counts[zero_count_index]--;
+        
+        return {
+            add_count: counts[0],
+            subtract_count: counts[1],
+            multiply_count: counts[2],
+            divide_count: counts[3],
+            exponent_count: counts[4],
+            allow_negatives: '__random__',
+            allow_parentheses: '__random__',
+            allow_nesting: '__random__',
+            allow_zero: '__random__',
+            multiply_symbol: '__random__' 
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 1.12

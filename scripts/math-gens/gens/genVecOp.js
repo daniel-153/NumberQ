@@ -151,28 +151,29 @@ export const prelocked_settings = [
     'decimal_places'
 ];
 
-export function get_presets() {
-    return {
-        vec_entry_range_min: -5,
-        vec_entry_range_max: 5,
-        vector_dimension: 2,
-        single_vector_operation: 'mag',
-        vector_notation: 'brackets',
-        vec_op_answer_form: 'rationalized',
-        decimal_places: 3
+export const presets = {
+    default: function() {
+        return {
+            vec_entry_range_min: -5,
+            vec_entry_range_max: 5,
+            vector_dimension: 2,
+            single_vector_operation: 'mag',
+            vector_notation: 'brackets',
+            vec_op_answer_form: 'rationalized',
+            decimal_places: 3
+        };
+    },
+    random: function() {
+        return {
+            vec_entry_range_min: H.randInt(-5, 0),
+            vec_entry_range_max: H.randInt(1, 5),
+            vector_dimension: H.randInt(2, 4),
+            single_vector_operation: '__random__',
+            vector_notation: '__random__',
+            vec_op_answer_form: '__random__'
+        };
     }
-}
-
-export function get_rand_settings() {
-   return {
-        vec_entry_range_min: H.randInt(-5, 0),
-        vec_entry_range_max: H.randInt(1, 5),
-        vector_dimension: H.randInt(2, 4),
-        single_vector_operation: '__random__',
-        vector_notation: '__random__',
-        vec_op_answer_form: '__random__'
-    } 
-}
+};
 
 export const size_adjustments = {
     width: 1.1,

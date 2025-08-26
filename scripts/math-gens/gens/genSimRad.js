@@ -65,20 +65,21 @@ export const settings_fields = [
     'coef_number_size'
 ];
 
-export function get_presets() {
-    return {
-        number_of_terms: 3,
-        root_number: H.randFromList(H.nonPerfectSquares(6)),
-        coef_number_size: 9,
-        addsub_operation_type: 'both'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        number_of_terms: H.randInt(2,4),
-        root_number: H.randFromList(H.nonPerfectSquares(6)),
-        coef_number_size: H.randInt(9,15),
-        addsub_operation_type: '__random__'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            number_of_terms: 3,
+            root_number: H.randFromList(H.nonPerfectSquares(6)),
+            coef_number_size: 9,
+            addsub_operation_type: 'both'
+        };
+    },
+    random: function() {
+        return {
+            number_of_terms: H.randInt(2,4),
+            root_number: H.randFromList(H.nonPerfectSquares(6)),
+            coef_number_size: H.randInt(9,15),
+            addsub_operation_type: '__random__'
+        };
+    }
+};

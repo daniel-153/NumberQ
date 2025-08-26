@@ -183,27 +183,28 @@ export const prelocked_settings = [
     'division_result'
 ];
 
-export function get_presets() {
-    return {
-        polynomial_A_degree: H.randInt(1,3),
-        polynomial_B_degree: H.randInt(1,3),
-        general_operation_types: ['add','multiply','divide'],
-        coef_size: 9,
-        factor_size: 5,
-        division_result: 'divide_evenly'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        polynomial_A_degree: H.randInt(1,3),
-        polynomial_B_degree: H.randInt(1,3),
-        general_operation_types: '__random__',
-        coef_size: H.randInt(5,10),
-        factor_size: H.randInt(2,7),
-        division_result: '__random__'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            polynomial_A_degree: H.randInt(1,3),
+            polynomial_B_degree: H.randInt(1,3),
+            general_operation_types: ['add','multiply','divide'],
+            coef_size: 9,
+            factor_size: 5,
+            division_result: 'divide_evenly'
+        };
+    },
+    random: function() {
+        return {
+            polynomial_A_degree: H.randInt(1,3),
+            polynomial_B_degree: H.randInt(1,3),
+            general_operation_types: '__random__',
+            coef_size: H.randInt(5,10),
+            factor_size: H.randInt(2,7),
+            division_result: '__random__'
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 1.15,

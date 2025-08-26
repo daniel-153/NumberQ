@@ -111,31 +111,32 @@ export const settings_fields = [
     'wrap_negatives'
 ];
 
-export function get_presets() {
-    return {
-        first_term_range_min: 1,
-        first_term_range_max: 9,
-        second_term_range_min: 1,
-        second_term_range_max: 9,
-        muldiv_notation: 'flat_with_eq',
-        stacked_notation_rule: 'a_geq_b',
-        muldiv_allow_zero: 'yes',
-        wrap_negatives: 'always'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        first_term_range_min: H.randInt(1, 12),
-        first_term_range_max: H.randInt(1, 12),
-        second_term_range_min: H.randInt(1, 12),
-        second_term_range_max: H.randInt(1, 12),
-        muldiv_notation: 'flat_with_eq',
-        stacked_notation_rule: 'a_geq_b',
-        muldiv_allow_zero: '__random__',
-        wrap_negatives: 'always'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            first_term_range_min: 1,
+            first_term_range_max: 9,
+            second_term_range_min: 1,
+            second_term_range_max: 9,
+            muldiv_notation: 'flat_with_eq',
+            stacked_notation_rule: 'a_geq_b',
+            muldiv_allow_zero: 'yes',
+            wrap_negatives: 'always'
+        };
+    },
+    random: function() {
+        return {
+            first_term_range_min: H.randInt(1, 12),
+            first_term_range_max: H.randInt(1, 12),
+            second_term_range_min: H.randInt(1, 12),
+            second_term_range_max: H.randInt(1, 12),
+            muldiv_notation: 'flat_with_eq',
+            stacked_notation_rule: 'a_geq_b',
+            muldiv_allow_zero: '__random__',
+            wrap_negatives: 'always'
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 0.9,

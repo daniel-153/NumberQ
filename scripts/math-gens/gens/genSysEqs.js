@@ -363,32 +363,33 @@ export const settings_fields = [
     'sys_eqs_term_number' 
 ];
 
-export function get_presets() {
-    return {
-        sys_eqs_coef_size: 8,
-        linear_equation_form: 'randomized',
-        sys_eqs_x_solution: 1,
-        sys_eqs_y_solution: 1,
-        randomize_solutions: 'is_checked',
-        sys_eqs_term_number: '2_x_2_y'
-    };
-}
-
-export function get_rand_settings() {
-    let sys_eqs_term_number;
-    const term_number_picker = H.randInt(1, 100);
-    if (term_number_picker <= 85) sys_eqs_term_number = '2_x_2_y';
-    else sys_eqs_term_number = H.randFromList(['1_x_2_y','2_x_1_y','1_x_1_y']);
-    
-    return {
-        sys_eqs_coef_size: H.randInt(1,10),
-        linear_equation_form: '__random__',
-        sys_eqs_x_solution: 1,
-        sys_eqs_y_solution: 1,
-        randomize_solutions: 'is_checked',
-        sys_eqs_term_number: sys_eqs_term_number
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            sys_eqs_coef_size: 8,
+            linear_equation_form: 'randomized',
+            sys_eqs_x_solution: 1,
+            sys_eqs_y_solution: 1,
+            randomize_solutions: 'is_checked',
+            sys_eqs_term_number: '2_x_2_y'
+        };
+    },
+    random: function() {
+        let sys_eqs_term_number;
+        const term_number_picker = H.randInt(1, 100);
+        if (term_number_picker <= 85) sys_eqs_term_number = '2_x_2_y';
+        else sys_eqs_term_number = H.randFromList(['1_x_2_y','2_x_1_y','1_x_1_y']);
+        
+        return {
+            sys_eqs_coef_size: H.randInt(1,10),
+            linear_equation_form: '__random__',
+            sys_eqs_x_solution: 1,
+            sys_eqs_y_solution: 1,
+            randomize_solutions: 'is_checked',
+            sys_eqs_term_number: sys_eqs_term_number
+        }; 
+    }
+};
 
 export const size_adjustments = {
     height: 1.3,

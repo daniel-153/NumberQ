@@ -157,32 +157,33 @@ export const prelocked_settings = [
     'decimal_places'
 ];
 
-export function get_presets() {
-    return {
-        vec_entry_range_min: -5,
-        vec_entry_range_max: 5,
-        vector_dimension: 2,
-        vector_operation: 'add',
-        vector_notation: 'brackets',
-        allow_scalars: 'yes',
-        angle_unit: 'radians',
-        decimal_places: 3
-    };
-}
-
-export function get_rand_settings() {
-    const operation = H.randFromList(['add','sub','dot','cross','angle']);
+export const presets = {
+    default: function() {
+        return {
+            vec_entry_range_min: -5,
+            vec_entry_range_max: 5,
+            vector_dimension: 2,
+            vector_operation: 'add',
+            vector_notation: 'brackets',
+            allow_scalars: 'yes',
+            angle_unit: 'radians',
+            decimal_places: 3
+        };
+    },
+    random: function() {
+        const operation = H.randFromList(['add','sub','dot','cross','angle']);
     
-    return {
-        vec_entry_range_min: H.randInt(-5, 0),
-        vec_entry_range_max: H.randInt(1, 5),
-        vector_dimension: (operation === 'cross')? 3 : H.randInt(2, 4),
-        vector_operation: operation,
-        vector_notation: '__random__',
-        allow_scalars: '__random__',
-        angle_unit: '__random__'
-    };
-}
+        return {
+            vec_entry_range_min: H.randInt(-5, 0),
+            vec_entry_range_max: H.randInt(1, 5),
+            vector_dimension: (operation === 'cross')? 3 : H.randInt(2, 4),
+            vector_operation: operation,
+            vector_notation: '__random__',
+            allow_scalars: '__random__',
+            angle_unit: '__random__'
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 1.1,

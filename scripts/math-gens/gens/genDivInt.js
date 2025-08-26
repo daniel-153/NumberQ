@@ -299,31 +299,32 @@ export const settings_fields = [
     'wrap_negatives'
 ];
 
-export function get_presets() {
-    return {
-        dividend_range_min: 1,
-        dividend_range_max: 100,
-        divisor_range_min: 1,
-        divisor_range_max: 10,
-        divide_evenly: 'always',
-        divint_notation: 'flat_with_eq',
-        divint_zero_rule: 'only_dividend',
-        wrap_negatives: 'always'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        dividend_range_min: H.randInt(1, 200),
-        dividend_range_max: H.randInt(1, 200),
-        divisor_range_min: H.randInt(1, 25),
-        divisor_range_max: H.randInt(1, 25),
-        divide_evenly: '__random__',
-        divint_notation: 'flat_with_eq',
-        divint_zero_rule: '__random__',
-        wrap_negatives: 'always'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            dividend_range_min: 1,
+            dividend_range_max: 100,
+            divisor_range_min: 1,
+            divisor_range_max: 10,
+            divide_evenly: 'always',
+            divint_notation: 'flat_with_eq',
+            divint_zero_rule: 'only_dividend',
+            wrap_negatives: 'always'
+        };
+    },
+    random: function() {
+        return {
+            dividend_range_min: H.randInt(1, 200),
+            dividend_range_max: H.randInt(1, 200),
+            divisor_range_min: H.randInt(1, 25),
+            divisor_range_max: H.randInt(1, 25),
+            divide_evenly: '__random__',
+            divint_notation: 'flat_with_eq',
+            divint_zero_rule: '__random__',
+            wrap_negatives: 'always'
+        };
+    }
+};
 
 export const size_adjustments = {
     q_font_size: 1.1,

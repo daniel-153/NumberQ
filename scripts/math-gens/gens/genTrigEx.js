@@ -131,21 +131,22 @@ export const settings_fields = [
     'trig_function_types'
 ];
 
-export function get_presets() {
-    return {
-        angular_unit: 'radians',
-        argument_sign: 'positive',
-        trig_function_types: ['sine','cosine']
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        angular_unit: '__random__',
-        argument_sign: '__random__',
-        trig_function_types: '__random__'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            angular_unit: 'radians',
+            argument_sign: 'positive',
+            trig_function_types: ['sine','cosine']
+        };
+    },
+    random: function() {
+        return {
+            angular_unit: '__random__',
+            argument_sign: '__random__',
+            trig_function_types: '__random__'
+        };
+    }
+};
 
 export const size_adjustments = {
     height: 1.2,

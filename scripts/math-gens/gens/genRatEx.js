@@ -1204,27 +1204,28 @@ export const prelocked_settings = [
     'give_excluded_values'
 ];
 
-export function get_presets() {
-    return {
-        ratex_add_sub_form: 'all_add_sub', 
-        ratex_mul_div_form: 'all_mul_div', 
-        general_operation_types: ['add','multiply'],
-        numer_form: 'factored',
-        denom_form: 'factored',
-        give_excluded_values: 'no'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        ratex_add_sub_form: '__random__', 
-        ratex_mul_div_form: '__random__',
-        general_operation_types: '__random__',
-        numer_form: 'factored',
-        denom_form: 'factored',
-        give_excluded_values: 'no'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            ratex_add_sub_form: 'all_add_sub', 
+            ratex_mul_div_form: 'all_mul_div', 
+            general_operation_types: ['add','multiply'],
+            numer_form: 'factored',
+            denom_form: 'factored',
+            give_excluded_values: 'no'
+        };
+    },
+    random: function() {
+        return {
+            ratex_add_sub_form: '__random__', 
+            ratex_mul_div_form: '__random__',
+            general_operation_types: '__random__',
+            numer_form: 'factored',
+            denom_form: 'factored',
+            give_excluded_values: 'no'
+        };
+    }
+};
 
 export const size_adjustments = {
     height: 1.3,

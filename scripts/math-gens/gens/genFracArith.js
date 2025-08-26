@@ -284,53 +284,54 @@ export const prelocked_settings = [
     'add_frac_answer_form'
 ];
 
-export function get_presets() {
-    return {
-        numer_range_min: 1,
-        numer_range_max: 5,
-        denom_range_min: 2,
-        denom_range_max: 10,
-        allow_improper_fracs: 'no',
-        like_denoms: 'sometimes',
-        add_frac_answer_form: 'fractions',
-        frac_operations: ['add'],
-        multiply_symbol: ' \\times ',
-        add_equals_sign: 'no'
-    };
-}
+export const presets = {
+    default: function() {
+        return {
+            numer_range_min: 1,
+            numer_range_max: 5,
+            denom_range_min: 2,
+            denom_range_max: 10,
+            allow_improper_fracs: 'no',
+            like_denoms: 'sometimes',
+            add_frac_answer_form: 'fractions',
+            frac_operations: ['add'],
+            multiply_symbol: ' \\times ',
+            add_equals_sign: 'no'
+        };
+    },
+    random: function() {
+        let num_min_rand = H.randInt(1, 10);
+        let num_max_rand = H.randInt(1, 10);
+        if (num_min_rand > num_max_rand) {
+            let temp;
+            temp = num_min_rand;
+            num_min_rand = num_max_rand;
+            num_max_rand = temp;
+        }
 
-export function get_rand_settings() {
-    let num_min_rand = H.randInt(1, 10);
-    let num_max_rand = H.randInt(1, 10);
-    if (num_min_rand > num_max_rand) {
-        let temp;
-        temp = num_min_rand;
-        num_min_rand = num_max_rand;
-        num_max_rand = temp;
+        let den_min_rand = H.randInt(1, 10);
+        let den_max_rand = H.randInt(1, 10);
+        if (den_min_rand > den_max_rand) {
+            let temp;
+            temp = den_min_rand;
+            den_min_rand = den_max_rand;
+            den_max_rand = temp;
+        }
+        
+        return {
+            numer_range_min: num_min_rand,
+            numer_range_max: num_max_rand,
+            denom_range_min: den_min_rand,
+            denom_range_max: den_max_rand,
+            allow_improper_fracs: '__random__',
+            like_denoms: '__random__',
+            add_frac_answer_form: 'fractions',
+            frac_operations: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
+            multiply_symbol: ' \\times ',
+            add_equals_sign: 'no'
+        };
     }
-
-    let den_min_rand = H.randInt(1, 10);
-    let den_max_rand = H.randInt(1, 10);
-    if (den_min_rand > den_max_rand) {
-        let temp;
-        temp = den_min_rand;
-        den_min_rand = den_max_rand;
-        den_max_rand = temp;
-    }
-    
-    return {
-        numer_range_min: num_min_rand,
-        numer_range_max: num_max_rand,
-        denom_range_min: den_min_rand,
-        denom_range_max: den_max_rand,
-        allow_improper_fracs: '__random__',
-        like_denoms: '__random__',
-        add_frac_answer_form: 'fractions',
-        frac_operations: H.randFromList([['add'],['subtract'],['multiply'],['divide']]),
-        multiply_symbol: ' \\times ',
-        add_equals_sign: 'no'
-    }; 
-}
+};
 
 export const size_adjustments = {
     height: 1.2,

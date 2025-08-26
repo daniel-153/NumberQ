@@ -1385,29 +1385,30 @@ export const settings_fields = [
     'var_iso_allow_sign_rest'
 ];
 
-export function get_presets() {
-    return {
-        var_iso_var_letters: 'rand_lower_except',
-        var_iso_eq_type: 'random',
-        var_iso_num_vars: 'random',
-        var_iso_solving_var: 'any',
-        var_iso_match_form: 'yes',
-        var_iso_allow_exponents: 'yes',
-        var_iso_allow_sign_rest: 'yes'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        var_iso_var_letters: '__random__',
-        var_iso_eq_type: '__random__',
-        var_iso_num_vars: '__random__',
-        var_iso_solving_var: '__random__',
-        var_iso_match_form: '__random__',
-        var_iso_allow_exponents: '__random__',
-        var_iso_allow_sign_rest: '__random__'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            var_iso_var_letters: 'rand_lower_except',
+            var_iso_eq_type: 'random',
+            var_iso_num_vars: 'random',
+            var_iso_solving_var: 'any',
+            var_iso_match_form: 'yes',
+            var_iso_allow_exponents: 'yes',
+            var_iso_allow_sign_rest: 'yes'
+        };
+    },
+    random: function() {
+        return {
+            var_iso_var_letters: '__random__',
+            var_iso_eq_type: '__random__',
+            var_iso_num_vars: '__random__',
+            var_iso_solving_var: '__random__',
+            var_iso_match_form: '__random__',
+            var_iso_allow_exponents: '__random__',
+            var_iso_allow_sign_rest: '__random__'
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 1.12,

@@ -1401,24 +1401,25 @@ export const settings_fields = [
     'force_positive_coefs'
 ];
 
-export function get_presets() {
-    return {
-        solution_size_range: 'single_digit', 
-        lin_eq_equation_form: 'all_begin',
-        solution_form: 'integers',
-        variable_letter: 'x',
-        flip_equation: 'no',
-        force_positive_coefs: 'no'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        solution_size_range: '__random__', 
-        lin_eq_equation_form: '__random__',
-        solution_form: '__random__',
-        variable_letter: "abcdfghjkmnpqrstuvwxyz"[Math.floor(Math.random() * 22)], // rand alphabet letter excluding e,i,o,l
-        flip_equation: '__random__',
-        force_positive_coefs: '__random__'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            solution_size_range: 'single_digit', 
+            lin_eq_equation_form: 'all_begin',
+            solution_form: 'integers',
+            variable_letter: 'x',
+            flip_equation: 'no',
+            force_positive_coefs: 'no'
+        };
+    },
+    random: function() {
+        return {
+            solution_size_range: '__random__', 
+            lin_eq_equation_form: '__random__',
+            solution_form: '__random__',
+            variable_letter: "abcdfghjkmnpqrstuvwxyz"[Math.floor(Math.random() * 22)], // rand alphabet letter excluding e,i,o,l
+            flip_equation: '__random__',
+            force_positive_coefs: '__random__'
+        };
+    }
+};

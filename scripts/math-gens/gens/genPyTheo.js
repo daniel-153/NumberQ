@@ -365,33 +365,35 @@ export const settings_fields = [
     'py_theo_answer_form'
 ];
 
-export function get_presets() {
-    return {
-        triangle_number_type: 'integers_only',
-        py_theo_unknown: 'hypotenuse',
-        force_py_theo_triples: 'sometimes', 
-        triangle_length_unit: '',
-        rotation_deg: 0,
-        triangle_length_size: 75,
-        py_theo_unknown_marker: 'letter_x',
-        decimal_places: 1,
-        py_theo_answer_form: 'decimal_answers'
-    };
-}
-
-export function get_rand_settings() {
-    return {
-        triangle_number_type: '__random__',
-        py_theo_unknown: '__random__',
-        force_py_theo_triples: '__random__', 
-        triangle_length_unit: H.randFromList(['in', 'ft', 'yd', 'mi', 'mm', 'cm', 'm', 'km']),
-        rotation_deg: H.randInt(0, 360),
-        triangle_length_size: H.randInt(25, 100),
-        py_theo_unknown_marker: '__random__',
-        py_theo_answer_form: '__random__',
-        randomize_rotation: 'is_checked'
-    }; 
-}
+export const presets = {
+    default: function() {
+        return {
+            triangle_number_type: 'integers_only',
+            py_theo_unknown: 'hypotenuse',
+            force_py_theo_triples: 'sometimes', 
+            triangle_length_unit: '',
+            rotation_deg: 0,
+            triangle_length_size: 75,
+            py_theo_unknown_marker: 'letter_x',
+            decimal_places: 1,
+            py_theo_answer_form: 'decimal_answers',
+            randomize_rotation: undefined
+        };
+    },
+    random: function() {
+        return {
+            triangle_number_type: '__random__',
+            py_theo_unknown: '__random__',
+            force_py_theo_triples: '__random__', 
+            triangle_length_unit: H.randFromList(['in', 'ft', 'yd', 'mi', 'mm', 'cm', 'm', 'km']),
+            rotation_deg: H.randInt(0, 360),
+            triangle_length_size: H.randInt(25, 100),
+            py_theo_unknown_marker: '__random__',
+            py_theo_answer_form: '__random__',
+            randomize_rotation: 'is_checked'
+        };
+    }
+};
 
 export const size_adjustments = {
     width: 0.8,
