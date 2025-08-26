@@ -10,8 +10,7 @@ const event_listeners = [
                 UH.toggleVisibility(['generation-content'], ['home-page-content', 'presenation-content']);
                 window.scrollTo(0, 0);
                 history.pushState({ page: 'generator' }, '', '');
-                document.getElementById('settings-preset-checkbox').checked = false; // make sure randomize-all always starts unchecked
-                document.getElementById('settings-container').scrollTop = 0; // reset the scroll on the settings group
+                PGH.resetSettingsVisualUi(event.target.getAttribute('data-gen-func-name'));
                 document.getElementById('generate-button').setAttribute('data-gen-func-name', event.target.getAttribute('data-gen-func-name'));
                 PG.generate(event.target.getAttribute('data-gen-func-name'), event.target.getAttribute('data-gen-type'));
             }

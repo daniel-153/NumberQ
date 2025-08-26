@@ -173,3 +173,22 @@ export function focusPresetOption(targeted_input_el) {
     document.getElementById('settings-presets-tab').setAttribute('data-focused-preset', targeted_input_el.value);
     document.getElementById('settings-preset-label').innerHTML = document.querySelector(`label[for="${targeted_input_el.id}"]`).innerHTML;
 }
+
+export function resetSettingsVisualUi(start_btn_func_name) {
+    // only reset if switched to a new gen (no reset on re-entry to the same gen from its start button)
+    if (start_btn_func_name !== document.getElementById('generate-button').getAttribute('data-gen-func-name')) {
+        // ensure use-preset always starts unchecked
+        const preset_checkbox = document.getElementById('settings-preset-checkbox');
+        if (preset_checkbox.checked) {
+            preset_checkbox.click(); // preferrable to manually changing each property (to account for new property changes that could be added)
+        }
+
+        // ensure the preset menu starts hidden
+        const preset_list = document.getElementById('preset-list-wrapper');
+        if (preset_list.getAttribute('data-preset-menu-status') === 'shown') {
+            document.getElementById('presets-menu-toggle-btn').click();
+        }
+
+        document.getElementById('settings-container').scrollTop = 0; // reset the scroll on the settings group
+    }  
+}
