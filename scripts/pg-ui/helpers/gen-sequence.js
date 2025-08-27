@@ -529,9 +529,15 @@ export async function createSettingsPresets(gen_module, pg_ui_state) {
 
     // all the other module specific presets
     if (Array.isArray(gen_module.presets.topic_presets)) {
+        let topic_preset_index = 0;
         gen_module.presets.topic_presets.forEach(preset_obj => {
-            pg_ui_state.preset_funcs[preset_obj.name] = preset_obj.get_settings;
-            output_html += CPH.createPresetHtml(preset_obj);
+            const copy_preset_obj = JSON.parse(JSON.stringify(preset_obj)); // drops the get_settings func without throwing
+
+            copy_preset_obj.name = `topic-preset-${topic_preset_index}`;
+            pg_ui_state.preset_funcs[copy_preset_obj.name] = preset_obj.get_settings;
+
+            output_html += CPH.createPresetHtml(copy_preset_obj);
+            topic_preset_index++;
         });;
     }
 
