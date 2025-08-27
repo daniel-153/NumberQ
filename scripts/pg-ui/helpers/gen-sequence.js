@@ -472,13 +472,34 @@ const CPH = { // createSettingsPresets helpers
                     <div class="preset-tooltip-wrapper">
                         <div class="preset-tooltip-content">
                             <h3 class="preset-descriptor preset-tooltip-title">${display_title}:</h3>
-                            <div class="preset-descriptor preset-tooltip-math">\\( ${example_problem} \\)</div>
+                            <div class="preset-descriptor preset-tooltip-math" data-latexcode="${example_problem}"></div>
                             <p class="preset-descriptor preset-tooltip-description">${description}</p>
                         </div>
                     </div>
                 </div>
             </div>
         `;
+    },
+    insertPresetMjx: async function() {
+        const preset_math_containers = Array.from(document.getElementById('settings-presets-list').querySelectorAll('.preset-tooltip-math'));
+
+        const string_factor_pairs = [];
+        preset_math_containers.forEach(math_container => {
+            string_factor_pairs.push([
+                math_container.getAttribute('data-latexcode'),
+                6
+            ]);
+        });
+
+        const mjx_svgs = await CH.getMathJaxAsSvg(string_factor_pairs);
+        for (let i = 0; i < mjx_svgs.length; i++) {
+            const math_container = preset_math_containers[i];
+            const mjx_svg = mjx_svgs[i]
+
+            mjx_svg.classList.add('preset-mjx-svg');
+
+            math_container.appendChild(mjx_svg);
+        }
     }
 };
 export async function createSettingsPresets(gen_module, pg_ui_state) {
@@ -514,12 +535,12 @@ export async function createSettingsPresets(gen_module, pg_ui_state) {
         });;
     }
 
-    // insert and typeset any mjx
+    // insert base html for presets
     output_html += '</div>';
     const preset_container = document.getElementById('preset-list-wrapper');
     preset_container.innerHTML = output_html;
 
-    await MathJax.typesetPromise([preset_container]);
+    await CPH.insertPresetMjx();
 }
 
 export function updatePresetStatus(preset_name, apply_preset, pg_ui_state) {
