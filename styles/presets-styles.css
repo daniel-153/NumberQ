@@ -1,11 +1,3 @@
-#settings-container-wrapper {
-  display: flex;
-  flex-direction: column;
-  width: fit-content;
-  height: fit-content;
-  margin-bottom: 0.4vw;
-}
-
 #settings-presets-tab {
   position: relative;
   box-sizing: border-box;
@@ -25,11 +17,6 @@
   padding: 3px 7.5px;
   transition: border-color 150ms ease-in-out;
   max-width: 43%;
-}
-
-#settings-presets-tab[data-preset-menu-status="shown"] {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
 }
 
 #settings-presets-tab[data-use-preset-status="applied"] {
@@ -379,11 +366,6 @@
 
     #settings-presets-tab {
         max-width: 72vw;
-    }
-
-    #settings-presets-tab[data-preset-menu-status="shown"] {
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
     }
 
     #preset-list-wrapper {

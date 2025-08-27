@@ -1,16 +1,22 @@
+#settings-container-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  height: fit-content;
+  margin-bottom: 50px;
+}
+
 #settings-container {
   display: flex;
   align-items: flex-start;
   justify-content: center;
   width: fit-content;
-  height: 12.8784375vw;
+  height: fit-content;
   background-color: rgb(52, 64, 81);
   border: 0.2vw solid rgb(75, 20, 20);
   border-radius: 0.4vw;
   border-top-left-radius: 0;
-  overflow-y: auto;
-  padding: 1vw;
-  padding-top: 1.25vw;
+  padding: 1.25vw;
   transition: border-color 150ms ease-in-out;
 }
 
@@ -22,7 +28,7 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   /* Three columns per row */
-  gap: 5vw;
+  gap: 60px;
   height: fit-content;
 }
 
@@ -291,14 +297,14 @@
 
 /* Scroll bar if the settings overflow a settings box vertically */
 .inner-settings-wrapper::-webkit-scrollbar {
-  width: 0.4vw;
+  width: 10px;
   /* Scrollbar width */
 }
 
 .inner-settings-wrapper::-webkit-scrollbar-thumb {
   background-color: #555;
   /* Dark gray thumb */
-  border-radius: 0.2vw;
+  border-radius: 5px;
 }
 
 .inner-settings-wrapper::-webkit-scrollbar-thumb:hover {
@@ -309,15 +315,15 @@
 .inner-settings-wrapper::-webkit-scrollbar-track {
   background: #2222223d;
   /* Dark background for contrast */
-  border-radius: 0.4vw;
+  border-radius: 10px;
   /* Round the track ends */
-  margin: 0.4vw 0;
+  margin: 10px 0;
   /* Prevents the track from extending fully */
 }
 
 /* Scroll bar if the settings overflow a settings box horizontally */
 .radio-button-label::-webkit-scrollbar {
-  height: 0.4vw;
+  height: 10px;
   /* Scrollbar width */
   min-height: 7.5px;
 }
@@ -325,7 +331,7 @@
 .radio-button-label::-webkit-scrollbar-thumb {
   background-color: #777777;
   /* Dark gray thumb */
-  border-radius: 0.2vw;
+  border-radius: 5px;
 }
 
 .radio-button-label::-webkit-scrollbar-thumb:hover {
@@ -336,9 +342,9 @@
 .radio-button-label::-webkit-scrollbar-track {
   background: #5c5c5c3d;
   /* Dark background for contrast */
-  border-radius: 0.4vw;
+  border-radius: 10px;
   /* Round the track ends */
-  margin: 0.4vw 0;
+  margin: 10px 0;
   /* Prevents the track from extending fully */
 }
 
@@ -501,16 +507,13 @@
 
   /* Ipads and Small Laptops */
   #settings-container {
-    height: 21.5vw;
     border-width: 0.4vw;
     border-radius: 0.6vw;
     border-top-left-radius: 0;
   }
 
   #settings-form {
-    grid-template-columns: repeat(2, 1fr);
-    /* Three columns per row */
-    gap: 4vw;
+    gap: 48px;
   }
 
   .setting-box {
@@ -629,15 +632,13 @@
 
 @media (max-width: 900px) {
   #settings-container {
-    height: 110vw;
     border-width: 3px;
     border-radius: 1.5vw;
   }
 
   #settings-form {
     grid-template-columns: repeat(1, 1fr);
-    /* Three columns per row */
-    gap: 4vw;
+    gap: 30px;
   }
 
   .setting-box {
@@ -754,31 +755,6 @@
     width: 4.5vw;
     height: 4.5vw;
     margin-right: 0.75vw;
-  }
-
-  .outer-radio-button-wrapper::-webkit-scrollbar {
-    width: 2.4vw;
-    /* Scrollbar width */
-  }
-
-  .outer-radio-button-wrapper::-webkit-scrollbar-thumb {
-    background-color: #555;
-    /* Dark gray thumb */
-    border-radius: 2.2vw;
-  }
-
-  .outer-radio-button-wrapper::-webkit-scrollbar-thumb:hover {
-    background-color: #666;
-    /* Slightly lighter on hover */
-  }
-
-  .outer-radio-button-wrapper::-webkit-scrollbar-track {
-    background: #2222223d;
-    /* Dark background for contrast */
-    border-radius: 2.4vw;
-    /* Round the track ends */
-    margin: 2.4vw 0;
-    /* Prevents the track from extending fully */
   }
 
   .settings-info-button::before {
