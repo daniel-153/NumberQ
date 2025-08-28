@@ -119,7 +119,7 @@
     position: absolute;
     left: -20px;
     bottom: calc(100% + 2px);
-    max-height: 700%;
+    max-height: 250px;
     display: flex;
     flex-direction: column;
     opacity: 0;
