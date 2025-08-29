@@ -175,7 +175,7 @@ export const presets = {
     },
     topic_presets: [
         {
-            display_title: 'Addition Within 10',
+            title: 'Addition Within 10',
             example_problem: '3+5=\\:?',
             description: 'Add numbers between 0 and 10.',
             get_settings: function() {
@@ -189,7 +189,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Addition Within 20',
+            title: 'Addition Within 20',
             example_problem: '13+17=\\:?',
             description: 'Add numbers between 0 and 20.',
             get_settings: function() {
@@ -203,7 +203,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction Within 10',
+            title: 'Subtraction Within 10',
             example_problem: '9-5=\\:?',
             description: 'Subtract numbers between 0 and 10.',
             get_settings: function() {
@@ -218,7 +218,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction Within 20',
+            title: 'Subtraction Within 20',
             example_problem: '19-3=\\:?',
             description: 'Subtract numbers between 0 and 20.',
             get_settings: function() {
@@ -233,7 +233,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Operations Within 10',
+            title: 'Mixed Operations Within 10',
             example_problem: '\\overset{[0,10]}{A} \\pm \\overset{[0,10]}{B}',
             description: 'Add and subtract numbers within 10.',
             get_settings: function() {
@@ -248,7 +248,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Operations Within 20',
+            title: 'Mixed Operations Within 20',
             example_problem: '\\overset{[0,20]}{A} \\pm \\overset{[0,20]}{B}',
             description: 'Add and subtract numbers within 20.',
             get_settings: function() {
@@ -263,7 +263,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Addition With Negatives',
+            title: 'Addition With Negatives',
             example_problem: '(-3)+(-2)=\\:?',
             description: 'Add (A + B) where one or both of A and B are negative numbers.',
             get_settings: function() {
@@ -284,7 +284,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction With Negatives',
+            title: 'Subtraction With Negatives',
             example_problem: '(-8)-(-7)=\\:?',
             description: 'Subtract (A - B) where one or both of A and B are negative numbers.',
             get_settings: function() {
@@ -305,7 +305,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Addition With Zero',
+            title: 'Addition With Zero',
             example_problem: '34+0=\\:?',
             description: 'Add a number and zero.',
             get_settings: function() {
@@ -330,7 +330,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction With Zero',
+            title: 'Subtraction With Zero',
             example_problem: '10-0=\\:?',
             description: 'Subtract zero from a number.',
             get_settings: function() {    
@@ -345,7 +345,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Operations With Negatives',
+            title: 'Mixed Operations With Negatives',
             example_problem: 'A\\pm B,~~A \\text{ or } B \\lt 0',
             description: 'Add or subtract two numbers where at least one number is negative.',
             get_settings: function() {
@@ -366,7 +366,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction With Negative Results',
+            title: 'Subtraction With Negative Results',
             example_problem: 'A-B\\lt 0',
             description: 'Subtract two numbers A and B where the result (A&thinsp;-&thinsp;B) is negative.',
             get_settings: function() {
@@ -384,7 +384,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Add 1 Digit to 2 Digits',
+            title: 'Add 1 Digit to 2 Digits',
             example_problem: '\\begin{array}{@{}r@{}} 32\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{3}8}} \\end{array}',
             description: 'Add a number with one digit to a number with two digits.',
             get_settings: function() {
@@ -399,7 +399,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Add 2 Digits to 2 Digits',
+            title: 'Add 2 Digits to 2 Digits',
             example_problem: '\\begin{array}{@{}r@{}} 84\\\\[-0.4em] \\underline{\\smash[b]{+~25}} \\end{array}',
             description: 'Add two numbers that each have two digits.',
             get_settings: function() {
@@ -414,7 +414,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Addition Within 2 Digits',
+            title: 'Addition Within 2 Digits',
             example_problem: '\\overset{[0,99]}{A} + \\overset{[0,99]}{B}',
             description: 'Add numbers that have either one or two digits.',
             get_settings: function() {
@@ -429,7 +429,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Addition Within 3 Digits',
+            title: 'Addition Within 3 Digits',
             example_problem: '\\overset{[0,999]}{A} + \\overset{[0,999]}{B}',
             description: 'Add numbers that have between one and three digits.',
             get_settings: function() {
@@ -444,7 +444,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtract 1 Digit from 2 Digits',
+            title: 'Subtract 1 Digit from 2 Digits',
             example_problem: '\\begin{array}{@{}r@{}} 46\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{3}7}} \\end{array}',
             description: 'Subtract a number with one digit from a number with two digits.',
             get_settings: function() {
@@ -460,7 +460,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtract 2 Digits from 2 Digits',
+            title: 'Subtract 2 Digits from 2 Digits',
             example_problem: '\\begin{array}{@{}r@{}} 91\\\\[-0.4em] \\underline{\\smash[b]{-~17}} \\end{array}',
             description: 'Subtract a two digit number from another two digit number.',
             get_settings: function() {
@@ -476,7 +476,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction Within 2 Digits',
+            title: 'Subtraction Within 2 Digits',
             example_problem: '\\overset{[0,99]}{A} - \\overset{[0,99]}{B}',
             description: 'Subtract numbers that have either one or two digits.',
             get_settings: function() {
@@ -492,7 +492,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Subtraction Within 3 Digits',
+            title: 'Subtraction Within 3 Digits',
             example_problem: '\\overset{[0,999]}{A} - \\overset{[0,999]}{B}',
             description: 'Subtract numbers that have between one and three digits.',
             get_settings: function() {
@@ -508,7 +508,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Operations Within 3 Digits',
+            title: 'Mixed Operations Within 3 Digits',
             example_problem: '\\overset{[0,999]}{A} \\pm \\overset{[0,999]}{B}',
             description: 'Add or subtract numbers that have between one and three digits.',
             get_settings: function() {
@@ -524,7 +524,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Adding by Tens',
+            title: 'Adding by Tens',
             example_problem: 'A+(10k)=\\:?',
             description: 'Add a number and a multiple of ten.',
             get_settings: function() {
@@ -541,7 +541,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Adding by Hundreds',
+            title: 'Adding by Hundreds',
             example_problem: 'A+(100k)=\\:?',
             description: 'Add a number and a multiple of 100.',
             get_settings: function() {
@@ -558,7 +558,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Adding With Tens and Hundreds',
+            title: 'Adding With Tens and Hundreds',
             example_problem: '10+500=\\:?',
             description: 'Add two numbers that are multiples of 10 or 100.',
             get_settings: function() {
@@ -576,7 +576,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Large Addition (1-4 digits)',
+            title: 'Large Addition (1-4 digits)',
             example_problem: '\\begin{array}{@{}r@{}} 5260\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{5}478}} \\end{array}',
             description: 'Add numbers with between one and four digits.',
             get_settings: function() {
@@ -591,7 +591,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Large Subtraction (1-4 digits)',
+            title: 'Large Subtraction (1-4 digits)',
             example_problem: '\\begin{array}{@{}r@{}} 5087\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{50}71}} \\end{array}',
             description: 'Subtract numbers with between one and four digits.',
             get_settings: function() {

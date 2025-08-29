@@ -446,18 +446,18 @@ export async function loadMjxExtensions(gen_module, pg_ui_state) {
 
 const CPH = { // createSettingsPresets helpers
     createPresetHtml: function(preset_obj, preset_class = 'topic_preset') {
-        let display_title, example_problem, description, name;
+        let title, example_problem, description, name;
         if (preset_class === 'topic_preset') { // custom presets specific to the current gen module
-            ({ display_title, example_problem, description, name } = preset_obj);
+            ({ title, example_problem, description, name } = preset_obj);
         }
         else if (preset_class === 'default_preset') { // the single default preset in every module
-            display_title = 'Use Defaults';
+            title = 'Use Defaults';
             example_problem = '[\\mathrm{Default}]';
             description = 'Use the default settings for this generator.';
             name = 'default';
         }
         else if (preset_class === 'random_preset') { // the single random preset in every module
-            display_title = 'Randomize All';
+            title = 'Randomize All';
             example_problem = '[\\mathrm{Random}]';
             description = 'Randomize each setting. Note that "Locked" settings are not affected by randomization.';
             name = 'random';
@@ -466,12 +466,12 @@ const CPH = { // createSettingsPresets helpers
         return `
             <div class="preset-option-wrapper">
                 <input type="radio" name="settings-preset" id="settings-preset-option-${name}" value="${name}" class="settings-preset-radio-btn"/>
-                <label for="settings-preset-option-${name}" class="preset-option-label">${display_title}</label>
+                <label for="settings-preset-option-${name}" class="preset-option-label">${title}</label>
                 <div class="preset-example-btn-wrapper">
                     <div class="settings-info-button settings-preset-example-btn">?</div>
                     <div class="preset-tooltip-wrapper">
                         <div class="preset-tooltip-content">
-                            <h3 class="preset-descriptor preset-tooltip-title">${display_title}:</h3>
+                            <h3 class="preset-descriptor preset-tooltip-title">${title}:</h3>
                             <div class="preset-descriptor preset-tooltip-math" data-latexcode="${example_problem}"></div>
                             <p class="preset-descriptor preset-tooltip-description">${description}</p>
                         </div>
