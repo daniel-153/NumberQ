@@ -306,7 +306,7 @@ export const presets = {
         },
         {
             display_title: 'Addition With Zero',
-            example_problem: 'A+0=\\:?',
+            example_problem: '34+0=\\:?',
             description: 'Add a number and zero.',
             get_settings: function() {
                 let first_term_max, second_term_max;
@@ -331,7 +331,7 @@ export const presets = {
         },
         {
             display_title: 'Subtraction With Zero',
-            example_problem: 'A-0=\\:?',
+            example_problem: '10-0=\\:?',
             description: 'Subtract zero from a number.',
             get_settings: function() {    
                 return {
@@ -414,7 +414,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Addition Within 2 Digits',
+            display_title: 'Addition Within 2 Digits',
             example_problem: '\\overset{[0,99]}{A} + \\overset{[0,99]}{B}',
             description: 'Add numbers that have either one or two digits.',
             get_settings: function() {
@@ -429,7 +429,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Addition Within 3 Digits',
+            display_title: 'Addition Within 3 Digits',
             example_problem: '\\overset{[0,999]}{A} + \\overset{[0,999]}{B}',
             description: 'Add numbers that have between one and three digits.',
             get_settings: function() {
@@ -476,7 +476,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Subtraction Within 2 Digits',
+            display_title: 'Subtraction Within 2 Digits',
             example_problem: '\\overset{[0,99]}{A} - \\overset{[0,99]}{B}',
             description: 'Subtract numbers that have either one or two digits.',
             get_settings: function() {
@@ -492,7 +492,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Mixed Subtraction Within 3 Digits',
+            display_title: 'Subtraction Within 3 Digits',
             example_problem: '\\overset{[0,999]}{A} - \\overset{[0,999]}{B}',
             description: 'Subtract numbers that have between one and three digits.',
             get_settings: function() {
@@ -576,7 +576,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Large Mixed Addition (1-4 digits)',
+            display_title: 'Large Addition (1-4 digits)',
             example_problem: '\\begin{array}{@{}r@{}} 5260\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{5}478}} \\end{array}',
             description: 'Add numbers with between one and four digits.',
             get_settings: function() {
@@ -591,7 +591,7 @@ export const presets = {
             }
         },
         {
-            display_title: 'Large Mixed Subtraction (1-4 digits)',
+            display_title: 'Large Subtraction (1-4 digits)',
             example_problem: '\\begin{array}{@{}r@{}} 5087\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{50}71}} \\end{array}',
             description: 'Subtract numbers with between one and four digits.',
             get_settings: function() {
