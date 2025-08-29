@@ -17,7 +17,7 @@
   padding: 3px 7.5px;
   transition: border-color 150ms ease-in-out;
   max-width: 43%;
-  z-index: 999;
+  z-index: 99;
 }
 
 #settings-presets-tab[data-use-preset-status="applied"] {
