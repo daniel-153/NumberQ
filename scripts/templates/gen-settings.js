@@ -1088,7 +1088,7 @@ export const stacked_notation_rule = {
     type: 'radio_buttons',
     display_name: 'Stacking',
     radio_buttons: [
-        ['a_geq_b','\\( \\operatorname{digits}(a)\\geq\\operatorname{digits}(b) \\)'],
+        ['a_geq_b','\\( \\operatorname{digits}(a)\\geq\\operatorname{digits}(b) \\)&nbsp;'],
         ['no_restriction','No Restriction']
     ], 
     tooltip: "Should the upper number always have the same or more digits than the lower number in stacked multiplication notation?",
