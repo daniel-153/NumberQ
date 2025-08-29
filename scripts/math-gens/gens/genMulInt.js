@@ -135,7 +135,492 @@ export const presets = {
             muldiv_allow_zero: '__random__',
             wrap_negatives: 'always'
         };
-    }
+    },
+    topic_presets: [
+        {
+            display_title: 'Multiply Within 5',
+            example_problem: '3\\times 4=\\:?',
+            description: 'Multiply numbers between 0 and 5.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: 5,
+                    second_term_range_min: 0,
+                    second_term_range_max: 5,
+                };
+            }
+        },
+        {
+            display_title: 'Multiply Within 10 (flat)',
+            example_problem: '7\\times 8=\\:?',
+            description: 'Multiply numbers between 0 and 10 (with flat, a &times; b, notation).',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: 10,
+                    second_term_range_min: 0,
+                    second_term_range_max: 10,
+                    muldiv_notation: 'flat_with_eq',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply Within 10 (stacked)',
+            example_problem: '\\begin{array}{@{}r@{}} 6\\\\[-0.4em] \\underline{\\smash[b]{\\times~7}} \\end{array}',
+            description: 'Multiply numbers between 0 and 10 (with stacked notation).',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: 10,
+                    second_term_range_min: 0,
+                    second_term_range_max: 10,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply Within 12 (flat)',
+            example_problem: '10\\times 11=\\:?',
+            description: 'Multiply numbers between 0 and 12 (with flat, a &times; b, notation).',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: 12,
+                    second_term_range_min: 0,
+                    second_term_range_max: 12,
+                    muldiv_notation: 'flat_with_eq',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply Within 12 (stacked)',
+            example_problem: '\\begin{array}{@{}r@{}} 12\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{1}3}} \\end{array}',
+            description: 'Multiply numbers between 0 and 12 (with stacked notation).',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: 12,
+                    second_term_range_min: 0,
+                    second_term_range_max: 12,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 0',
+            example_problem: '45\\times 0=\\:?',
+            description: 'Multiply a number and zero.',
+            get_settings: function() {
+                let first_term_max, second_term_max;
+                if (H.randInt(0, 1) === 0) {
+                    first_term_max = 0;
+                    second_term_max = Number('9' + H.randFromList(['', '9', '99']));
+                }
+                else {
+                    first_term_max = Number('9' + H.randFromList(['', '9', '99']));
+                    second_term_max = 0;
+                }
+                
+                return {
+                    first_term_range_min: 0,
+                    first_term_range_max: first_term_max,
+                    second_term_range_min: 0,
+                    second_term_range_max: second_term_max,
+                    muldiv_allow_zero: 'yes'
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 1',
+            example_problem: '1\\times 23=\\:?',
+            description: 'Multiply a number and one.',
+            get_settings: function() {
+                let first_term_range, second_term_range;
+                if (H.randInt(0, 1) === 0) {
+                    first_term_range = [1, 1];
+                    second_term_range = [0, Number('9' + H.randFromList(['', '9', '99']))]; 
+                }
+                else {
+                    first_term_range = [0, Number('9' + H.randFromList(['', '9', '99']))];
+                    second_term_range = [1, 1];
+                }
+                
+                return {
+                    first_term_range_min: first_term_range[0],
+                    first_term_range_max: first_term_range[1],
+                    second_term_range_min: second_term_range[0],
+                    second_term_range_max: second_term_range[1]
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 2',
+            example_problem: '2\\times 10=\\:?',
+            description: 'Multiply a number and two.',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 2;
+                    second_term = H.randInt(0, 12);
+                }
+                else {
+                    first_term = H.randInt(0, 12);
+                    second_term = 2;
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 5',
+            example_problem: '5\\times 6=\\:?',
+            description: 'Multiply a number and five.',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 5;
+                    second_term = H.randInt(0, 12);
+                }
+                else {
+                    first_term = H.randInt(0, 12);
+                    second_term = 5;
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 9',
+            example_problem: '9\\times 8=\\:?',
+            description: 'Multiply a number and nine.',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 9;
+                    second_term = H.randInt(0, 12);
+                }
+                else {
+                    first_term = H.randInt(0, 12);
+                    second_term = 9;
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 10',
+            example_problem: '10\\times 3=\\:?',
+            description: 'Multiply a number and ten.',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 10;
+                    second_term = H.randInt(0, 12);
+                }
+                else {
+                    first_term = H.randInt(0, 12);
+                    second_term = 10;
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 11',
+            example_problem: '5\\times 11=\\:?',
+            description: 'Multiply a number and eleven.',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 11;
+                    second_term = H.randInt(0, 12);
+                }
+                else {
+                    first_term = H.randInt(0, 12);
+                    second_term = 11;
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By 20',
+            example_problem: '20\\times 4=\\:?',
+            description: 'Multiply a number and twenty.',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 20;
+                    second_term = H.randInt(0, 12);
+                }
+                else {
+                    first_term = H.randInt(0, 12);
+                    second_term = 20;
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By Multiples Of 10',
+            example_problem: '7 \\times 30',
+            description: 'Multiply a number and a multiple of 10 (10, 20, 30, etc).',
+            get_settings: function() {
+                let first_term, second_term;
+                if (H.randInt(0, 1) === 0) {
+                    first_term = 10 * H.randInt(1, 9);
+                    second_term = H.randInt(0, 10);
+                }
+                else {
+                    first_term = H.randInt(0, 10);
+                    second_term = 10 * H.randInt(1, 9);
+                }
+                
+                return {
+                    first_term_range_min: first_term,
+                    first_term_range_max: first_term,
+                    second_term_range_min: second_term,
+                    second_term_range_max: second_term,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By Powers Of 10',
+            example_problem: '25 \\times 1000',
+            description: 'Multiply a number and a power of 10 (10, 100, 1000).',
+            get_settings: function() {
+                let first_term_range, second_term_range;
+                if (H.randInt(0, 1) === 0) {
+                    first_term_range = Array(2).fill(10**(H.randInt(1, 3)));
+                    second_term_range = [0, Number('9' + H.randFromList(['', '9', '99']))]; 
+                }
+                else {
+                    first_term_range = [0, Number('9' + H.randFromList(['', '9', '99']))];
+                    second_term_range = Array(2).fill(10**(H.randInt(1, 3)));
+                }
+                
+                return {
+                    first_term_range_min: first_term_range[0],
+                    first_term_range_max: first_term_range[1],
+                    second_term_range_min: second_term_range[0],
+                    second_term_range_max: second_term_range[1],
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By Negatives (Within [-10,&nbsp;10])',
+            example_problem: '(-5)\\times 8=\\:?',
+            description: 'Multiply A &times B where one or both of A and B are negative.',
+            get_settings: function() {
+                let [first_term_is_neg, second_term_is_neg] = [H.randFromList([true, false]), H.randFromList([true, false])];
+                if (H.randInt(0, 1) === 0 && !first_term_is_neg) second_term_is_neg = true;
+                else if (!second_term_is_neg) first_term_is_neg = true;
+                
+                const first_term_range = (first_term_is_neg)? [-10, -1] : [0, 10];
+                const second_term_range = (second_term_is_neg)? [-10, -1] : [0, 10];
+
+                return {
+                    first_term_range_min: first_term_range[0],
+                    first_term_range_max: first_term_range[1],
+                    second_term_range_min: second_term_range[0],
+                    second_term_range_max: second_term_range[1],
+                    muldiv_notation: 'flat_with_eq',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply By Negatives (Within [-12,&nbsp;12])',
+            example_problem: '3\\times (-11)=\\:?',
+            description: 'Multiply A &times B where one or both of A and B are negative.',
+            get_settings: function() {
+                let [first_term_is_neg, second_term_is_neg] = [H.randFromList([true, false]), H.randFromList([true, false])];
+                if (H.randInt(0, 1) === 0 && !first_term_is_neg) second_term_is_neg = true;
+                else if (!second_term_is_neg) first_term_is_neg = true;
+                
+                const first_term_range = (first_term_is_neg)? [-12, -1] : [0, 12];
+                const second_term_range = (second_term_is_neg)? [-12, -1] : [0, 12];
+
+                return {
+                    first_term_range_min: first_term_range[0],
+                    first_term_range_max: first_term_range[1],
+                    second_term_range_min: second_term_range[0],
+                    second_term_range_max: second_term_range[1],
+                    muldiv_notation: 'flat_with_eq',
+                };
+            }
+        },
+        {
+            display_title: '2 Digits Times 1 Digit',
+            example_problem: '\\begin{array}{@{}r@{}} 25\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{2}9}} \\end{array}',
+            description: 'Multiply a two digit number by a one digit number.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 10,
+                    first_term_range_max: 99,
+                    second_term_range_min: 0,
+                    second_term_range_max: 9,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: '3 Digits Times 1 Digit',
+            example_problem: '\\begin{array}{@{}r@{}} 453\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{45}5}} \\end{array}',
+            description: 'Multiply a three digit number by a one digit number.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 100,
+                    first_term_range_max: 999,
+                    second_term_range_min: 0,
+                    second_term_range_max: 9,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: '4 Digits Times 1 Digit',
+            example_problem: '\\begin{array}{@{}r@{}} 8279\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{827}6}} \\end{array}',
+            description: 'Multiply a four digit number by a one digit number.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 1000,
+                    first_term_range_max: 9999,
+                    second_term_range_min: 0,
+                    second_term_range_max: 9,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: '2 Digits Times 2 Digits',
+            example_problem: '\\begin{array}{@{}r@{}} 63\\\\[-0.4em] \\underline{\\smash[b]{\\times~18}} \\end{array}',
+            description: 'Multiply a two digit number by another two digit number.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 10,
+                    first_term_range_max: 99,
+                    second_term_range_min: 10,
+                    second_term_range_max: 99,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: '3 Digits Times 2 Digits',
+            example_problem: '\\begin{array}{@{}r@{}} 921\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{9}34}} \\end{array}',
+            description: 'Multiply a three digit number by a two digit number.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 100,
+                    first_term_range_max: 999,
+                    second_term_range_min: 10,
+                    second_term_range_max: 99,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: '3 Digits Times 3 Digits',
+            example_problem: '\\begin{array}{@{}r@{}} 243\\\\[-0.4em] \\underline{\\smash[b]{\\times~729}} \\end{array}',
+            description: 'Multiply a three digit number by another three digit number.',
+            get_settings: function() {
+                return {
+                    first_term_range_min: 100,
+                    first_term_range_max: 999,
+                    second_term_range_min: 100,
+                    second_term_range_max: 999,
+                    muldiv_notation: 'stacked',
+                    stacked_notation_rule: 'a_geq_b',
+                };
+            }
+        },
+        {
+            display_title: 'Multiply A Number By Itself (within 10)',
+            example_problem: '8\\times 8=\\:?',
+            description: 'Square numbers between 0 and 10.',
+            get_settings: function() {
+                const term = H.randInt(0, 10);
+
+                return {
+                    first_term_range_min: term,
+                    first_term_range_max: term,
+                    second_term_range_min: term,
+                    second_term_range_max: term,
+                };
+            }
+        },
+        {
+            display_title: 'Multiply A Number By Itself (within 15)',
+            example_problem: '13\\times 13=\\:?',
+            description: 'Square numbers between 0 and 15.',
+            get_settings: function() {
+                const term = H.randInt(0, 15);
+
+                return {
+                    first_term_range_min: term,
+                    first_term_range_max: term,
+                    second_term_range_min: term,
+                    second_term_range_max: term,
+                };
+            }
+        },
+        {
+            display_title: 'Multiply A Number By Itself (within 25)',
+            example_problem: '21\\times 21=\\:?',
+            description: 'Square numbers between 0 and 25.',
+            get_settings: function() {
+                const term = H.randInt(0, 25);
+
+                return {
+                    first_term_range_min: term,
+                    first_term_range_max: term,
+                    second_term_range_min: term,
+                    second_term_range_max: term,
+                };
+            }
+        },
+    ]
 };
 
 export const size_adjustments = {
