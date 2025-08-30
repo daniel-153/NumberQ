@@ -25,10 +25,11 @@
 }
 
 #settings-preset-checkbox {
-  width: 1vw;
-  height: 1vw;
-  min-width: 20px;
-  min-height: 20px;
+  width: 25.5px;
+  height: 25.5px;
+  min-width: 25.5px;
+  min-height: 25.5px;
+  flex-shrink: 0;
 }
 
 #settings-preset-checkbox:hover {
@@ -66,6 +67,7 @@
   width: auto;
   z-index: 9;
   transition: z-index 0ms linear 75ms;
+  flex-shrink: 0;
 }
 
 #presets-menu-toggle-btn[data-preset-menu-status="shown"] {
@@ -109,6 +111,7 @@
     clip-path: polygon(50% 0, 0 100%, 100% 100%);
     background-color: var(--triangle-color);
     transition: transform 75ms ease-in-out;
+    flex-shrink: 0;
 }
 
 #presets-menu-triangle[data-preset-menu-status="shown"] {
@@ -365,6 +368,13 @@
 
     #settings-presets-list {
         width: min(75vw, 300px);
+    }
+
+    #settings-preset-checkbox {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      min-height: 22px;
     }
 }
 
