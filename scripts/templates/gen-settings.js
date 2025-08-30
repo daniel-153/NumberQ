@@ -160,14 +160,14 @@ export const division_result = {
 export const types_of_quadratics = {
     type: 'check_boxes',
     display_name: 'Quadratic Forms',
-    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)^2'],['diff_squares','(x+a)(x-a)'],['no_c_term','ax(x-b)'],['not_factorable','&radic;(b^2-4ac)&ne;k (QF)'],['complex_roots','b^2-4ac<0 (with i)'],['real_solvebyroots','x^2-a'],['complex_solvebyroots','x^2+a']], 
+    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)&sup2;'],['diff_squares','(x+a)(x-a)'],['no_c_term','ax(x-b)'],['not_factorable','&radic;(b&sup2;-4ac)&ne;k (QF)'],['complex_roots','b&sup2;-4ac<0 (with i)'],['real_solvebyroots','x&sup2;-a'],['complex_solvebyroots','x&sup2;+a']], 
     tooltip: 'Which forms of quadratic equations should be included?' 
 };
 
 export const leading_coef = {
     type: 'single_textbox',
     display_name: "Common Factor",
-    tooltip: "What should the common factor of the terms C(ax^2+bx+c) be? (enter a non-zero integer from -10 to 10)",
+    tooltip: "What should the common factor of the terms C(ax&sup2;+bx+c) be? (enter a non-zero integer from -10 to 10)",
     valid_values: [ -10, '--', 10 ],
     excluded_values: [0],
     default_value: 1
