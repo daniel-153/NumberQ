@@ -160,7 +160,7 @@ export const division_result = {
 export const types_of_quadratics = {
     type: 'check_boxes',
     display_name: 'Quadratic Forms',
-    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)&sup2;'],['diff_squares','(x+a)(x-a)'],['no_c_term','ax(x-b)'],['not_factorable','&radic;(b&sup2;-4ac)&ne;k (QF)'],['complex_roots','b&sup2;-4ac<0 (with i)'],['real_solvebyroots','x&sup2;-a'],['complex_solvebyroots','x&sup2;+a']], 
+    check_boxes: [['two_integer_factors','(x-a)(x-b)'],['two_non_integer_factors','(ax-b)(cx-d)'],['perf_square','(x-a)&sup2;'],['diff_squares','(x+a)(x-a)'],['no_c_term','x(x-a)'],['not_factorable','&radic;(b&sup2;-4ac)&ne;k (QF)'],['complex_roots','b&sup2;-4ac<0 (with i)'],['real_solvebyroots','x&sup2;-a'],['complex_solvebyroots','x&sup2;+a']], 
     tooltip: 'Which forms of quadratic equations should be included?' 
 };
 
