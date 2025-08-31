@@ -1389,7 +1389,7 @@ export const presets = {
     default: function() {
         return {
             var_iso_var_letters: 'rand_lower_except',
-            var_iso_eq_type: 'random',
+            var_iso_eq_type: 'numerical_random_forms',
             var_iso_num_vars: 'random',
             var_iso_solving_var: 'any',
             var_iso_match_form: 'yes',
