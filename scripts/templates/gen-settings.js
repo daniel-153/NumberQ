@@ -1180,3 +1180,87 @@ export const divint_zero_rule = {
     ], 
     tooltip: "Should zero be allowed in the division? (note that if the divisor is zero, the answer will be 'undefined')"
 };
+
+export const sim_sqrt_term_order = {
+    type: 'radio_buttons',
+    display_name: 'Term Order',
+    radio_buttons: [
+        ['a_b', '\\(a + \\sqrt{b}\\)&nbsp;'],
+        ['b_a', '\\(\\sqrt{b} + a\\)&nbsp;'],
+        ['random', 'Random']
+    ], 
+    tooltip: 'When a sum of an integer and a square root appears, how should it be ordered?'
+};
+
+export const sim_sqrt_forms = {
+    type: 'radio_buttons',
+    display_name: 'Expression Form',
+    radio_buttons: [
+        ['all_basic','All Basic Operations:','radio-sub-label'],
+        ['basic_1','\\sqrt{a}','radio-math'],
+        ['basic_2','a\\sqrt{b}','radio-math'],
+        ['basic_3','\\sqrt{a}\\cdot\\sqrt{b}','radio-math'],
+        ['basic_4','\\sqrt{a}+\\sqrt{b}','radio-math'],
+        ['all_begin','All Beginner Forms:','radio-sub-label'],
+        ['begin_1','\\frac{a}{\\sqrt{b}}','radio-math'],
+        ['begin_2','\\frac{\\sqrt{a}}{\\sqrt{b}}','radio-math'],
+        ['begin_3','\\sqrt{a}+\\sqrt{b}+\\sqrt{c}','radio-math'],
+        ['begin_4','\\frac{a\\sqrt{b}}{\\sqrt{c}}','radio-math'],
+        ['begin_5','\\sqrt{a}\\cdot\\sqrt{b}\\cdot\\sqrt{c}','radio-math'],
+        ['begin_6','(a+\\sqrt{b})+(c+\\sqrt{d})','radio-math'],
+        ['begin_7','\\sqrt{\\frac{a}{b}}','radio-math'],
+        ['begin_8','a\\sqrt{b}\\cdot c\\sqrt{d}','radio-math'],
+        ['begin_9','a\\sqrt{b} + c\\sqrt{d}','radio-math'],
+        ['begin_10','a(b+\\sqrt{c})','radio-math'],
+        ['begin_11','\\sqrt{a}(b+\\sqrt{c})','radio-math'],
+        ['all_inter','All Intermediate Forms:','radio-sub-label'],
+        ['inter_1','(a+\\sqrt{b})^{2}','radio-math'],
+        ['inter_2','\\frac{\\sqrt{a}\\cdot\\sqrt{b}}{\\sqrt{c}}','radio-math'],
+        ['inter_3','\\frac{a}{b+\\sqrt{c}}','radio-math'],
+        ['inter_4','\\frac{a+\\sqrt{b}}{c+\\sqrt{d}}','radio-math'],
+        ['inter_5','(a+\\sqrt{b})(c+\\sqrt{d})','radio-math'],
+        ['inter_6','\\sqrt{a}+\\sqrt{b}+\\sqrt{c}+\\sqrt{d}','radio-math'],
+        ['inter_7','\\frac{a}{b\\sqrt{c}}','radio-math'],
+        ['inter_8','\\frac{a\\sqrt{b}}{c\\sqrt{d}}','radio-math'],
+        ['inter_9','\\frac{a+\\sqrt{b}}{\\sqrt{c}}','radio-math'],
+        ['inter_10','\\frac{\\sqrt{a}}{b+\\sqrt{c}}','radio-math'],
+        ['inter_11','a\\sqrt{b}+c\\sqrt{d}+e\\sqrt{f}','radio-math'],
+        ['inter_12','\\frac{a}{\\sqrt{b}+\\sqrt{c}}','radio-math'],
+        ['inter_13','\\frac{a}{\\sqrt{b}}+\\frac{c}{\\sqrt{d}}','radio-math'],
+        ['inter_14','\\frac{\\sqrt{a}}{\\sqrt{b}+\\sqrt{c}}','radio-math'],
+        ['inter_15','\\frac{a}{b\\sqrt{c}+d\\sqrt{e}}','radio-math']
+    ],
+    tooltip: 'What kind of linear equation should be used? (Beginner, Intermediate, or Advanced forms)' 
+};
+
+export const sim_sqrt_number_size = {
+    type: 'radio_buttons',
+    display_name: 'Number Size',
+    radio_buttons: [
+        ['small', 'Small'],
+        ['medium', 'Medium'],
+        ['large', 'Large']
+    ], 
+    tooltip: 'Should the coefficients in the expression be small, medium, or large?'
+};
+
+export const sim_sqrt_allow_negatives = {
+    type: 'radio_buttons',
+    display_name: 'Allow Negatives',
+    radio_buttons: [
+        ['yes','Yes'],
+        ['no','No']
+    ], 
+    tooltip: "Should negative numbers or subtractions be allowed in the expressions?"
+};
+
+export const sim_sqrt_frac_rule = {
+    type: 'radio_buttons',
+    display_name: 'Simplify Irreducible Fractions',
+    radio_buttons: [
+        ['together', 'Together \\(\\frac{a+\\sqrt{b}}{c}\\)&nbsp;'],
+        ['separate', 'Separate \\(\\frac{a}{c}+\\frac{\\sqrt{b}}{c}\\)&nbsp;']
+    ], 
+    tooltip: 'How should irreducible fractions in (a+&radic;b)/c form be simplified?',
+    prelocked: true
+};
