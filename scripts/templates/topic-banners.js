@@ -82,12 +82,12 @@ export const templates = [
         short_name: 'system'
     },
     {
-        function_name: 'genSimRad',
+        function_name: 'genSimSqrt',
         category_class_name: 'algebra-gen',
-        display_name: 'Simplify Radicals',
+        display_name: 'Simplify Square Roots',
         display_category: 'algebra',
         example_problem: '\\sqrt{27}+\\sqrt{75}',
-        short_name: 'radical'
+        short_name: 'square-root'
     },
     {
         function_name: 'genPyTheo',
