@@ -1192,7 +1192,7 @@ export const sim_sqrt_term_order = {
     tooltip: 'When a sum of an integer and a square root appears, how should it be ordered?'
 };
 
-export const sim_sqrt_forms = {
+export const sim_sqrt_form = {
     type: 'radio_buttons',
     display_name: 'Expression Form',
     radio_buttons: [
@@ -1230,18 +1230,7 @@ export const sim_sqrt_forms = {
         ['inter_14','\\frac{\\sqrt{a}}{\\sqrt{b}+\\sqrt{c}}','radio-math'],
         ['inter_15','\\frac{a}{b\\sqrt{c}+d\\sqrt{e}}','radio-math']
     ],
-    tooltip: 'What kind of linear equation should be used? (Beginner, Intermediate, or Advanced forms)' 
-};
-
-export const sim_sqrt_number_size = {
-    type: 'radio_buttons',
-    display_name: 'Number Size',
-    radio_buttons: [
-        ['small', 'Small'],
-        ['medium', 'Medium'],
-        ['large', 'Large']
-    ], 
-    tooltip: 'Should the coefficients in the expression be small, medium, or large?'
+    tooltip: 'What kind of expressions should appear? (basic, beginner, or intermediate forms)' 
 };
 
 export const sim_sqrt_allow_negatives = {
