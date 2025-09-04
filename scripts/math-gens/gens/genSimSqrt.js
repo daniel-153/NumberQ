@@ -311,7 +311,7 @@ const SRH = {
                     
                     if (pm[0] === -1 && b === a) pm[0] = 1;
                     if (pm[1] === -1 && c === a) pm[1] = 1;
-                    if (pm[1] === 1 && c === b) pm[1] = 1; 
+                    if (c === b && pm[0]*pm[1] === -1) pm[H.randInt(0, 1)] *= (-1); 
 
 
                     return {
@@ -543,140 +543,593 @@ const SRH = {
                     ans_den: b
                 })
             },
-            begin_8: (a,b,c,d) => ({
-                prompt_str: `${a}\\sqrt{${b}}\\cdot ${c}\\sqrt{${d}}`,
-                radicand_groups: [[b], [d]],
-                ans_num_int: 0,
-                ans_num_radics: [[a*c, b*d]],
-                ans_den: 1,
-                non_1: [a, c]
-            }),
-            begin_9: (a,b,c,d) => ({
-                prompt_str: `${a}\\sqrt{${b}} ${SRH.pm(Math.sign(c))} ${Math.abs(c)}\\sqrt{${d}}`,
-                radicand_groups: [[b, d]],
-                ans_num_int: 0,
-                ans_num_radics: [[a, b], [c, d]],
-                ans_den: 1,
-                non_1: [a, c],
-                allow_neg: true
-            }),
-            begin_10: (a,b,c, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `${a}(${b} ${SRH.pm(pm[0])} \\sqrt{${c}})`,
-                radicand_groups: [[c]],
-                ans_num_int: a*b,
-                ans_num_radics: [[pm[0]*a, c]],
-                ans_den: 1,
-                non_1: [a],
-                allow_neg: true
-            }),
-            begin_11: (a,b,c, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `\\sqrt{${a}}(${b} ${SRH.pm(pm[0])} \\sqrt{${c}})`,
-                radicand_groups: [[a, c]],
-                ans_num_int: pm[0] * Math.sqrt(a*c),
-                ans_num_radics: [[b, a]],
-                ans_den: 1,
-                allow_neg: true
-            }),
+            begin_8: {
+                select: (allow_negatives) => {
+                    let a = H.randInt(2, 5);
+                    let c = H.randInt(2, 5);
+
+                    if (allow_negatives && H.randInt(1, 4) === 4) a *= (-1)**H.randInt(0, 1);
+
+                    const possible_radics = SRH.squareFreeIntList(7);
+
+                    let b, d;
+                    if (H.randInt(0, 1)) {
+                        b = H.randFromList(possible_radics);
+                        d = H.randFromList(H.removeFromArray(b, possible_radics));
+
+                        if (Math.random() > 0.6) {
+                            const possible_squares = [];
+                            H.integerArray(1, 6).map(val => val**2).forEach(square => {
+                                if (b * square <= 35) possible_squares.push(square);
+                            });
+
+                            b *= H.randFromList(possible_squares);
+                        }
+                    }
+                    else {
+                        d = H.randFromList(possible_radics);
+                        b = H.randFromList(H.removeFromArray(d, possible_radics));
+
+                        if (Math.random() > 0.6) {
+                            const possible_squares = [];
+                            H.integerArray(1, 6).map(val => val**2).forEach(square => {
+                                if (d * square <= 35) possible_squares.push(square);
+                            });
+
+                            d *= H.randFromList(possible_squares);
+                        }
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d
+                    }
+                },
+                create: (a,b,c,d) => ({
+                    prompt_str: `${a}\\sqrt{${b}}\\cdot ${c}\\sqrt{${d}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[a*c, b*d]],
+                    ans_den: 1
+                })
+            },
+            begin_9: {
+                select: (allow_negatives) => {
+                    let a = H.randInt(2, 5);
+                    let c = H.randInt(2, 5);
+
+                    if (allow_negatives) {
+                        a *= (-1)**H.randInt(0, 1);
+                        c *= (-1)**H.randInt(0, 1);
+                    }
+
+                    const common_radicand = SRH.squareFreeRand(10);
+                    let b = common_radicand;
+                    let d = common_radicand;
+
+                    let possible_squares;
+                    if (common_radicand <= 5) {
+                        possible_squares = H.integerArray(2, 5).map(val => val**2);
+                    }
+                    else {
+                        possible_squares = H.integerArray(2, 3).map(val => val**2);
+                    }
+
+                    if (Math.random() > 0.4) {
+                        if (H.randInt(0, 1)) {
+                            const b_factor = H.randFromList(possible_squares);
+                            b *= b_factor
+
+                            if (H.randInt(1, 3) === 3) {
+                                d *= H.randFromList(H.removeFromArray(b_factor, possible_squares));
+                            }
+                        }
+                        else {
+                            const d_factor = H.randFromList(possible_squares);
+                            d *= d_factor
+
+                            if (H.randInt(1, 3) === 3) {
+                                b *= H.randFromList(H.removeFromArray(d_factor, possible_squares));
+                            }
+                        }
+                    }
+
+                    if (b === d && a + c === 0) {
+                        (H.randInt(0, 1))? (a *= (-1)) : (c *= (-1)); 
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d
+                    }
+                },
+                create: (a,b,c,d) => ({
+                    prompt_str: `${a}\\sqrt{${b}} ${SRH.pm(Math.sign(c))} ${Math.abs(c)}\\sqrt{${d}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[a, b], [c, d]],
+                    ans_den: 1
+                })
+            },
+            begin_10: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+
+                    let a, b;
+                    if (H.randInt(0, 1)) {
+                        a = H.randInt(2, 10);
+                        b = H.randInt(1, 5);
+                    }
+                    else {
+                        a = H.randInt(2, 5);
+                        b = H.randInt(1, 10);
+                    }
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        a *= (-1)**H.randInt(0, 1);
+                        b *= (-1)**H.randInt(0, 1);
+                    }
+
+                    let c = SRH.squareFreeRand(13);
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b,c, ...pm) => ({
+                    prompt_str: `${a}(${b} ${SRH.pm(pm[0])} \\sqrt{${c}})`,
+                    radicand_groups: [[c]],
+                    ans_num_int: a*b,
+                    ans_num_radics: [[pm[0]*a, c]],
+                    ans_den: 1
+                })
+            },
+            begin_11: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let b = H.randInt(2, 6);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        b *= (-1) **H.randInt(0, 1);
+                    }
+
+                    const common_radicand = SRH.squareFreeRand(7);
+
+                    let a = common_radicand;
+                    let c = common_radicand;
+                    if (H.randInt(0, 1)) {
+                        const factor_limit = {'2': 5, '3': 4, '5': 3, '6': 2, '7': 2}[String(common_radicand)];
+
+                        const chosen_square_factor = H.randFromList(H.integerArray(2, factor_limit).map(val => val**2));
+                        if (H.randInt(1, 3) === 3) {
+                            a *= chosen_square_factor;
+                        }
+                        else if (H.randInt(0, 1)) {
+                            c *= chosen_square_factor;
+                        }
+                        else {
+                            const factor_sqrt = Math.sqrt(chosen_square_factor);
+                            a *= factor_sqrt;
+                            c *= factor_sqrt;
+                        }
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b,c, ...pm) => ({
+                    prompt_str: `\\sqrt{${a}}(%${b} ${SRH.pm(pm[0])} \\sqrt{${c}}%)`,
+                    radicand_groups: [[a, c]],
+                    ans_num_int: pm[0] * Math.sqrt(a*c),
+                    ans_num_radics: [[b, a]],
+                    ans_den: 1
+                })
+            },
         },
         inter: {
-            inter_1: (a,b, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `(${a} ${SRH.pm(pm[0])} \\sqrt{${b}})^{2}`,
-                radicand_groups: [[b]],
-                ans_num_int: a**2 + b,
-                ans_num_radics: [[2*pm[0]*a, b]],
-                ans_den: 1,
-                allow_neg: true
-            }),
-            inter_2: (a,b,c) => ({
-                prompt_str: `\\frac{\\sqrt{${a}}\\cdot\\sqrt{${b}}}{\\sqrt{${c}}}`,
-                radicand_groups: [[a], [b], [c]],
-                ans_num_int: 0,
-                ans_num_radics: [[1, a*b*c]],
-                ans_den: c,
-            }),
-            inter_3: (a,b,c, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `\\frac{${a}}{${b} ${SRH.pm(pm[0])} \\sqrt{${c}}}`,
-                radicand_groups: [[c]],
-                ans_num_int: a*b,
-                ans_num_radics: [[-pm[0]*a, c]],
-                ans_den: b**2 - c,
-                allow_neg: true
-            }),
-            inter_4: (a,b,c,d, ...pm) => ({
-                pm_count: 2,
-                prompt_str: `\\frac{${a} ${SRH.pm(pm[0])} \\sqrt{${b}}}{${c} ${SRH.pm(pm[1])} \\sqrt{${d}}}`,
-                radicand_groups: [[b, d]],
-                ans_num_int: a*c - pm[0]*pm[1]*Math.sqrt(b*d),
-                ans_num_radics: [[-pm[1]*a, d], [pm[0]*c, b]],
-                ans_den: c**2 - d,
-                allow_neg: true
-            }),
-            inter_5: (a,b,c,d, ...pm) => ({
-                pm_count: 2,
-                prompt_str: `(${a} ${SRH.pm(pm[0])} \\sqrt{${b}})(${c} ${SRH.pm(pm[1])} \\sqrt{${d}})`,
-                radicand_groups: [[b, d]],
-                ans_num_int: a*c + pm[0]*pm[1]*Math.sqrt(b*d),
-                ans_num_radics: [[pm[1]*a, d], [pm[0]*c, b]],
-                ans_den: 1,
-                allow_neg: true
-            }),
-            inter_6: (a,b,c,d, ...pm) => ({
-                pm_count: 3,
-                prompt_str: `\\sqrt{${a}} ${SRH.pm(pm[0])} \\sqrt{${b}} ${SRH.pm(pm[1])} \\sqrt{${c}} ${SRH.pm(pm[2])} \\sqrt{${d}}`,
-                radicand_groups: [[a, b, c, d]],
-                ans_num_int: 0,
-                ans_num_radics: [[1, a], [pm[0], b], [pm[1], c], [pm[2], d]],
-                ans_den: 1,
-            }),
-            inter_7: (a,b,c) => ({
-                prompt_str: `\\frac{${a}}{${b}\\sqrt{${c}}}`,
-                radicand_groups: [[c]],
-                ans_num_int: 0,
-                ans_num_radics: [[a, c]],
-                ans_den: b*c,
-                non_1: [b],
-                allow_neg: true
-            }),
-            inter_8: (a,b,c,d) => ({
-                prompt_str: `\\frac{${a}\\sqrt{${b}}}{${c}\\sqrt{${d}}}`,
-                radicand_groups: [[b], [d]],
-                ans_num_int: 0,
-                ans_num_radics: [[a, b*d]],
-                ans_den: c*d,
-                non_1: [a, c],
-                allow_neg: true
-            }),
-            inter_9: (a,b,c, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `\\frac{${a} ${SRH.pm(pm[0])} \\sqrt{${b}}}{\\sqrt{${c}}}`,
-                radicand_groups: [[b, c]],
-                ans_num_int: pm[0]*Math.sqrt(b*c),
-                ans_num_radics: [[a, c]],
-                ans_den: 1,
-                allow_neg: true
-            }),
-            inter_10: (a,b,c, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `\\frac{\\sqrt{${a}}}{${b} ${SRH.pm(pm[0])} \\sqrt{${c}}}`,
-                radicand_groups: [[a, c]],
-                ans_num_int: -pm[0]*Math.sqrt(a*c),
-                ans_num_radics: [[b, a]],
-                ans_den: b**2 - c,
-                allow_neg: true
-            }),
-            inter_11: (a,b,c,d,e,f) => ({
-                prompt_str: `${a}\\sqrt{${b}} ${SRH.pm(Math.sign(c))} ${Math.abs(c)}\\sqrt{${d}} ${SRH.pm(Math.sign(e))} ${Math.abs(e)}\\sqrt{${f}}`,
-                radicand_groups: [[b, d, f]],
-                ans_num_int: 0,
-                ans_num_radics: [[a, b], [c, d], [e, f]],
-                ans_den: 1,
-                non_1: [a,c,e],
-                allow_neg: true
-            }),
+            inter_1: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let a = H.randInt(1, 6);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        a *= (-1)**H.randInt(0, 1);
+                    }
+
+                    let b = SRH.squareFreeRand(11);
+
+                    return {
+                        a: a,
+                        b: b,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b, ...pm) => ({
+                    prompt_str: `(%${a} ${SRH.pm(pm[0])} \\sqrt{${b}}%)^{2}`,
+                    ans_num_int: a**2 + b,
+                    ans_num_radics: [[2*pm[0]*a, b]],
+                    ans_den: 1
+                })
+            },
+            inter_2: {
+                select: (allow_negatives) => {
+                    const possible_abc = [];
+                    const square_free_limit = 7;
+                    SRH.squareFreeIntList(square_free_limit).forEach(a => {
+                        SRH.squareFreeIntList(square_free_limit).forEach(b => {
+                            SRH.squareFreeIntList(square_free_limit).forEach(c => {
+                                if (a*b*c <= 75 && c !== a && c !== b) {
+                                    possible_abc.push([a,b,c]);
+                                }
+                            });
+                        });
+                    });
+
+                    let [a, b, c] = H.randFromList(possible_abc);
+
+                    if (H.randInt(1, 4) === 4) {
+                        if (H.randInt(1, 3) === 3) {
+                            a = a**2;
+                        }
+                        else if (H.randInt(0, 1)) {
+                            b = b**2;
+                        }
+                        else {
+                            c = c**2;
+                        }
+                    }
+                    
+                    return {
+                        a: a,
+                        b: b,
+                        c: c
+                    }
+                },
+                create: (a,b,c) => ({
+                    prompt_str: `\\frac{\\sqrt{${a}}\\cdot\\sqrt{${b}}}{\\sqrt{${c}}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[1, a*b*c]],
+                    ans_den: c,
+                })
+            },
+            inter_3: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let a = H.randInt(1, 5);
+                    let b = H.randInt(1, 5);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        a *= (-1)**H.randInt(0, 1);
+                        b *= (-1)**H.randInt(0, 1);
+                    }
+
+                    let c = SRH.squareFreeRand(11);
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b,c, ...pm) => ({
+                    prompt_str: `\\frac{${a}}{%${b} ${SRH.pm(pm[0])} \\sqrt{${c}}%}`,
+                    ans_num_int: a*b,
+                    ans_num_radics: [[-pm[0]*a, c]],
+                    ans_den: b**2 - c
+                })
+            },
+            inter_4: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let pm1 = 1;
+                    let a = H.randInt(1, 5);
+                    let c = H.randInt(1, 5);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        pm1 *= (-1)**H.randInt(0, 1);
+                        a *= (-1)**H.randInt(0, 1);
+                        c *= (-1)**H.randInt(0, 1);
+                    }
+
+                    const common_radicand = SRH.squareFreeRand(11);
+                    let b = common_radicand;
+                    let d = common_radicand;
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d,
+                        pm0: pm0,
+                        pm1: pm1
+                    }
+                },
+                create: (a,b,c,d, ...pm) => ({
+                    prompt_str: `\\frac{%${a} ${SRH.pm(pm[0])} \\sqrt{${b}}%}{%${c} ${SRH.pm(pm[1])} \\sqrt{${d}}%}`,
+                    ans_num_int: a*c - pm[0]*pm[1]*Math.sqrt(b*d),
+                    ans_num_radics: [[-pm[1]*a, d], [pm[0]*c, b]],
+                    ans_den: c**2 - d
+                })
+            },
+            inter_5: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let pm1 = 1;
+                    let a = H.randInt(1, 5);
+                    let c = H.randInt(1, 5);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        pm1 *= (-1)**H.randInt(0, 1);
+                        a *= (-1)**H.randInt(0, 1);
+                        c *= (-1)**H.randInt(0, 1);
+                    }
+
+                    const common_radicand = SRH.squareFreeRand(11);
+                    let b = common_radicand;
+                    let d = common_radicand;
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d,
+                        pm0: pm0,
+                        pm1: pm1
+                    }
+                },
+                create: (a,b,c,d, ...pm) => ({
+                    prompt_str: `(%${a} ${SRH.pm(pm[0])} \\sqrt{${b}}%)(%${c} ${SRH.pm(pm[1])} \\sqrt{${d}}%)`,
+                    ans_num_int: a*c + pm[0]*pm[1]*Math.sqrt(b*d),
+                    ans_num_radics: [[pm[1]*a, d], [pm[0]*c, b]],
+                    ans_den: 1
+                })
+            },
+            inter_6: {
+                select: (allow_negatives) => {
+                    const pm = [];
+                    for (let i = 0; i < 3; i++) {
+                        pm.push((allow_negatives? (-1)**H.randInt(0, 1) : 1));
+                    }
+
+                    pm[-1] = 1;
+                    const common_radicand = SRH.squareFreeRand(10);
+                    const possible_squares = H.integerArray(1, 5).map(val => val**2);
+                    const abcd = [];
+                    for (let i = 0; i < 4; i++) {
+                        abcd.push(common_radicand * H.randFromList(possible_squares));
+
+                        for (let j = i - 1; j >= 0; j--) {
+                            if (pm[j - 1] * abcd[j] + pm[i - 1] * abcd[i] === 0) {
+                                pm[i - 1] *= (-1);
+                            }
+                        }
+                    }
+
+                    return {
+                        a: abcd[0],
+                        b: abcd[1],
+                        c: abcd[2],
+                        d: abcd[3],
+                        pm0: pm[0],
+                        pm1: pm[1] ,
+                        pm2: pm[2]  
+                    }
+                },
+                create: (a,b,c,d, ...pm) => ({
+                    prompt_str: `\\sqrt{${a}} ${SRH.pm(pm[0])} \\sqrt{${b}} ${SRH.pm(pm[1])} \\sqrt{${c}} ${SRH.pm(pm[2])} \\sqrt{${d}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[1, a], [pm[0], b], [pm[1], c], [pm[2], d]],
+                    ans_den: 1
+                })
+            },
+            inter_7: {
+                select: (allow_negatives) => {
+                    let a = H.randInt(1, 10);
+                    let b = H.randInt(2, 6);
+                    
+                    if (allow_negatives) {
+                        a *= (-1)**H.randInt(0, 1);
+                        b *= (-1)**H.randInt(0, 1);
+                    }
+
+                    let c = SRH.squareFreeRand(11);
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c
+                    }
+                },
+                create: (a,b,c) => ({
+                    prompt_str: `\\frac{${a}}{${b}\\sqrt{${c}}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[a, c]],
+                    ans_den: b*c
+                })
+            },
+            inter_8: {
+                select: (allow_negatives) => {
+                    let a = H.randInt(2, 10);
+                    let c = H.randInt(2, 6);
+
+                    if (allow_negatives) {
+                        a *= (-1)**H.randInt(0, 1);
+                        c *= (-1)**H.randInt(0, 1);
+                    }
+
+                    let b, d;
+                    if (H.randInt(0, 1)) {
+                        b = SRH.squareFreeRand(10);
+                        d = H.randFromList(H.removeFromArray(b, SRH.squareFreeIntList(10)));
+                    }
+                    else {
+                        d = SRH.squareFreeRand(10);
+                        b = H.randFromList(H.removeFromArray(d, SRH.squareFreeIntList(10)));
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d
+                    }
+                },
+                create: (a,b,c,d) => ({
+                    prompt_str: `\\frac{${a}\\sqrt{${b}}}{${c}\\sqrt{${d}}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[a, b*d]],
+                    ans_den: c*d
+                })
+            },
+            inter_9: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let a = H.randInt(1, 10);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        a *= (-1)**H.randInt(0, 1);
+                    }
+
+                    const common_radicand = SRH.squareFreeRand(7);
+                    let possible_squares;
+                    if (common_radicand <= 3) {
+                        possible_squares = [4, 9, 16];
+                    }
+                    else {
+                        possible_squares = [4, 9];
+                    }
+
+
+                    let b = common_radicand;
+                    let c = common_radicand;
+                    if (H.randInt(0, 1)) {
+                        b *= H.randFromList(possible_squares);
+
+                        if (H.randInt(1, 6) === 6) b = c;
+                    }
+                    else {
+                        c *= H.randFromList(possible_squares);
+
+                        if (H.randInt(1, 6) === 6) c = b;
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b,c, ...pm) => ({
+                    prompt_str: `\\frac{%${a} ${SRH.pm(pm[0])} \\sqrt{${b}}%}{\\sqrt{${c}}}`,
+                    ans_num_int: pm[0]*Math.sqrt(b*c),
+                    ans_num_radics: [[a, c]],
+                    ans_den: c
+                })
+            },
+            inter_10: {
+                select: (allow_negatives) => {
+                    let pm0 = 1;
+                    let b = H.randInt(1, 7);
+
+                    if (allow_negatives) {
+                        pm0 *= (-1)**H.randInt(0, 1);
+                        b *= (-1)**H.randInt(0, 1);
+                    }
+
+                    const common_radicand = SRH.squareFreeRand(11);
+                    let a = common_radicand;
+                    let c = common_radicand;
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b,c, ...pm) => ({
+                    prompt_str: `\\frac{\\sqrt{${a}}}{%${b} ${SRH.pm(pm[0])} \\sqrt{${c}}%}`,
+                    ans_num_int: -pm[0]*Math.sqrt(a*c),
+                    ans_num_radics: [[b, a]],
+                    ans_den: b**2 - c
+                })
+            },
+            inter_11: {
+                select: (allow_negatives) => {
+                    const ace = [];
+                    for (let i = 0; i < 3; i++) {
+                        ace.push((allow_negatives? (-1)**H.randInt(0, 1) * H.randInt(2, 5) : H.randInt(2, 5)));
+                    }
+
+                    let [a, c, e] = ace;
+
+                    const common_radicand = SRH.squareFreeRand(10);
+
+                    let possible_squares;
+                    if (common_radicand <= 5) {
+                        possible_squares = H.integerArray(2, 5).map(val => val**2);
+                    }
+                    else {
+                        possible_squares = H.integerArray(2, 3).map(val => val**2);
+                    }
+
+                    const det = new Array(3).fill(null).map(_ => H.randInt(0, 2));
+                    const bdf = new Array(3).fill(null).map(_ => common_radicand);
+                    for (let i = 0; i < 3; i++) {
+                        if (det[i] === 0) {
+                            bdf[i] *= H.randFromList(possible_squares);
+                        }
+                        else if (det[i] === 1) {
+                            bdf[i] *= H.randFromList(possible_squares.slice(0, Math.floor(possible_squares.length / 2)))
+                        }
+                    }
+
+                    let [b, d, f] = bdf;
+
+                    if (b === d && a + c === 0) {
+                        (H.randInt(0, 1))? (a *= -1) : (c *= -1);
+                    }
+                    if (b === f && a + e === 0) {
+                        (H.randInt(0, 1))? (a *= -1) : (e *= -1);
+                    }
+                    if (d === f && c + e === 0) {
+                        (H.randInt(0, 1))? (c *= -1) : (e *= -1);
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d,
+                        e: e,
+                        f: f
+                    }
+                },
+                create: (a,b,c,d,e,f) => ({
+                    prompt_str: `${a}\\sqrt{${b}} ${SRH.pm(Math.sign(c))} ${Math.abs(c)}\\sqrt{${d}} ${SRH.pm(Math.sign(e))} ${Math.abs(e)}\\sqrt{${f}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: [[a, b], [c, d], [e, f]],
+                    ans_den: 1
+                })
+            },
             inter_12: (a,b,c, ...pm) => ({
                 pm_count: 1,
                 prompt_str: `\\frac{${a}}{\\sqrt{${b}} ${SRH.pm(pm[0])} \\sqrt{${c}}}`,
@@ -849,7 +1302,7 @@ export default function genSimSqrt(settings) {
     }
     else if (num_int !== 0 && num_root_front !== 0) { // ans has both an int and radic part
         const den_sign = Math.sign(den);
-        const expr_signed_gcf = PH.GCF(Math.abs(num_int), Math.abs(num_root_front), den) * den_sign;
+        const expr_signed_gcf = PH.GCF(Math.abs(num_int), Math.abs(num_root_front), Math.abs(den)) * den_sign;
         den /= expr_signed_gcf;
         num_int /= expr_signed_gcf;
         num_root_front /= expr_signed_gcf;
