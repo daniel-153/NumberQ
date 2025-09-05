@@ -1185,8 +1185,8 @@ export const sim_sqrt_term_order = {
     type: 'radio_buttons',
     display_name: 'Term Order',
     radio_buttons: [
-        ['a_b', '\\(a + \\sqrt{b}\\)&nbsp;'],
-        ['b_a', '\\(\\sqrt{b} + a\\)&nbsp;'],
+        ['a_plus_root_b', '\\(a + \\sqrt{b}\\)&nbsp;'],
+        ['root_b_plus_a', '\\(\\sqrt{b} + a\\)&nbsp;'],
         ['random', 'Random']
     ], 
     tooltip: 'When a sum of an integer and a square root appears, how should it be ordered?'
@@ -1196,12 +1196,12 @@ export const sim_sqrt_form = {
     type: 'radio_buttons',
     display_name: 'Expression Form',
     radio_buttons: [
-        ['all_basic','All Basic Operations:','radio-sub-label'],
+        ['all_basic','All Beginner Forms:','radio-sub-label'],
         ['basic_1','\\sqrt{a}','radio-math'],
         ['basic_2','a\\sqrt{b}','radio-math'],
         ['basic_3','\\sqrt{a}\\cdot\\sqrt{b}','radio-math'],
         ['basic_4','\\sqrt{a}+\\sqrt{b}','radio-math'],
-        ['all_begin','All Beginner Forms:','radio-sub-label'],
+        ['all_begin','All Intermediate Forms:','radio-sub-label'],
         ['begin_1','\\frac{a}{\\sqrt{b}}','radio-math'],
         ['begin_2','\\frac{\\sqrt{a}}{\\sqrt{b}}','radio-math'],
         ['begin_3','\\sqrt{a}+\\sqrt{b}+\\sqrt{c}','radio-math'],
@@ -1213,7 +1213,7 @@ export const sim_sqrt_form = {
         ['begin_9','a\\sqrt{b} + c\\sqrt{d}','radio-math'],
         ['begin_10','a(b+\\sqrt{c})','radio-math'],
         ['begin_11','\\sqrt{a}(b+\\sqrt{c})','radio-math'],
-        ['all_inter','All Intermediate Forms:','radio-sub-label'],
+        ['all_inter','All Advanced Forms:','radio-sub-label'],
         ['inter_1','(a+\\sqrt{b})^{2}','radio-math'],
         ['inter_2','\\frac{\\sqrt{a}\\cdot\\sqrt{b}}{\\sqrt{c}}','radio-math'],
         ['inter_3','\\frac{a}{b+\\sqrt{c}}','radio-math'],
@@ -1230,7 +1230,7 @@ export const sim_sqrt_form = {
         ['inter_14','\\frac{\\sqrt{a}}{\\sqrt{b}+\\sqrt{c}}','radio-math'],
         ['inter_15','\\frac{a}{b\\sqrt{c}+d\\sqrt{e}}','radio-math']
     ],
-    tooltip: 'What kind of expressions should appear? (basic, beginner, or intermediate forms)' 
+    tooltip: 'What kind of expressions should appear? (Beginner, Intermediate, or Advanced forms)' 
 };
 
 export const sim_sqrt_allow_negatives = {
