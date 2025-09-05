@@ -1220,23 +1220,146 @@ const SRH = {
                     ans_den: b*d
                 })
             },
-            inter_14: (a,b,c, ...pm) => ({
-                pm_count: 1,
-                prompt_str: `\\frac{\\sqrt{${a}}}{\\sqrt{${b}} ${SRH.pm(pm[0])} \\sqrt{${c}}}`,
-                radicand_groups: [[a, b], [c]],
-                ans_num_int: Math.sqrt(a*b),
-                ans_num_radics: [[-pm[0], a*c]],
-                ans_den: b - c
-            }),
-            inter_15: (a,b,c,d,e) => ({
-                prompt_str: `\\frac{${a}}{${b}\\sqrt{${c}} ${SRH.pm(Math.sign(d))} ${Math.abs(d)}\\sqrt{${e}}}`,
-                radicand_groups: [[c, e]],
-                ans_num_int: 0,
-                ans_num_radics: [[-a*d, e], [a*b, c]],
-                ans_den: b**2 * c - d**2 * e,
-                non_1: [b,d],
-                allow_neg: true
-            }),
+            inter_14: {
+                select: (allow_negatives) => {
+                    let pm0 = (allow_negatives? (-1)**H.randInt(0, 1) : 1);
+
+                    let a, b, c;
+                    const square_free_lim = 7;
+                    if (H.randInt(1, 3) === 3) {
+                        const common_radicand = SRH.squareFreeRand(square_free_lim);
+                        a = common_radicand;
+
+                        if (H.randInt(0, 1)) { 
+                            b = common_radicand;
+                            c = H.randFromList(H.removeFromArray(common_radicand, SRH.squareFreeIntList(square_free_lim)));
+                        }
+                        else {
+                            c = common_radicand;
+                            b = H.randFromList(H.removeFromArray(common_radicand, SRH.squareFreeIntList(square_free_lim)));
+                        }
+                    }
+                    else if (H.randInt(0, 1)) {
+                        const common_radicand = SRH.squareFreeRand(square_free_lim);
+                        a = b = c = common_radicand;
+                        const possible_squares = H.integerArray(2, ((common_radicand <= 5)? 5 : 3)).map(val => val**2);
+
+                        if (H.randInt(1, 3) === 3) {
+                            a *= H.randFromList(possible_squares);
+
+                            if (H.randInt(1, 3) === 3) {
+                                (H.randInt(0, 1))? b *= H.randFromList(possible_squares) : c *= H.randFromList(possible_squares);;
+                            }
+                        }
+                        else if (H.randInt(0, 1)) {
+                            b *= H.randFromList(possible_squares);
+
+                            if (H.randInt(1, 3) === 3) {
+                                (H.randInt(0, 1))? a *= H.randFromList(possible_squares) : c *= H.randFromList(possible_squares);;
+                            }
+                        }
+                        else {
+                            c *= H.randFromList(possible_squares);
+
+                            if (H.randInt(1, 3) === 3) {
+                                (H.randInt(0, 1))? a *= H.randFromList(possible_squares) : b *= H.randFromList(possible_squares);;
+                            }
+                        }
+
+                        if (pm0 === -1 && b === c) pm0 = 1;
+                    }
+                    else {
+                        const common_radicand = SRH.squareFreeRand(square_free_lim);
+                        a = common_radicand;
+
+                        if (H.randInt(0, 1)) {
+                            b = common_radicand;
+                            c = H.randInt(2, 7)**2;
+                        }
+                        else {
+                            c = common_radicand;
+                            b = H.randInt(2, 7)**2;
+                        }
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        pm0: pm0
+                    }
+                },
+                create: (a,b,c, ...pm) => ({
+                    prompt_str: `\\frac{\\sqrt{${a}}}{\\sqrt{${b}} ${SRH.pm(pm[0])} \\sqrt{${c}}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: (b === c && pm[0] === 1)? [[1, a*b], [1, a*c]] : [[1, a*b], [-pm[0], a*c]],
+                    ans_den: (b === c && pm[0] === 1)? (4*b) : (b - c)
+                })
+            },
+            inter_15: {
+                select: (allow_negatives) => {
+                    let a = H.randInt(1, 4);
+                    let b = H.randInt(2, 4);
+                    let d = H.randInt(2, 4);
+
+                    if (allow_negatives) {
+                        a *= (-1)**H.randInt(0, 1);
+                        b *= (-1)**H.randInt(0, 1);
+                        d *= (-1)**H.randInt(0, 1);
+                    }
+
+                    let c, e;
+                    const common_radicand = SRH.squareFreeRand(6);
+                    if (H.randInt(0, 1)) {
+                        c = e = common_radicand;
+                    }
+                    else {
+                        c = e = common_radicand;
+                        const possible_squares = H.integerArray(2, ((common_radicand <= 5)? 4 : 3)).map(val => val**2);
+
+                        if (H.randInt(0, 1)) {
+                            c *= H.randFromList(possible_squares);
+                        }
+                        else {
+                            e *= H.randFromList(possible_squares);
+                        }
+                    }
+
+                    const c_extracted = PH.simplifySQRT(c);
+                    let b1 = b * c_extracted.numberInFront;
+                    let c1 = c_extracted.numberUnderRoot;
+
+                    const e_extracted = PH.simplifySQRT(e);
+                    let d1 = d * e_extracted.numberInFront;
+                    let e1 = e_extracted.numberUnderRoot;
+
+                    if (c1 === e1 && b1 + d1 === 0) {
+                        if (H.randInt(0, 1)) {
+                            b *= (-1);
+                            b1 *= (-1);
+                        }
+                        else {
+                            d *= (-1);
+                            d1 *= (-1);
+                        }
+                    }
+
+                    return {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d,
+                        e: e,
+                        f: {b1, c1, d1, e1}
+                    }
+                },
+                create: (a,b,c,d,e,f) => ({
+                    prompt_str: `\\frac{${a}}{${b}\\sqrt{${c}} ${SRH.pm(Math.sign(d))} ${Math.abs(d)}\\sqrt{${e}}}`,
+                    ans_num_int: 0,
+                    ans_num_radics: (f.c1 === f.e1 && f.b1 === f.d1)? [[a, c]] : [[-a*d, e], [a*b, c]],
+                    ans_den: (f.c1 === f.e1 && f.b1 === f.d1)? (2*b*c) : (b**2 * c - d**2 * e)
+                })
+            },
         }
     }
 };
@@ -1326,7 +1449,7 @@ export default function genSimSqrt(settings) {
     });
     radic_sum_components = radic_sum_components.filter((_, idx) => !removed_idxs.includes(idx));
 
-    const common_radicand = radic_sum_components[0][1];
+    const common_radicand = radic_sum_components?.[0]?.[1];
     if (!radic_sum_components.every(radic_expr => radic_expr[1] === common_radicand)) {
         throw new Error('Cannot reduce radic sum because radics are not united by a common radicand.');
     }
@@ -1340,7 +1463,7 @@ export default function genSimSqrt(settings) {
     // determine if the final radic expression exists (and what it is)
     const final_radic_expr = [];
     let ans_num_int = new_prompt_obj.ans_num_int;
-    if (common_radicand === 1 || common_radicand === 0) {
+    if (common_radicand === 1 || common_radicand === 0 || common_radicand === undefined) {
         ans_num_int += in_front_sum;
         
         final_radic_expr[0] = 0;
@@ -1357,7 +1480,7 @@ export default function genSimSqrt(settings) {
     let num_root_under = final_radic_expr[1];
     let den = new_prompt_obj.ans_den;
     if (num_int !== 0 && num_root_front === 0) { // ans has int part but no radic part
-        answer_str = PH.simplifiedFracString(num_int, den);
+        answer_str = PH.simplifiedFracString(num_int, den, 'in_front');
     }
     else if (num_int === 0 && num_root_front !== 0) { // ans has radic part but no int part
         const reduced_frac_part = PH.simplifyFraction(num_root_front, den);
@@ -1434,7 +1557,7 @@ export default function genSimSqrt(settings) {
             root_part_num = sim_root_part_frac.numer;
             root_part_den = sim_root_part_frac.denom;
 
-            const int_part_str = PH.simplifiedFracString(int_part_num, int_part_den);
+            const int_part_str = PH.simplifiedFracString(int_part_num, int_part_den, 'in_front');
 
             let front_root_sign;
             if (root_part_num < 0) {
@@ -1494,7 +1617,7 @@ export const presets = {
     default: function() {
         return {
             sim_sqrt_term_order: 'random',
-            sim_sqrt_form: 'basic_1',
+            sim_sqrt_form: 'all_begin',
             sim_sqrt_allow_negatives: 'yes',
             sim_sqrt_frac_rule: 'together'
         };
