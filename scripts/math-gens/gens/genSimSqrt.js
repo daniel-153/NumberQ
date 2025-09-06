@@ -1,4 +1,3 @@
-import { allow_negatives } from '../../templates/gen-settings.js';
 import * as H from '../helpers/gen-helpers.js';
 import * as PH from '../helpers/polynom-helpers.js';
 
@@ -1439,7 +1438,7 @@ export default function genSimSqrt(settings) {
         // if the root reduced competely, remove it from the radicand sum and add it to the integer part
         if (simplified_root.numberUnderRoot === 0 || simplified_root.numberUnderRoot === 1) {
             if (simplified_root.numberUnderRoot === 1) {
-                new_prompt_obj.ans_num_int += simplified_root.numberInFront;
+                new_prompt_obj.ans_num_int += radic_expr[0];
             }
 
             removed_idxs.push(idx);
@@ -1570,7 +1569,7 @@ export default function genSimSqrt(settings) {
 
             let root_part_str;
             if (root_part_den === 1) {
-                root_part_str = front_root_sign + final_radic_expr;
+                root_part_str = front_root_sign + final_root_expr;
             }
             else {
                 root_part_str = `${front_root_sign}\\frac{${final_root_expr}}{${root_part_den}}`;
