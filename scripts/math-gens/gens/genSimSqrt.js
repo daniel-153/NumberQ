@@ -683,8 +683,7 @@ const SRH = {
                     }
                 },
                 create: (a,b,c, ...pm) => ({
-                    prompt_str: `${a}(${b} ${SRH.pm(pm[0])} \\sqrt{${c}})`,
-                    radicand_groups: [[c]],
+                    prompt_str: `${a}(%${b} ${SRH.pm(pm[0])} \\sqrt{${c}}%)`,
                     ans_num_int: a*b,
                     ans_num_radics: [[pm[0]*a, c]],
                     ans_den: 1
@@ -730,7 +729,6 @@ const SRH = {
                 },
                 create: (a,b,c, ...pm) => ({
                     prompt_str: `\\sqrt{${a}}(%${b} ${SRH.pm(pm[0])} \\sqrt{${c}}%)`,
-                    radicand_groups: [[a, c]],
                     ans_num_int: pm[0] * Math.sqrt(a*c),
                     ans_num_radics: [[b, a]],
                     ans_den: 1
@@ -1624,7 +1622,15 @@ export const presets = {
     },
     random: function() {
         return {
-            
+            sim_sqrt_term_order: '__random__',
+            sim_sqrt_form: '__random__',
+            sim_sqrt_allow_negatives: '__random__'
         };
     }
+};
+
+export const size_adjustments = {
+    height: 1.3,
+    q_font_size: 1.1,
+    a_font_size: 1.1
 };
