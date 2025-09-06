@@ -1189,7 +1189,8 @@ export const sim_sqrt_term_order = {
         ['root_b_plus_a', '\\(\\sqrt{b} + a\\)&nbsp;'],
         ['random', 'Random']
     ], 
-    tooltip: 'When a sum of an integer and a square root appears, how should it be ordered?'
+    tooltip: 'When a sum of an integer and a square root appears, how should it be ordered?',
+    prelocked: true
 };
 
 export const sim_sqrt_form = {
