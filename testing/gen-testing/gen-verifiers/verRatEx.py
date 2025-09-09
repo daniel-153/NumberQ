@@ -15,6 +15,12 @@ def verify(tex_question, tex_answer):
 
     # set of denom zeros for the entire prompt (excluded values that we calculated)
     all_denom_zeros = set(denom_1_zeros) | set(denom_2_zeros)
+    
+    # if the operation is division, the zeros of 2nd operand numerator must be excluded
+    if '/' in tex_question:
+        numer_2 = parse_latex(expression_2.split('}{')[0].replace('\\frac{', ''))
+        numer_2_zeros = solve(numer_2, symbols('x'))
+        all_denom_zeros = all_denom_zeros | set(numer_2_zeros)
 
     # extract the necessary information from the incomming question and answer
     calculated_answer = simplify(parse_latex(tex_question))
