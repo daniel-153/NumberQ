@@ -1356,15 +1356,74 @@ export const presets = {
         },
         {
             title: 'Multiplication With Cancellation',
-            example_problem: '\\frac{6x^{2}-5x}{7x^{2}-3x}\\cdot\\frac{x+4}{x+3}',
-            description: 'Multiply where some common factors between the expressions will cancel.',
+            example_problem: '\\frac{7x}{3x^{2}-4x}\\cdot\\frac{x-6}{x+3}',
+            description: 'Multiply where some common factors will cancel.',
             get_settings: function() {    
                 return {
-                    ratex_mul_div_form: `md_${H.randFromList([6, 8])}`,
+                    ratex_mul_div_form: `md_${H.randFromList([6, 8, 10, 11, 12, 13, 14, 15, 16])}`,
                     general_operation_types: ['multiply']
                 };
             }
         },
+        {
+            title: 'Division With Cancellation',
+            example_problem: '\\frac{6x^{2}+6x}{x^{2}+7x}\\div\\frac{x+1}{x-7}',
+            description: 'Divide where some common factors will cancel.',
+            get_settings: function() {    
+                return {
+                    ratex_mul_div_form: `md_${H.randInt(7, 16)}`,
+                    general_operation_types: ['divide']
+                };
+            }
+        },
+        {
+            title: 'Addition And Subtraction (state excluded values)',
+            example_problem: 'P(x)\\pm Q(x);\\;x \\neq -2,2',
+            description: 'Find the sum or difference of the expressions and state the excluded values.',
+            get_settings: function() {    
+                return {
+                    ratex_add_sub_form: 'all_add_sub',
+                    general_operation_types: ['add','subtract'],
+                    give_excluded_values: 'yes'
+                };
+            }
+        },
+        {
+            title: 'Multiplication (state excluded values)',
+            example_problem: 'P(x)\\cdot Q(x);\\;x \\neq -4,3',
+            description: 'Multiply the expressions and state the excluded values.',
+            get_settings: function() {    
+                return {
+                    ratex_mul_div_form: 'all_mul_div',
+                    general_operation_types: ['multiply'],
+                    give_excluded_values: 'yes'
+                };
+            }
+        },
+        {
+            title: 'Division (state excluded values)',
+            example_problem: 'P(x)\\div Q(x);\\;x \\neq -7,-5',
+            description: 'Divide the expressions and state the excluded values.',
+            get_settings: function() {    
+                return {
+                    ratex_mul_div_form: 'all_mul_div',
+                    general_operation_types: ['divide'],
+                    give_excluded_values: 'yes'
+                };
+            }
+        },
+        {
+            title: 'Challenge Problems',
+            example_problem: '\\frac{x^{2}-9x+18}{x-7}\\cdot\\frac{x^{2}+3x-4}{x^{2}-2x-24}',
+            description: 'Forms that require several steps to perform the operation and simplify.',
+            get_settings: function() {    
+                return {
+                    ratex_add_sub_form: `as_${H.randFromList([5, 6, 11, 12])}`,
+                    ratex_mul_div_form: `md_${H.randInt(10, 14)}`,
+                    general_operation_types: '__random__'
+                };
+            }
+        }
     ]
 };
 
