@@ -607,31 +607,30 @@ const REH = { // genRatEx helpers
             number_of_coefs: 4
         },
         md_8: {
-            global_reqs(a,d,e,A,B) {
+            global_reqs(a,b,c,d,e) {
                 return (
-                    true
+                    d !== e
                 );
             },
-            mul_reqs(a,d,e,A,B) {
+            mul_reqs(a,b,c,d,e) {
                 return (
-                    A === d
+                    b === d
                 );
             },
-            div_reqs(a,d,e,A,B) {
+            div_reqs(a,b,c,d,e) {
                 return (
-                    A === e
+                    b === e
                 );
             },
-            structure(a,d,e,A,B) {
+            structure(a,b,c,d,e) {
                 return {
                     num_A: [a],
-                    den_A: [1, e + A, e*A],
+                    den_A: [1, b + c, b*c],
                     num_B: [1, d],
                     den_B: [1, e]
                 }
             },
-            number_of_coefs: 5,
-            transformed_coefs: ['b','c']
+            number_of_coefs: 5
         },
         md_9: {
             global_reqs(a,d,e,A,B) {
@@ -647,7 +646,7 @@ const REH = { // genRatEx helpers
             },
             div_reqs(a,d,e,A,B) {
                 return (
-                    A === a
+                    A === a || d === a
                 );
             },
             structure(a,d,e,A,B) {
@@ -662,31 +661,34 @@ const REH = { // genRatEx helpers
             transformed_coefs: ['b','c']
         },
         md_10: {
-            global_reqs(a,d,e,A,B) {
+            global_reqs(a,b,c,d,e) {
                 return (
-                    true
+                    d !== e
                 );
             },
-            mul_reqs(a,d,e,A,B) {
+            mul_reqs(a,b,c,d,e) {
                 return (
-                    (A === a || A === d)
+                    b === a || b === d ||
+                    c === a || c === d ||
+                    e === a
                 );
             },
-            div_reqs(a,d,e,A,B) {
+            div_reqs(a,b,c,d,e) {
                 return (
-                    (A === a || A === e)
+                    b === a || b === e ||
+                    c === a || c === e ||
+                    d === a
                 );
             },
-            structure(a,d,e,A,B) {
+            structure(a,b,c,d,e) {
                 return {
                     num_A: [1, a],
-                    den_A: [1, e + A, e*A],
+                    den_A: [1, b + c, b*c],
                     num_B: [1, d],
                     den_B: [1, e]
                 }
             },
-            number_of_coefs: 5,
-            transformed_coefs: ['b','c']
+            number_of_coefs: 5
         },
         md_11: {
             global_reqs(a,f,A,B,C,D) {
