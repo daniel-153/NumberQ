@@ -986,7 +986,11 @@ export default async function genRatEx(settings) {
         // find the excluded values and avoid repeats
         let den_A_zeros = getPolynomZeros(den_A);
         let den_B_zeros = getPolynomZeros(den_B);
-        const excluded_values = [...new Set(den_A_zeros.concat(den_B_zeros))];
+        let excluded_values = [...new Set(den_A_zeros.concat(den_B_zeros))];
+        if (operation_type === 'divide') { // division also requires exclusion of numerator zeros
+            const num_B_zeros = getPolynomZeros(num_B);
+            excluded_values = [...new Set(excluded_values.concat(num_B_zeros))]
+        }
 
         // do the actual operation on the two rational expressions (creating a raw answer in inter_numer and inter_denom)
         let inter_numer, inter_denom; // the final num and denom WITHOUT any common factors removed
