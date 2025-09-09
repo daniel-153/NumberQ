@@ -1,7 +1,10 @@
-import * as G from '../../scripts/gen-modules/genRatEx.js';
+import * as G from '../../scripts/math-gens/gens/genRatEx.js';
 
 // Note: in order to use this code to generate the json, you need to paste the following right after the sol-search while-loop in genRatEx:
 // return final_coef_arr;
+
+// (and you need to set the max_runs (maximum numbers of attempts) to Infinity)
+// quick start: (await import('http://10.0.0.244:5500/testing/backup-json-scripts/rat-ex-backups.js')).createBackUps()
 
 
 // possible operation types for the add-sub forms (addition and subtraction)
@@ -24,7 +27,7 @@ const form_names = [
 
 let final_json;
 // package all the json generation in a function (all this code is valid outside the function)
-function createBackUps() {
+export async function createBackUps() {
     final_json = '{'; // open the outermost json object
     
     // loop through each form 
@@ -58,7 +61,7 @@ function createBackUps() {
             }
     
             for (let k = 0; k < number_of_backups; k++) {
-                current_coef_arr = G.default(current_settings); // get a coef array
+                current_coef_arr = await G.default(current_settings); // get a coef array
     
                 final_json += `[${current_coef_arr.join(',')}]`
     
@@ -82,8 +85,3 @@ function createBackUps() {
 
     console.log(final_json);
 }
-
-// un-comment this to generate the json when the page loads
-createBackUps();
-
-
