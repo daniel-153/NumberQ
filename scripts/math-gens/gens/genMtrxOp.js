@@ -173,8 +173,8 @@ export const presets = {
         return {
             matrix_rows: 3,
             matrix_cols: 4,
-            mtrx_entry_range_min: -5,
-            mtrx_entry_range_max: 5,
+            mtrx_entry_range_min: -4,
+            mtrx_entry_range_max: 4,
             single_matrix_operation: 'rref',
             matrix_notation: 'brackets',
             mtrx_op_answer_form: 'exact',
@@ -193,8 +193,8 @@ export const presets = {
         return {
             matrix_rows: rows,
             matrix_cols: cols,
-            mtrx_entry_range_min: H.randInt(-5, 0),
-            mtrx_entry_range_max: H.randInt(1, 5),
+            mtrx_entry_range_min: H.randInt(-4, 0),
+            mtrx_entry_range_max: H.randInt(1, 4),
             single_matrix_operation: operation,
             matrix_notation: '__random__',
             mtrx_op_answer_form: '__random__'
@@ -217,14 +217,14 @@ export const presets = {
         },
         {
             title: '3&times;3 Determinant',
-            example_problem: '\\operatorname{det}\\left( \\begin{bmatrix} 5&2&3\\\\3&2&2\\\\5&5&3 \\end{bmatrix} \\right)',
+            example_problem: '\\operatorname{det}\\left( \\begin{bmatrix} 4&1&1\\\\3&4&1\\\\2&1&0 \\end{bmatrix} \\right)',
             description: 'Find the determinant of a 3 by 3 matrix.',
             get_settings: function() {    
                 return {
                     matrix_rows: 3,
                     matrix_cols: 3,
-                    mtrx_entry_range_min: -5,
-                    mtrx_entry_range_max: 5,
+                    mtrx_entry_range_min: -4,
+                    mtrx_entry_range_max: 4,
                     single_matrix_operation: 'det'
                 };
             }
@@ -261,14 +261,14 @@ export const presets = {
         },
         {
             title: '3&times;3 Inverse',
-            example_problem: '~\\begin{bmatrix} 1&2&2\\\\2&3&2\\\\5&4&4 \\end{bmatrix} ^{-1}',
+            example_problem: '~\\begin{bmatrix} 1&2&2\\\\2&3&2\\\\1&4&4 \\end{bmatrix} ^{-1}',
             description: 'Find the inverse of a 3 by 3 matrix.',
             get_settings: function() {    
                 return {
                     matrix_rows: 3,
                     matrix_cols: 3,
-                    mtrx_entry_range_min: -5,
-                    mtrx_entry_range_max: 5,
+                    mtrx_entry_range_min: -4,
+                    mtrx_entry_range_max: 4,
                     single_matrix_operation: 'inverse'
                 };
             }
@@ -345,14 +345,14 @@ export const presets = {
         },
         {
             title: '3&times;4 RREF',
-            example_problem: '\\operatorname{rref}\\left( \\begin{bmatrix} 2&3&2&2\\\\1&5&3&3\\\\1&1&5&2 \\end{bmatrix} \\right)',
+            example_problem: '\\operatorname{rref}\\left( \\begin{bmatrix} 3&2&4&1\\\\3&2&0&3\\\\1&4&2&0 \\end{bmatrix} \\right)',
             description: 'Find the RREF of a 3 by 4 matrix.',
             get_settings: function() {    
                 return {
                     matrix_rows: 3,
                     matrix_cols: 4,
-                    mtrx_entry_range_min: -5,
-                    mtrx_entry_range_max: 5,
+                    mtrx_entry_range_min: -4,
+                    mtrx_entry_range_max: 4,
                     single_matrix_operation: 'rref'
                 };
             }
