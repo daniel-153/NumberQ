@@ -166,7 +166,7 @@ export const presets = {
         },
         {
             title: 'Multiply Within 10 (stacked)',
-            example_problem: '\\begin{array}{@{}r@{}} 6\\\\[-0.4em] \\underline{\\smash[b]{\\times~7}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 6\\\\[-0.4em] \\underline{\\smash[b]{\\times~7}} \\end{array}~~~~~~~~',
             description: 'Multiply numbers between 0 and 10 (with stacked notation).',
             get_settings: function() {
                 return {
@@ -195,7 +195,7 @@ export const presets = {
         },
         {
             title: 'Multiply Within 12 (stacked)',
-            example_problem: '\\begin{array}{@{}r@{}} 12\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{1}3}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 12\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{1}3}} \\end{array}~~~~~~~~',
             description: 'Multiply numbers between 0 and 12 (with stacked notation).',
             get_settings: function() {
                 return {
@@ -487,7 +487,7 @@ export const presets = {
         },
         {
             title: '2 Digits Times 1 Digit',
-            example_problem: '\\begin{array}{@{}r@{}} 25\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{2}9}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 25\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{2}9}} \\end{array}~~~~~~~~',
             description: 'Multiply a two digit number by a one digit number.',
             get_settings: function() {
                 return {
@@ -502,7 +502,7 @@ export const presets = {
         },
         {
             title: '3 Digits Times 1 Digit',
-            example_problem: '\\begin{array}{@{}r@{}} 453\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{45}5}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 453\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{45}5}} \\end{array}~~~~~~~~',
             description: 'Multiply a three digit number by a one digit number.',
             get_settings: function() {
                 return {
@@ -517,7 +517,7 @@ export const presets = {
         },
         {
             title: '4 Digits Times 1 Digit',
-            example_problem: '\\begin{array}{@{}r@{}} 8279\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{827}6}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 8279\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{827}6}} \\end{array}~~~~~~~~',
             description: 'Multiply a four digit number by a one digit number.',
             get_settings: function() {
                 return {
@@ -532,7 +532,7 @@ export const presets = {
         },
         {
             title: '2 Digits Times 2 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 63\\\\[-0.4em] \\underline{\\smash[b]{\\times~18}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 63\\\\[-0.4em] \\underline{\\smash[b]{\\times~18}} \\end{array}~~~~~~~~',
             description: 'Multiply a two digit number by another two digit number.',
             get_settings: function() {
                 return {
@@ -547,7 +547,7 @@ export const presets = {
         },
         {
             title: '3 Digits Times 2 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 921\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{9}34}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 921\\\\[-0.4em] \\underline{\\smash[b]{\\times~\\phantom{9}34}} \\end{array}~~~~~~~~',
             description: 'Multiply a three digit number by a two digit number.',
             get_settings: function() {
                 return {
@@ -562,7 +562,7 @@ export const presets = {
         },
         {
             title: '3 Digits Times 3 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 243\\\\[-0.4em] \\underline{\\smash[b]{\\times~729}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 243\\\\[-0.4em] \\underline{\\smash[b]{\\times~729}} \\end{array}~~~~~~~~',
             description: 'Multiply a three digit number by another three digit number.',
             get_settings: function() {
                 return {

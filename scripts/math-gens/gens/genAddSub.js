@@ -385,7 +385,7 @@ export const presets = {
         },
         {
             title: 'Add 1 Digit to 2 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 32\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{3}8}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 32\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{3}8}} \\end{array}~~~~~~~~',
             description: 'Add a number with one digit to a number with two digits.',
             get_settings: function() {
                 return {
@@ -400,7 +400,7 @@ export const presets = {
         },
         {
             title: 'Add 2 Digits to 2 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 84\\\\[-0.4em] \\underline{\\smash[b]{+~25}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 84\\\\[-0.4em] \\underline{\\smash[b]{+~25}} \\end{array}~~~~~~~~',
             description: 'Add two numbers that each have two digits.',
             get_settings: function() {
                 return {
@@ -445,7 +445,7 @@ export const presets = {
         },
         {
             title: 'Subtract 1 Digit from 2 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 46\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{3}7}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 46\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{3}7}} \\end{array}~~~~~~~~',
             description: 'Subtract a number with one digit from a number with two digits.',
             get_settings: function() {
                 return {
@@ -461,7 +461,7 @@ export const presets = {
         },
         {
             title: 'Subtract 2 Digits from 2 Digits',
-            example_problem: '\\begin{array}{@{}r@{}} 91\\\\[-0.4em] \\underline{\\smash[b]{-~17}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 91\\\\[-0.4em] \\underline{\\smash[b]{-~17}} \\end{array}~~~~~~~~',
             description: 'Subtract a two digit number from another two digit number.',
             get_settings: function() {
                 return {
@@ -577,7 +577,7 @@ export const presets = {
         },
         {
             title: 'Large Addition (1-4 digits)',
-            example_problem: '\\begin{array}{@{}r@{}} 5260\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{5}478}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 5260\\\\[-0.4em] \\underline{\\smash[b]{+~\\phantom{5}478}} \\end{array}~~~~~~~~',
             description: 'Add numbers with between one and four digits.',
             get_settings: function() {
                 return {
@@ -592,7 +592,7 @@ export const presets = {
         },
         {
             title: 'Large Subtraction (1-4 digits)',
-            example_problem: '\\begin{array}{@{}r@{}} 5087\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{50}71}} \\end{array}',
+            example_problem: '~~~~~~~~\\begin{array}{@{}r@{}} 5087\\\\[-0.4em] \\underline{\\smash[b]{-~\\phantom{50}71}} \\end{array}~~~~~~~~',
             description: 'Subtract numbers with between one and four digits.',
             get_settings: function() {
                 return {
