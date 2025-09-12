@@ -445,7 +445,7 @@ export const presets = {
         },
         {
             title: '3 Digits Divided By 1 Digit (remainders)',
-            example_problem: '~~~~29\\enclose{longdiv}{255}~~~~',
+            example_problem: '~~~~9\\enclose{longdiv}{224}~~~~',
             description: 'Divide 3 digit numbers by 1 digit numbers with a remainder.',
             get_settings: function() {
                 return {
