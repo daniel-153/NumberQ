@@ -78,7 +78,7 @@ export default function genVecArith(settings) {
 
     // scalars and their strings (based on the operation)
     let scalar_1, scalar_2, scalar_1_string, scalar_2_string;
-    if (settings.allow_scalars === 'yes' && settings.vector_operation === 'add' || settings.vector_operation === 'sub') { // scalars only applicable in add or sub
+    if ((settings.allow_scalars === 'yes') && (settings.vector_operation === 'add' || settings.vector_operation === 'sub')) { // scalars only applicable in add or sub
         scalar_1 = VAH.randScalar();
         scalar_2 = VAH.randScalar('non-negative');
 
@@ -193,7 +193,7 @@ export const presets = {
                     vec_entry_range_min: -9,
                     vec_entry_range_max: 9,
                     vector_dimension: 2,
-                    vector_operation: H.randFromList(['add', 'subtract']),
+                    vector_operation: H.randFromList(['add', 'sub']),
                     allow_scalars: 'no',
                 };
             }
@@ -207,7 +207,7 @@ export const presets = {
                     vec_entry_range_min: -5,
                     vec_entry_range_max: 5,
                     vector_dimension: 2,
-                    vector_operation: H.randFromList(['add', 'subtract']),
+                    vector_operation: H.randFromList(['add', 'sub']),
                     allow_scalars: 'yes',
                 };
             }
@@ -221,7 +221,7 @@ export const presets = {
                     vec_entry_range_min: -9,
                     vec_entry_range_max: 9,
                     vector_dimension: 3,
-                    vector_operation: H.randFromList(['add', 'subtract']),
+                    vector_operation: H.randFromList(['add', 'sub']),
                     allow_scalars: 'no',
                 };
             }
@@ -235,7 +235,7 @@ export const presets = {
                     vec_entry_range_min: -5,
                     vec_entry_range_max: 5,
                     vector_dimension: 3,
-                    vector_operation: H.randFromList(['add', 'subtract']),
+                    vector_operation: H.randFromList(['add', 'sub']),
                     allow_scalars: 'yes',
                 };
             }
