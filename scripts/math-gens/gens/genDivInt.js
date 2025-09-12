@@ -400,7 +400,7 @@ export const presets = {
         },
         {
             title: '2 Digits Divided By 1 Digit (no remainders)',
-            example_problem: '6\\enclose{longdiv}{90}',
+            example_problem: '~~~~~~6\\enclose{longdiv}{90}~~~~~~',
             description: 'Divide 2 digit numbers by 1 digit numbers without a remainder.',
             get_settings: function() {
                 return {
@@ -415,7 +415,7 @@ export const presets = {
         },
         {
             title: '2 Digits Divided By 1 Digit (remainders)',
-            example_problem: '3\\enclose{longdiv}{22}',
+            example_problem: '~~~~~~3\\enclose{longdiv}{22}~~~~~~',
             description: 'Divide 2 digit numbers by 1 digit numbers with a remainder.',
             get_settings: function() {
                 return {
@@ -430,7 +430,7 @@ export const presets = {
         },
         {
             title: '3 Digits Divided By 1 Digit (no remainders)',
-            example_problem: '6\\enclose{longdiv}{300}',
+            example_problem: '~~~~~~6\\enclose{longdiv}{300}~~~~~~',
             description: 'Divide 3 digit numbers by 1 digit numbers without a remainder.',
             get_settings: function() {
                 return {
@@ -445,7 +445,7 @@ export const presets = {
         },
         {
             title: '3 Digits Divided By 1 Digit (remainders)',
-            example_problem: '29\\enclose{longdiv}{255}',
+            example_problem: '~~~~29\\enclose{longdiv}{255}~~~~',
             description: 'Divide 3 digit numbers by 1 digit numbers with a remainder.',
             get_settings: function() {
                 return {
@@ -460,7 +460,7 @@ export const presets = {
         },
         {
             title: '2 Digit Dividends (general)',
-            example_problem: '14\\enclose{longdiv}{88}',
+            example_problem: '~~~~~~14\\enclose{longdiv}{88}~~~~~~',
             description: 'Division with 2 digit dividends (neither remainders nor even division are forced).',
             get_settings: function() {
                 return {
@@ -475,7 +475,7 @@ export const presets = {
         },
         {
             title: '3 Digit Dividends (general)',
-            example_problem: '25\\enclose{longdiv}{419}',
+            example_problem: '~~~~25\\enclose{longdiv}{419}~~~~',
             description: 'Division with 3 digit dividends (neither remainders nor even division are forced).',
             get_settings: function() {
                 return {
@@ -490,7 +490,7 @@ export const presets = {
         },
         {
             title: 'Random Digit Dividends and Divisors',
-            example_problem: '315\\enclose{longdiv}{12}',
+            example_problem: '~~~~315\\enclose{longdiv}{12}~~~~',
             description: 'Dividends and divisors with a random number of digits.',
             get_settings: function() {
                 return {
