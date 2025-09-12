@@ -1724,7 +1724,7 @@ export const presets = {
         },
         {
             title: 'Rationalize (root in denominator, beginner)',
-            example_problem: '~~\\frac{5}{\\sqrt{3}}~~',
+            example_problem: '~~~~~~~\\frac{5}{\\sqrt{3}}~~~~~~~',
             description: 'Expressions with a single square root in their denominator (beginnger).',
             get_settings: function() {    
                 return {
@@ -1735,7 +1735,7 @@ export const presets = {
         },
         {
             title: 'Rationalize (root in denominator, advanced)',
-            example_problem: '\\frac{\\sqrt{6}\\cdot\\sqrt{5}}{\\sqrt{2}}',
+            example_problem: '~~~~~~~\\frac{\\sqrt{6}\\cdot\\sqrt{5}}{\\sqrt{2}}~~~~~~~',
             description: 'Expressions with a single square root in their denominator (advanced).',
             get_settings: function() {    
                 return {
@@ -1746,8 +1746,8 @@ export const presets = {
         },
         {
             title: 'Rationalize Using Conjugates',
-            example_problem: '\\frac{1}{5 - \\sqrt{7}}',
-            description: 'Expressions that simplify by using conjugates.',
+            example_problem: '~~~~~~\\frac{1}{5 - \\sqrt{7}}~~~~~~',
+            description: 'Expressions that rationalize by using conjugates.',
             get_settings: function() {    
                 return {
                     sim_sqrt_form: H.randFromList(['inter_3', 'inter_4', 'inter_10']),
@@ -1757,7 +1757,7 @@ export const presets = {
         },
         {
             title: 'Rationalize (general)',
-            example_problem: '\\frac{1}{\\sqrt{28} - \\sqrt{7}}',
+            example_problem: '~~\\frac{1}{\\sqrt{28} - \\sqrt{7}}~~',
             description: 'Expressions that require one or more steps and techniques to rationalize.',
             get_settings: function() {    
                 return {
