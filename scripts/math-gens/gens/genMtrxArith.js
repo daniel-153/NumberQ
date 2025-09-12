@@ -74,7 +74,7 @@ export default function genMtrxArith(settings) {
     const matrix_B = LAH.createMatrix(settings.matrix_B_rows, settings.matrix_B_cols, randValueSupplier);
 
     let scalar_A, scalar_B, scalar_A_string, scalar_B_string;
-    if (settings.allow_matrix_scalars === 'yes' && settings.matrix_operation === 'add' || settings.matrix_operation === 'sub') { // scalars only applicable in add or sub
+    if ((settings.allow_matrix_scalars === 'yes') && (settings.matrix_operation === 'add' || settings.matrix_operation === 'sub')) { // scalars only applicable in add or sub
         scalar_A = MAH.randScalar();
         scalar_B = MAH.randScalar('non-negative');
 
