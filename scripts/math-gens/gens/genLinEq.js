@@ -1560,7 +1560,7 @@ export const presets = {
         {
             title: 'Include Fractions',
             example_problem: '\\frac{x+3}{2}=4',
-            description: 'Equations forms that include fractions.',
+            description: 'Equation forms that include fractions.',
             get_settings: function() {
                 return {
                     solution_size_range: 'single_digit', 
@@ -1572,7 +1572,7 @@ export const presets = {
         {
             title: 'Include Parentheses',
             example_problem: '3(x+7)=9',
-            description: 'Equations forms that include parentheses.',
+            description: 'Equation forms that include parentheses.',
             get_settings: function() {
                 return {
                     solution_size_range: 'single_digit', 
@@ -1584,7 +1584,7 @@ export const presets = {
         {
             title: 'Variable On One Side',
             example_problem: '4x+6=10',
-            description: 'Equations forms where only one side contains the variable.',
+            description: 'Equation forms where only one side contains the variable.',
             get_settings: function() {
                 return {
                     solution_size_range: 'single_digit', 
@@ -1599,7 +1599,7 @@ export const presets = {
         {
             title: 'Variable On Both Sides',
             example_problem: '3+2x=x',
-            description: 'Equations forms where both sides contain the variable.',
+            description: 'Equation forms where both sides contain the variable.',
             get_settings: function() {
                 return {
                     solution_size_range: 'single_digit', 
