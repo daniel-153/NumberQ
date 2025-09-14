@@ -53,6 +53,7 @@ const event_listeners = [
         document.getElementById('settings-form').addEventListener('click', (event) => {
             if (event.target.matches('.settings-lock') || event.target.matches('.settings-lock-image')) {
                 PGH.toggleSettingsLock(event.target.closest('.settings-lock'));
+                if (document.getElementById('settings-preset-checkbox').checked) PGH.updateOverrideIndicators(); 
             }
         });
 
@@ -62,11 +63,13 @@ const event_listeners = [
 
         document.getElementById('settings-preset-checkbox').addEventListener('click', () => {
             PGH.toggleUsePresetIndicator();
+            PGH.updateOverrideIndicators();
         });
 
         document.getElementById('preset-list-wrapper').addEventListener('change', (event) => {
             if (event.target.matches('input[type="radio"].settings-preset-radio-btn[name="settings-preset"]')) {
                 PGH.focusPresetOption(event.target);
+                if (document.getElementById('settings-preset-checkbox').checked) PGH.updateOverrideIndicators(); 
             }
         })
     },

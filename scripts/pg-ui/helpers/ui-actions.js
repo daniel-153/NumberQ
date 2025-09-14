@@ -168,6 +168,38 @@ export function toggleUsePresetIndicator() {
     });
 }
 
+export function updateOverrideIndicators() {
+    if (document.getElementById('settings-preset-checkbox').checked) {
+        const presets_tab = document.getElementById('settings-presets-tab');
+        const current_preset_name = presets_tab.getAttribute('data-focused-preset');
+        const current_preset_func = presets_tab.preset_funcs[current_preset_name];
+        const overridden_fields = Object.keys(current_preset_func()); 
+
+        Array.from(document.querySelectorAll('.settings-override-idc')).forEach(override_idc_el => {
+            const linked_settings_str = override_idc_el.getAttribute('data-overridden-values');
+            const linked_settings_arr = linked_settings_str.split(',');
+            
+            if (linked_settings_arr.some(setting_name => overridden_fields.includes(setting_name))) {
+                if (current_preset_name === 'random') { // additional check needed (of the current lock)
+                    const current_lock_el = document.querySelector(`.settings-lock[data-values-to-lock="${linked_settings_str}"]`);
+
+                    if (current_lock_el.getAttribute('data-status') === 'locked') override_idc_el.setAttribute('data-status', 'hidden');
+                    else if (current_lock_el.getAttribute('data-status') === 'unlocked') override_idc_el.setAttribute('data-status', 'shown');
+                }
+                else {
+                    override_idc_el.setAttribute('data-status', 'shown');
+                }
+            }
+            else override_idc_el.setAttribute('data-status', 'hidden');
+        });
+    }
+    else {
+        Array.from(document.querySelectorAll('.settings-override-idc')).forEach(override_idc_el => {
+            override_idc_el.setAttribute('data-status', 'hidden');
+        });
+    }
+}
+
 export function focusPresetOption(targeted_input_el) {
     targeted_input_el.checked = true;
     document.getElementById('settings-presets-tab').setAttribute('data-focused-preset', targeted_input_el.value);
