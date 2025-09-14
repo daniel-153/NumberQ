@@ -264,13 +264,15 @@ const CSH = { // createSettingsFields helpers
     },
     buildControlButtons: function(setting_obj) {
         const lock_status = (setting_obj.prelocked)? 'lock' : 'unlock';
+        const linked_settings = setting_obj.code_names.join(',');
 
         return `
             <div class="setting-control-buttons">
-                <div class="settings-info-button settings-lock" data-status="${lock_status}ed" data-values-to-lock="${setting_obj.code_names.join(',')}">
+                <div class="settings-info-button settings-lock" data-status="${lock_status}ed" data-values-to-lock="${linked_settings}">
                     <img src="images/${lock_status}.png" class="settings-lock-image"/>
                 </div>
-               <div class="settings-info-button" data-tooltip="${setting_obj.tooltip}">?</div>  
+               <div class="settings-info-button" data-tooltip="${setting_obj.tooltip}">?</div> 
+               <div class="settings-override-idc" data-status="hidden" data-overridden-values="${linked_settings}">&#x21BB;</div>
             </div>
         `;
     },
