@@ -472,7 +472,7 @@ const CPH = { // createSettingsPresets helpers
                     <div class="preset-tooltip-wrapper">
                         <div class="preset-tooltip-content">
                             <h3 class="preset-descriptor preset-tooltip-title">${title}:</h3>
-                            <div class="preset-descriptor preset-tooltip-math" data-latexcode="${example_problem}"></div>
+                            <div class="preset-descriptor preset-tooltip-math un-rendered-preset-math" data-latexcode="${example_problem}"></div>
                             <p class="preset-descriptor preset-tooltip-description">${description}</p>
                         </div>
                     </div>
@@ -481,7 +481,7 @@ const CPH = { // createSettingsPresets helpers
         `;
     },
     insertPresetMjx: async function() {
-        const preset_math_containers = Array.from(document.getElementById('settings-presets-list').querySelectorAll('.preset-tooltip-math'));
+        const preset_math_containers = Array.from(document.getElementById('settings-presets-list').querySelectorAll('.un-rendered-preset-math'));
 
         const string_factor_pairs = [];
         preset_math_containers.forEach(math_container => {
@@ -499,6 +499,7 @@ const CPH = { // createSettingsPresets helpers
             mjx_svg.classList.add('preset-mjx-svg');
 
             math_container.appendChild(mjx_svg);
+            math_container.classList.remove('un-rendered-preset-math');
         }
     }
 };
@@ -527,26 +528,33 @@ export async function createSettingsPresets(gen_module, pg_ui_state) {
         console.error('Gen module presets object does not specify [random] preset function.');
     }
 
-    // all the other module specific presets
-    if (Array.isArray(gen_module.presets.topic_presets)) {
-        let topic_preset_index = 0;
-        gen_module.presets.topic_presets.forEach(preset_obj => {
-            const copy_preset_obj = JSON.parse(JSON.stringify(preset_obj)); // drops the get_settings func without throwing
-
-            copy_preset_obj.name = `topic-preset-${topic_preset_index}`;
-            pg_ui_state.preset_funcs[copy_preset_obj.name] = preset_obj.get_settings;
-
-            output_html += CPH.createPresetHtml(copy_preset_obj);
-            topic_preset_index++;
-        });;
-    }
-
     // insert base html for presets
     output_html += '</div>';
     const preset_container = document.getElementById('preset-list-wrapper');
     preset_container.innerHTML = output_html;
 
     await CPH.insertPresetMjx();
+
+    // all the other module specific presets (loaded lazily - pgui does not wait for topic presets to load)
+    if (gen_module.presets.has_topic_presets) {
+        import(`../../math-gens/presets/${pg_ui_state.func_name.replace('gen', 'pst')}.js`).then((preset_module) => {
+            let preset_list_html = '';
+            
+            let topic_preset_index = 0;
+            preset_module.default.forEach(preset_obj => {
+                const copy_preset_obj = JSON.parse(JSON.stringify(preset_obj)); // drops the get_settings func without throwing
+
+                copy_preset_obj.name = `topic-preset-${topic_preset_index}`;
+                pg_ui_state.preset_funcs[copy_preset_obj.name] = preset_obj.get_settings;
+
+                preset_list_html += CPH.createPresetHtml(copy_preset_obj);
+                topic_preset_index++;
+            });
+
+            document.getElementById('settings-presets-list').insertAdjacentHTML('beforeend', preset_list_html);
+            CPH.insertPresetMjx();
+        });
+    }
 }
 
 export function updatePresetStatus(preset_name, apply_preset, pg_ui_state) {
