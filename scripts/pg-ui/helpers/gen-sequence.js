@@ -505,6 +505,7 @@ const CPH = { // createSettingsPresets helpers
 };
 export async function createSettingsPresets(gen_module, pg_ui_state) {
     pg_ui_state.preset_funcs = {}; // clear previous
+    document.getElementById('settings-presets-tab').preset_funcs = pg_ui_state.preset_funcs;
     
     // ensure that at least a presents obj and the default preset are present (otherwise, generation is impossible)
     if (!(typeof(gen_module.presets) === 'object' && gen_module.presets !== null)) {
