@@ -77,12 +77,9 @@
                 }));
             },
 
-            loadSvgComponent: function() {
-
-            },
-            loadChtmlComponent: function() {
-
-            }
+            // implemented in get()
+            loadSvgComponents: async function(component_paths) {},
+            loadChtmlComponents: async function(component_paths) {}
         },
         {
             get: function(mjx_loader, accessed_prop_name) {
@@ -133,6 +130,22 @@
                         }
                     }
                 }
+                else if (['loadSvgComponents', 'loadChtmlComponents'].includes(accessed_prop_name)) {
+                    const svg_or_chtml = accessed_prop_name.slice(4, 9).toLowerCase();
+
+                    return async function(component_paths) {
+                        await newIframeMessagePromise(iframes[svg_or_chtml], {
+                            message_type: 'load_mjx_components',
+                            component_paths: component_paths
+                        });
+
+                        if (!Array.isArray(iframes[svg_or_chtml].loaded_extensions)) {
+                            iframes[svg_or_chtml].loaded_extensions = [];
+                        }
+
+                        iframes[svg_or_chtml].loaded_extensions.push(...component_paths)
+                    }
+                }
                 else {
                     return mjx_loader[accessed_prop_name];
                 }
@@ -175,10 +188,9 @@
         return response_promise;
     }
 
-    function destroyAndRestartLoader(svg_or_chtml) {
-        console.log(svg_or_chtml + ' destroyed and reloaded')
-
+    async function destroyAndRestartLoader(svg_or_chtml) {
         const iframe_styles = iframes[svg_or_chtml].getAttribute('style');
+        const loaded_extensions = iframes[svg_or_chtml].loaded_extensions;
         
         iframes[svg_or_chtml].remove();
         delete iframes[svg_or_chtml];
@@ -193,9 +205,9 @@
         iframes[svg_or_chtml].setAttribute('style', iframe_styles);
 
         const init_promise = newIframeResponsePromise(iframes[svg_or_chtml]);
-
         document.getElementById('mjx-loaders').appendChild(iframes[svg_or_chtml]);
+        await init_promise;
 
-        return init_promise;
+        await window.mjx_loader[`load${svg_or_chtml.charAt(0).toUpperCase()}${svg_or_chtml.slice(1)}Components`](loaded_extensions);
     }
 })();
