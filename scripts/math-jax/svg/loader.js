@@ -5,13 +5,15 @@
             math_jax_script.src = `${window.parent.origin}/scripts/math-jax/svg/tex-svg.js`;
             math_jax_script.async = true;
 
-            window.math_jax = {
+            window.MathJax = {
                 startup: {
                     pageReady: () => {
-                        resolve(window.math_jax)
+                        resolve(window.MathJax)
                     }
                 }
             };
+
+            document.body.appendChild(math_jax_script);
         } catch (error) {
             throw new Error(`Failed to load math_jax tex-svg: ${error}`);
         }
@@ -40,34 +42,35 @@
     });
 
     window.parent.postMessage('ready', window.parent.origin);
+
+    // helpers
+    async function getSvgStringArray(math_jax, string_factor_pairs) {
+        string_factor_pairs.forEach(pair => {
+            const mjx_container = document.createElement('div');
+            mjx_container.innerHTML = '\\(' + pair[0] + '\\)';
+            mjx_container.setAttribute('data-latex-code', pair[0]);
+            mjx_container.setAttribute('data-scale-factor', pair[1]);
+
+            document.body.appendChild(mjx_container);
+        });
+
+        await math_jax.typesetPromise([document.body]);
+
+        const svg_string_array = [];
+        Array.from(document.querySelectorAll('body div')).forEach(mjx_container => {
+            const svg = mjx_container.querySelector('svg');
+            svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
+            svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
+            svg.setAttribute('data-latex-code', mjx_container.getAttribute('data-latex-code'));
+
+            svg_string_array.push(svg.outerHTML);
+        });
+
+        // remove math elements from MathJax's internal registry + remove them from the DOM
+        math_jax.typesetClear();
+        math_jax.texReset();
+        document.body.innerHTML = '';
+
+        return svg_string_array;
+    }
 })();
-
-async function getSvgStringArray(math_jax, string_factor_pairs) {
-    string_factor_pairs.forEach(pair => {
-        const mjx_container = document.createElement('div');
-        mjx_container.innerHTML = '\\\\(' + pair[0] + '\\\\)';
-        mjx_container.setAttribute('data-latex-code', pair[0]);
-        mjx_container.setAttribute('data-scale-factor', pair[1]);
-
-        document.body.appendChild(mjx_container);
-    });
-
-    await math_jax.typesetPromise([document.body]);
-
-    const svg_string_array = [];
-    Array.from(document.querySelectorAll('body div')).forEach(mjx_container => {
-        const svg = mjx_container.querySelector('svg');
-        svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
-        svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
-        svg.setAttribute('data-latex-code', mjx_container.getAttribute('data-latex-code'));
-
-        svg_string_array.push(svg.outerHTML);
-    });
-
-    // remove math elements from MathJax's internal registry + remove them from the DOM
-    math_jax.typesetClear();
-    math_jax.texReset();
-    document.body.innerHTML = '';
-
-    return svg_string_array;
-}

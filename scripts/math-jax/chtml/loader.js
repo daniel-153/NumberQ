@@ -5,13 +5,17 @@
             math_jax_script.src = `${window.parent.origin}/scripts/math-jax/chtml/tex-chtml.js`;
             math_jax_script.async = true;
 
-            window.math_jax = {
+            window.MathJax = {
                 startup: {
                     pageReady: () => {
-                        resolve(window.math_jax)
+                        return window.MathJax.startup.defaultPageReady().then(() => {
+                            resolve(window.MathJax)
+                        });
                     }
                 }
             };
+
+            document.body.appendChild(math_jax_script);
         } catch (error) {
             throw new Error(`Failed to load math_jax tex-chtml: ${error}`);
         }
@@ -37,34 +41,41 @@
                 window.parent.postMessage('failed: ' + error, window.parent.origin);
             } 
         }
+        else if (event.data.message_type === 'mjx_styles_request') {
+            math_jax.then(() => {
+                window.parent.postMessage(document.getElementById('MJX-CHTML-styles').outerHTML, window.parent.origin);
+            });            
+        }
     });
 
     window.parent.postMessage('ready', window.parent.origin);
+
+    // helpers
+    async function getChtmlStringArray(math_jax, tex_str_list) {
+        tex_str_list.forEach(tex_str => {
+            const mjx_container = document.createElement('div');
+            mjx_container.innerHTML = '\\(' + tex_str + '\\)';
+            mjx_container.setAttribute('data-latex-code', tex_str);
+
+            document.body.appendChild(mjx_container);
+        });
+
+        await math_jax.typesetPromise([document.body]);
+
+        const chtml_string_array = [];
+        Array.from(document.querySelectorAll('body div')).forEach(mjx_container => {
+            const chtml = mjx_container.querySelector('mjx-container');
+            chtml.setAttribute('data-latex-code', mjx_container.getAttribute('data-latex-code'));
+
+            chtml_string_array.push(chtml.outerHTML);
+        });
+
+        // remove math elements from MathJax's internal registry + remove them from the DOM
+        math_jax.typesetClear();
+        math_jax.texReset();
+        document.body.innerHTML = '';
+
+        return chtml_string_array;
+    }
 })();
 
-async function getChtmlStringArray(math_jax, tex_str_list) {
-    tex_str_list.forEach(tex_str => {
-        const mjx_container = document.createElement('div');
-        mjx_container.innerHTML = '\\\\(' + tex_str + '\\\\)';
-        mjx_container.setAttribute('data-latex-code', tex_str);
-
-        document.body.appendChild(mjx_container);
-    });
-
-    await math_jax.typesetPromise([document.body]);
-
-    const chtml_string_array = [];
-    Array.from(document.querySelectorAll('body div')).forEach(mjx_container => {
-        const chtml = mjx_container.querySelector('mjx-container');
-        chtml.setAttribute('data-latex-code', mjx_container.getAttribute('data-latex-code'));
-
-        chtml_string_array.push(chtml.outerHTML);
-    });
-
-    // remove math elements from MathJax's internal registry + remove them from the DOM
-    math_jax.typesetClear();
-    math_jax.texReset();
-    document.body.innerHTML = '';
-
-    return chtml_string_array;
-}

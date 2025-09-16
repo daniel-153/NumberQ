@@ -15,7 +15,7 @@
     });
 
     const iframe_wrapper = document.createElement('div');
-    iframe_wrapper.id = 'mjx-loader-wrapper';
+    iframe_wrapper.id = 'mjx-loaders';
 
     Object.values(iframes).forEach(iframe_el => {
         iframe_wrapper.appendChild(iframe_el);
@@ -25,7 +25,6 @@
     const iframe_inits = [newIframeResponsePromise(iframes['svg']), newIframeResponsePromise(iframes['chtml'])];
     document.body.appendChild(iframe_wrapper);
     await Promise.all(iframe_inits);
-
 
     // expose the interface to interact with the iframes
     window.mjx_loader = new Proxy(
@@ -89,28 +88,44 @@
             get: function(mjx_loader, accessed_prop_name) {
                 if (['texToChtml', 'texToSvg', 'texToImg'].includes(accessed_prop_name)) {
                     if (accessed_prop_name === 'texToChtml') {
-                        // handle counter ...
-                        
-                        
-                        return function(...args) {
-                            return mjx_loader['texToChtml'].call({target_iframe: iframes['chtml']}, ...args)
+                        let iframeHandler = async () => {};
+                        if (mjx_loader['chtml_msg_count'] === mjx_loader['chtml_msg_limit']) {
+                            iframeHandler = () => destroyAndRestartLoader('chtml');
+                            mjx_loader['chtml_msg_count'] = 0;
+                        }
+
+                        mjx_loader['chtml_msg_count']++;
+                         
+                        return async function(...args) {
+                            await iframeHandler();
+
+                            return await mjx_loader['texToChtml'].call({target_iframe: iframes['chtml']}, ...args);
                         }
                     }
                     else if (
                         accessed_prop_name === 'texToSvg' || 
                         accessed_prop_name === 'texToImg'
                     ) {
-                        // handle counter ...
+                        let iframeHandler = async () => {};
+                        if (mjx_loader['svg_msg_count'] === mjx_loader['svg_msg_limit']) {
+                            iframeHandler = () => destroyAndRestartLoader('svg');
+                            mjx_loader['svg_msg_count'] = 0;
+                        }
 
+                        mjx_loader['svg_msg_count']++;
 
                         if (accessed_prop_name === 'texToSvg') {
-                            return function(...args) {
-                                return mjx_loader['texToSvg'].call({target_iframe: iframes['svg']}, ...args)
+                            return async function(...args) {
+                                await iframeHandler();
+
+                                return await mjx_loader['texToSvg'].call({target_iframe: iframes['svg']}, ...args)
                             }
                         }
                         else if (accessed_prop_name === 'texToImg') {
-                            return function(...args) {
-                                return mjx_loader['texToImg'].call({
+                            return async function(...args) {
+                                await iframeHandler();
+
+                                return await mjx_loader['texToImg'].call({
                                     target_iframe: iframes['svg'],
                                     texToSvg: mjx_loader['texToSvg']
                                 }, ...args);
@@ -127,29 +142,60 @@
             }
         }
     );
-})();
 
-function newIframeResponsePromise(iframe_el) {
-    return new Promise((resolve) => {
-        const handlerFunc = function(event) {
-            if (
-                event.origin !== window.location.origin ||
-                event.source !== iframe_el.contentWindow
-            ) return;
-            else {
-                window.removeEventListener('message', handlerFunc);
-                resolve(event.data);
-            }
-        };
-        
-        window.addEventListener('message', handlerFunc); // resolves on iframe response (with data)
+    // asynchronously request the mjx chtml styles from the chtml loader (to be inserted into the head when they are ready)
+    newIframeMessagePromise(iframes['chtml'], {message_type: 'mjx_styles_request'}).then((style_tag_str) => {
+        const parsed_styles = (new DOMParser()).parseFromString(style_tag_str, 'text/html').head.firstChild;
+        document.head.appendChild(parsed_styles);
     });
-}
 
-function newIframeMessagePromise(iframe_el, message_data) {
-    const response_promise = newIframeResponsePromise(iframe_el);
+    // helpers
+    function newIframeResponsePromise(iframe_el) {
+        return new Promise((resolve) => {
+            const handlerFunc = function(event) {
+                if (
+                    event.origin !== window.location.origin ||
+                    event.source !== iframe_el.contentWindow
+                ) return;
+                else {
+                    window.removeEventListener('message', handlerFunc);
+                    resolve(event.data);
+                }
+            };
+            
+            window.addEventListener('message', handlerFunc); // resolves on iframe response (with data)
+        });
+    }
 
-    iframe_el.contentWindow.postMessage(message_data, window.location.origin);
+    function newIframeMessagePromise(iframe_el, message_data) {
+        const response_promise = newIframeResponsePromise(iframe_el);
 
-    return response_promise;
-}
+        iframe_el.contentWindow.postMessage(message_data, window.location.origin);
+
+        return response_promise;
+    }
+
+    function destroyAndRestartLoader(svg_or_chtml) {
+        console.log(svg_or_chtml + ' destroyed and reloaded')
+
+        const iframe_styles = iframes[svg_or_chtml].getAttribute('style');
+        
+        iframes[svg_or_chtml].remove();
+        delete iframes[svg_or_chtml];
+
+        iframes[svg_or_chtml] = document.createElement('iframe');
+        iframes[svg_or_chtml].srcdoc = `
+            <!DOCTYPE html><html><body>
+                <script src="${window.location.origin}/scripts/math-jax/${svg_or_chtml}/loader.js"><\/script>
+            </body></html>
+        `;
+
+        iframes[svg_or_chtml].setAttribute('style', iframe_styles);
+
+        const init_promise = newIframeResponsePromise(iframes[svg_or_chtml]);
+
+        document.getElementById('mjx-loaders').appendChild(iframes[svg_or_chtml]);
+
+        return init_promise;
+    }
+})();
