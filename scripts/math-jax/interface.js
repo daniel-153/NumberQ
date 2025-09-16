@@ -41,7 +41,7 @@
                 });
 
                 const dom_parser = new DOMParser();
-                return chtml_str_arr.map(chtml_str => dom_parser.parseFromString(chtml_str, 'text/html').body.firstChild);
+                return chtml_str_arr.map(chtml_str => dom_parser.parseFromString(chtml_str, 'text/html').body.firstElementChild);
             },
             texToSvg: async function(string_factor_pairs) {
                 const svg_str_arr = await newIframeMessagePromise(this.target_iframe, {
@@ -50,7 +50,7 @@
                 });
 
                 const dom_parser = new DOMParser();
-                return svg_str_arr.map(svg_str => dom_parser.parseFromString(svg_str, 'image/svg+xml').firstChild);
+                return svg_str_arr.map(svg_str => dom_parser.parseFromString(svg_str, 'image/svg+xml').documentElement);
             },
             texToImg: async function(string_factor_pairs) {
                 const mjx_svgs = await this.texToSvg.call(
@@ -86,7 +86,7 @@
                 if (['texToChtml', 'texToSvg', 'texToImg'].includes(accessed_prop_name)) {
                     if (accessed_prop_name === 'texToChtml') {
                         let iframeHandler = async () => {};
-                        if (mjx_loader['chtml_msg_count'] === mjx_loader['chtml_msg_limit']) {
+                        if (mjx_loader['chtml_msg_count'] >= mjx_loader['chtml_msg_limit']) {
                             iframeHandler = () => destroyAndRestartLoader('chtml');
                             mjx_loader['chtml_msg_count'] = 0;
                         }
@@ -217,7 +217,9 @@
         const init_promise = newIframeResponsePromise(iframes[svg_or_chtml]);
         document.getElementById('mjx-loaders').appendChild(iframes[svg_or_chtml]);
         await init_promise;
-
-        await window.mjx_loader[`load${svg_or_chtml.charAt(0).toUpperCase()}${svg_or_chtml.slice(1)}Components`](loaded_extensions);
+        
+        if (Array.isArray(loaded_extensions) && loaded_extensions.length > 0) {
+            await window.mjx_loader[`load${svg_or_chtml.charAt(0).toUpperCase()}${svg_or_chtml.slice(1)}Components`](loaded_extensions);
+        } 
     }
 })();
