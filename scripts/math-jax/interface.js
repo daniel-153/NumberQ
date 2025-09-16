@@ -163,7 +163,7 @@
     });
 
     // helpers
-    function newIframeResponsePromise(iframe_el) {
+    function newIframeResponsePromise(iframe_el) { // resolves on the soonest message from the same iframe
         return new Promise((resolve) => {
             const handlerFunc = function(event) {
                 if (
@@ -176,16 +176,26 @@
                 }
             };
             
-            window.addEventListener('message', handlerFunc); // resolves on iframe response (with data)
+            window.addEventListener('message', handlerFunc);
         });
     }
 
-    function newIframeMessagePromise(iframe_el, message_data) {
-        const response_promise = newIframeResponsePromise(iframe_el);
+    function newIframeMessagePromise(iframe_el, message_data) { // resolves on the corresponding response to the message sent
+        return new Promise((resolve, reject) => {
+            const {port1, port2} = new MessageChannel();
 
-        iframe_el.contentWindow.postMessage(message_data, window.location.origin);
+            port1.onmessage = (event) => {
+                port1.close();
+                resolve(event.data);
+            };
 
-        return response_promise;
+            port1.onmessageerror = () => {
+                port1.close();
+                reject(new Error('Iframe message attempt failed.'));
+            };
+
+            iframe_el.contentWindow.postMessage(message_data, window.location.origin, [port2]);
+        });
     }
 
     async function destroyAndRestartLoader(svg_or_chtml) {

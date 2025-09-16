@@ -22,30 +22,31 @@
     });
     
     window.addEventListener('message', async (event) => {
-        if (event.origin !== window.parent.origin) return;
+        const reply_port = event.ports[0];
+        if (event.origin !== window.parent.origin || !reply_port) return;
 
         if (event.data.message_type === 'status_confirmation') {
-            window.parent.postMessage('ready', window.parent.origin);
+            reply_port.postMessage('ready');
         }
         else if (event.data.message_type === 'typeset_request') {
-            window.parent.postMessage(
+            reply_port.postMessage(
                 await getChtmlStringArray((await math_jax), event.data.tex_str_arr),
-                window.parent.origin
             );
         }
         else if (event.data.message_type === 'load_mjx_components') {
             try {
                 await (await math_jax).loader.load(...event.data.component_paths);
-                window.parent.postMessage('done', window.parent.origin);
+                reply_port.postMessage('done');
             } catch (error) {
-                window.parent.postMessage('failed: ' + error, window.parent.origin);
+                reply_port.postMessage('failed: ' + error);
             } 
         }
         else if (event.data.message_type === 'mjx_styles_request') {
-            math_jax.then(() => {
-                window.parent.postMessage(document.getElementById('MJX-CHTML-styles').outerHTML, window.parent.origin);
-            });            
+            await math_jax;
+            reply_port.postMessage(document.getElementById('MJX-CHTML-styles').outerHTML);
         }
+
+        reply_port.close();
     });
 
     window.parent.postMessage('ready', window.parent.origin);
@@ -78,4 +79,3 @@
         return chtml_string_array;
     }
 })();
-
