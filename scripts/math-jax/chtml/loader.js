@@ -12,6 +12,9 @@
                             resolve(window.MathJax)
                         });
                     }
+                },
+                chtml: {
+                    adaptiveCSS: Boolean(Number(document.documentElement.getAttribute('data-use-adaptive-css')))
                 }
             };
 

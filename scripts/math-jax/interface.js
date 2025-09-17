@@ -4,7 +4,7 @@ await (async function init() {
     Object.keys(iframes).forEach(loader_type => {
         iframes[loader_type] = document.createElement('iframe');
         iframes[loader_type].srcdoc = `
-            <!DOCTYPE html><html><body>
+            <!DOCTYPE html><html data-use-adaptive-css="0"><body>
                 <script src="${window.location.origin}/scripts/math-jax/${loader_type}/loader.js"><\/script>
             </body></html>
         `;
@@ -233,7 +233,7 @@ await (async function init() {
 
         iframes[svg_or_chtml] = document.createElement('iframe');
         iframes[svg_or_chtml].srcdoc = `
-            <!DOCTYPE html><html><body>
+            <!DOCTYPE html><html data-use-adaptive-css="1"><body>
                 <script src="${window.location.origin}/scripts/math-jax/${svg_or_chtml}/loader.js"><\/script>
             </body></html>
         `;
