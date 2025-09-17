@@ -1,4 +1,4 @@
-(async function init() {
+await (async function init() {
     // create the two iframes (svg and chtml)
     const iframes = {'svg': null, 'chtml': null};
     Object.keys(iframes).forEach(loader_type => {
