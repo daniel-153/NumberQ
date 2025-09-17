@@ -82,69 +82,95 @@
             loadChtmlComponents: async function(component_paths) {}
         },
         {
+            __task_queue__: Promise.resolve(),
             get: function(mjx_loader, accessed_prop_name) {
-                if (['texToChtml', 'texToSvg', 'texToImg'].includes(accessed_prop_name)) {
-                    if (accessed_prop_name === 'texToChtml') {
-                        let iframeHandler = async () => {};
-                        if (mjx_loader['chtml_msg_count'] >= mjx_loader['chtml_msg_limit']) {
-                            iframeHandler = () => destroyAndRestartLoader('chtml');
-                            mjx_loader['chtml_msg_count'] = 0;
-                        }
+                if (typeof(mjx_loader[accessed_prop_name]) === 'function') {
+                    let current_task_func;
+                    if (['texToChtml', 'texToSvg', 'texToImg'].includes(accessed_prop_name)) {
+                        if (accessed_prop_name === 'texToChtml') {
+                            let iframeHandler = async () => {};
+                            if (mjx_loader['chtml_msg_count'] >= mjx_loader['chtml_msg_limit']) {
+                                iframeHandler = () => destroyAndRestartLoader('chtml');
+                                mjx_loader['chtml_msg_count'] = 0;
+                            }
 
-                        mjx_loader['chtml_msg_count']++;
-                         
-                        return async function(...args) {
-                            await iframeHandler();
-
-                            return await mjx_loader['texToChtml'].call({target_iframe: iframes['chtml']}, ...args);
-                        }
-                    }
-                    else if (
-                        accessed_prop_name === 'texToSvg' || 
-                        accessed_prop_name === 'texToImg'
-                    ) {
-                        let iframeHandler = async () => {};
-                        if (mjx_loader['svg_msg_count'] === mjx_loader['svg_msg_limit']) {
-                            iframeHandler = () => destroyAndRestartLoader('svg');
-                            mjx_loader['svg_msg_count'] = 0;
-                        }
-
-                        mjx_loader['svg_msg_count']++;
-
-                        if (accessed_prop_name === 'texToSvg') {
-                            return async function(...args) {
+                            mjx_loader['chtml_msg_count']++;
+                            
+                            current_task_func = async function(...args) {
                                 await iframeHandler();
 
-                                return await mjx_loader['texToSvg'].call({target_iframe: iframes['svg']}, ...args)
+                                return await mjx_loader['texToChtml'].call({target_iframe: iframes['chtml']}, ...args);
                             }
                         }
-                        else if (accessed_prop_name === 'texToImg') {
-                            return async function(...args) {
-                                await iframeHandler();
+                        else if (
+                            accessed_prop_name === 'texToSvg' || 
+                            accessed_prop_name === 'texToImg'
+                        ) {
+                            let iframeHandler = async () => {};
+                            if (mjx_loader['svg_msg_count'] === mjx_loader['svg_msg_limit']) {
+                                iframeHandler = () => destroyAndRestartLoader('svg');
+                                mjx_loader['svg_msg_count'] = 0;
+                            }
 
-                                return await mjx_loader['texToImg'].call({
-                                    target_iframe: iframes['svg'],
-                                    texToSvg: mjx_loader['texToSvg']
-                                }, ...args);
+                            mjx_loader['svg_msg_count']++;
+
+                            if (accessed_prop_name === 'texToSvg') {
+                                current_task_func = async function(...args) {
+                                    await iframeHandler();
+
+                                    return await mjx_loader['texToSvg'].call({target_iframe: iframes['svg']}, ...args)
+                                }
+                            }
+                            else if (accessed_prop_name === 'texToImg') {
+                                current_task_func = async function(...args) {
+                                    await iframeHandler();
+
+                                    return await mjx_loader['texToImg'].call({
+                                        target_iframe: iframes['svg'],
+                                        texToSvg: mjx_loader['texToSvg']
+                                    }, ...args);
+                                }
                             }
                         }
                     }
-                }
-                else if (['loadSvgComponents', 'loadChtmlComponents'].includes(accessed_prop_name)) {
-                    const svg_or_chtml = accessed_prop_name.slice(4, 9).toLowerCase();
+                    else if (['loadSvgComponents', 'loadChtmlComponents'].includes(accessed_prop_name)) {
+                        const svg_or_chtml = accessed_prop_name.slice(4, 9).toLowerCase();
 
-                    return async function(component_paths) {
-                        await newIframeMessagePromise(iframes[svg_or_chtml], {
-                            message_type: 'load_mjx_components',
-                            component_paths: component_paths
-                        });
+                        current_task_func = async function(component_paths) {
+                            await newIframeMessagePromise(iframes[svg_or_chtml], {
+                                message_type: 'load_mjx_components',
+                                component_paths: component_paths
+                            });
 
-                        if (!Array.isArray(iframes[svg_or_chtml].loaded_extensions)) {
-                            iframes[svg_or_chtml].loaded_extensions = [];
+                            if (!Array.isArray(iframes[svg_or_chtml].loaded_extensions)) {
+                                iframes[svg_or_chtml].loaded_extensions = [];
+                            }
+
+                            iframes[svg_or_chtml].loaded_extensions.push(...component_paths)
                         }
-
-                        iframes[svg_or_chtml].loaded_extensions.push(...component_paths)
                     }
+                    else {
+                        current_task_func = async function(...args) {
+                            return await mjx_loader[accessed_prop_name](...args);
+                        }
+                    }
+
+                    const previous_tasks = this.__task_queue__;
+                    let wrapped_task_func;
+                    const current_task = new Promise((resolve) => {
+                        wrapped_task_func = async function(...args) {
+                            try {
+                                await previous_tasks;
+                                return await current_task_func(...args);
+                            } finally {
+                                resolve();
+                            }
+                        }
+                    });
+
+                    this.__task_queue__ = current_task;
+
+                    return wrapped_task_func;
                 }
                 else {
                     return mjx_loader[accessed_prop_name];
