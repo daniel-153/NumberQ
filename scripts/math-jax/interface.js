@@ -29,10 +29,10 @@ await (async function init() {
     // expose the interface to interact with the iframes
     window.mjx_loader = new Proxy(
         {
-            chtml_msg_limit: 200,
-            svg_msg_limit: 200,
-            chtml_msg_count: 0,
-            svg_msg_count: 0,
+            chtml_render_limit: 200,
+            svg_render_limit: 200,
+            chtml_render_count: 0,
+            svg_render_count: 0,
 
             texToChtml: async function(tex_str_arr) {
                 const chtml_str_arr = await newIframeMessagePromise(this.target_iframe, {
@@ -87,50 +87,55 @@ await (async function init() {
                 if (typeof(mjx_loader[accessed_prop_name]) === 'function') {
                     let current_task_func;
                     if (['texToChtml', 'texToSvg', 'texToImg'].includes(accessed_prop_name)) {
+                        let typesetFunc, loader_name;
                         if (accessed_prop_name === 'texToChtml') {
-                            let iframeHandler = async () => {};
-                            if (mjx_loader['chtml_msg_count'] >= mjx_loader['chtml_msg_limit']) {
-                                iframeHandler = () => destroyAndRestartLoader('chtml');
-                                mjx_loader['chtml_msg_count'] = 0;
-                            }
-
-                            mjx_loader['chtml_msg_count']++;
-                            
-                            current_task_func = async function(...args) {
-                                await iframeHandler();
-
-                                return await mjx_loader['texToChtml'].call({target_iframe: iframes['chtml']}, ...args);
+                            loader_name = 'chtml';
+                            typesetFunc = async function(tex_str_arr) {
+                                return await mjx_loader['texToChtml'].call({target_iframe: iframes['chtml']}, tex_str_arr)
                             }
                         }
-                        else if (
-                            accessed_prop_name === 'texToSvg' || 
-                            accessed_prop_name === 'texToImg'
-                        ) {
-                            let iframeHandler = async () => {};
-                            if (mjx_loader['svg_msg_count'] === mjx_loader['svg_msg_limit']) {
-                                iframeHandler = () => destroyAndRestartLoader('svg');
-                                mjx_loader['svg_msg_count'] = 0;
+                        else if (accessed_prop_name === 'texToSvg') {
+                            loader_name = 'svg';
+                            typesetFunc = async function(tex_str_arr) {
+                                return await mjx_loader['texToSvg'].call({target_iframe: iframes['svg']}, tex_str_arr)
                             }
+                        }   
+                        else if (accessed_prop_name === 'texToImg') {
+                            loader_name = 'svg';
+                            typesetFunc = async function(tex_str_arr) {
+                                return await mjx_loader['texToImg'].call({
+                                    target_iframe: iframes['svg'],
+                                    texToSvg: mjx_loader['texToSvg']
+                                }, tex_str_arr);
+                            }
+                        }
 
-                            mjx_loader['svg_msg_count']++;
+                        current_task_func = async function(tex_str_arr) {
+                            const render_count = `${loader_name}_render_count`;
+                            const render_limit = `${loader_name}_render_limit`;
+                            let pre_limit_tex = tex_str_arr.slice(0, mjx_loader[render_limit] - mjx_loader[render_count]);
+                            let post_limit_tex = tex_str_arr.slice(mjx_loader[render_limit] - mjx_loader[render_count]);
+                            let rendered_output_arr = []; 
 
-                            if (accessed_prop_name === 'texToSvg') {
-                                current_task_func = async function(...args) {
-                                    await iframeHandler();
+                            do {
+                                if (pre_limit_tex.length > 0) {
+                                    rendered_output_arr = rendered_output_arr.concat(
+                                        await typesetFunc(pre_limit_tex)
+                                    );
 
-                                    return await mjx_loader['texToSvg'].call({target_iframe: iframes['svg']}, ...args)
+                                    mjx_loader[render_count] += pre_limit_tex.length;
+                                    pre_limit_tex.length = 0
                                 }
-                            }
-                            else if (accessed_prop_name === 'texToImg') {
-                                current_task_func = async function(...args) {
-                                    await iframeHandler();
 
-                                    return await mjx_loader['texToImg'].call({
-                                        target_iframe: iframes['svg'],
-                                        texToSvg: mjx_loader['texToSvg']
-                                    }, ...args);
+                                if (post_limit_tex.length > 0) {
+                                    await destroyAndRestartLoader(loader_name);
+                                    mjx_loader[render_count] = 0;
+                                    
+                                    pre_limit_tex = post_limit_tex.splice(0, Math.min(mjx_loader[render_limit], post_limit_tex.length));
                                 }
-                            }
+                            } while (pre_limit_tex.length > 0);
+
+                            return rendered_output_arr;
                         }
                     }
                     else if (['loadSvgComponents', 'loadChtmlComponents'].includes(accessed_prop_name)) {
