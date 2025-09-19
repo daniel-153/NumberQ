@@ -193,7 +193,7 @@ await (async function init() {
                     }
                 }
                 else if (['loadSvgComponents', 'loadChtmlComponents'].includes(func_name)) {
-                    const svg_or_chtml = func_name.slice(4, 9).toLowerCase();
+                    const svg_or_chtml = (func_name.includes('html'))? 'chtml' : 'svg';
 
                     task_func = async function(component_paths) {
                         await newIframeMessagePromise(iframes[svg_or_chtml], {
