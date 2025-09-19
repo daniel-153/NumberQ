@@ -409,38 +409,14 @@ export async function loadMjxExtensions(gen_module, pg_ui_state) {
 
     if (gen_module.required_mjx_extensions === undefined) return; // gen module doesn't specify any extensions to load
     else {
-        // load the extensions for the MathJax instance in the main window
+        // load the required extensions in both the chtml and svg loaders
         pg_ui_state.required_mjx_extensions = [...gen_module.required_mjx_extensions];
         try {
-            await MathJax.loader.load(...pg_ui_state.required_mjx_extensions);
+            await mjx_loader.loadChtmlComponents(pg_ui_state.required_mjx_extensions);
+            await mjx_loader.loadSvgComponents(pg_ui_state.required_mjx_extensions)
         } catch (error) { // failure (log but don't throw to avoid putting the gen-sequence/pg-ui in a bad state)
             console.error(`Failed to load mjx-components '${pg_ui_state.required_mjx_extensions}': ${error}`);
-            return;
         }
-        
-        // load the extensions for the MathJax instance in the mjx-svg-loader iframe window
-        let iframe_el;
-        if ((await CH.MIH.getIframeStatus()) === null) {
-            iframe_el = await CH.MIH.initIframe();
-        }
-        else {
-            iframe_el = document.getElementById('mjx-svg-loader');
-        }
-
-        await new Promise((resolve) => {
-            CH.MIH.awaitIframeResponse(iframe_el, (response_data) => { // sets an event listener on the window that waits for the iframe response, calls the handler, then disposes the listener
-                if (response_data !== 'done') { // failure (log but don't throw to avoid putting the gen-sequence/pg-ui in a bad state)
-                    console.error(`Failed to load mjx-components '${pg_ui_state.required_mjx_extensions}' in mjx-svg-loader: ${response_data}.`)
-                }
-                
-                resolve();
-            });
-
-            iframe_el.contentWindow.postMessage({
-                message_type: 'load_mjx_components', 
-                component_paths: pg_ui_state.required_mjx_extensions
-            }, window.location.origin);
-        });
     }
 }
 
@@ -472,7 +448,7 @@ const CPH = { // createSettingsPresets helpers
                     <div class="preset-tooltip-wrapper">
                         <div class="preset-tooltip-content">
                             <h3 class="preset-descriptor preset-tooltip-title">${title}:</h3>
-                            <div class="preset-descriptor preset-tooltip-math un-rendered-preset-math" data-latexcode="${example_problem}"></div>
+                            <div class="preset-descriptor preset-tooltip-math">\\(${example_problem}\\)</div>
                             <p class="preset-descriptor preset-tooltip-description">${description}</p>
                         </div>
                     </div>
@@ -481,27 +457,13 @@ const CPH = { // createSettingsPresets helpers
         `;
     },
     insertPresetMjx: async function() {
-        const preset_math_containers = Array.from(document.getElementById('settings-presets-list').querySelectorAll('.un-rendered-preset-math'));
+        const preset_container = document.getElementById('preset-list-wrapper');
+        await mjx_loader.typesetPromise(preset_container, 'svg', 6);
 
-        const string_factor_pairs = [];
-        preset_math_containers.forEach(math_container => {
-            string_factor_pairs.push([
-                math_container.getAttribute('data-latexcode'),
-                6
-            ]);
-        });
-
-        const mjx_svgs = await CH.getMathJaxAsSvg(string_factor_pairs);
-        for (let i = 0; i < mjx_svgs.length; i++) {
-            const math_container = preset_math_containers[i];
-            const mjx_svg = mjx_svgs[i]
-
+        Array.from(preset_container.querySelectorAll('svg')).forEach(mjx_svg => {
             mjx_svg.classList.add('preset-mjx-svg');
-
-            math_container.appendChild(mjx_svg);
-            math_container.classList.remove('un-rendered-preset-math');
-        }
-    }
+        });
+    }   
 };
 export async function createSettingsPresets(gen_module, pg_ui_state) {
     pg_ui_state.preset_funcs = {}; // clear previous

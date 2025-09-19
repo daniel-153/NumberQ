@@ -131,7 +131,7 @@ export async function getPreExportContent(export_ui_state) {
     if (export_ui_state.export_type === 'latex') {
         const latex_string = document.getElementById(`rendered-${export_ui_state.export_target}`).getAttribute('data-latexcode');
 
-        export_ui_state.pre_export_element = (await CH.getMathJaxAsSvg([[latex_string, 15]]))[0];
+        export_ui_state.pre_export_element = (await mjx_loader.texToSvg([[latex_string, 15]]))[0];
     }
     else if (export_ui_state.export_type === 'canvas') {
         export_ui_state.pre_export_element = document.getElementById(`rendered-${export_ui_state.export_target}`).firstElementChild;

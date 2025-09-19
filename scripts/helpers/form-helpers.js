@@ -336,8 +336,9 @@ export async function createSettingsFields(settings_field_names, settings_templa
         }
     }
 
-    document.getElementById(form_ID).innerHTML = combined_html;
-    MathJax.typesetPromise([`#${form_ID}`]);
+    const form_el = document.getElementById(form_ID)
+    form_el.innerHTML = combined_html;
+    mjx_loader.typesetPromise(form_el);
 
     return valid_values_log;
 } // create and insert the settings fields with names in settings_field_names, from settings_templates_module, into form with ID of form_ID

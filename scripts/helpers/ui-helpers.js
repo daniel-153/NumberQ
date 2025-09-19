@@ -24,11 +24,12 @@ export function updateElementMath(math_container_id, latex_str, initial_font_siz
     }
 
     // apply the resolved initial font size and do the intial typeset
-    math_container.innerHTML = '<div class="inner-math-wrapper" style="width: fit-content; height: fit-content; max-width: fit-content; max-height: fit-content;">\\(' + latex_str + '\\)</div>';
+    math_container.innerHTML = '<div class="inner-math-wrapper" style="width: fit-content; height: fit-content; max-width: fit-content; max-height: fit-content; opacity: 0;">\\(' + latex_str + '\\)</div>';
     const inner_math_container = math_container.firstElementChild;
     inner_math_container.style.fontSize = initial_font_size_vw + 'vw';
     math_container.setAttribute('data-latexcode', latex_str); // expose the LaTeX so it's still accessible after rendering
-    MathJax.typesetPromise([inner_math_container]).then(() => {
+    mjx_loader.typesetPromise(inner_math_container).then(() => {
+        inner_math_container.style.opacity = 1;
         const hasXOverflow = () => inner_math_container.clientWidth > math_container.clientWidth;
         const hasYOverflow = () => inner_math_container.clientHeight > math_container.clientHeight;
         const hasXorYOverflow = () => hasXOverflow() || hasYOverflow();
@@ -168,6 +169,7 @@ export function insertModeBanners() {
         `;
     })
 
-    document.getElementById('generator-list').insertAdjacentHTML('afterbegin',output_html);
-    MathJax.typesetPromise(['#generator-list']);
+    const gen_list = document.getElementById('generator-list');
+    gen_list.insertAdjacentHTML('afterbegin',output_html);
+    mjx_loader.typesetPromise(gen_list);
 }

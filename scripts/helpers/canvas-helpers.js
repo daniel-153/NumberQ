@@ -173,168 +173,6 @@ const CH = {
         });
         C.stroke()
     },
-    MIH: { // mjx image helpers
-        awaitIframeResponse: function(iframe_el, resolveCallback) {
-            const handlerFunc = function(event) {
-                if (
-                    event.origin !== window.location.origin ||
-                    event.source !== iframe_el.contentWindow
-                ) return;
-                else {
-                    window.removeEventListener('message', handlerFunc);
-                    resolveCallback(event.data);
-                }
-            };
-
-            window.addEventListener('message', handlerFunc);
-        },
-        initIframe: async function() { // insert into the dom (+ wait until ready before continuing)
-            const iframe_el = document.createElement('iframe');
-            iframe_el.style.position = 'absolute';
-            iframe_el.style.left = '-9999px';
-            iframe_el.style.top = '-9999px';
-            iframe_el.srcdoc = `
-                <!DOCTYPE html><html><body>
-                    <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"><\/script>
-                    <script>
-                        const iframe_parent_origin = '${window.location.origin}';
-
-                        async function getSvgStringArray(string_factor_pairs) {
-                            string_factor_pairs.forEach(pair => {
-                                const mjx_container = document.createElement('div');
-                                mjx_container.innerHTML = '\\\\(' + pair[0] + '\\\\)';
-                                mjx_container.setAttribute('data-latex-code', pair[0]);
-                                mjx_container.setAttribute('data-scale-factor', pair[1]);
-
-                                document.body.appendChild(mjx_container);
-                            });
-
-                            await MathJax.typesetPromise([document.body]);
-
-                            const svg_string_array = [];
-                            Array.from(document.querySelectorAll('body div')).forEach(mjx_container => {
-                                const svg = mjx_container.querySelector('svg');
-                                svg.setAttribute('width', Number(svg.getAttribute('width').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
-                                svg.setAttribute('height', Number(svg.getAttribute('height').slice(0, -2)) * Number(mjx_container.getAttribute('data-scale-factor')) + 'ex');
-                                svg.setAttribute('data-latex-code', mjx_container.getAttribute('data-latex-code'));
-
-                                svg_string_array.push(svg.outerHTML);
-                            });
-
-                            // clear all the elements
-                            document.body.innerHTML = '';
-
-                            return svg_string_array;
-                        }
-
-                        window.addEventListener('message', async (event) => {
-                            if (event.origin !== iframe_parent_origin) return;
-
-                            if (event.data.message_type === 'status_confirmation') {
-                                window.parent.postMessage('ready', iframe_parent_origin);
-                            }
-                            else if (event.data.message_type === 'typeset_request') {
-                                window.parent.postMessage(
-                                    await getSvgStringArray(event.data.string_factor_pairs),
-                                    iframe_parent_origin
-                                );
-                            }
-                            else if (event.data.message_type === 'load_mjx_components') {
-                                try {
-                                    await MathJax.loader.load(...event.data.component_paths);
-                                    window.parent.postMessage('done', iframe_parent_origin);
-                                } catch (error) {
-                                    window.parent.postMessage('failed: ' + error, iframe_parent_origin);
-                                } 
-                            }
-                        });
-
-                        window.parent.postMessage('ready', iframe_parent_origin);
-                    <\/script>
-                </body></html>
-            `;
-
-            // remove a pre-existing iframe if it exists (to avoid adding multiple)
-            if (document.getElementById('mjx-svg-loader') !== null) document.getElementById('mjx-svg-loader').remove();
-            iframe_el.id = 'mjx-svg-loader';
-            document.getElementById('generation-content').appendChild(iframe_el);
-
-            // don't continue until the iframe loads and sends its initial 'ready' message
-            await new Promise((resolve) => {CH.MIH.awaitIframeResponse(iframe_el, resolve);});
-
-            return iframe_el;
-        },
-        getIframeStatus: async function() {
-            const iframe_el = document.getElementById('mjx-svg-loader');
-
-            if (iframe_el === null || iframe_el.contentWindow === undefined) return null; // no iframe element was inserted (if the status is null, this is almost certainly why)
-
-            // nonetheless, still add this handling just in case the iframe exists but can't communicate 
-            const test_result = await new Promise((resolve) => {
-                Promise.race([ // start the race
-                    new Promise((resolveResponse) => {
-                        CH.MIH.awaitIframeResponse(iframe_el, resolveResponse);
-                    }),
-                    new Promise((resolveTimedOut) => setTimeout(() => {resolveTimedOut(null)}, 500))
-                ]).then((value) => resolve(value));
-
-                iframe_el.contentWindow.postMessage({message_type: 'status_confirmation'}, window.location.origin); // send the message
-            });
-            
-            return test_result; // null or 'ready'
-        }
-    },
-    getMathJaxAsSvg: async function(string_factor_pairs) {
-        // initialize the iframe if it isn't already
-        let iframe_el;
-        if ((await this.MIH.getIframeStatus()) === null) {
-            iframe_el = await this.MIH.initIframe();
-        }
-        else {
-            iframe_el = document.getElementById('mjx-svg-loader');
-        }
-
-        // send over the latex string(s) and wait for the response
-        const svg_string_array = await new Promise((resolve) => {
-            new Promise((resolveResponse) => {
-                CH.MIH.awaitIframeResponse(iframe_el, resolveResponse);
-            }).then((value) => resolve(value));
-
-            iframe_el.contentWindow.postMessage({
-                message_type: 'typeset_request', 
-                string_factor_pairs
-            }, window.location.origin);
-        });
-
-        // return the svg elements parsed out of the strings
-        const dom_parser = new DOMParser();
-        return svg_string_array.map(svg_string => dom_parser.parseFromString(svg_string, 'image/svg+xml').firstChild);
-    },
-    getMathJaxAsImage: async function(string_factor_pairs) {
-        const mjx_images = await this.getMathJaxAsSvg(string_factor_pairs);
-
-        return await Promise.all(mjx_images.map(async function(mjx_svg) { // convert the each svg to an image
-            const svg_latex_code = mjx_svg.getAttribute('data-latex-code');
-            const svg_string = new XMLSerializer().serializeToString(mjx_svg);
-            const encoded = btoa(new TextEncoder().encode(svg_string).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-            const img_src = "data:image/svg+xml;base64," + encoded;
-
-            const img = new Image();
-            img.src = img_src;
-
-            try {
-                await new Promise((resolve, reject) => {
-                    img.onload = resolve;
-                    img.onerror = () => reject(new Error("SVG image failed to load"));
-                });
-            } catch (err) {
-                throw err;
-            }
-
-            img.setAttribute('data-latex-code', svg_latex_code);
-            return img;
-        }));
-    },
     getImageBoundingRect(image, location = {x: 0, y: 0}) {
         return {
             x1: location.x, x2: location.x + image.width,
@@ -431,7 +269,7 @@ const CH = {
 
             string_factor_pairs.push(pair);
         });
-        const mjx_images = await CH.getMathJaxAsImage(string_factor_pairs);
+        const mjx_images = await mjx_loader.texToImg(string_factor_pairs);
 
         // get the bounding rects for the side labels + put them in position (which will likely overflow the canvas initially) 
         const label_spacing = 17.25; // distance of the labels from the sides (px)
@@ -598,7 +436,7 @@ const CH = {
             string_factor_pairs.push(current_pair);
             vertex_letter_order.push(label_to_vertex[given_angle_name]);
         });
-        const mjx_images = await CH.getMathJaxAsImage(string_factor_pairs);
+        const mjx_images = await mjx_loader.texToImg(string_factor_pairs);
 
         // position and insert the images onto the triangle
         for (let i = 0; i < mjx_images.length; i++) {
@@ -699,7 +537,7 @@ const CH = {
 
             image_no_image_key.push(image_to_typset);
         }
-        const mjx_images = await CH.getMathJaxAsImage(string_factor_pairs);
+        const mjx_images = await mjx_loader.texToImg(string_factor_pairs);
 
         // unpack only the images that weren't null (and therefore were typeset)
         const side_images = {};
