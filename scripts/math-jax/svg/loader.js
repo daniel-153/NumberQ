@@ -10,6 +10,9 @@
                     pageReady: () => {
                         resolve(window.MathJax)
                     }
+                },
+                loader: {
+                    load: (document.documentElement.hasAttribute('data-loaded-extensions')) ?  document.documentElement.getAttribute('data-loaded-extensions').split(',') : []
                 }
             };
 

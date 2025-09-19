@@ -15,6 +15,9 @@
                 },
                 chtml: {
                     adaptiveCSS: Boolean(Number(document.documentElement.getAttribute('data-use-adaptive-css')))
+                },
+                loader: {
+                    load: (document.documentElement.hasAttribute('data-loaded-extensions')) ?  document.documentElement.getAttribute('data-loaded-extensions').split(',') : []
                 }
             };
 

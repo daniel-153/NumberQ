@@ -306,9 +306,14 @@ await (async function init() {
         iframes[svg_or_chtml].remove();
         delete iframes[svg_or_chtml];
 
+        let extension_data = '';
+        if (Array.isArray(loaded_extensions) && loaded_extensions.length > 0) {
+            extension_data = `data-loaded-extensions="${loaded_extensions.join(',')}"`;
+        } 
+
         iframes[svg_or_chtml] = document.createElement('iframe');
         iframes[svg_or_chtml].srcdoc = `
-            <!DOCTYPE html><html data-use-adaptive-css="1"><body>
+            <!DOCTYPE html><html data-use-adaptive-css="1" ${extension_data}><body>
                 <script src="${window.location.origin}/scripts/math-jax/${svg_or_chtml}/loader.js"><\/script>
             </body></html>
         `;
@@ -318,9 +323,5 @@ await (async function init() {
         const init_promise = newIframeResponsePromise(iframes[svg_or_chtml]);
         document.getElementById('mjx-loaders').appendChild(iframes[svg_or_chtml]);
         await init_promise;
-        
-        if (Array.isArray(loaded_extensions) && loaded_extensions.length > 0) {
-            await window.mjx_loader[`load${svg_or_chtml.charAt(0).toUpperCase()}${svg_or_chtml.slice(1)}Components`](loaded_extensions);
-        } 
     }
 })();
