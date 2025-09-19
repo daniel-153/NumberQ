@@ -5,4 +5,5 @@ import { registerEventListeners } from "./events/handlers.js";
 (function init() {
     insertModeBanners();
     registerEventListeners();
+    mjx_loader.typesetPromise();
 })();
