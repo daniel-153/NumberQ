@@ -173,3 +173,105 @@ export function insertModeBanners() {
     gen_list.insertAdjacentHTML('afterbegin',output_html);
     mjx_loader.typesetPromise(gen_list);
 }
+
+const UVH = { // ui visibility helpers
+    visibility_states: {
+        'home-page-content': {
+            is_open: true,
+            children: null
+        },
+        'generation-content': {
+            is_open: false,
+            children: {
+                'export-content': {
+                    is_open: false,
+                    children: null
+                },
+                'present-content': {
+                    is_open: false,
+                    children: null
+                }
+            }
+        },
+        'FAQ-page': {
+            is_open: false,
+            children: null
+        }
+    },
+    getRoot: function(visibility_states) {
+        return {
+            is_open: true,
+            children: visibility_states
+        }
+    },
+    findContent: function(content_id, parent_page) {
+        if (parent_page.children !== null && typeof(parent_page.children) === 'object') {
+            const children_ids = Object.keys(parent_page.children);
+
+            if (children_ids.includes(content_id)) {
+                return {
+                    target_page: parent_page.children[content_id],
+                    parent: parent_page
+                };
+            }
+            else {
+                for (let i = 0; i < children_ids.length; i++) {
+                    const sub_parent = parent_page.children[children_ids[i]];
+                    const search_result = UVH.findContent(content_id, sub_parent);
+
+                    if (search_result !== null) return search_result;
+                }
+
+                return null;
+            }
+        }
+        else return null;
+    },
+    closeRecursive: function(content_id, parent_page) {
+        document.getElementById(content_id)?.classList.add('hidden-content');
+        parent_page.children[content_id].is_open = false;
+
+        if (
+            parent_page.children[content_id].children !== null && 
+            typeof(parent_page.children[content_id].children) === 'object'
+        ) {
+            Object.keys(parent_page.children[content_id].children).forEach(sub_child => {
+                UVH.closeRecursive(sub_child, parent_page.children[content_id]);
+            });
+        }
+    }
+};
+export function open(content_id, visibility_states = UVH.visibility_states) {
+    const root = UVH.getRoot(visibility_states);
+    const search_result = UVH.findContent(content_id, root);
+
+    if (search_result !== null) {
+        const {target_page, parent} = search_result;
+
+        if (!parent.is_open) return false;
+        else {
+            Object.keys(parent.children).forEach(content_at_level => {
+                if (content_at_level !== content_id) {
+                    UVH.closeRecursive(content_at_level, parent);
+                }
+            });
+
+            document.getElementById(content_id)?.classList.remove('hidden-content');
+            target_page.is_open = true;
+
+            return true;
+        }
+    }   
+    else return false;
+}
+export function close(content_id, visibility_states = UVH.visibility_states) {
+    const root = UVH.getRoot(visibility_states);
+    const search_result = UVH.findContent(content_id, root);
+
+    if (search_result !== null) {
+        UVH.closeRecursive(content_id, search_result.parent);
+
+        return true;
+    }   
+    else return false;
+}

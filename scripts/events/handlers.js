@@ -7,7 +7,7 @@ const event_listeners = [
     function homePage() {
         document.getElementById('generator-list').addEventListener('click', (event) => {
             if (event.target.matches('.start-button')) {
-                UH.toggleVisibility(['generation-content'], ['home-page-content', 'presenation-content']);
+                UH.open('generation-content');
                 window.scrollTo(0, 0);
                 history.pushState({ page: 'generator' }, '', '');
                 PGH.resetSettingsVisualUi(event.target.getAttribute('data-gen-func-name'));
@@ -17,7 +17,7 @@ const event_listeners = [
         });
 
         window.addEventListener('popstate',() => {
-            UH.toggleVisibility(['home-page-content'], ['generation-content', 'FAQ-page']);
+            UH.open('home-page-content');
             document.body.style.overflowY = 'visible';
             history.pushState({ page: 'generator' }, '', '');
         });
@@ -28,7 +28,7 @@ const event_listeners = [
         });
 
         document.getElementById('see-info-button').addEventListener('click', () => {
-            UH.toggleVisibility(['FAQ-page'], ['home-page-content']);
+            UH.open('FAQ-page')
             window.scrollTo(0, 0);
             document.getElementById('FAQ-content-container').scrollTo(0, 0);
             history.pushState({ page: 'generator' }, '', '');
@@ -36,9 +36,14 @@ const event_listeners = [
     },
 
     function problemGenPage() {
-        document.getElementById('Q-A-container').addEventListener('click', async (event) => {
-            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) PGH.handleCopyClick(event.target.closest('.export-image-wrapper').id.slice(0, 3));
-            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) E.buildNewExportUi(event.target.closest('.export-image-wrapper').id.charAt(0));
+        document.getElementById('Q-A-container').addEventListener('click', (event) => {
+            if (event.target.matches('.copy-image-wrapper') || event.target.matches('.copy-button-image')) {
+                PGH.handleCopyClick(event.target.closest('.export-image-wrapper').id.slice(0, 3));
+            }
+            else if (event.target.matches('.save-image-wrapper') || event.target.matches('.save-button-image')) {
+                UH.open('export-content');
+                E.buildNewExportUi(event.target.closest('.export-image-wrapper').id.charAt(0));
+            }
         });
 
         document.getElementById('generate-button').addEventListener('click', () => {
@@ -46,7 +51,7 @@ const event_listeners = [
         });
 
         document.getElementById('back-arrow-p-modes').addEventListener('click', () => {
-            UH.toggleVisibility(['home-page-content'], ['generation-content']);
+            UH.open('home-page-content');
             document.body.style.overflowY = 'visible';
         });
 
@@ -75,30 +80,19 @@ const event_listeners = [
     },
 
     function presentationPage() {
-        document.getElementById('fullscreen-regen-button').addEventListener('click', () => {
-            document.getElementById('generate-button').click();
-        });
-    
-        document.getElementById('show-hide-button').addEventListener('click', () => {
-            PGH.toggleFullScreenAns();
-        });
-
-        document.getElementById('fullscreen-exit-button').addEventListener('click', () => {
-            UH.toggleVisibility([], ['presenation-content']);
-            document.body.style.overflowY = 'visible';
-        });
+        
     },
 
     function FAQPage() {
         document.getElementById('back-arrow-FAQ').addEventListener('click', () => {
-            UH.toggleVisibility(['home-page-content'], ['FAQ-page']);
+            UH.open('home-page-content');
         });
     },
 
     function exportPage() {
         document.getElementById('generation-content').addEventListener('click', (event) => {
             if (event.target.id === 'export-exit-button') {
-                UH.toggleVisibility([], ['export-content']);
+                UH.close('export-content');
             }
             else if (event.target.id === 'download-button') {
                 E.exportMath();
