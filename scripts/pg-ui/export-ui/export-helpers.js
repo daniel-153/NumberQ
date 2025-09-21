@@ -6,7 +6,7 @@ export function insertExportUiHtml() {
     if (document.getElementById('export-content') !== null) return;
 
     document.getElementById('generation-content').insertAdjacentHTML('beforeend', `
-        <div id="export-content" class="dark-overlay hidden-content">
+        <div id="export-content" class="dark-overlay">
         <div class="pop-up-banner">
           <div class="main-pop-up-content">
             <div id="export-preview-wrapper" class="export-preview-wrapper checkerboard"></div>
@@ -92,16 +92,6 @@ export function insertExportUiHtml() {
     `);
 }
 
-export function addExportUiListeners() {
-    document.getElementById('download-button').addEventListener('click', () => {
-
-    });
-
-    document.getElementById('export-exit-button').addEventListener('click', () => {
-
-    });
-}
-
 export function determineExportType(Q_or_A) {
     const content_container = document.getElementById(`rendered-${Q_or_A}`).firstElementChild;
 
@@ -121,10 +111,6 @@ export function tweakExportSettings(export_type) {
 export function presetExportForm(export_ui_state) {
     // select the png option by default
     document.getElementById('export-form').querySelector('input[name="export-file-type"][value="png"]').checked = true;
-}
-
-export function revealExportUi() {
-    document.getElementById('export-content').classList.remove('hidden-content');
 }
 
 export async function getPreExportContent(export_ui_state) {

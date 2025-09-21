@@ -23,8 +23,6 @@ export async function buildNewExportUi(Q_or_A) {
 
     EH.presetExportForm(export_ui_state);
 
-    EH.revealExportUi();
-
     await EH.getPreExportContent(export_ui_state);
     EH.displayExportPreview(export_ui_state);
     if (export_ui_state.export_type === 'latex') EH.setPreviewScale(export_ui_state, 0.6);
