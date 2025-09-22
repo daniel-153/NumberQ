@@ -37,11 +37,12 @@
 }
 
 #generation-container::after {
+    --spacer-size: calc(50vh - 93vh * 0.5);
     content: "";
     position: relative;
-    bottom: -1.5vw;
-    height: 1.5vw;
-    margin-top: -1.5vw;
+    bottom: calc((-1) * var(--spacer-size));
+    height: var(--spacer-size);
+    margin-top: calc((-1) * var(--spacer-size));
     border: 0.1px solid rgba(0, 0, 0, 0);
 }
 
@@ -395,8 +396,6 @@
     }
 
     #generation-container {
-        margin-top: 10vw;
-        position: static;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -405,14 +404,12 @@
         height: fit-content;
         border-radius: calc(0.025 * var(--gen-container-width));
         border-width: 0.6vw;
-        margin-bottom: 5vw;
         top: 10vw;
-        margin-top: 10vw;
         left: 5vw;
     }
 
     #generation-container::after {
-        display: none;
+        --spacer-size: 10vw;
     }
 
     #gen-type-header {
