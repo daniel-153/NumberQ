@@ -224,6 +224,7 @@
         height: 50%;
         font-size: 80%;
         min-width: fit-content;
+        padding: 0 20px;
     }
 
     .download-button:hover {
