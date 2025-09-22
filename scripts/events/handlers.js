@@ -76,11 +76,22 @@ const event_listeners = [
                 PGH.focusPresetOption(event.target);
                 if (document.getElementById('settings-preset-checkbox').checked) PGH.updateOverrideIndicators(); 
             }
-        })
+        });
+
+        document.getElementById('present-ui-button').addEventListener('click', () => {
+            UH.open('present-content');
+        });
     },
 
     function presentationPage() {
-        
+        document.getElementById('generation-content').addEventListener('click', (event) => {
+            if (event.target.id === 'present-exit-button') {
+                UH.close('present-content');
+            }
+            else if (false) {
+                
+            }
+        });
     },
 
     function FAQPage() {
