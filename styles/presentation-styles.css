@@ -1,3 +1,46 @@
+/* temp
+
+
+
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+*/
+
+body {
+    overflow: hidden;
+}
+
+
+/* temp
+
+
+
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+''''''''''''''''''''''''''''
+*/
+
 .dark-overlay {
     position: fixed;
     top: 0vw;
@@ -9,6 +52,10 @@
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.341);
     z-index: 99;
+}
+
+.top-stacking-overlay {
+    z-index: 99999;
 }
 
 #present-ui-button {
@@ -79,228 +126,97 @@
 }
 
 .large-pop-up-banner {
+    --present-ui-border: 3px solid black;
     display: flex;
-    flex-direction: column;
-    position: relative;
-    background-color: rgb(204, 204, 205);
-    border-radius: 12.8px;
-    border-top-right-radius: 5px;
-    border: 3px solid black;
-    width: 1500px;
-    height: 800px;
-    font-size: 38.4px;
-}
-
-#present-exit-button {
-    top: -0.1vw;
-}
-
-.present-main-content {
     flex-direction: row;
-}
-
-.present-preview-wrap {
-    height: 100%;
-    width: 75%;
-}
-
-.present-form-wrap {
-    height: 100%;
-    width: 25%;
-    border-left: 0.05vw solid rgb(22, 22, 22);
-}
-
-.present-form {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.present-form-section {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 50%;
-}
-
-.present-form-header {
-    font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 100%;
-    font-weight: 400;
-    margin: 0;
-    text-align: center;
-    outline: 0.05vw solid rgb(22, 22, 22);
+    background-color: white;
+    position: static;
+    width: 100vw;
+    height: 100vh;
     box-sizing: border-box;
-    padding: 10px 0;
+    border: var(--present-ui-border);
+}
+
+.present-side-bar {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    box-sizing: border-box;
+    padding: 10px 7.5px;
+    border-right: var(--present-ui-border);
+    height: 100%;
     flex-shrink: 0;
+    background-color: rgb(204, 204, 205);
 }
 
-.present-form-input-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pm-num-inputs-wrapper {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.present-size-label {
+.preset-exit-wrap {
     width: fit-content;
     height: fit-content;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-weight: 500;
-    font-size: 70%;
-}
-
-.pm-num-inputs {
-    display: flex;
-    flex-direction: row;
-    width: fit-content;
-    height: 32.5px;
-}
-
-.pm-textbox-wrap {
-    display: flex;
-    flex-direction: row;
-    width: fit-content;
-    height: 100%;
-}
-
-.present-size-textbox {
-    width: 55px;
-    height: 100%;
-    font-size: 65%;
     flex-shrink: 0;
-    text-align: center;
+}
+
+.preset-options-wrap {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    width: fit-content;
     box-sizing: border-box;
+    padding: 75px 0;
+    flex-grow: 1;
+}
+
+.preset-btn-img {
+    width: 100%;
+    aspect-ratio: 1;
+}
+
+.preset-button {
     outline: none;
     border: none;
-    padding: none;
-    margin: none;
-    border: 0.5px solid black;
-}
-
-.pm-num-units {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: 0;
     box-sizing: border-box;
-    padding: 0 3px;
-    font-size: 50%;
-    height: 100%;
-    background-color: white;
-    border: 0.5px solid black;
-    cursor: default;
-    text-align: center;
-}
-
-.pm-incrementer {
-    width: 100%;
-    box-sizing: border-box;
-    padding-bottom: 4px;
-    aspect-ratio: 1;
-    font-size: 65%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    background-color: white;
-    border: 0.5px solid black;
-    user-select: none;
-}
-
-.pm-incrementer:hover {
-    cursor: pointer;
-}
-
-.present-base {
-    gap: 50px;
-}
-
-.present-export-btn {
-    width: 200px;
-    min-width: fit-content;
-    height: 80px;
-    min-height: fit-content;
-    box-sizing: border-box;
-    font-size: 80%;
-    padding: 10px 20px;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    padding: 4px;
+    width: 50px;
+    height: 50px;
+    font-size: 40px;
     font-weight: 500;
     color: whitesmoke;
-    border: 3px solid black;
-    border-radius: 9px;
-    filter: brightness(100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 5px;
+    border: 2px solid transparent;
 }
 
-.present-export-btn:hover {
-    cursor: pointer;
-    filter: brightness(115%);
-    font-size: 79.5%;
-    border-width: 4px;
+.preset-exit-button {
+    background-color: rgb(139, 55, 55);
+    border-color: rgb(157, 0, 0);
 }
 
-.preset-copy-btn {
-    background-color: rgb(39, 105, 105);
-    border-color: rgb(11, 68, 68);
+.preset-answer-btn {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 400;
+    background-color: #7c5443;
+    border-color: rgb(87, 37, 0);
 }
 
-.present-download-btn {
+.preset-generate-btn {
     background-color: rgb(30, 107, 81);
     border-color: rgb(15, 59, 45);
 }
 
-@media (max-width: 1700px) {
-    #present-ui-button {
-        width: 40px;
-        height: 40px;
-        top: 10px;
-        right: 10px;
-    }
-
-    .tooltip-left {
-        --tooltip-arrow-size: 8px;
-    }
-
-    .tooltip-left::after {
-        font-size: 20px;
-    }
+.preset-copy-btn {
+    background-color: #2868a0;
+    border-color: rgb(13, 16, 109);
 }
 
-@media (max-width: 900px) {
-    #present-ui-button {
-        top: 4px;
-        right: 4px;
-        border-radius: 3px;
-        padding: 1px;
-        width: 30px;
-        height: 30px;
-        border-width: 1px;
-    }
-
-    .tooltip-left::before,
-    .tooltip-left::after {
-        display: none;
-    }
-
-    
-    #gen-type-header {
-        text-align: center;
-        max-width: calc(100% - 2 * (30px + 4px));
-    }
+.preset-save-btn {
+    background-color: rgb(69, 59, 155);
+    border-color: rgb(45, 3, 130);
 }
 
-@media (max-width: 500px) {
-    #present-ui-button {
-        width: 25px;
-        height: 25px;
-    }
+.present-canvas-wrap {
+    flex-grow: 1;
+    height: 100%;
 }
