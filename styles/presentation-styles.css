@@ -1,46 +1,3 @@
-/* temp
-
-
-
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-*/
-
-body {
-    overflow: hidden;
-}
-
-
-/* temp
-
-
-
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-''''''''''''''''''''''''''''
-*/
-
 .dark-overlay {
     position: fixed;
     top: 0vw;
@@ -83,30 +40,27 @@ body {
     aspect-ratio: 1;
 }
 
-.tooltip-left {
+.tooltip-base {
     --tooltip-arrow-size: 10px;
 }
 
-.tooltip-left::before {
+.tooltip-base::before {
     content: '';
     position: absolute;
     top: 50%;
-    right: calc(100% + 4px);
     transform: translateY(-50%);
     width: 0;
     height: 0;
     border-top: var(--tooltip-arrow-size) solid transparent;
     border-bottom: var(--tooltip-arrow-size) solid transparent;
-    border-left: var(--tooltip-arrow-size) solid #333;
     opacity: 0;
     pointer-events: none;
 }
 
-.tooltip-left::after {
-    content: 'Present';
+.tooltip-base::after {
+    content: attr(data-tooltip);
     position: absolute;
     top: 50%;
-    right: calc(100% + var(--tooltip-arrow-size) + 4px);
     transform: translateY(-50%);
     background-color: #333;
     width: min-content;
@@ -120,13 +74,31 @@ body {
     border-radius: 5px;
 }
 
-.tooltip-left:hover::after,
-.tooltip-left:hover::before {
+.tooltip-base:hover::after,
+.tooltip-base:hover::before {
     opacity: 1;
 }
 
+.tooltip-left::before {
+    right: calc(100% + 4px);
+    border-left: var(--tooltip-arrow-size) solid #333;
+}
+
+.tooltip-left::after {
+    right: calc(100% + var(--tooltip-arrow-size) + 4px);
+}
+
+.tooltip-right::before {
+    left: calc(100% + 4px);
+    border-right: var(--tooltip-arrow-size) solid #333;
+}
+
+.tooltip-right::after {
+    left: calc(100% + var(--tooltip-arrow-size) + 4px);
+}
+
 .large-pop-up-banner {
-    --present-ui-border: 3px solid black;
+    --present-ui-border: 5px solid rgb(40, 40, 40);
     display: flex;
     flex-direction: row;
     background-color: white;
@@ -149,13 +121,13 @@ body {
     background-color: rgb(204, 204, 205);
 }
 
-.preset-exit-wrap {
+.present-exit-wrap {
     width: fit-content;
     height: fit-content;
     flex-shrink: 0;
 }
 
-.preset-options-wrap {
+.present-options-wrap {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
@@ -165,12 +137,13 @@ body {
     flex-grow: 1;
 }
 
-.preset-btn-img {
+.present-btn-img {
     width: 100%;
     aspect-ratio: 1;
 }
 
-.preset-button {
+.present-button {
+    position: relative;
     outline: none;
     border: none;
     margin: 0;
@@ -189,34 +162,183 @@ body {
     border: 2px solid transparent;
 }
 
-.preset-exit-button {
+.present-button:hover {
+    cursor: pointer;
+    filter: brightness(115%);
+    border-color: black;
+}
+
+.present-tooltip::after {
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.164);
+    font-weight: 400;
+}
+
+.present-exit-button {
     background-color: rgb(139, 55, 55);
     border-color: rgb(157, 0, 0);
+    border-color: #500000;
 }
 
-.preset-answer-btn {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-weight: 400;
-    background-color: #7c5443;
-    border-color: rgb(87, 37, 0);
-}
-
-.preset-generate-btn {
+.present-generate-btn {
     background-color: rgb(30, 107, 81);
     border-color: rgb(15, 59, 45);
 }
 
-.preset-copy-btn {
+.present-copy-btn {
     background-color: #2868a0;
     border-color: rgb(13, 16, 109);
 }
 
-.preset-save-btn {
+.present-copy-btn[data-status="copy-cooldown"]::after {
+    display: block;
+    content: 'Copied!';
+    opacity: 1;
+}
+
+.present-copy-btn[data-status="copy-cooldown"]::before {
+    display: block;
+    opacity: 1;
+}
+
+.present-save-btn {
     background-color: rgb(69, 59, 155);
     border-color: rgb(45, 3, 130);
+}
+
+.present-answer-btn {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 400;
+    background-color: #7c5443;
+    border-color: rgb(87, 37, 0);
+    position: relative;
+    --tt-visibility: hidden;
+    --tt-opacity: 0;
+}
+
+.present-answer-btn:hover {
+    background-color: #8a6150;
+    filter: brightness(100%);
+    --tt-visibility: visible;
+    --tt-opacity: 1;
+}
+
+.present-ans-tooltip-wrap {
+    --tt-arrow-size: 20px;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: calc(100% + var(--tt-arrow-size));
+    transform: translateY(-50%) translateX(2px);
+    min-width: unset;
+    width: fit-content;
+    height: fit-content;
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 2.5px 2.5px 10px rgba(0, 0, 0, 0.191);
+
+    visibility: var(--tt-visibility);
+    opacity: var(--tt-opacity);
+    transition: opacity 0.15s ease;
+}
+
+.present-ans-tooltip-wrap::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%) translateX(2px);
+    width: 0; 
+    height: 0; 
+    border-top: var(--tt-arrow-size) solid transparent;
+    border-bottom: var(--tt-arrow-size) solid transparent; 
+    border-right: var(--tt-arrow-size) solid #333; 
+}
+
+.present-ans-title {
+    font-weight: 400;
+}
+
+.present-ans-math {
+    width: auto;
+    height: auto;
+    max-width: 200px; 
+    display: block;
 }
 
 .present-canvas-wrap {
     flex-grow: 1;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    box-sizing: border-box;
+    padding-top: 50px;
+}
+
+@media (max-width: 1700px) {
+    #present-ui-button {
+        width: 40px;
+        height: 40px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .tooltip-left {
+        --tooltip-arrow-size: 8px;
+    }
+
+    .tooltip-left::after {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 900px) {
+    #present-ui-button {
+        top: 4px;
+        right: 4px;
+        border-radius: 3px;
+        padding: 1px;
+        width: 30px;
+        height: 30px;
+        border-width: 1px;
+    }
+
+    .tooltip-left::before,
+    .tooltip-left::after {
+        display: none;
+    }
+
+    #gen-type-header {
+        text-align: center;
+        max-width: calc(100% - 2 * (30px + 4px));
+    }
+
+    .present-button {
+        width: 40px;
+        height: 40px;
+        font-size: 30px;
+        
+    }
+
+    .present-button::before,
+    .present-button::after {
+        display: none;
+    }
+
+    .present-generate-btn {
+        font-size: 40px;
+        padding-bottom: 9px;
+    }
+}
+
+@media (max-width: 500px) {
+    #present-ui-button {
+        width: 25px;
+        height: 25px;
+    }
 }
