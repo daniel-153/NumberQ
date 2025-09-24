@@ -253,6 +253,7 @@
 
 .preset-tooltip-wrapper {
     --tooltip-arrow-size: clamp(25px, 1vw, 1vw);
+    pointer-events: none;
     position: absolute;
     top: 50%;
     left: calc(100% + var(--tooltip-arrow-size));
