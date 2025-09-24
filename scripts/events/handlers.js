@@ -2,6 +2,7 @@ import * as PG from '../pg-ui/pg-ui.js';
 import * as PGH from '../pg-ui/helpers/ui-actions.js';
 import * as UH from '../helpers/ui-helpers.js';
 import * as E from '../pg-ui/export-ui/export.js';
+import * as P from '../pg-ui/present-ui/present.js';
 
 const event_listeners = [
     function homePage() {
@@ -77,19 +78,30 @@ const event_listeners = [
                 if (document.getElementById('settings-preset-checkbox').checked) PGH.updateOverrideIndicators(); 
             }
         });
-
-        document.getElementById('present-ui-button').addEventListener('click', () => {
-            UH.open('present-content');
-        });
     },
 
     function presentationPage() {
-        document.getElementById('generation-content').addEventListener('click', (event) => {
-            if (event.target.id === 'present-exit-button') {
-                UH.close('present-content');
+        document.getElementById('generation-content').addEventListener('click', async (event) => {
+            if (event.target.id === 'present-ui-button' || event.target.id === 'present-image') {
+                UH.open('present-content');
+                P.buildNewPresentUi();
+                document.body.style.overflowY = 'hidden';
             }
-            else if (false) {
-                
+            else if (event.target.id === 'present-exit-button') {
+                UH.close('present-content');
+                document.body.style.overflowY = 'visible';
+            }
+            else if (event.target.closest('.present-button')) {
+                if (event.target.closest('#present-generate-btn')) {
+                    await PG.generate(document.getElementById('generate-button').getAttribute('data-gen-func-name'));
+                    P.updateProblem();
+                }
+                else if (event.target.closest('#present-copy-btn')) {
+                    P.copyCanvas();
+                }
+                else if (event.target.closest('#present-save-btn')) {
+                    P.downloadCanvas();
+                }
             }
         });
     },
