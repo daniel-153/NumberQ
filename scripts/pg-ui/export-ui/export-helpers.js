@@ -251,6 +251,16 @@ export function downloadBlob(blob, filename) {
     setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
+export function copyPngToClipboard(png_blob) {
+    try {
+        navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': png_blob })
+        ]);
+    } catch (error) {
+        console.warn(`Failed to copy png to clipboard. Error: ${error.stack}`);
+    }
+}
+
 export function getGenShortName(export_ui_state) {
     const current_gen_func_name = document.getElementById('generate-button').getAttribute('data-gen-func-name');
 
