@@ -97,7 +97,7 @@ const CCH = { // handleCopyClick helpers
     copyMjxAsImage: async function(Q_or_A) {
         const latex_string = document.getElementById(`rendered-${Q_or_A}`).getAttribute('data-latexcode');
 
-        const mjx_img_el = (await CH.getMathJaxAsImage([[latex_string, 15]]))[0];
+        const mjx_img_el = (await mjx_loader.texToImg([[latex_string, 15]]))[0];
 
         this.copySvgImgElToClipboard(mjx_img_el);
     }
