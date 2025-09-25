@@ -44,6 +44,56 @@ export function clearPreviousProblem(ui_state) {
     delete ui_state.answer_img;
 }
 
+export function resolveSizeAdjustments(ui_state) {
+    const generate_btn = document.getElementById('generate-button');
+
+    if (generate_btn !== null) {
+        const size_adj_json = generate_btn.getAttribute('data-size-adj-json');
+
+        if (size_adj_json !== null) {
+            let size_adj_obj;            
+            try {
+                size_adj_obj = JSON.parse(size_adj_json);
+            } catch (error) {
+                console.error(`Failed to resolve present size adjustments: ${error.stack}`);
+                return;
+            }
+
+            ui_state.size_adjustments = {
+                canvas: {
+                    top_offset: 0.05, 
+                    max_width: 0.75, 
+                    max_height: 0.15,
+                    init_scale: 1
+                },
+                preview: {
+                    top_offset: 0.02,
+                    init_scale: 1
+                },
+                answer: {
+                    init_scale: 1
+                }
+            };
+
+            Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
+                if (typeof(size_adj_obj[size_adj_cat]) === 'object' && size_adj_obj[size_adj_cat] !== null) {
+                    Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
+                        if (
+                            typeof(size_adj_obj[size_adj_cat][size_adj_name]) === 'number' && 
+                            size_adj_obj[size_adj_cat][size_adj_name] > 0
+                        ) {
+                            ui_state.size_adjustments[size_adj_cat][size_adj_name] = size_adj_obj[size_adj_cat][size_adj_name];
+                        }
+                    });
+                }
+            });  
+        }
+    }
+    else {
+        console.warn('Present size adjustments may not be resolved: element with id=\'generate-button\' not found.');
+    }
+}
+
 export async function insertCurrentProblem(ui_state) {
     const rendered_Q = document.getElementById('rendered-Q');
     
@@ -66,8 +116,15 @@ export async function insertCurrentProblem(ui_state) {
         problem_img = (await mjx_loader.texToImg([[problem_tex, 6]]))[0];
     }
 
-    document.getElementById('present-canvas-wrap').appendChild(problem_img);
-    ui_state.problem_img = problem_img;
+    ui_state.problem_img = problem_img.cloneNode(false);
+
+    problem_img.width = problem_img.naturalWidth * ui_state.size_adjustments.preview.init_scale;
+    problem_img.height = problem_img.naturalHeight * ui_state.size_adjustments.preview.init_scale;
+
+    const present_canvas_wrap = document.getElementById('present-canvas-wrap');
+    present_canvas_wrap.style.paddingTop = `${ui_state.size_adjustments.preview.top_offset * 100}%`;
+
+    present_canvas_wrap.appendChild(problem_img);
 
     const rendered_A = document.getElementById('rendered-A');
 
@@ -92,12 +149,17 @@ export async function insertCurrentProblem(ui_state) {
         answer_img = (await mjx_loader.texToImg([[answer_tex, 2]]))[0];
     }
 
+    ui_state.answer_img = answer_img.cloneNode(false);
+
+    answer_img.width = answer_img.naturalWidth * ui_state.size_adjustments.answer.init_scale;
+    answer_img.height = answer_img.naturalHeight * ui_state.size_adjustments.answer.init_scale;
+
     answer_img.classList.add('present-ans-math');
     document.getElementById('present-answer-wrap').appendChild(answer_img);
-    ui_state.answer_img = answer_img;
 }
 
 export async function createExportBlob(ui_state) {
+    const problem_img = ui_state.problem_img.cloneNode(false);
     const export_canvas = document.createElement('canvas');
     const ctx_export_canvas = export_canvas.getContext('2d')
     const canvas_width = 1920;
@@ -113,11 +175,13 @@ export async function createExportBlob(ui_state) {
     export_canvas["__draw_height__"] = canvas_height;
 
     // dimensions related to the problem size
-    const top_offset = 0.05;
-    const max_height = 0.15;
-    const max_width = 0.75; 
-    const natural_width = ui_state.problem_img.naturalWidth;
-    const natural_height = ui_state.problem_img.naturalHeight;
+    const top_offset = ui_state.size_adjustments.canvas.top_offset;
+    const max_height = ui_state.size_adjustments.canvas.max_height;
+    const max_width = ui_state.size_adjustments.canvas.max_width;
+    problem_img.width = problem_img.naturalWidth * ui_state.size_adjustments.canvas.init_scale;
+    problem_img.height = problem_img.naturalHeight * ui_state.size_adjustments.canvas.init_scale;
+    const natural_width = problem_img.width;
+    const natural_height = problem_img.height;
 
     const x_overflow_factor = natural_width / (max_width * canvas_width);
     const y_overflow_factor = natural_height / (max_height * canvas_height);
@@ -146,7 +210,7 @@ export async function createExportBlob(ui_state) {
         y2: (1 - top_offset) * canvas_height
     };
 
-    CH.drawImage(ui_state.problem_img, problem_b_rect);
+    CH.drawImage(problem_img, problem_b_rect);
 
     ui_state.canvas_png_blob = await EH.exportCanvasAsBlob(export_canvas, 'png');
 }

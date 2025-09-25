@@ -5,7 +5,8 @@ const ui_state = {
     problem_img: null,
     answer_img: null,
     canvas_png_blob: null,
-    current_gen_func: null
+    current_gen_func: null,
+    size_adjustments: {}
 };
 
 export async function buildNewPresentUi() {
@@ -15,6 +16,8 @@ export async function buildNewPresentUi() {
     }
 
     PH.clearPreviousProblem(ui_state);
+
+    PH.resolveSizeAdjustments(ui_state);
 
     await PH.insertCurrentProblem(ui_state);
 
