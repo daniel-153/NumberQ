@@ -43,6 +43,7 @@ export async function generate(func_name, display_name = '') {
         await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
         PH.insertGenTitle(display_name, "generator-name");
         PH.resolveSizeAdjustments(pg_ui_state.current_module, pg_ui_state);
+        PH.exposeSizeAdjustments(pg_ui_state.current_module);
         await PH.loadMjxExtensions(pg_ui_state.current_module, pg_ui_state);
         pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
         await PH.createSettingsPresets(pg_ui_state.current_module, pg_ui_state);
