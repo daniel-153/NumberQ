@@ -312,8 +312,10 @@ export function resolveSizeAdjustments(gen_module, pg_ui_state) {
 }
 
 export function exposeSizeAdjustments(gen_module, el_id = 'generate-button', attr_name = 'data-size-adj-json') {
+    const expose_el = document.getElementById(el_id);
+    expose_el.removeAttribute(attr_name);
     if (typeof(gen_module.size_adjustments) === 'object' && gen_module.size_adjustments !== null) {
-        document.getElementById(el_id).setAttribute(attr_name, JSON.stringify(gen_module.size_adjustments))
+        expose_el.setAttribute(attr_name, JSON.stringify(gen_module.size_adjustments))
     }
 
 }

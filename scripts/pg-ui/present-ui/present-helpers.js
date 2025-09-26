@@ -50,54 +50,60 @@ export function resolveSizeAdjustments(ui_state) {
     if (generate_btn !== null) {
         const size_adj_json_str = generate_btn.getAttribute('data-size-adj-json');
 
-        if (size_adj_json_str !== null) {
-            let size_adj_obj;            
+        let size_adj_obj;
+        if (size_adj_json_str !== null) {          
             try {
                 size_adj_obj = JSON.parse(size_adj_json_str);
             } catch (error) {
                 console.error(`Failed to resolve present size adjustments: ${error.stack}`);
                 return;
             }
-
-            let present_size_adj;
-            if (typeof(size_adj_obj.present) === 'object' && size_adj_obj.present !== null) {
-                present_size_adj = size_adj_obj.present;
-            }
-            else {
-                present_size_adj = {};
-            }
-                
-            ui_state.size_adjustments = {
-                canvas: {
-                    top_offset: 0.05, 
-                    max_width: 0.75, 
-                    max_height: 0.15,
-                    init_scale: 1
-                },
-                preview: {
-                    top_offset: 0.04,
-                    max_width: 0.75, 
-                    max_height: 0.15,
-                    init_scale: 1
-                },
-                answer: {
-                    init_scale: 1
-                }
-            };
-
-            Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
-                if (typeof(present_size_adj[size_adj_cat]) === 'object' && present_size_adj[size_adj_cat] !== null) {
-                    Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
-                        if (
-                            typeof(present_size_adj[size_adj_cat][size_adj_name]) === 'number' && 
-                            present_size_adj[size_adj_cat][size_adj_name] > 0
-                        ) {
-                            ui_state.size_adjustments[size_adj_cat][size_adj_name] = present_size_adj[size_adj_cat][size_adj_name];
-                        }
-                    });
-                }
-            });   
         }
+        else size_adj_obj = null;
+
+        let present_size_adj;
+        if (
+            typeof(size_adj_obj) === 'object' &&
+            size_adj_obj !== null &&
+            typeof(size_adj_obj.present) === 'object' && 
+            size_adj_obj.present !== null
+        ) {
+            present_size_adj = size_adj_obj.present;
+        }
+        else {
+            present_size_adj = {};
+        }
+            
+        ui_state.size_adjustments = {
+            canvas: {
+                top_offset: 0.05, 
+                max_width: 0.75, 
+                max_height: 0.15,
+                init_scale: 1
+            },
+            preview: {
+                top_offset: 0.04,
+                max_width: 0.75, 
+                max_height: 0.15,
+                init_scale: 1
+            },
+            answer: {
+                init_scale: 1
+            }
+        };
+
+        Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
+            if (typeof(present_size_adj[size_adj_cat]) === 'object' && present_size_adj[size_adj_cat] !== null) {
+                Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
+                    if (
+                        typeof(present_size_adj[size_adj_cat][size_adj_name]) === 'number' && 
+                        present_size_adj[size_adj_cat][size_adj_name] > 0
+                    ) {
+                        ui_state.size_adjustments[size_adj_cat][size_adj_name] = present_size_adj[size_adj_cat][size_adj_name];
+                    }
+                });
+            }
+        });   
     }
     else {
         console.warn('Present size adjustments may not be resolved: element with id=\'generate-button\' not found.');
