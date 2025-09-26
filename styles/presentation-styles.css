@@ -371,4 +371,9 @@
         width: 25px;
         height: 25px;
     }
+
+    .present-ans-math {
+        max-width: 145px; 
+        max-height: 145px;
+    }
 }
