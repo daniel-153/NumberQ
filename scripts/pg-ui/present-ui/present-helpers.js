@@ -18,7 +18,7 @@ export function insertPresentUiHtml() {
                         <div class="present-ans-tooltip-wrap">
                             <div class="preset-tooltip-content">
                                 <h3 class="preset-descriptor preset-tooltip-title present-ans-title">Answer:</h3>
-                                <div class="preset-descriptor preset-tooltip-math" id="present-answer-wrap"></div>
+                                <div class="preset-descriptor preset-tooltip-math present-answer-wrap" id="present-answer-wrap"></div>
                             </div>
                         </div>
                     </button>
@@ -48,45 +48,51 @@ export function resolveSizeAdjustments(ui_state) {
     const generate_btn = document.getElementById('generate-button');
 
     if (generate_btn !== null) {
-        const size_adj_json = generate_btn.getAttribute('data-size-adj-json');
+        const size_adj_json_str = generate_btn.getAttribute('data-size-adj-json');
 
-        if (size_adj_json !== null) {
+        if (size_adj_json_str !== null) {
             let size_adj_obj;            
             try {
-                size_adj_obj = JSON.parse(size_adj_json);
+                size_adj_obj = JSON.parse(size_adj_json_str);
             } catch (error) {
                 console.error(`Failed to resolve present size adjustments: ${error.stack}`);
                 return;
             }
 
-            ui_state.size_adjustments = {
-                canvas: {
-                    top_offset: 0.05, 
-                    max_width: 0.75, 
-                    max_height: 0.15,
-                    init_scale: 1
-                },
-                preview: {
-                    top_offset: 0.02,
-                    init_scale: 1
-                },
-                answer: {
-                    init_scale: 1
-                }
-            };
+            if (typeof(size_adj_obj.present) === 'object' && size_adj_obj.present !== null) {
+                const present_size_adj = size_adj_obj.present;
+                
+                ui_state.size_adjustments = {
+                    canvas: {
+                        top_offset: 0.05, 
+                        max_width: 0.75, 
+                        max_height: 0.15,
+                        init_scale: 1
+                    },
+                    preview: {
+                        top_offset: 0.02,
+                        max_width: 0.75, 
+                        max_height: 0.15,
+                        init_scale: 1
+                    },
+                    answer: {
+                        init_scale: 1
+                    }
+                };
 
-            Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
-                if (typeof(size_adj_obj[size_adj_cat]) === 'object' && size_adj_obj[size_adj_cat] !== null) {
-                    Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
-                        if (
-                            typeof(size_adj_obj[size_adj_cat][size_adj_name]) === 'number' && 
-                            size_adj_obj[size_adj_cat][size_adj_name] > 0
-                        ) {
-                            ui_state.size_adjustments[size_adj_cat][size_adj_name] = size_adj_obj[size_adj_cat][size_adj_name];
-                        }
-                    });
-                }
-            });  
+                Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
+                    if (typeof(present_size_adj[size_adj_cat]) === 'object' && present_size_adj[size_adj_cat] !== null) {
+                        Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
+                            if (
+                                typeof(present_size_adj[size_adj_cat][size_adj_name]) === 'number' && 
+                                present_size_adj[size_adj_cat][size_adj_name] > 0
+                            ) {
+                                ui_state.size_adjustments[size_adj_cat][size_adj_name] = present_size_adj[size_adj_cat][size_adj_name];
+                            }
+                        });
+                    }
+                });  
+            } 
         }
     }
     else {
@@ -120,6 +126,8 @@ export async function insertCurrentProblem(ui_state) {
 
     problem_img.width = problem_img.naturalWidth * ui_state.size_adjustments.preview.init_scale;
     problem_img.height = problem_img.naturalHeight * ui_state.size_adjustments.preview.init_scale;
+    problem_img.style.maxWidth = `${ui_state.size_adjustments.preview.max_width * 100}%`;
+    problem_img.style.maxHeight = `${ui_state.size_adjustments.preview.max_height * 100}%`;
 
     const present_canvas_wrap = document.getElementById('present-canvas-wrap');
     present_canvas_wrap.style.paddingTop = `${ui_state.size_adjustments.preview.top_offset * 100}%`;
