@@ -229,7 +229,6 @@
     top: 50%;
     left: calc(100% + var(--tt-arrow-size));
     transform: translateY(-50%) translateX(2px);
-    min-width: unset;
     width: fit-content;
     height: fit-content;
     background-color: #333;
@@ -259,25 +258,56 @@
     border-right: var(--tt-arrow-size) solid #333; 
 }
 
-.present-ans-title {
+.ans-tooltip-content {
+    display: inline-block;
+}
+
+.present-ans-title,
+.present-answer-wrap {
     font-weight: 400;
+    display: block;
+    text-align: center;
+}
+
+.present-ans-title {
+    font-size: 23px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.488);
+    background-color: #2e2e2e;
+    border-radius: 5px;
+    margin: 0;
+    margin-bottom: 5px;
+    padding: 7.5px;
+}
+
+.present-answer-wrap {
+    box-sizing: border-box;
+    background-color: whitesmoke;
+    padding: 10px;
+    border-radius: 10px;
 }
 
 .present-ans-math {
-    width: auto;
-    height: auto;
     max-width: 200px; 
+    max-height: 200px;
     display: block;
+    margin: 0 auto;
+    object-fit: contain;
 }
 
 .present-canvas-wrap {
     flex-grow: 1;
     height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    box-sizing: border-box;
-    padding-top: 50px;
+    position: relative;
+}
+
+.present-preview-img {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
 }
 
 @media (max-width: 1700px) {

@@ -16,9 +16,9 @@ export function insertPresentUiHtml() {
                     <button id="present-answer-btn" class="present-button present-answer-btn">
                         <span>A</span>
                         <div class="present-ans-tooltip-wrap">
-                            <div class="preset-tooltip-content">
-                                <h3 class="preset-descriptor preset-tooltip-title present-ans-title">Answer:</h3>
-                                <div class="preset-descriptor preset-tooltip-math present-answer-wrap" id="present-answer-wrap"></div>
+                            <div class="ans-tooltip-content">
+                                <h3 class="present-ans-title">Answer:</h3>
+                                <div class="present-answer-wrap" id="present-answer-wrap"></div>
                             </div>
                         </div>
                     </button>
@@ -59,40 +59,44 @@ export function resolveSizeAdjustments(ui_state) {
                 return;
             }
 
+            let present_size_adj;
             if (typeof(size_adj_obj.present) === 'object' && size_adj_obj.present !== null) {
-                const present_size_adj = size_adj_obj.present;
+                present_size_adj = size_adj_obj.present;
+            }
+            else {
+                present_size_adj = {};
+            }
                 
-                ui_state.size_adjustments = {
-                    canvas: {
-                        top_offset: 0.05, 
-                        max_width: 0.75, 
-                        max_height: 0.15,
-                        init_scale: 1
-                    },
-                    preview: {
-                        top_offset: 0.02,
-                        max_width: 0.75, 
-                        max_height: 0.15,
-                        init_scale: 1
-                    },
-                    answer: {
-                        init_scale: 1
-                    }
-                };
+            ui_state.size_adjustments = {
+                canvas: {
+                    top_offset: 0.05, 
+                    max_width: 0.75, 
+                    max_height: 0.15,
+                    init_scale: 1
+                },
+                preview: {
+                    top_offset: 0.04,
+                    max_width: 0.75, 
+                    max_height: 0.15,
+                    init_scale: 1
+                },
+                answer: {
+                    init_scale: 1
+                }
+            };
 
-                Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
-                    if (typeof(present_size_adj[size_adj_cat]) === 'object' && present_size_adj[size_adj_cat] !== null) {
-                        Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
-                            if (
-                                typeof(present_size_adj[size_adj_cat][size_adj_name]) === 'number' && 
-                                present_size_adj[size_adj_cat][size_adj_name] > 0
-                            ) {
-                                ui_state.size_adjustments[size_adj_cat][size_adj_name] = present_size_adj[size_adj_cat][size_adj_name];
-                            }
-                        });
-                    }
-                });  
-            } 
+            Object.keys(ui_state.size_adjustments).forEach(size_adj_cat => {
+                if (typeof(present_size_adj[size_adj_cat]) === 'object' && present_size_adj[size_adj_cat] !== null) {
+                    Object.keys(ui_state.size_adjustments[size_adj_cat]).forEach(size_adj_name => {
+                        if (
+                            typeof(present_size_adj[size_adj_cat][size_adj_name]) === 'number' && 
+                            present_size_adj[size_adj_cat][size_adj_name] > 0
+                        ) {
+                            ui_state.size_adjustments[size_adj_cat][size_adj_name] = present_size_adj[size_adj_cat][size_adj_name];
+                        }
+                    });
+                }
+            });   
         }
     }
     else {
@@ -128,9 +132,10 @@ export async function insertCurrentProblem(ui_state) {
     problem_img.height = problem_img.naturalHeight * ui_state.size_adjustments.preview.init_scale;
     problem_img.style.maxWidth = `${ui_state.size_adjustments.preview.max_width * 100}%`;
     problem_img.style.maxHeight = `${ui_state.size_adjustments.preview.max_height * 100}%`;
+    problem_img.style.top = `${ui_state.size_adjustments.preview.top_offset * 100}%`;
+    problem_img.classList.add('present-preview-img');
 
     const present_canvas_wrap = document.getElementById('present-canvas-wrap');
-    present_canvas_wrap.style.paddingTop = `${ui_state.size_adjustments.preview.top_offset * 100}%`;
 
     present_canvas_wrap.appendChild(problem_img);
 
@@ -154,7 +159,7 @@ export async function insertCurrentProblem(ui_state) {
     else {
         const answer_tex = rendered_A.getAttribute('data-latexcode');
 
-        answer_img = (await mjx_loader.texToImg([[answer_tex, 2]]))[0];
+        answer_img = (await mjx_loader.texToImg([[answer_tex, 3]]))[0];
     }
 
     ui_state.answer_img = answer_img.cloneNode(false);
