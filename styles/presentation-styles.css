@@ -289,8 +289,9 @@
 }
 
 .present-ans-math {
-    max-width: 200px; 
-    max-height: 200px;
+    --max-size: 200px;
+    max-width: calc(var(--max-size-scale, 1) * var(--max-size)); 
+    max-height: calc(var(--max-size-scale, 1) * var(--max-size));
     display: block;
     margin: 0 auto;
     object-fit: contain;

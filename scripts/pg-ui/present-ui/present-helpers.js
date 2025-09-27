@@ -88,7 +88,8 @@ export function resolveSizeAdjustments(ui_state) {
                 init_scale: 1
             },
             answer: {
-                init_scale: 1
+                init_scale: 1,
+                max_size_scale: 1
             }
         };
 
@@ -173,6 +174,7 @@ export async function insertCurrentProblem(ui_state) {
     answer_img.width = answer_img.naturalWidth * ui_state.size_adjustments.answer.init_scale;
     answer_img.height = answer_img.naturalHeight * ui_state.size_adjustments.answer.init_scale;
 
+    answer_img.style.setProperty('--max-size-scale', String(ui_state.size_adjustments.answer.max_size_scale));
     answer_img.classList.add('present-ans-math');
     document.getElementById('present-answer-wrap').appendChild(answer_img);
 }
