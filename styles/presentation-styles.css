@@ -211,6 +211,7 @@
     background-color: #7c5443;
     border-color: rgb(87, 37, 0);
     position: relative;
+    z-index: 1;
     --tt-visibility: hidden;
     --tt-opacity: 0;
 }
@@ -291,7 +292,7 @@
 .present-ans-math {
     --max-size: 200px;
     max-width: min(calc(var(--max-size-scale, 1) * var(--max-size)), 65vw); 
-    max-height: calc(var(--max-size-scale, 1) * var(--max-size));
+    max-height: min(calc(var(--max-size-scale, 1) * var(--max-size)), 50vh);
     display: block;
     margin: 0 auto;
     object-fit: contain;
