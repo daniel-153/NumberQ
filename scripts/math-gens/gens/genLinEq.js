@@ -1424,3 +1424,11 @@ export const presets = {
     },
     has_topic_presets: true
 };
+
+export const size_adjustments = {
+    present: {
+        preview: {
+            max_width: 0.6
+        }
+    }
+};

@@ -213,4 +213,9 @@ export const presets = {
 
 export const size_adjustments = {
     width: 1.15,
+    present: {
+        answer: {
+            max_size_scale: 3.2
+        }
+    }
 };

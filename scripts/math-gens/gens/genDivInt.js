@@ -330,7 +330,15 @@ export const presets = {
 
 export const size_adjustments = {
     q_font_size: 1.1,
-    a_font_size: 1.1
+    a_font_size: 1.1,
+    present: {
+        preview: {
+            top_offset: 0.08
+        },
+        canvas: {
+            top_offset: 0.08
+        }
+    }
 };
 
 export const required_mjx_extensions = [

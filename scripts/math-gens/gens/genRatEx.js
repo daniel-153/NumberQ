@@ -1236,4 +1236,10 @@ export const presets = {
 
 export const size_adjustments = {
     height: 1.3,
+    present: {
+        answer: {
+            max_size_scale: 2.7,
+            init_scale: 1.5
+        }
+    }
 };

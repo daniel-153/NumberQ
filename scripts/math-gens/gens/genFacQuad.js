@@ -490,3 +490,15 @@ export const presets = {
     },
     has_topic_presets: true
 };
+
+export const size_adjustments = {
+    present: {
+        preview: {
+            max_width: 0.4
+        },
+        answer: {
+            max_size_scale: 1.75,
+            init_scale: 1.5
+        }
+    }
+};

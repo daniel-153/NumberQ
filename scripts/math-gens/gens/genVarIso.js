@@ -1413,5 +1413,14 @@ export const presets = {
 
 export const size_adjustments = {
     width: 1.12,
-    height: 1.1
+    height: 1.1,
+    present: {
+        preview: {
+            max_width: 0.6
+        },
+        answer: {
+            max_size_scale: 1.5,
+            init_scale: 1.25
+        }
+    }
 };
