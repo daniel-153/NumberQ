@@ -290,7 +290,7 @@
 
 .present-ans-math {
     --max-size: 200px;
-    max-width: calc(var(--max-size-scale, 1) * var(--max-size)); 
+    max-width: min(calc(var(--max-size-scale, 1) * var(--max-size)), 65vw); 
     max-height: calc(var(--max-size-scale, 1) * var(--max-size));
     display: block;
     margin: 0 auto;
