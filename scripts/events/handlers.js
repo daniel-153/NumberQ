@@ -93,8 +93,16 @@ const event_listeners = [
             }
             else if (event.target.closest('.present-button')) {
                 if (event.target.closest('#present-generate-btn')) {
-                    await PG.generate(document.getElementById('generate-button').getAttribute('data-gen-func-name'));
-                    P.updateProblem();
+                    const present_gen_btn = event.target.closest('#present-generate-btn');
+                    if (!present_gen_btn.__has_cooldown) {
+                        try {
+                            present_gen_btn.__has_cooldown = true;
+                            await PG.generate(document.getElementById('generate-button').getAttribute('data-gen-func-name'));
+                            await P.updateProblem();
+                        } finally {
+                            present_gen_btn.__has_cooldown = false;
+                        }
+                    }
                 }
                 else if (event.target.closest('#present-copy-btn')) {
                     P.copyCanvas();
