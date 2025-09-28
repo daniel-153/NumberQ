@@ -135,8 +135,8 @@ export async function insertCurrentProblem(ui_state) {
 
     ui_state.problem_img = problem_img.cloneNode(false);
 
-    problem_img.width = problem_img.naturalWidth * ui_state.size_adjustments.preview.init_scale;
-    problem_img.height = problem_img.naturalHeight * ui_state.size_adjustments.preview.init_scale;
+    problem_img.style.width = `${problem_img.naturalWidth * ui_state.size_adjustments.preview.init_scale}px`;
+    problem_img.style.height = `${problem_img.naturalHeight * ui_state.size_adjustments.preview.init_scale}px`;
     problem_img.style.maxWidth = `${ui_state.size_adjustments.preview.max_width * 100}%`;
     problem_img.style.maxHeight = `${ui_state.size_adjustments.preview.max_height * 100}%`;
     problem_img.style.top = `${ui_state.size_adjustments.preview.top_offset * 100}%`;

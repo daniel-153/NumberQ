@@ -309,6 +309,7 @@
     transform: translateX(-50%);
     width: auto;
     height: auto;
+    object-fit: contain;
 }
 
 @media (max-width: 1700px) {
