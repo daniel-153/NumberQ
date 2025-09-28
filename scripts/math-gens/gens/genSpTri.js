@@ -301,7 +301,7 @@ export const size_adjustments = {
             max_height: 0.4
         },
         answer: {
-            max_size_scale: 1.75,
+            max_size_scale: 2,
             init_scale: 1.25
         }
     }
