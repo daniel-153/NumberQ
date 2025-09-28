@@ -206,4 +206,15 @@ export const presets = {
 export const size_adjustments = {
     width: 1.12,
     height: 2,
+    present: {
+        canvas: {
+            max_height: 0.2
+        },
+        preview: {
+            max_height: 0.2
+        },
+        answer: {
+            max_size_scale: 2.5
+        }
+    }
 };
