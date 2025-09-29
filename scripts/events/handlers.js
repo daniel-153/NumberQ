@@ -29,9 +29,8 @@ const event_listeners = [
         });
 
         document.getElementById('see-info-button').addEventListener('click', () => {
-            UH.open('FAQ-page')
+            UH.open('info-page')
             window.scrollTo(0, 0);
-            document.getElementById('FAQ-content-container').scrollTo(0, 0);
             history.pushState({ page: 'generator' }, '', '');
         });
     },
@@ -51,7 +50,7 @@ const event_listeners = [
             PG.generate(document.getElementById('generate-button').getAttribute('data-gen-func-name'));
         });
 
-        document.getElementById('back-arrow-p-modes').addEventListener('click', () => {
+        document.getElementById('pgui-back-arrow').addEventListener('click', () => {
             UH.open('home-page-content');
             document.body.style.overflowY = 'visible';
         });
@@ -115,7 +114,7 @@ const event_listeners = [
     },
 
     function FAQPage() {
-        document.getElementById('back-arrow-FAQ').addEventListener('click', () => {
+        document.getElementById('info-exit-button').addEventListener('click', () => {
             UH.open('home-page-content');
         });
     },

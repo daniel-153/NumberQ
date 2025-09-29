@@ -193,7 +193,7 @@ const UVH = { // ui visibility helpers
                 }
             }
         },
-        'FAQ-page': {
+        'info-page': {
             is_open: false,
             children: null
         }
