@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="styles/presentation-styles.css" />
   </head>
   <body>
-    <div id="home-page-content">
+    <div id="home-page-content" class="hidden-content">
       <div id="outer-title-container">
         <div id="inner-title-container">
           <h1 id="numberQ-header">
@@ -35,24 +35,25 @@
           <div class="example-problem" id="coming-soon-problems">
             \(\frac{d}{dx}\left[5x^{2}\sin\left(x\right)\right]\)&thinsp;\(\sqrt[3]{\frac{3x^{5}y^{4}}{24y}}\)&thinsp;\(\log_{5}(x^{3}y)-\log_{5}(y^{4})\)
           </div>
-          <button id="feedback-button">Give Feedback/Suggestions</button>
+          <button id="feedback-button">Give Feedback & Suggestions</button>
         </div>
         <div class="generator" id="info-gen">
           <div class="gen-title-container">
-            <h1 class="gen-title">Info about the Generators</h1>
+            <h1 class="gen-title">Technical Information</h1>
           </div>
           <div class="example-problem" id="generator-info-examples">
-            How many problems are possible? <br />
-            How are the answers verified? <br />
-            How do the settings work?
+            How are the problems created? <br />
+            What algorithms are used? <br />
+            What technolgies are involved?
           </div>
-          <button id="see-info-button">See Info & FAQ</button>
+          <button id="see-info-button">See Info Page</button>
         </div>
       </div>
     </div>
     <div id="generation-content" class="hidden-content">
       <img
-        id="back-arrow-p-modes"
+        id="pgui-back-arrow"
+        class="ui-back-arrow"
         src="images/back_arrow.png"
         alt="back-arrow"
       />
@@ -127,62 +128,98 @@
         </div>
       </div>
     </div>
-    <div id="FAQ-page" class="hidden-content">
-      <img id="back-arrow-FAQ" src="images/back_arrow.png" alt="back-arrow" />
-      <div id="FAQ-content-container">
-        <h1 id="FAQ-header">Info & FAQ</h1>
-        <div id="question-container">
-          <h2 class="FAQ-question">
-            How many different problems are possible in each generator?
-          </h2>
-          <p class="FAQ-answer">
-            The number of different problems for most generators is well in the
-            thousands, and some are even in the tens or hundreds of thousands.
-            However, these large numbers primarily result from the fact that
-            each coefficient is a randomly selected number within a given range.
-            So in linear equations, for instance, even though there are only 42
-            base forms, the possibilities for each of the coefficients in these
-            equations multiply to produce large numbers like these.
-            Additionally, the number of possible problems depends heavily on the
-            settings. Certain settings configurations can result in only a few
-            hundred possible problems, while others (although not necessarily
-            practical for teaching purposes) can result in many more.
-          </p>
-          <h2 class="FAQ-question">
-            How are the answers to the problems verified?
-          </h2>
-          <p class="FAQ-answer">
-            For many of the generators, the answer to the question is actually
-            determined first and is used to build the rest of the problem. These
-            all follow a process of finding the generalized solution to the
-            problem, then using that solution with specific constraints. So if
-            we find the general solution to a particular linear equation (for
-            example), we can then put constraints on that solution (maybe
-            forcing it to be an integer), and use that to figure out what the
-            coefficients must be. However, for generators that don’t follow this
-            pattern, the answer is calculated dynamically as the problem is
-            generated. Also, all of the problem types have been verified
-            extensively with a computer algebra system (CAS) by matching the
-            answer supplied by the generator to the one calculated by the CAS.
-            Each generator has been tested over 150,000 times.
-          </p>
-          <h2 class="FAQ-question">How do the settings work?</h2>
-          <p class="FAQ-answer">
-            The settings mainly work by limiting particular random aspects of
-            problem generation. To give an example, before settings, all of the
-            numbers in addition and subtraction were integers between -10 and
-            10. However, with settings, one can now create their own range with
-            integers anywhere from -999 to 999 (for example, [-999, 999], [0,
-            5], [10, 20], and even [1, 1] are all valid ranges), and the
-            coefficients will be selected from that range. Similarly, you can
-            choose a specific form (or multiple) in factoring and quadratics,
-            and the generator will randomly create a problem within that form.
-            As a whole, the purpose of the settings is to enable users to
-            generate problems with specific mathematical characteristics while
-            maintaining as much randomness as possible.
-          </p>
-        </div>
+    <div id="info-page" class="">
+      <div class="info-topbar">
+        <button id="info-exit-button" class="info-exit-button">Exit</button>
+        <h1 class="info-page-title">NumberQ Technical Information</h1>
+        <span></span>
       </div>
+      <article class="nq-info-article">
+        <h2 class="section-head">Overview:</h2>
+        <p class="section-desc">
+          This page discusses the technical information about how NumberQ works.
+          The following will mainly focus on the important math concepts
+          underlying the generators and the techniques used to implement those
+          math concepts. This information is not needed to use the site, but is
+          provided for anyone who may be interested.
+        </p>
+        <h2 class="section-head">Contents:</h2>
+        <ul class="main-contents-list">
+          <li>Problem Generation</li>
+          <ul class="sub-contents-list">
+            <li>Generators For Constraints</li>
+            <li>Templates And Random Search</li>
+            <li>Unrestricted Generation</li>
+          </ul>
+          <li>Answer Verification</li>
+          <ul class="sub-contents-list">
+            <li>Separating Verification from Generation</li>
+            <li>The Sympy Python Library</li>
+            <li>Overview of Verification Methods</li>
+          </ul>
+          <li>Rendering And Drawing</li>
+          <ul class="sub-contents-list">
+            <li>MathJax</li>
+            <li>HTML Canvas</li>
+          </ul>
+        </ul>
+        <h2 class="section-head">Problem Generation:</h2>
+        <p class="section-desc">
+          NumberQ's math problem generation is aimed at solving common
+          shortcommings invovled with creating random math questions. One issue
+          with math problem generators is that they often produce problems of a
+          very predictable structure. A linear equation generator, for instance,
+          could simply use a form like \(ax+b=cx+d\), substitute random values
+          for the coefficients, and calculate the solution
+          \(x=\frac{d-b}{a-c}\). The problem with this approach is that it
+          undermines student's learning. Instead of learning the general method
+          for solving linear equations, students memorize an arbitrary set of
+          steps because there is no variation in structure.
+          <br /><br />
+          Another issue faced by math problem generators is the difficultly of
+          creating "clean" problems. For example, suppose random values were
+          subtituted for the coefficients in \(\frac{x}{a}+b=c\). This may
+          result in relatively unpredictable problems, but an issue arises with
+          the chosen values of the coefficients: they may result in numbers that
+          are difficult to work with. Randomly substituting coefficients could
+          result in \(\frac{x}{7}-13=10\), which requires \((7\cdot 23)\) to be
+          calculated in order to solve. This may not entirely undermine the
+          learning process if a calculator were involved, but if the equation
+          were just changed to \(\frac{x}{7}+13=10\), it would clearly be a much
+          cleaner problem.
+          <br /><br />
+          A third issue that a math problem generator needs to overcome is the
+          ability to enforce particular mathematical properties. As an example,
+          a naive approach to an "order of operations" question generator would
+          be to select a few random numbers and separate them by random
+          operators: \(N_{1}\circ N_{2} \circ N_{3}\). However, this could yield
+          \(2-5+7\), which is useless if students haven't yet been introduced to
+          negative numbers. On the other hand, if students are currently
+          learning how to work with negative numbers, this may be exactly the
+          type of problem the teacher wants. The generator would be much more
+          useful if it allowed teachers to select for properties like this.
+          <br /><br />
+          This is just a brief summary of challenges for math problem
+          generation. NumberQ does not completely resolve these issues, but it
+          was created to begin addressing them. The following will explain some
+          of the mathematical and programming techniques used for this. The
+          problem generators are coded in JavaScript and do <i>not</i> make use
+          of any form of AI or Large Language Model. At the time of writing,
+          LLMs do not seem to be the optimal solution to math problem creation.
+          They are too predictable, difficult to prompt for specific
+          mathematical properties, and often produce incorrect answers.
+        </p>
+        <h3 class="sub-section-head">Generators For Constraints</h3>
+        <p class="section-desc">
+          This is a method for addressing the issue of "clean numbers" in
+          randomly generated math problems. Take for instance the following
+          equation and its solution:
+          <span class="block-math">\(ax+b=c;~~x=\frac{c-b}{a}\)</span>
+          Some specific substitutions for the coefficients may be \(9x-3=6\),
+          \(3x+5=11\), \(6x+7=2\), and \(8x+2=4\) with solutions of \(1, 2,
+          -\frac{5}{6}, \frac{1}{4}\) respectively.
+        </p>
+      </article>
     </div>
     <script type="module" src="scripts/main.js"></script>
   </body>
