@@ -1,127 +1,62 @@
-#FAQ-content-container {
+#info-page {
+    width: 100%;
+    height: fit-content;
+    min-height: 100vh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    position: absolute;
-    width: 50vw;
-    height: 90vh;
-    left: calc(50vw - 50vw * 0.5);
-    top: calc(50vh - 90vh * 0.5);
-    background-color: rgb(173, 171, 169);
-    border: 0.25vw solid rgb(106, 6, 6);
-    border-radius: calc(0.01 * 90vh);
-    overflow-y: scroll;
+    background-color: white;
 }
 
-#FAQ-header {
-    margin-top: 0.2vw;
-    margin-bottom: 3vw;
-    color: #0f0a0a;
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    font-size: 3.5vw;
+.info-topbar {
+    height: fit-content;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    background-color: whitesmoke;
+}
+
+.info-exit-button {
+
+}
+
+.info-page-title {
+
+}
+
+.nq-info-article {
+    height: fit-content;
+    width: min(1500px, 100%);
+}
+
+.section-head {
+    font-size: 40px;
+}
+
+.section-desc {
+    font-size: 30px;
+}
+
+.main-contents-list {
+    font-size: 30px;
     font-weight: 600;
-    padding: 0.2vw 1vw 0.2vw 1vw;
-    border-radius: calc(0.1 * 3.5vw);
-    border: 0.15vw solid rgb(75, 20, 20);
 }
 
-#back-arrow-FAQ {
-    outline: none;
-    border: none;
-    background: none;
-    width: 2.6vw;
-    height: auto;
-    position: absolute;
-    left: 0.5vw;
-    top: 0.5vw;
-    padding: 0.2vw;
-    border: 0.12vw solid black;
-    border-radius: calc(0.075 * 2.6vw);
+.sub-contents-list {
+    font-size: 25px;
+    font-weight: 400;
 }
 
-#back-arrow-FAQ:hover,
-#back-arrow-FAQ:focus {
-    width: 2.65vw;
-    border: 0.15vw solid rgb(96, 26, 145);
-    cursor: pointer;
+.sub-section-head {
+    font-size: 35px;
 }
 
-#question-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.block-math {
+    display: block;
+    font-size: 35px;
+    width: 100%;
     text-align: center;
-    justify-content: flex-start;
-    padding: 0 1.75vw 1vw 1.75vw;
-}
-
-.FAQ-question {
-    margin: 0;
-    margin-bottom: 0.6vw;
-    color: rgb(16, 10, 48);
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-    font-size: 2vw;
-}
-
-.FAQ-answer {
-    margin: 0;
-    margin-bottom: 2vw;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    font-size: 1.5vw;
-    line-height: 1.4;
-}
-
-/* No changes to FAQ styles in max-width 1700px -> so no @media 1700 */
-
-@media (max-width: 900px) {
-        #FAQ-content-container {
-        width: 90vw;
-        height: 93vh;
-        left: calc(50vw - 90vw * 0.5);
-        top: calc(50vh - 90vh * 0.5);
-        top: 9.5vw;
-        border-width: 0.4vw;
-    }
-
-    #FAQ-header {
-        margin-top: 0.2vw;
-        margin-bottom: 5.5vw;
-        font-size: 9vw;
-        border-radius: calc(0.2 * 3.5vw);
-        border-width: 0.4vw;
-    }
-
-    #back-arrow-FAQ {
-        width: 7vw;
-        left: 0.7vw;
-        top: 1vw;
-        border-width: 0.3vw;
-    }
-
-    #back-arrow-FAQ:hover,
-    #back-arrow-FAQ:focus {
-        width: 7vw;
-        border: 0.12vw solid black;
-        cursor: default;
-    }
-
-    #question-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        justify-content: flex-start;
-        padding: 0 1.75vw 1vw 1.75vw;
-    }
-
-    .FAQ-question {
-        margin-bottom: 0.6vw;
-        font-size: 5.5vw;
-    }
-
-    .FAQ-answer {
-        margin-bottom: 5vw;
-        font-size: 4.2vw;
-    }
 }
