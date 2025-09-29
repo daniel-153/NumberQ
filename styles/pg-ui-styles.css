@@ -1,4 +1,4 @@
-#back-arrow-p-modes {
+.ui-back-arrow {
     outline: none;
     border: none;
     background: none;
@@ -13,8 +13,8 @@
     z-index: 9999;
 }
 
-#back-arrow-p-modes:hover,
-#back-arrow-p-modes:focus {
+.ui-back-arrow:hover,
+.ui-back-arrow:focus {
     width: 2.65vw;
     border: 0.15vw solid rgb(96, 26, 145);
     cursor: pointer;
@@ -352,14 +352,14 @@
         font-size: 2vw;
     }
 
-    #back-arrow-p-modes {
+    .ui-back-arrow {
         width: 3.7vw;
         height: 3.7vw;
         border-width: 0.17vw;
     }
 
-    #back-arrow-p-modes:hover,
-    #back-arrow-p-modes:focus {
+    .ui-back-arrow:hover,
+    .ui-back-arrow:focus {
         width: 3.75vw;
         border-width: 0.2vw;
     }
@@ -373,7 +373,7 @@
 }
 
 @media (max-width: 900px) {
-    #back-arrow-p-modes {
+    .ui-back-arrow {
         width: 7vw;
         height: 7vw;
         left: 0.7vw;
@@ -381,8 +381,8 @@
         border-width: 0.3vw;
     }
 
-    #back-arrow-p-modes:hover,
-    #back-arrow-p-modes:focus {
+    .ui-back-arrow:hover,
+    .ui-back-arrow:focus {
         width: 7vw;
         height: 7vw;
     }
