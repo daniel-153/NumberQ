@@ -7,6 +7,7 @@
     flex-direction: column;
     align-items: center;
     background-color: white;
+    overflow: hidden;
 }
 
 .info-topbar {
@@ -29,7 +30,7 @@
 
 .nq-info-article {
     height: fit-content;
-    width: min(1500px, 100%);
+    width: min(1500px, 95%);
 }
 
 .section-head {
@@ -59,4 +60,5 @@
     font-size: 35px;
     width: 100%;
     text-align: center;
+    margin: 20px 0;
 }
