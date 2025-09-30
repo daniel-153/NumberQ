@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="styles/home-styles.css" />
     <link rel="stylesheet" href="styles/pg-ui-styles.css" />
     <link rel="stylesheet" href="styles/settings-styles.css" />
-    <link rel="stylesheet" href="styles/faq-styles.css" />
+    <link rel="stylesheet" href="styles/info-styles.css" />
     <link rel="stylesheet" href="styles/export-ui-styles.css" />
     <link rel="stylesheet" href="styles/presets-styles.css" />
     <link rel="stylesheet" href="styles/presentation-styles.css" />
@@ -201,7 +201,7 @@
           <br /><br />
           This is just a brief summary of challenges for math problem
           generation. NumberQ does not completely resolve these issues, but it
-          was created to begin addressing them. The following will explain some
+          was created to help address them. The following will explain some
           of the mathematical and programming techniques used for this. The
           problem generators are coded in JavaScript and do <i>not</i> make use
           of any form of AI or Large Language Model. At the time of writing,
@@ -217,7 +217,87 @@
           <span class="block-math">\(ax+b=c;~~x=\frac{c-b}{a}\)</span>
           Some specific substitutions for the coefficients may be \(9x-3=6\),
           \(3x+5=11\), \(6x+7=2\), and \(8x+2=4\) with solutions of \(1, 2,
-          -\frac{5}{6}, \frac{1}{4}\) respectively.
+          -\frac{5}{6},\) and \(\frac{1}{4}\) respectively. The first two equations 
+          are preferrable because they have simple integer solutions. 
+          More specifically, they have the property that \(c-b=ka\) where \(k\) is 
+          an integer. Solving \(c-b=ka\) for \(a\) yields \(a=\frac{c-b}{k}\). 
+          If the equation must have integer coefficients, then \(k\) must also be 
+          an integer multiple of \(c-b\), yielding \(c-b=jk\) (so \(a=j\)). Isolating \(c\) gives 
+          \(c=b+jk\), and since \(b\) must be some integer (pick \(i\)), \(c=i+jk\).
+          Substituing these values for \(a, b,\) and \(c\) back into the original
+          equation yields the following:
+          <span class="block-math">\(ax+b=c \rightarrow [j]x+[i]=[i+jk]\)</span>
+          This adjusted equaton (where each expression in brackets [] represets a single coefficient)
+          now has two properties: it has both integer coefficients and integer solutions for all 
+          values of \(i, j, k;~~j\neq 0\). This kind of "transformation" is particulary useful for
+          programming a linear equation generator. Rather than having to randomly substitute values 
+          of \(a, b,\) and \(c\), the program can pick <i>any</i> values for \(i, j, k;~~j\neq 0\), and meet 
+          its constraints. Furthermore, the solution to the transformed equation is always \(x=k\), so there
+          is no need to calculate or verify the solution (it is known when the equation is generated).
+          <br /><br />
+          Note that this specific reordering of coefficients is not the only one that transforms the equation
+          to have the desired properties. Isolating \(a, b,\) and \(c\) in a different order could have also 
+          yieled slightly different forms. All of the following transform the equation in this manner:
+          <span class="block-math">
+            \(\begin{array}{c}
+              ax+b=c & \rightarrow & [j]x+[i]=[i+jk] \\
+              ax+b=c & \rightarrow & [j]x+[i-jk]=[i] \\
+              ax+b=c & \rightarrow & [i+j]k+[-ik]=[jk]
+            \end{array}\)
+          </span>
+          This type of transformation essentially creates a "generator" to meet specific constraints, and it generalizes
+          to other scenarios where the goal is to create algebriac math questions programmatically without
+          running a random search algorithm (which is much more computationally expensive).
+          <br /><br />
+          Consider another linear equation form and one of its respective transformations 
+          to force integer solutions and coefficients:
+          <span class="block-math">
+            \(\begin{array}{l}
+              ax+b=cx+d;~~x=\frac{d-b}{c-a} \\
+              x\Rightarrow k=\frac{d-b}{c-a}~~~\scriptstyle{\mathbf{(1)}} \\
+              a\Rightarrow l=\frac{b-d+kc}{k}~~~\scriptstyle{\mathbf{(2)}} \\
+              c\Rightarrow m=\frac{-b+d+kl}{k}~~~\scriptstyle{\mathbf{(3)}} \\
+              b\Rightarrow n=d+kl-km~~~\scriptstyle{\mathbf{(4)}} \\
+              d=n-kl+km
+            \end{array}\)
+          </span>
+          <span class="block-math">\( \Downarrow \)</span>
+          <span class="block-math">\( [l]x+[n]=[m]x+[n-kl+km]\)</span>
+          In each of steps (1)&ndash;(4), a new integer was introduced to meet a constraint. Step (1) introduced \(k\) to represent
+          an integer solution. Then, in steps (2)&ndash;(4), \(l, m,\) and \(n\) were introduced to ensure that all of the 
+          coefficients remain integers. The result is an equation in the same form as \(ax+b=cx+d\), but where all possible integer values
+          for \(k, l, m, n;~~l \neq m\) yield the integer solution \(x=k\).
+          <br /><br />
+          There are some important characteristics to note about the process above. First, the equation had 4 coefficients, and it 
+          required 4 substitutions to transform. Second, a different order could have been taken to isolate the coefficients,
+          and this would have yielded a different transformed form with the same properties. Additionally, just as the \(ax+b=c\) equation
+          from above, one remapped coefficient seems to "absorb" the values of the others:
+          <span class="block-math">
+            \(\begin{array}{c}
+              ax+b=c \\
+              \Downarrow \\
+              [j]x+[i]=[i+jk] \\ \\
+              \hline \\
+              ax+b=cx+d \\
+              \Downarrow \\
+              [l]x+[n]=[m]x+[n-kl+km]
+            \end{array}\)
+          </span>
+          The tendency for the value of one transformed coefficient to absorb the values of the others is the general characteristic of 
+          this transformation process. A the most basic level, the process is negating every operation that can lead to non-integer solutions
+          in an algebra problem. In \(ax=b\) for example, the transformation is simply \([j]x=[jk]\), and the motivation for this adjustment clear without
+          any computation. Furthermore, this general method of "negation" can also be used to meet other constraints besides "integer solutions."
+          For example, it might be desired that the subtraction \( a-b \) has a non-negative result, and the corresponding transformation
+          is \( [k+l]-[l] \). These two examples are a good representation of the "generators for constraints" method in general:
+          <span class="block-math">
+            \(\begin{array}{c}
+              \frac{a}{b} \rightarrow \frac{[lk]}{[l]} \\
+              a-b \rightarrow [k+l]-[l]
+            \end{array}\)
+          </span>
+          The last important note about this method is that it can be applied to other topics besides linear equations and expressions.
+          The pythagorean theorem \(a^2+b^2=c^2\), for example, is another common case where integer solutions are desirable but unlikely.
+          However, unlike linear equations, the process to transform the pythagorean is better framed geometrically. 
         </p>
       </article>
     </div>
