@@ -145,36 +145,25 @@
         </p>
         <h2 class="section-head">Contents:</h2>
         <ul class="main-contents-list">
-          <li>Problem Generation</li>
-          <ul class="sub-contents-list">
-            <li>Generators For Constraints</li>
-            <li>Templates And Random Search</li>
-            <li>Unrestricted Generation</li>
-          </ul>
+          <li>Objectives For Problem Generation</li>
+          <li>Generators For Constraints</li>
+          <li>Generators For Constraints (more applications)</li>
+          <li>Templates And Random Search</li>
+          <li>Unrestricted Generation</li>
           <li>Answer Verification</li>
-          <ul class="sub-contents-list">
-            <li>Separating Verification from Generation</li>
-            <li>The Sympy Python Library</li>
-            <li>Overview of Verification Methods</li>
-          </ul>
-          <li>Rendering And Drawing</li>
-          <ul class="sub-contents-list">
-            <li>MathJax</li>
-            <li>HTML Canvas</li>
-          </ul>
         </ul>
-        <h2 class="section-head">Problem Generation:</h2>
+        <h2 class="section-head">Objectives For Problem Generation:</h2>
         <p class="section-desc">
           NumberQ's math problem generation is aimed at solving common
           shortcommings invovled with creating random math questions. One issue
           with math problem generators is that they often produce problems of a
           very predictable structure. A linear equation generator, for instance,
-          could simply use a form like \(ax+b=cx+d\), substitute random values
-          for the coefficients, and calculate the solution
-          \(x=\frac{d-b}{a-c}\). The problem with this approach is that it
-          undermines student's learning. Instead of learning the general method
-          for solving linear equations, students memorize an arbitrary set of
-          steps because there is no variation in structure.
+          could simply use the form \(ax+b=cx+d\), substitute random values for
+          the coefficients, and calculate the solution \(x=\frac{d-b}{a-c}\).
+          The problem with this approach is that it undermines student's
+          learning. Instead of learning the general method for solving linear
+          equations, students memorize an arbitrary set of steps because there
+          is no variation in structure.
           <br /><br />
           Another issue faced by math problem generators is the difficultly of
           creating "clean" problems. For example, suppose random values were
@@ -201,15 +190,15 @@
           <br /><br />
           This is just a brief summary of challenges for math problem
           generation. NumberQ does not completely resolve these issues, but it
-          was created to help address them. The following will explain some
-          of the mathematical and programming techniques used for this. The
-          problem generators are coded in JavaScript and do <i>not</i> make use
-          of any form of AI or Large Language Model. At the time of writing,
-          LLMs do not seem to be the optimal solution to math problem creation.
-          They are too predictable, difficult to prompt for specific
-          mathematical properties, and often produce incorrect answers.
+          was created to help address them. The following will explain some of
+          the mathematical and programming techniques used for this. The problem
+          generators are coded in JavaScript and do <i>not</i> make use of any
+          form of AI or Large Language Model. At the time of writing, LLMs do
+          not seem to be the optimal solution to math problem creation. They are
+          too predictable, difficult to prompt for specific mathematical
+          properties, and often produce incorrect answers.
         </p>
-        <h3 class="sub-section-head">Generators For Constraints</h3>
+        <h3 class="section-head">Generators For Constraints</h3>
         <p class="section-desc">
           This is a method for addressing the issue of "clean numbers" in
           randomly generated math problems. Take for instance the following
@@ -217,87 +206,163 @@
           <span class="block-math">\(ax+b=c;~~x=\frac{c-b}{a}\)</span>
           Some specific substitutions for the coefficients may be \(9x-3=6\),
           \(3x+5=11\), \(6x+7=2\), and \(8x+2=4\) with solutions of \(1, 2,
-          -\frac{5}{6},\) and \(\frac{1}{4}\) respectively. The first two equations 
-          are preferrable because they have simple integer solutions. 
-          More specifically, they have the property that \(c-b=ka\) where \(k\) is 
-          an integer. Solving \(c-b=ka\) for \(a\) yields \(a=\frac{c-b}{k}\). 
-          If the equation must have integer coefficients, then \(k\) must also be 
-          an integer multiple of \(c-b\), yielding \(c-b=jk\) (so \(a=j\)). Isolating \(c\) gives 
-          \(c=b+jk\), and since \(b\) must be some integer (pick \(i\)), \(c=i+jk\).
-          Substituing these values for \(a, b,\) and \(c\) back into the original
-          equation yields the following:
+          -\frac{5}{6},\) and \(\frac{1}{4}\) respectively. The first two
+          equations are preferrable because they have simple integer solutions.
+          More specifically, they have the property that \(c-b=ka\) where \(k\)
+          is an integer. Solving \(c-b=ka\) for \(a\) yields
+          \(a=\frac{c-b}{k}\). If the equation must have integer coefficients,
+          then \(c-b\) must also be an integer multiple of \(k\), yielding
+          \(c-b=jk\) (so \(a=j\)). Isolating \(c\) gives \(c=b+jk\), and since
+          \(b\) must be some integer (pick \(i\)), \(c=i+jk\). Substituing these
+          values for \(a, b,\) and \(c\) back into the original equation yields
+          the following:
           <span class="block-math">\(ax+b=c \rightarrow [j]x+[i]=[i+jk]\)</span>
-          This adjusted equaton (where each expression in brackets [] represets a single coefficient)
-          now has two properties: it has both integer coefficients and integer solutions for all 
-          values of \(i, j, k;~~j\neq 0\). This kind of "transformation" is particulary useful for
-          programming a linear equation generator. Rather than having to randomly substitute values 
-          of \(a, b,\) and \(c\), the program can pick <i>any</i> values for \(i, j, k;~~j\neq 0\), and meet 
-          its constraints. Furthermore, the solution to the transformed equation is always \(x=k\), so there
-          is no need to calculate or verify the solution (it is known when the equation is generated).
-          <br /><br />
-          Note that this specific reordering of coefficients is not the only one that transforms the equation
-          to have the desired properties. Isolating \(a, b,\) and \(c\) in a different order could have also 
-          yieled slightly different forms. All of the following transform the equation in this manner:
+          This adjusted equaton (where each expression in brackets [] represets
+          a single coefficient) now has two properties: it has both integer
+          coefficients and integer solutions for all values of \(i, j, k;~~j\neq
+          0\). This kind of "transformation" is particulary useful for
+          programming a linear equation generator. Rather than having to
+          randomly substitute and check values for \(a, b,\) and \(c\) until an
+          integer solution is found, program can pick <i>any</i> values for \(i,
+          j, k;~~j\neq 0\), and always meet this constraint. Furthermore, the
+          solution to the transformed equation is always \(x=k\), so there is no
+          need to calculate or verify the solution (it is known when the
+          equation is generated). <br /><br />
+          Note that this specific reordering of coefficients is not the only one
+          that transforms the equation to have the desired properties. Isolating
+          \(a, b,\) and \(c\) in a different order could have also yieled
+          slightly different forms. All of the following transform the equation
+          in this manner:
           <span class="block-math">
-            \(\begin{array}{c}
-              ax+b=c & \rightarrow & [j]x+[i]=[i+jk] \\
-              ax+b=c & \rightarrow & [j]x+[i-jk]=[i] \\
-              ax+b=c & \rightarrow & [i+j]k+[-ik]=[jk]
-            \end{array}\)
+            \(\begin{array}{c} ax+b=c & \rightarrow & [j]x+[i]=[i+jk] \\ ax+b=c
+            & \rightarrow & [j]x+[i-jk]=[i] \\ ax+b=c & \rightarrow &
+            [i+j]x+[-ik]=[jk] \end{array}\)
           </span>
-          This type of transformation essentially creates a "generator" to meet specific constraints, and it generalizes
-          to other scenarios where the goal is to create algebriac math questions programmatically without
-          running a random search algorithm (which is much more computationally expensive).
+          This type of transformation essentially creates a "generator" to meet
+          specific constraints, and it generalizes to other scenarios where the
+          goal is to create algebriac math questions programmatically without
+          running a random search algorithm (which is much more computationally
+          expensive).
           <br /><br />
-          Consider another linear equation form and one of its respective transformations 
-          to force integer solutions and coefficients:
+          Consider another linear equation form and one of its respective
+          transformations to force integer solutions and coefficients:
           <span class="block-math">
-            \(\begin{array}{l}
-              ax+b=cx+d;~~x=\frac{d-b}{c-a} \\
-              x\Rightarrow k=\frac{d-b}{c-a}~~~\scriptstyle{\mathbf{(1)}} \\
-              a\Rightarrow l=\frac{b-d+kc}{k}~~~\scriptstyle{\mathbf{(2)}} \\
-              c\Rightarrow m=\frac{-b+d+kl}{k}~~~\scriptstyle{\mathbf{(3)}} \\
-              b\Rightarrow n=d+kl-km~~~\scriptstyle{\mathbf{(4)}} \\
-              d=n-kl+km
-            \end{array}\)
+            \(\begin{array}{l} ax+b=cx+d;~~x=\frac{d-b}{c-a} \\ x\Rightarrow
+            k=\frac{d-b}{c-a}~~~\scriptstyle{\mathbf{(1)}} \\ a\Rightarrow
+            l=\frac{b-d+kc}{k}~~~\scriptstyle{\mathbf{(2)}} \\ c\Rightarrow
+            m=\frac{-b+d+kl}{k}~~~\scriptstyle{\mathbf{(3)}} \\ b\Rightarrow
+            n=d+kl-km~~~\scriptstyle{\mathbf{(4)}} \\ d=n-kl+km \end{array}\)
           </span>
           <span class="block-math">\( \Downarrow \)</span>
           <span class="block-math">\( [l]x+[n]=[m]x+[n-kl+km]\)</span>
-          In each of steps (1)&ndash;(4), a new integer was introduced to meet a constraint. Step (1) introduced \(k\) to represent
-          an integer solution. Then, in steps (2)&ndash;(4), \(l, m,\) and \(n\) were introduced to ensure that all of the 
-          coefficients remain integers. The result is an equation in the same form as \(ax+b=cx+d\), but where all possible integer values
+          In each of steps (1)&ndash;(4), a new integer was introduced to meet a
+          constraint. Step (1) introduced \(k\) to represent an integer
+          solution. Then, in steps (2)&ndash;(4), \(l, m,\) and \(n\) were
+          introduced to ensure that all of the coefficients remain integers.
+          Finally, \(d\) was determined by an expression that is an integer for
+          all integer values of its coefficients. The result is an equation in
+          the same form as \(ax+b=cx+d\), but where all possible integer values
           for \(k, l, m, n;~~l \neq m\) yield the integer solution \(x=k\).
           <br /><br />
-          There are some important characteristics to note about the process above. First, the equation had 4 coefficients, and it 
-          required 4 substitutions to transform. Second, a different order could have been taken to isolate the coefficients,
-          and this would have yielded a different transformed form with the same properties. Additionally, just as the \(ax+b=c\) equation
-          from above, one remapped coefficient seems to "absorb" the values of the others:
+          There are some important characteristics to note about the process
+          above. First, the equation had 4 coefficients, and it required 4
+          substitutions to transform. Second, a different order could have been
+          taken to isolate the coefficients, and this would have yielded a
+          different transformed form with the same properties. Additionally,
+          just as the \(ax+b=c\) equation from above, one remapped coefficient
+          seems to "absorb" the values of the others:
           <span class="block-math">
-            \(\begin{array}{c}
-              ax+b=c \\
-              \Downarrow \\
-              [j]x+[i]=[i+jk] \\ \\
-              \hline \\
-              ax+b=cx+d \\
-              \Downarrow \\
-              [l]x+[n]=[m]x+[n-kl+km]
+            \(\begin{array}{c} ax+b=c \\ \Downarrow \\ [j]x+[i]=[i+jk] \\ \\
+            \hline \\ ax+b=cx+d \\ \Downarrow \\ [l]x+[n]=[m]x+[n-kl+km]
             \end{array}\)
           </span>
-          The tendency for the value of one transformed coefficient to absorb the values of the others is the general characteristic of 
-          this transformation process. A the most basic level, the process is negating every operation that can lead to non-integer solutions
-          in an algebra problem. In \(ax=b\) for example, the transformation is simply \([j]x=[jk]\), and the motivation for this adjustment clear without
-          any computation. Furthermore, this general method of "negation" can also be used to meet other constraints besides "integer solutions."
-          For example, it might be desired that the subtraction \( a-b \) has a non-negative result, and the corresponding transformation
-          is \( [k+l]-[l] \). These two examples are a good representation of the "generators for constraints" method in general:
+          The tendency for the value of one transformed coefficient to absorb
+          the values of the others is the general characteristic of this
+          transformation process. A the most basic level, the process is
+          negating every operation that can lead to non-integer solutions in an
+          algebra problem. In \(ax=b\) for example, the transformation is simply
+          \([j]x=[jk]\), and the motivation for this adjustment clear without
+          any computation. Furthermore, this general method of "negation" can
+          also be used to meet other constraints besides "integer solutions."
+          For example, it might be desired that the subtraction \( a-b \) has a
+          non-negative result, and the corresponding transformation is \(
+          [k+l]-[l] \). These two examples are a good representation of the
+          "generators for constraints" method in general:
           <span class="block-math">
-            \(\begin{array}{c}
-              \frac{a}{b} \rightarrow \frac{[lk]}{[l]} \\
-              a-b \rightarrow [k+l]-[l]
+            \(\begin{array}{c} \frac{a}{b} \rightarrow \frac{[lk]}{[l]} \\ a-b
+            \rightarrow [k+l]-[l] \end{array}\)
+          </span>
+        </p>
+        <h2 class="section-head">
+          Generators For Constraints (more applications):
+        </h2>
+        <p class="section-desc">
+          An important characteristic of the general method described above is
+          that it can be applied to many other topics besides linear equations. 
+          That being said, the specific process used to
+          transform constraints to generators in other topics is often better
+          framed graphically or geometrically. In other words, different methods
+          can be used to reach similar results to those obtained for the linear
+          equations above.
+          <br /><br />
+          The pythagorean theorem \(a^2+b^2=c^2\) is one such example where
+          alternative methods can be applied. This is another case where integer
+          solutions are desirable but unlikely for random substitutions of the
+          coefficients. Suppose the following complex number \(z\) represents a
+          lattice point in the first quadrant of the cartesian plane:
+          <span class="block-math"
+            >\( \begin{array}{c} z=P_{x} + P_{y}i \\ (i=\sqrt{-1};~~P_{x},P_{y}
+            \in \mathbb{Z}^{+}) \end{array}\)</span
+          >
+          An integer solution to the pythagorean theorem is represented by a
+          lattice point (in Q1) that has an integer distance from the origin.
+          For the complex number \(z\) (above), this occurs when \(z\) has an
+          integer magnitude. This is a useful restatement of the original
+          constraint. Consider the following operation:
+          <span class="block-math"
+            >\( \begin{array}{l}
+              z'= z^2=(P_{x}+P_{y}i)^{2} \\ 
+              z'= P_{x}^{2}+2P_{x}P_{y}i-P_{y}^2 \\
+              z'= (P_{x}^2-P_{y}^2)+(2P_{x}P_{y})i
+              \end{array}\)</span
+          >
+          If \(P_{x},P_{y} \in \mathbb{Z}^{+}\) and \(P_{x}>P_{y}\), it follows that 
+          the real and imaginary components of \(z'\) are positve integers (so \(z'\) also
+          represents an integer lattice point in Q1). However, since the magnitude of a
+          product of two complex numbers is equal to the product of their individual
+          magnitudes \( \lvert z_{1}z_{1} \rvert = \lvert z_{1} \rvert \lvert z_{2} \rvert\), 
+          the magnitude of \(z'\) is an integer:
+          <span class="block-math"
+            >\( \begin{array}{l}
+              \lvert z' \rvert = \sqrt{(P_{x}^2-P_{y}^2)^2 + (2P_{x}P_{y})^2} \\ 
+              \lvert z' \rvert = \sqrt{P_{x}^4+2P_{x}^2P_{y}^2+P_{y}^4} \\
+              \lvert z' \rvert = P_{x}^2 + P_{y}^2
+              \end{array}\)</span
+          >
+          As a result, the point represented by the compontents of \(z'\) satisfies the 
+          original constraint of a lattice point in Q1 with an integer distance to the origin: 
+          \( \left( P_{x}^2-P_{y}^2,~2P_{x}P_{y} \right);~~P_{x},P_{y} \in \mathbb{Z}^{+};~P_{x}>P_{y} \).
+          Furthermore, it can be shown that positive integer values of \(P_{x},P_{y}\) generate
+          <i>all</i> unique pythagorean triples in this manner (that is, all triples where \(\operatorname{GCF}(a,b,c)=1\)).
+          Transforming the pythagorean theorem to utilize the componets of \(z'\) yields the following
+          (another conversion of a constraint to a generator):
+          <span class="block-math">
+            \(\begin{array}{c} 
+            a^2+b^2=c^2 \\
+            \Downarrow \\
+            [P_{x}^2-P_{y}^2]^2+[2P_{x}P_{y}]^2=[P_{x}^2 + P_{y}^2]^2
             \end{array}\)
           </span>
-          The last important note about this method is that it can be applied to other topics besides linear equations and expressions.
-          The pythagorean theorem \(a^2+b^2=c^2\), for example, is another common case where integer solutions are desirable but unlikely.
-          However, unlike linear equations, the process to transform the pythagorean is better framed geometrically. 
+          Another case where geometric and graphical reasoning can be applied to create a generator for 
+          constraints is a system of linear equations. In a system of equations such as the following, an integer
+          solution for both \(x\) and \(y\) if often desirable:
+          <span class="block-math">
+            \(\begin{array}{l} 
+            y=ax+b \\
+            y=cx+d
+            \end{array}\)
+          </span>
+          {{{Just finish talking abt this method, then move on to "Templates And Random Search"}}}
         </p>
       </article>
     </div>
