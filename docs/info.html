@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Technical information about how NumberQ works: methods for generators, templates, random search, and answer verification."
+    />
+    <title>NumberQ Info</title>
+    <link rel="icon" href="/images/favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="/styles/normalize.css" />
+    <link rel="stylesheet" href="/styles/info-styles.css" />
+    <link rel="stylesheet" href="/styles/prism.css" />
+    <script type="module" src="/scripts/pages/info.js" defer></script>
+  </head>
+  <body>
+    <h1 class="info-page-title">NumberQ Technical Information</h1>
+    <article class="nq-info-article">
+      <h2>Overview:</h2>
+      <p>
+        This page discusses the technical information about how
+        <a href="/">NumberQ</a> works. The following will mainly focus on the
+        important math concepts underlying the generators and the techniques
+        used to implement those math concepts. This information is not needed to
+        use the site, but is provided for anyone who may be interested.
+      </p>
+      <h2>Contents:</h2>
+      <ul class="main-contents-list">
+        <li><a href="#objectives">Objectives For Problem Generation</a></li>
+        <li><a href="#generators">Generators For Constraints</a></li>
+        <li>
+          <a href="#more-applications"
+            >Generators For Constraints (more applications)</a
+          >
+        </li>
+        <li><a href="#templates">Templates And Random Search</a></li>
+        <li><a href="#unrestricted">Unrestricted Generation</a></li>
+        <li><a href="#verification">Answer Verification</a></li>
+      </ul>
+      <h2 id="objectives">Objectives For Problem Generation:</h2>
+      <p>
+        NumberQ's math problem generation is aimed at solving common
+        shortcommings invovled with creating random math questions. One issue
+        with math problem generators is that they often produce problems of a
+        very predictable structure. A linear equation generator, for instance,
+        could simply use the form \(ax+b=cx+d\), substitute random values for
+        the coefficients, and calculate the solution \(x=\frac{d-b}{a-c}\). The
+        problem with this approach is that it undermines student's learning.
+        Instead of learning the general method for solving linear equations,
+        students memorize an arbitrary set of steps because there is no
+        variation in structure.
+        <br /><br />
+        Another issue faced by math problem generators is the difficultly of
+        creating "clean" problems. For example, suppose random values were
+        subtituted for the coefficients in \(\frac{x}{a}+b=c\). This may result
+        in relatively unpredictable problems, but an issue arises with the
+        chosen values of the coefficients: they may result in numbers that are
+        difficult to work with. Randomly substituting coefficients could result
+        in \(\frac{x}{7}-13=10\), which requires \((7\cdot 23)\) to be
+        calculated in order to solve. This may not entirely undermine the
+        learning process if a calculator were involved, but if the equation were
+        just changed to \(\frac{x}{7}+13=10\), it would clearly be a much
+        cleaner problem.
+        <br /><br />
+        A third issue that a math problem generator needs to overcome is the
+        ability to enforce particular mathematical properties. As an example, a
+        naive approach to an "order of operations" question generator would be
+        to select a few random numbers and separate them by random operators:
+        \(N_{1}\circ N_{2} \circ N_{3}\). However, this could yield \(2-5+7\),
+        which is useless if students haven't yet been introduced to negative
+        numbers. On the other hand, if students are currently learning how to
+        work with negative numbers, this may be exactly the type of problem the
+        teacher wants. The generator would be much more useful if it allowed
+        teachers to select for properties like this.
+        <br /><br />
+        This is just a brief summary of challenges for math problem generation.
+        NumberQ does not completely resolve these issues, but it was created to
+        help address them. The following will explain some of the mathematical
+        and programming techniques used for this. The problem generators are
+        coded in JavaScript and do <i>not</i> make use of any form of AI or
+        Large Language Model. At the time of writing, LLMs do not seem to be the
+        optimal solution to math problem creation. They are difficult to prompt
+        for specific mathematical properties and often produce incorrect
+        answers.
+      </p>
+      <h2 id="generators">Generators For Constraints</h2>
+      <p>
+        This is a method for addressing the issue of "clean numbers" in randomly
+        generated math problems. Take for instance the following equation and
+        its solution:
+      </p>
+      <div class="block-math">\(ax+b=c;~~x=\frac{c-b}{a}\)</div>
+      <p>
+        Some specific substitutions for the coefficients may be \(9x-3=6\),
+        \(3x+5=11\), \(6x+7=2\), and \(8x+2=4\) with solutions of \(1, 2,
+        -\frac{5}{6},\) and \(\frac{1}{4}\) respectively. The first two
+        equations are preferrable because they have simple integer solutions.
+        More specifically, they have the property that \(c-b=ka\) where \(k\) is
+        an integer. Solving \(c-b=ka\) for \(a\) yields \(a=\frac{c-b}{k}\). If
+        the equation must have integer coefficients, then \(c-b\) must also be
+        an integer multiple of \(k\), yielding \(c-b=jk\) (so \(a=j\)).
+        Isolating \(c\) gives \(c=b+jk\), and since \(b\) must be some integer
+        (pick \(i\)), \(c=i+jk\). Substituing these values for \(a, b,\) and
+        \(c\) back into the original equation yields the following:
+      </p>
+      <div class="block-math">\(ax+b=c \rightarrow [j]x+[i]=[i+jk]\)</div>
+      <p>
+        This adjusted equaton (where each expression in brackets [] represets a
+        single coefficient) now has two properties: it has both integer
+        coefficients and integer solutions for all values of \(i, j, k;~~j\neq
+        0\). This kind of "transformation" is particulary useful for programming
+        a linear equation generator. Rather than having to randomly substitute
+        and check values for \(a, b,\) and \(c\) until an integer solution is
+        found, program can pick <i>any</i> values for \(i, j, k;~~j\neq 0\), and
+        always meet this constraint. Furthermore, the solution to the
+        transformed equation is always \(x=k\), so there is no need to calculate
+        or verify the solution (it is known when the equation is generated).
+        <br /><br />
+        Note that this specific reordering of coefficients is not the only one
+        that transforms the equation to have the desired properties. Isolating
+        \(a, b,\) and \(c\) in a different order could have also yieled slightly
+        different forms. All of the following transform the equation in this
+        manner:
+      </p>
+      <div class="block-math">
+        \(\begin{array}{c} ax+b=c & \rightarrow & [j]x+[i]=[i+jk] \\ ax+b=c &
+        \rightarrow & [j]x+[i-jk]=[i] \\ ax+b=c & \rightarrow &
+        [i+j]x+[-ik]=[jk] \end{array}\)
+      </div>
+      <p>
+        This type of transformation essentially creates a "generator" to meet
+        specific constraints, and it generalizes to other scenarios where the
+        goal is to create algebriac math questions programmatically without
+        running a random search algorithm (which is much more computationally
+        expensive). The following is an example of how this may be implemented
+        in JavaScript:
+      </p>
+      <div class="block-code">
+        <div class="code-lang-label">JavaScript</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token parameter">i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> k</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> equation <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>j<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">x + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>i<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>i <span class="token operator">+</span> j <span class="token operator">*</span> k<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span>
+
+    <span class="token comment">// Simplify the expressions '1x', '-1x', and '+ -'</span>
+    equation <span class="token operator">=</span> equation<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">'1x'</span><span class="token punctuation">,</span> <span class="token string">'x'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    equation <span class="token operator">=</span> equation<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">'+ -'</span><span class="token punctuation">,</span> <span class="token string">'- '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// Given by transforming</span>
+    <span class="token keyword">const</span> solution <span class="token operator">=</span> k<span class="token punctuation">;</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+        <span class="token literal-property property">eq</span><span class="token operator">:</span> equation<span class="token punctuation">,</span>
+        <span class="token literal-property property">sol</span><span class="token operator">:</span> solution
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Examples:</span>
+<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '2x + 5 = 11', sol: 3 }</span>
+<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '-4x - 1 = -9', sol: 2 }</span>
+<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '2x + 2 = -8', sol: -5 }</span></code></pre>
+      </div>
+      <p>
+        Consider another linear equation form and one of its respective
+        transformations to force integer solutions and coefficients:
+      </p>
+      <div class="block-math">
+        \(\begin{array}{l} ax+b=cx+d;~~x=\frac{d-b}{c-a} \\ x\Rightarrow
+        k=\frac{d-b}{c-a}~~~\scriptstyle{\mathbf{(1)}} \\ a\Rightarrow
+        l=\frac{b-d+kc}{k}~~~\scriptstyle{\mathbf{(2)}} \\ c\Rightarrow
+        m=\frac{-b+d+kl}{k}~~~\scriptstyle{\mathbf{(3)}} \\ b\Rightarrow
+        n=d+kl-km~~~\scriptstyle{\mathbf{(4)}} \\ d=n-kl+km \end{array}\)
+      </div>
+      <div class="block-math">\( \Downarrow \)</div>
+      <div class="block-math">\( [l]x+[n]=[m]x+[n-kl+km]\)</div>
+      <p>
+        In each of steps (1)&ndash;(4), a new integer was introduced to meet a
+        constraint. Step (1) introduced \(k\) to represent an integer solution.
+        Then, in steps (2)&ndash;(4), \(l, m,\) and \(n\) were introduced to
+        ensure that all of the coefficients remain integers. Finally, \(d\) was
+        determined by an expression that is an integer for all integer values of
+        its coefficients. The result is an equation in the same form as
+        \(ax+b=cx+d\), but where all possible integer values for \(k, l, m,
+        n;~~l \neq m\) yield the integer solution \(x=k\).
+        <br /><br />
+        There are some important characteristics to note about the process
+        above. First, the equation had 4 coefficients, and it required 4
+        substitutions to transform. Second, a different order could have been
+        taken to isolate the coefficients, and this would have yielded a
+        different transformed form with the same properties. Additionally, just
+        as the \(ax+b=c\) equation from above, one remapped coefficient seems to
+        "absorb" the values of the others:
+      </p>
+      <div class="block-math">
+        \(\begin{array}{c} ax+b=c \\ \Downarrow \\ [j]x+[i]=[i+jk] \\ \\ \hline
+        \\ ax+b=cx+d \\ \Downarrow \\ [l]x+[n]=[m]x+[n-kl+km] \end{array}\)
+      </div>
+      <p>
+        The tendency for the value of one transformed coefficient to absorb the
+        values of the others is the general characteristic of this
+        transformation process. A the most basic level, the process is negating
+        every operation that can lead to non-integer solutions of coefficients
+        in an algebra problem. In \(ax=b\) for example, the transformation is
+        simply \([j]x=[jk]\), and the motivation for this adjustment clear
+        without any computation. Furthermore, this general method of "negation"
+        can also be used to meet other constraints besides "integer solutions."
+        For example, it might be desired that the subtraction \( a-b \) has a
+        non-negative result, and the corresponding transformation is \(
+        [k+l]-[l] \). These two examples are a good simplified representation of
+        the "generators for constraints" method in general:
+      </p>
+      <div class="block-math">
+        \(\begin{array}{c} \frac{a}{b} \rightarrow \frac{[lk]}{[l]} \\ a-b
+        \rightarrow [k+l]-[l] \end{array}\)
+      </div>
+      <h2 id="more-applications">
+        Generators For Constraints (more applications):
+      </h2>
+      <p class="section-desc">
+        An important characteristic of the general method described above is
+        that it can be applied to many other topics besides linear equations.
+        That being said, the specific process used to transform constraints to
+        generators in other topics is often better framed graphically or
+        geometrically. In other words, different methods can be used to reach
+        similar results to those obtained for the linear equations above.
+        <br /><br />
+        The pythagorean theorem \(a^2+b^2=c^2\) is one such example where
+        alternative methods can be applied. This is another case where integer
+        solutions are desirable but unlikely for random substitutions of the
+        coefficients. Suppose the following complex number \(z\) represents a
+        lattice point in the first quadrant of the cartesian plane:
+      </p>
+      <div class="block-math">
+        \( \begin{array}{c} z=P_{x} + P_{y}i \\ (i=\sqrt{-1};~~P_{x},P_{y} \in
+        \mathbb{Z}^{+}) \end{array}\)
+      </div>
+      <p>
+        An integer solution to the pythagorean theorem is represented by a
+        lattice point (in Q1) that has an integer distance from the origin. For
+        the complex number \(z\) (above), this occurs when \(z\) has an integer
+        magnitude. This is a useful restatement of the original constraint.
+        Consider the following operation:
+      </p>
+      <div class="block-math">
+        \( \begin{array}{l} z'= z^2=(P_{x}+P_{y}i)^{2} \\ z'=
+        P_{x}^{2}+2P_{x}P_{y}i-P_{y}^2 \\ z'= (P_{x}^2-P_{y}^2)+(2P_{x}P_{y})i
+        \end{array}\)
+      </div>
+      <p>
+        If \(P_{x},P_{y} \in \mathbb{Z}^{+}\) and \(P_{x}>P_{y}\), it follows
+        that the real and imaginary components of \(z'\) are positve integers
+        (so \(z'\) also represents an integer lattice point in Q1). However,
+        since the magnitude of a product of two complex numbers is equal to the
+        product of their individual magnitudes \( \lvert z_{1}z_{1} \rvert =
+        \lvert z_{1} \rvert \lvert z_{2} \rvert\), the magnitude of \(z'\) is an
+        integer:
+      </p>
+      <div class="block-math">
+        \( \begin{array}{l} \lvert z' \rvert = \sqrt{(P_{x}^2-P_{y}^2)^2 +
+        (2P_{x}P_{y})^2} \\ \lvert z' \rvert =
+        \sqrt{P_{x}^4+2P_{x}^2P_{y}^2+P_{y}^4} \\ \lvert z' \rvert = P_{x}^2 +
+        P_{y}^2 \end{array}\)
+      </div>
+      <p>
+        As a result, the point represented by the compontents of \(z'\)
+        satisfies the original constraint of a lattice point in Q1 with an
+        integer distance to the origin: \( \left( P_{x}^2-P_{y}^2,~2P_{x}P_{y}
+        \right);~~P_{x},P_{y} \in \mathbb{Z}^{+};~P_{x}>P_{y} \). Furthermore,
+        it can be shown that positive integer values of \(P_{x},P_{y}\) generate
+        <i>all</i> unique pythagorean triples in this manner (that is, all
+        triples where \(\operatorname{GCF}(a,b,c)=1\)). Transforming the
+        pythagorean theorem to utilize the componets of \(z'\) yields the
+        following (another conversion of a constraint to a generator):
+      </p>
+      <div class="block-math">
+        \(\begin{array}{c} a^2+b^2=c^2 \\ \Downarrow \\
+        [P_{x}^2-P_{y}^2]^2+[2P_{x}P_{y}]^2=[P_{x}^2 + P_{y}^2]^2 \end{array}\)
+      </div>
+      <p>
+        Although the pythagorean theorem has 3 unknowns and this transformed
+        equation has 2, this result is consistent with the properties of linear
+        equation transformations (discussed in the previous section). In
+        practice, some unknown \(x\) would take the place of one of the terms.
+        For example, the equation implemented in code may be
+        \([P_{x}^2-P_{y}^2]^2+x^2=[P_{x}^2 + P_{y}^2]^2\) where the solution for
+        \(x\) will be an integer for all values of \(P_{x}\) and \(P_{y}\).
+        <br /><br />
+        Another case where geometric and graphical reasoning can be applied to
+        create a generator for constraints is a system of linear equations. In a
+        system of equations such as the following (where \(a,b,c,d \in
+        \mathbb{Z}\)), an integer solution for both \(x\) and \(y\) is often
+        desirable:
+      </p>
+      <div class="block-math">
+        \(\begin{array}{l} y=ax+b \\ y=cx+d \end{array}\)
+      </div>
+      <p>
+        Suppose the point where these lines intersect is \(S=(S_{x},S_{y})\)
+        where \(S_{x}\) and \(S_{y}\) are integers. If the lines intersect at
+        \(S\), \((S_{x},S_{y})\) satisfies both equations. As a result, the
+        equations can be rewritten as follows:
+      </p>
+      <div class="block-math">
+        \(\begin{array}{l} y-S_{y}=a(x-S_{x}) \\ y-S_{y}=c(x-S_{x})
+        \end{array}\)
+      </div>
+      <p>
+        This rewritten form reflects both the point of intersection and each
+        line's slope. To extract a transformation for the orignal equations,
+        however, the system directly above needs to be rewritten in slope
+        intercept form. This will yield remappings for \(b\) and \(d\):
+        \(b=-aS_{x}+S_{y},~d=-cS_{x}+S_{y}\). The final transformation of the
+        original system is the following (which has integer solutions and
+        coefficients for all integer values of \(a,c,S_{x},S_{y}\)):
+      </p>
+      <div class="block-math">
+        \(\begin{array}{l} y=[a]x+[-aS_{x}+S_{y}] \\ y=[c]x+[-cS_{x}+S_{y}]
+        \end{array}\)
+      </div>
+      <p>
+        As with the transformations of linear equations discussed in the
+        previous section, the number of coefficients remained unchanged before
+        and after this transformation: \( (a,b,c,d)\rightarrow (a,c,S_{x},S_{y})
+        \). Also, note that this process of selecting a point to represent the
+        intersection of the lines could have began with the lines in a different
+        form (such as point-slope or standard form) and yieled a similar result.
+        The following is a simplified example implementation:
+      </p>
+      <div class="block-code">
+        <div class="code-lang-label">JavaScript</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">buildSystem</span><span class="token punctuation">(</span><span class="token parameter">slope1<span class="token punctuation">,</span> slope2<span class="token punctuation">,</span> x_sol<span class="token punctuation">,</span> y_sol</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> system <span class="token operator">=</span> <span class="token punctuation">[</span>
+        <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">y = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>slope1<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">x + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token operator">-</span>slope1 <span class="token operator">*</span> x_sol <span class="token operator">+</span> y_sol<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+        <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">y = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>slope2<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">x + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token operator">-</span>slope2 <span class="token operator">*</span> x_sol <span class="token operator">+</span> y_sol<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span>
+    <span class="token punctuation">]</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// Simplify expressions like '1x', '-1x', and '+ -'</span>
+    system <span class="token operator">=</span> system<span class="token punctuation">.</span><span class="token function">map</span><span class="token punctuation">(</span><span class="token parameter">eq</span> <span class="token operator">=></span>
+        eq<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">'1x'</span><span class="token punctuation">,</span> <span class="token string">'x'</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">'+ -'</span><span class="token punctuation">,</span> <span class="token string">'- '</span><span class="token punctuation">)</span>
+    <span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// Given by transforming</span>
+    <span class="token keyword">const</span> solution <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">(</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>x_sol<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">, </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>y_sol<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">)</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">;</span>
+
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+        <span class="token literal-property property">eq1</span><span class="token operator">:</span> system<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">eq2</span><span class="token operator">:</span> system<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+        <span class="token literal-property property">sol</span><span class="token operator">:</span> solution
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">// Examples:</span>
+
+<span class="token function">buildSystem</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// { eq1: 'y = 2x - 1', eq2: 'y = x + 2', sol: '(3, 5)' }</span>
+
+<span class="token function">buildSystem</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// { eq1: 'y = -4x + 6', eq2: 'y = -2x + 4', sol: '(1, 2)' }</span>
+
+<span class="token function">buildSystem</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">6</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// { eq1: 'y = 3x - 19', eq2: 'y = x - 7', sol: '(6, -1)' }</span></code></pre>
+      </div>
+      <h2 id="templates">Templates And Random Search</h2>
+    </article>
+  </body>
+</html>
