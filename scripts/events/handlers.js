@@ -25,13 +25,10 @@ const event_listeners = [
 
         document.getElementById('feedback-button').addEventListener('click', () => {
             window.open('https://forms.gle/WecgWERFcqpR4sSEA', '_blank');
-            document.getElementById('feedback-button').blur();
         });
 
         document.getElementById('see-info-button').addEventListener('click', () => {
-            UH.open('info-page')
-            window.scrollTo(0, 0);
-            history.pushState({ page: 'generator' }, '', '');
+            window.open(`${window.location.origin}/docs/info.html`, '_blank');
         });
     },
 
@@ -110,12 +107,6 @@ const event_listeners = [
                     P.downloadCanvas();
                 }
             }
-        });
-    },
-
-    function FAQPage() {
-        document.getElementById('info-exit-button').addEventListener('click', () => {
-            UH.open('home-page-content');
         });
     },
 

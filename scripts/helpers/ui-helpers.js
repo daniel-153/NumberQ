@@ -192,10 +192,6 @@ const UVH = { // ui visibility helpers
                     children: null
                 }
             }
-        },
-        'info-page': {
-            is_open: false,
-            children: null
         }
     },
     getRoot: function(visibility_states) {
