@@ -713,11 +713,270 @@
         selected.
       </p>
       <h2 id="verification">Answer Verification</h2>
-      <p>NumberQ uses sympy and shapely to verify its answers</p>
+      <p>
+        The most important aspect of a problem generator like NumberQ is
+        correctness. NumberQ uses <a href="https://www.sympy.org/">sympy</a> and
+        <a href="https://shapely.readthedocs.io/">shapely</a> to verify its
+        answers. These are trusted, open-source python libraries that provide
+        symbolic math and geometry functionality respectively. This section will
+        describe how these technologies are used for answer verification.
+        <br /><br />
+        Beginning with sympy, this library is mainly useful for verifing answers
+        to alegbriac simplification problems (expressions, equations, etc). As
+        demonstrated with the code samples for linear equations (above), most
+        generators on NumberQ have already determined the answer to a prompt as
+        it is created (rather than calculating the answer after creating the
+        prompt). Thus, to verify that an answer supplied by NumberQ is correct,
+        it (along with its corresponding question) is supplied to a python
+        server that uses sympy to calculate the answer to the same quesiton.
+        Then, the answer from the NumberQ generator must exactly match the
+        answer from sympy in order to be correct. The following is a minimal
+        example with several elements removed or abstracted for simplicity:
+        <br /><br />
+        JavaScript front end:
+      </p>
+      <div class="block-code">
+        <div class="code-lang-label">JavaScript</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">generateLinearEq</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token operator">...</span><span class="token punctuation">}</span>
+
+<span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">let</span> i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> <span class="token number">100_000</span><span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// Generate a question</span>
+    <span class="token keyword">const</span> <span class="token punctuation">{</span>prompt<span class="token punctuation">,</span> answer<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">generateLinearEq</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment">// Verify with sympy (fetch request to a python server)</span>
+    <span class="token keyword">const</span> test_result <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">matchToSympy</span><span class="token punctuation">(</span>prompt<span class="token punctuation">,</span> answer<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+    <span class="token comment">// Catch failures</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>test_result<span class="token punctuation">.</span>is_success<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">throw</span> <span class="token keyword">new</span> <span class="token class-name">Error</span><span class="token punctuation">(</span><span class="token string">'Incorrect answer detected.'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code></pre>
+      </div>
+      <p>Python back end:</p>
+      <div class="block-code">
+        <div class="code-lang-label">Python</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-python"><span class="token keyword">from</span> sympy <span class="token keyword">import</span> symbols<span class="token punctuation">,</span> solve
+<span class="token keyword">from</span> sympy<span class="token punctuation">.</span>parsing<span class="token punctuation">.</span>latex <span class="token keyword">import</span> parse_latex
+
+<span class="token keyword">def</span> <span class="token function">verify</span><span class="token punctuation">(</span>tex_question<span class="token punctuation">,</span> tex_answer<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token comment"># Parse the LaTeX strings from NumberQ</span>
+    variable<span class="token punctuation">,</span> provided_sol <span class="token operator">=</span> tex_answer<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'='</span><span class="token punctuation">)</span>
+    provided_sol <span class="token operator">=</span> parse_latex<span class="token punctuation">(</span>provided_sol<span class="token punctuation">)</span>
+
+    <span class="token comment"># Use Sympy to solve the same equation</span>
+    calculated_sol <span class="token operator">=</span> solve<span class="token punctuation">(</span> 
+        parse_latex<span class="token punctuation">(</span>tex_question<span class="token punctuation">)</span><span class="token punctuation">,</span> symbols<span class="token punctuation">(</span>variable<span class="token punctuation">)</span> 
+    <span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
+
+    <span class="token comment"># Ensure the solutions match</span>
+    <span class="token keyword">if</span> provided_sol<span class="token punctuation">.</span>equals<span class="token punctuation">(</span>calculated_sol<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">True</span>
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> <span class="token boolean">False</span></code></pre>
+      </div>
+      <p>
+        The first important aspect to note about the example above is the loop
+        in the JavaScript code: rather than testing each question as the user
+        generates them, NumberQ attempts to test every possible output of a
+        generator before it is ever used in production. In other words,
+        <b>generation is separated from verification</b>. The development
+        process for a generator on NumberQ is to first draft a working
+        prototype, then test it <i>extensively</i> (several hundred thousand
+        times) using a method that is very similar to the example shown above.
+        This reveals any bugs (which are then fixed). The result is that the
+        final generator used on the website does not need constant verification;
+        it has already been shown to be >99.999% accurate (eliminating the need
+        for back end, which allows for a much faster website). <br /><br />
+        Another important note about the above example is that, in practice, the
+        promblems on NumberQ are created based on user settings. As a result, in
+        order to fully test a generator before putting in production, the
+        permutations of user settings need to be tested. In generators with only
+        a few settings, every permutation of the possible input values can be
+        tested several times over. However, in generations with more settings
+        (where that number of permuations can be in the tens of billions), a few
+        hundred thousand permuations of the user settings are randomly selected
+        and tested.
+        <br /><br />
+        This same process is also used to verify geometry questions on NumberQ,
+        but the shapely python library is required to first extract the LaTeX
+        from the figure. The generators that output figures (such as triangles)
+        use the HTML canvas API to create these drawings, so there is no LaTeX
+        exposed in the output that can be directly given to sympy
+        utilities&mdash;this is one difficulty with verifying geometry quesiton
+        generators. Another challenge is that the labels in the figures need to
+        be accurately matched to the dimensions they represent. For example, if
+        two labels in a triangle problem are both accidently placed on the same
+        side, that question should be flagged by the verifier even if the
+        numbers satisfy the related equations.
+        <br /><br />
+        The first step to address these issues is to track the history of
+        drawing commands used to create the geometry figures. An HTML canvas is
+        interacted with by calling methods such as lineTo, fillRect, moveTo,
+        drawImage, etc. On NumberQ, all these method calls are captured and
+        stored with their supplied arguments, and this is used to represent
+        exactly what is drawn on the canvas in JSON format. The following is an
+        example of this JSON (simplified and condensed for clarity):
+      </p>
+      <div class="block-code">
+        <div class="code-lang-label">JavaScript</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-python"><span class="token punctuation">{</span>
+  <span class="token number">0</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'canvas_modification'</span><span class="token punctuation">,</span> property_name<span class="token punctuation">:</span> <span class="token string">'width'</span><span class="token punctuation">,</span> new_value<span class="token punctuation">:</span> <span class="token number">1000</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">1</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'canvas_modification'</span><span class="token punctuation">,</span> property_name<span class="token punctuation">:</span> <span class="token string">'height'</span><span class="token punctuation">,</span> new_value<span class="token punctuation">:</span> <span class="token number">1000</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">2</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'scale'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">3</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'property_set'</span><span class="token punctuation">,</span> property_name<span class="token punctuation">:</span> <span class="token string">'lineWidth'</span><span class="token punctuation">,</span> new_value<span class="token punctuation">:</span> <span class="token number">5.5</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">4</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'save'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">5</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'translate'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">6</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'scale'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">7</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'save'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">8</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'property_set'</span><span class="token punctuation">,</span> property_name<span class="token punctuation">:</span> <span class="token string">'lineCap'</span><span class="token punctuation">,</span> new_value<span class="token punctuation">:</span> <span class="token string">'square'</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">9</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'beginPath'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">10</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'moveTo'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">11</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'lineTo'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">12</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'stroke'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">13</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'drawImage'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+  <span class="token number">14</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>action<span class="token punctuation">:</span> <span class="token string">'method_call'</span><span class="token punctuation">,</span> method_name<span class="token punctuation">:</span> <span class="token string">'drawImage'</span><span class="token punctuation">,</span> args<span class="token punctuation">:</span> Array<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">}</span>
+<span class="token punctuation">}</span></code></pre>
+      </div>
+      <p>
+        In the above example, the argument arrays can store coordinates and
+        LaTeX strings; for example:
+      </p>
+      <div class="block-code">
+        <div class="code-lang-label">JavaScript</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-python"><span class="token punctuation">{</span>
+    <span class="token string">"action"</span><span class="token punctuation">:</span> <span class="token string">"method_call"</span><span class="token punctuation">,</span>
+    <span class="token string">"method_name"</span><span class="token punctuation">:</span> <span class="token string">"lineTo"</span><span class="token punctuation">,</span>
+    <span class="token string">"args"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token number">429.76091793749873</span><span class="token punctuation">,</span> <span class="token number">158.72500000000002</span><span class="token punctuation">]</span>
+<span class="token punctuation">}</span>
+
+<span class="token punctuation">{</span>
+    <span class="token string">"action"</span><span class="token punctuation">:</span> <span class="token string">"method_call"</span><span class="token punctuation">,</span>
+    <span class="token string">"method_name"</span><span class="token punctuation">:</span> <span class="token string">"drawImage"</span><span class="token punctuation">,</span>
+    <span class="token string">"args"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">{</span>
+            <span class="token string">"identifier_note"</span><span class="token punctuation">:</span> <span class="token string">"mjx_image"</span><span class="token punctuation">,</span>
+            <span class="token string">"data"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"latex_code"</span><span class="token punctuation">:</span> <span class="token string">"30^\circ"</span><span class="token punctuation">}</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token number">352.18536364223246</span><span class="token punctuation">,</span> <span class="token number">246.29648602124462</span><span class="token punctuation">,</span> <span class="token number">116</span><span class="token punctuation">,</span> <span class="token number">59</span>
+    <span class="token punctuation">]</span>
+<span class="token punctuation">}</span></code></pre>
+      </div>
+      <p>
+        In testing, this JSON is supplied to the shapely library, which is used
+        to verify proper drawing (along with labeling) and to extract the LaTeX
+        for the labels. The following is (part of) of the implementation to
+        accomplish this:
+      </p>
+      <div class="block-code">
+        <div class="code-lang-label">Python</div>
+        <pre
+          class="code-wrap"
+        ><code class="language-python"><span class="token keyword">from</span> shapely <span class="token keyword">import</span> Polygon<span class="token punctuation">,</span> LineString<span class="token punctuation">,</span> Point
+
+<span class="token keyword">def</span> <span class="token function">triangle_info_from_points</span><span class="token punctuation">(</span>point_A<span class="token punctuation">,</span> point_B<span class="token punctuation">,</span> point_C<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    triangle_info <span class="token operator">=</span> <span class="token punctuation">{</span>
+        <span class="token string">"vertices"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+            <span class="token string">"A"</span><span class="token punctuation">:</span> point_A<span class="token punctuation">,</span>
+            <span class="token string">"B"</span><span class="token punctuation">:</span> point_B<span class="token punctuation">,</span>
+            <span class="token string">"C"</span><span class="token punctuation">:</span> point_C
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token string">"sides"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+            <span class="token string">"a"</span><span class="token punctuation">:</span> LineString<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span>point<span class="token punctuation">.</span>x<span class="token punctuation">,</span> point<span class="token punctuation">.</span>y<span class="token punctuation">)</span> <span class="token keyword">for</span> point <span class="token keyword">in</span> <span class="token punctuation">[</span>point_B<span class="token punctuation">,</span> point_C<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"b"</span><span class="token punctuation">:</span> LineString<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span>point<span class="token punctuation">.</span>x<span class="token punctuation">,</span> point<span class="token punctuation">.</span>y<span class="token punctuation">)</span> <span class="token keyword">for</span> point <span class="token keyword">in</span> <span class="token punctuation">[</span>point_C<span class="token punctuation">,</span> point_A<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+            <span class="token string">"c"</span><span class="token punctuation">:</span> LineString<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span>point<span class="token punctuation">.</span>x<span class="token punctuation">,</span> point<span class="token punctuation">.</span>y<span class="token punctuation">)</span> <span class="token keyword">for</span> point <span class="token keyword">in</span> <span class="token punctuation">[</span>point_A<span class="token punctuation">,</span> point_B<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token string">"polygon_obj"</span><span class="token punctuation">:</span> Polygon<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">(</span>point<span class="token punctuation">.</span>x<span class="token punctuation">,</span> point<span class="token punctuation">.</span>y<span class="token punctuation">)</span> <span class="token keyword">for</span> point <span class="token keyword">in</span> <span class="token punctuation">[</span>point_A<span class="token punctuation">,</span> point_B<span class="token punctuation">,</span> point_C<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment"># Ensure the points actually do form a triangle by checking the triangle inequalities</span>
+    a <span class="token operator">=</span> triangle_info<span class="token punctuation">[</span><span class="token string">"sides"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"a"</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length
+    b <span class="token operator">=</span> triangle_info<span class="token punctuation">[</span><span class="token string">"sides"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"b"</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length
+    c <span class="token operator">=</span> triangle_info<span class="token punctuation">[</span><span class="token string">"sides"</span><span class="token punctuation">]</span><span class="token punctuation">[</span><span class="token string">"c"</span><span class="token punctuation">]</span><span class="token punctuation">.</span>length
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>a <span class="token operator">+</span> b <span class="token operator">></span> c<span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token punctuation">(</span>a <span class="token operator">+</span> c <span class="token operator">></span> b<span class="token punctuation">)</span> <span class="token keyword">and</span> <span class="token punctuation">(</span>b <span class="token operator">+</span> c <span class="token operator">></span> a<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">return</span> triangle_info
+    <span class="token keyword">else</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"The three provided points do not form a valid triangle."</span></span><span class="token punctuation">)</span>
+
+<span class="token keyword">def</span> <span class="token function">match_triangle_side_labels</span><span class="token punctuation">(</span>triangle_info<span class="token punctuation">,</span> parsed_deter_label_list<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    side_label_strings <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">:</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">:</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">:</span> <span class="token boolean">None</span><span class="token punctuation">}</span>
+    matched_sides <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment"># Sides that a label has been found for</span>
+    <span class="token keyword">for</span> label <span class="token keyword">in</span> parsed_deter_label_list<span class="token punctuation">:</span>
+        side_distances <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token string">'a'</span><span class="token punctuation">:</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token string">'b'</span><span class="token punctuation">:</span> <span class="token boolean">None</span><span class="token punctuation">,</span> <span class="token string">'c'</span><span class="token punctuation">:</span> <span class="token boolean">None</span><span class="token punctuation">}</span>
+        <span class="token keyword">for</span> side_name<span class="token punctuation">,</span> side_segment <span class="token keyword">in</span> triangle_info<span class="token punctuation">[</span><span class="token string">'sides'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            side_distances<span class="token punctuation">[</span>side_name<span class="token punctuation">]</span> <span class="token operator">=</span> side_segment<span class="token punctuation">.</span>distance<span class="token punctuation">(</span>label<span class="token punctuation">[</span><span class="token string">'rectangle'</span><span class="token punctuation">]</span><span class="token punctuation">.</span>centroid<span class="token punctuation">)</span>
+
+        min_distance <span class="token operator">=</span> <span class="token builtin">min</span><span class="token punctuation">(</span><span class="token builtin">list</span><span class="token punctuation">(</span>side_distances<span class="token punctuation">.</span>values<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        sides_with_min_distance <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token comment"># Should only be one if valid</span>
+        <span class="token keyword">for</span> side_name<span class="token punctuation">,</span> side_distance <span class="token keyword">in</span> side_distances<span class="token punctuation">.</span>items<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> side_distance <span class="token operator">==</span> min_distance<span class="token punctuation">:</span> sides_with_min_distance<span class="token punctuation">.</span>append<span class="token punctuation">(</span>side_name<span class="token punctuation">)</span>
+
+        <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token builtin">len</span><span class="token punctuation">(</span>sides_with_min_distance<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">raise</span>  Exception<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Label not be determined to be closest to a particular side."</span></span><span class="token punctuation">)</span>
+        <span class="token keyword">else</span><span class="token punctuation">:</span>
+            side_label_strings<span class="token punctuation">[</span>sides_with_min_distance<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">=</span> label<span class="token punctuation">[</span><span class="token string">'latex_content'</span><span class="token punctuation">]</span>
+            matched_sides<span class="token punctuation">.</span>append<span class="token punctuation">(</span>sides_with_min_distance<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">if</span> <span class="token builtin">len</span><span class="token punctuation">(</span>matched_sides<span class="token punctuation">)</span> <span class="token operator">!=</span> <span class="token builtin">len</span><span class="token punctuation">(</span><span class="token builtin">set</span><span class="token punctuation">(</span>matched_sides<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">raise</span> Exception<span class="token punctuation">(</span><span class="token string-interpolation"><span class="token string">f"Multiple labels correspond to a single side in the triangle."</span></span><span class="token punctuation">)</span>
+
+    <span class="token keyword">return</span> side_label_strings</code></pre>
+      </div>
+      <p>
+        After all necessary geometry verification and extraction functions have
+        run (such as the ones above), verification can proceed as it would with
+        purely symbolic questions (as demonstrated in the first example in this
+        section).
+      </p>
       <h2 id="technologies">Technologies</h2>
       <p>
-        NumberQ uses the following open-source JavaScript and Python technolgies
+        NumberQ uses the following open-source JavaScript and Python
+        technolgies:
       </p>
+      <ul class="links-list">
+        <li>
+          <a class="list-link" href="https://www.mathjax.org/">MathJax</a>:
+          JavaScript display engine that renders LaTeX in html. MathJax finds
+          LaTeX on a webpage and outputs rendered math in SVG or HTML format;
+          for example, MathJax converts '\sin(2\pi x^{2})' to \(\sin(2\pi
+          x^{2})\) (which in this case is HTML). NumberQ uses MathJax to render
+          all of its math expressions and to create labels for geometry figures.
+        </li>
+        <li>
+          <a class="list-link" href="https://prismjs.com/">Prism</a>: JavaScript
+          and CSS library used to format code in html. Prism takes a piece of
+          code as text, then highlights (colors) it according to a specified
+          language. Prism is very useful for writing online code documentation:
+          all of the code on this page is highlighted using Prism.
+        </li>
+        <li>
+          <a class="list-link" href="https://www.sympy.org/">Sympy</a>: Python
+          library for symbolic math. Sympy is used for math computations that
+          are mainly symbolic (where the result is an exact value or
+          expression). Some examples include sympifying experssions, solving
+          equations for exact answers, or finding symbolic derivatives and
+          integerals. NumberQ uses the tools provided by Sympy to test and
+          verify its math generators.
+        </li>
+        <li>
+          <a class="list-link" href="https://shapely.readthedocs.io/">Shapely</a
+          >: Python library for analyzing and manipluating objects in two
+          dimensional space. Shapely can be used to perform operations on point
+          sets, and it can also test many important properties of point sets.
+          For example, shapely can perform geometric transformations, determine
+          whether polygons are disjoint or overlapping, and find geometric
+          locations like the incenter of a shape. NumberQ uses shapely to help
+          test and verify its geometry problem generators.
+        </li>
+      </ul>
     </article>
   </body>
 </html>
