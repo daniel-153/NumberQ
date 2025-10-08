@@ -82,3 +82,12 @@ body {
     padding: 16px;
     font-size: 100%;
 }
+
+.links-list > li {
+    margin: 40px 0;
+    font-size: 30px;
+}
+
+.list-link {
+    font-size: 35px;
+}
