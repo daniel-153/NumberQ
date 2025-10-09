@@ -91,3 +91,12 @@ body {
 .list-link {
     font-size: 35px;
 }
+
+.author-note {
+    border: 0.5px solid rgba(128, 128, 128, 0.606);
+    box-sizing: border-box;
+    padding: 5px;
+    border-radius: 10px;
+    width: fit-content;
+    color: rgba(0, 0, 0, 0.759);
+}
