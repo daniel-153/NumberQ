@@ -1,5 +1,5 @@
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 }
 
 body {
@@ -15,11 +15,11 @@ body {
 
 .info-topbar {
     height: fit-content;
-    
+
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
 }
 
 .info-page-title {
@@ -44,8 +44,21 @@ body {
     font-size: 30px;
 }
 
-.main-contents-list {
+.main-contents-list>li {
+    color: rgb(0, 0, 238);
+    text-decoration: underline;
+    cursor: pointer;
     font-size: 30px;
+    width: fit-content;
+}
+
+.main-contents-list>li:active {
+    color: rgb(255, 0, 0);
+}
+
+.main-contents-list>li::marker {
+    color: black;
+    cursor: default;
 }
 
 .block-math {
@@ -83,7 +96,7 @@ body {
     font-size: 100%;
 }
 
-.links-list > li {
+.links-list>li {
     margin: 40px 0;
     font-size: 30px;
 }
