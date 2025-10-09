@@ -49,7 +49,7 @@
       <h2 id="objectives">Objectives For Problem Generation:</h2>
       <p>
         NumberQ's math problem generation is aimed at addressing common
-        difficulties invovled with creating random math questions. One issue
+        difficulties involved with creating random math questions. One issue
         with math problem generators is that they often produce problems of a
         very predictable structure. A linear equation generator, for instance,
         could simply use the form \(ax+b=cx+d\), substitute random values for
@@ -59,19 +59,19 @@
         worksheets created with these problems. Instead of learning the general
         method for solving linear equations, students memorize an arbitrary set
         of steps because there is no variation in structure. The generator
-        would be much more valuable if it offerred tens or hundreds of different
+        would be much more valuable if it offered tens or hundreds of different
         equation forms (\(ax+b=c\), \(a + \frac{x}{b} = cx\), \(\frac{x+a}{b}=c\), etc).
         <br /><br />
-        Another issue faced by math problem generators is the difficultly of
+        Another issue faced by math problem generators is the difficulty of
         creating "clean" problems. For example, suppose random values were
-        subtituted for the coefficients in \(\frac{x}{a}+b=c\). This may result
+        substituted for the coefficients in \(\frac{x}{a}+b=c\). This may result
         in relatively unpredictable problems, but an issue arises with the
         chosen values of the coefficients: they may result in numbers that are
         difficult to work with. Randomly substituting coefficients could result
         in \(\frac{x}{7}-13=10\), which requires \((7\cdot 23)\) to be
         calculated in order to solve. This may not entirely devalue the problem
         if a calculator were involved, but if the equation were just changed to
-        \(\frac{x}{7}+13=10\), it would clearly be much cleaner and preferrable
+        \(\frac{x}{7}+13=10\), it would clearly be much cleaner and preferable
         for teaching purposes.
         <br /><br />
         A third issue that a math problem generator needs to overcome is the
@@ -97,32 +97,32 @@
       <h2 id="generators">Generators For Constraints</h2>
       <p>
         This is a method for addressing the issue of "clean numbers" in randomly
-        generated math problems. Take for instance the following equation and
-        its solution:
+        generated math problems. Consider the following equation and
+        its general solution:
       </p>
       <div class="block-math">\(ax+b=c;~~x=\frac{c-b}{a}\)</div>
       <p>
         Some specific substitutions for the coefficients may be \(9x-3=6\),
         \(3x+5=11\), \(6x+7=2\), and \(8x+2=4\) with solutions of \(1, 2,
-        -\frac{5}{6},\) and \(\frac{1}{4}\) respectively. The first two
-        equations are preferrable because they have simple integer solutions.
+        -\frac{5}{6},\) and \(\frac{1}{4}\), respectively. The first two
+        equations are preferable because they have simple integer solutions.
         More specifically, they have the property that \(c-b=ra\) where \(r\) is
         an integer. Solving \(c-b=ra\) for \(a\) yields \(a=\frac{c-b}{r}\). If
         the equation must have integer coefficients, then \(c-b\) must be
         an integer multiple of \(r\), so \(c-b=rs\) where \(s\) is an integer (meaning \(a=s\)).
         Isolating \(c\) gives \(c=b+rs\), and since \(b\) must be some integer
-        (pick \(t\)), \(c=t+rs\). Substituing these selected values for \(a, b,\) and
+        (pick \(t\)), \(c=t+rs\). Substituting these selected values for \(a, b,\) and
         \(c\) back into the original equation yields the following:
       </p>
       <div class="block-math">\(ax+b=c \rightarrow [s]x+[t]=[t+rs]\)</div>
       <p>
-        This adjusted equaton (where each expression in brackets [] represets a
+        This adjusted equation (where each expression in brackets [] represents a
         single coefficient) now has two properties: it has both integer
         coefficients and integer solutions for all values of \(r, s, t;~~s\neq
-        0\). This kind of "transformation" is particulary useful for programming
+        0\). This kind of "transformation" is particularly useful for programming
         a linear equation generator. Rather than having to randomly substitute
         and check values for \(a, b,\) and \(c\) until an integer solution is
-        found, program can pick <i>any</i> values for \(r, s, t;~~s\neq
+        found, the program can pick <i>any</i> values for \(r, s, t;~~s\neq
         0\), and
         always meet this constraint. Furthermore, the solution to the
         transformed equation is always \(x=r\), so there is no need to calculate
@@ -130,7 +130,7 @@
         <br /><br />
         Note that this specific reordering of coefficients is not the only one
         that transforms the equation to have the desired properties. Isolating and remapping
-        \(a, b,\) and \(c\) in a different order could have also yieled slightly
+        \(a, b,\) and \(c\) in a different order would have yielded slightly
         different forms. All of the following transform the equation in this
         manner:
       </p>
@@ -142,7 +142,7 @@
       <p>
         This type of transformation essentially creates a "generator" to meet
         specific constraints, and it generalizes to other scenarios where the
-        goal is to create algebriac math questions programmatically without
+        goal is to create algebraic math questions programmatically without
         running a random search algorithm (which is much more computationally
         expensive). The following is an example of how this may be implemented
         in JavaScript:
@@ -182,7 +182,7 @@
       <div class="block-math">\( \Downarrow \)</div>
       <div class="block-math">\( [l]x+[n]=[m]x+[n-kl+km]\)</div>
       <p>
-        In each of steps (1)&ndash;(4), a new integer was introduced to meet a
+        In each step, a new integer was introduced to meet a
         constraint. Step (1) introduced \(k\) to represent an integer solution.
         Then, in steps (2)&ndash;(4), \(l, m,\) and \(n\) were introduced to
         ensure that all of the coefficients remain integers. Finally, \(d\) was
@@ -218,7 +218,7 @@
         \end{aligned}\)
       </div>
       <p>
-        Substituing this value for \(d\) back into the original equation yields exactly
+        Substituting this value for \(d\) back into the original equation yields exactly
         the same result obtained in the 4 steps above \(([l]x+[n]=[m]x+[n-kl+km])\), only
         differing in the labels for the coefficients:
       </p>
@@ -230,7 +230,7 @@
         for a variable that does not create any fractions when isolated (so in this case, 
         one could isolate \(b\) or \(d\) but not \(a\) or \(c\)).
         In \(ax=b\) for example, the transformation is
-        simply \([l]x=[kl]\), and the motivation for this adjustment clear
+        simply \([l]x=[kl]\), and the motivation for this adjustment is clear
         without any computation. Furthermore, this general method
         can also be used to meet other constraints besides enforcing integer solutions.
         For example, it might be desired that the subtraction \( a-b \) has a
@@ -253,18 +253,18 @@
         geometrically. In other words, different methods can be used to reach
         similar results to those obtained for the linear equations above.
         <br /><br />
-        The pythagorean theorem \(a^2+b^2=c^2\) is one such example where
+        The Pythagorean theorem \(a^2+b^2=c^2\) is one such example where
         alternative methods can be applied. This is another case where integer
         solutions are desirable but unlikely for random substitutions of the
         coefficients. Suppose the following complex number \(z\) represents a
-        lattice point in the first quadrant of the cartesian plane:
+        lattice point in the first quadrant of the Cartesian plane:
       </p>
       <div class="block-math">
         \( \begin{array}{c} z=P_{x} + P_{y}i \\ (i=\sqrt{-1};~~P_{x},P_{y} \in
         \mathbb{Z}^{+}) \end{array}\)
       </div>
       <p>
-        An integer solution to the pythagorean theorem is represented by a
+        An integer solution to the Pythagorean theorem is represented by a
         lattice point (in Q1) that has an integer distance from the origin. For
         the complex number \(z\) (above), this occurs when \(z\) has an integer
         magnitude. This is a useful restatement of the original constraint.
@@ -277,7 +277,7 @@
       </div>
       <p>
         If \(P_{x},P_{y} \in \mathbb{Z}^{+}\) and \(P_{x}>P_{y}\), it follows
-        that the real and imaginary components of \(z'\) are positve integers
+        that the real and imaginary components of \(z'\) are positive integers
         (so \(z'\) also represents an integer lattice point in Q1). However,
         since the magnitude of a product of two complex numbers is equal to the
         product of their individual magnitudes \( \lvert z_{1}z_{1} \rvert =
@@ -291,14 +291,14 @@
         P_{y}^2 \end{array}\)
       </div>
       <p>
-        As a result, the point represented by the compontents of \(z'\)
+        As a result, the point represented by the components of \(z'\)
         satisfies the original constraint of a lattice point in Q1 with an
         integer distance to the origin: \( \left( P_{x}^2-P_{y}^2,~2P_{x}P_{y}
         \right);~~P_{x},P_{y} \in \mathbb{Z}^{+};~P_{x}>P_{y} \). Furthermore,
         it can be shown that positive integer values of \(P_{x},P_{y}\) generate
-        <i>all</i> unique pythagorean triples in this manner (that is, all
+        <i>all</i> unique Pythagorean triples in this manner (that is, all
         triples where \(\operatorname{GCF}(a,b,c)=1\)). Transforming the
-        pythagorean theorem to utilize the componets of \(z'\) yields the
+        Pythagorean theorem to utilize the components of \(z'\) yields the
         following (another conversion of a constraint to a generator):
       </p>
       <div class="block-math">
@@ -306,7 +306,7 @@
         [P_{x}^2-P_{y}^2]^2+[2P_{x}P_{y}]^2=[P_{x}^2 + P_{y}^2]^2 \end{array}\)
       </div>
       <p>
-        Although the pythagorean theorem has 3 unknowns and this transformed
+        Although the Pythagorean theorem has 3 unknowns and this transformed
         equation has 2, this result is consistent with the properties of linear
         equation transformations (discussed in the previous section). In
         practice, some unknown \(x\) would take the place of one of the terms.
@@ -335,9 +335,9 @@
       </div>
       <p>
         This rewritten form reflects both the point of intersection and each
-        line's slope. To extract a transformation for the orignal equations,
-        however, the system directly above needs to be rewritten in slope
-        intercept form. This will yield remappings for \(b\) and \(d\):
+        line's slope. To extract a transformation for the original equations,
+        however, the system directly above needs to be rewritten in slope-intercept form. 
+        This will yield these remapped values for \(b\) and \(d\):
         \(b=-aS_{x}+S_{y},~d=-cS_{x}+S_{y}\). The final transformation of the
         original system is the following (which has integer solutions and
         coefficients for all integer values of \(a,c,S_{x},S_{y}\)):
@@ -351,8 +351,8 @@
         previous section, the number of coefficients remained unchanged before
         and after this transformation: \( (a,b,c,d)\rightarrow (a,c,S_{x},S_{y})
         \). Also, note that this process of selecting a point to represent the
-        intersection of the lines could have began with the lines in a different
-        form (such as point-slope or standard form) and yieled a similar result.
+        intersection of the lines could have begun with the lines in a different
+        form (such as point-slope or standard form) and yielded a similar result.
         The following is a simplified example implementation:
       </p>
       <div class="block-code">
@@ -397,19 +397,19 @@
         need for a search algorithm in many cases, there are scenarios where the
         latter technique may be preferable. "Generators
         for constraints" is aimed at solving the problem of clean numbers, but it does 
-        not provide much variation in structure. In the case where \(ax+b=c\) was transfomed to
+        not provide much variation in structure. In the case where \(ax+b=c\) was transformed to
         \([s]x+[t]=[t+rs]\), the transformed equation can be implemented to have
         random coefficients and solutions; however, maintaining the same form of
         \(ax+b=c\) means that problems can become too predictable.
         <br /><br />
         One clear solution is to implement more forms, so the code may randomly
-        chose between \(ax+b=c\), \(ax=bx+c\), \(ax+b=cx+d\), etc. However, each
+        choose between \(ax+b=c\), \(ax=bx+c\), \(ax+b=cx+d\), etc. However, each
         of these equations requires different transformations, and building
         transformations for tens or hundreds of equations can result in a
         codebase that is very difficult to manage.
         <br /><br />
-        Thus, it is often preferrable to write the equation form directly into
-        the code and rely on a random search to provide coefficents and
+        Thus, it is often preferable to write the equation form directly into
+        the code and rely on a random search to provide coefficients and
         solutions with the desired characteristics. For example, the three
         equations mentioned above might be written as:
       </p>
@@ -435,7 +435,7 @@
       <p>
         Writing the equations as "templates" (above) without creating a
         transformation for each one has several benefits. There can be close
-        control for difficultly&mdash;since forms can be clearly grouped into
+        control for difficulty, since forms can be clearly grouped into
         categories. Handling for formatting and enforcing specific properties
         can be centralized (rather than being repeated for each equation).
         Furthermore, it is often more efficient for a developer to write and
@@ -487,11 +487,11 @@
         The purpose of the <b>get_sol</b> method is mainly clear as written.
         However, note that the numerator and denominator are exposed because
         they reveal whether the equation has an integer solution <b>(1)</b>,
-        non-integer solution <b>(2)</b>, no solution <b>(3)</b>, or infinitely
+        a non-integer solution <b>(2)</b>, no solution <b>(3)</b>, or infinitely
         many solutions <b>(4)</b>. For a linear equation with coefficients \((
         a_{1}, a_{2}, a_{3}, \ldots )\) and constant terms \((c_{1}, c_{2},
         c_{3}, \ldots )\), the following holds (where \(A\) and \(C\) are
-        integer expressions of the coefficients and constant terms respectively,
+        integer expressions of the coefficients and constant terms, respectively,
         and <b>(1)</b>&ndash;<b>(4)</b> refer to the cases mentioned in the
         previous sentence):
       </p>
@@ -510,7 +510,7 @@
         on mathematical conventions. The calls to MH.start_var and
         MH.middle_const are responsible for handling adjustments such as \(([1x]
         \rightarrow [x])\) and \(([x+-5] \rightarrow [x-5])\). <br /><br />
-        The <b>absorber</b> property specificies certain coefficients that
+        The <b>absorber</b> property specifies certain coefficients that
         should have larger values than the others if the user requires integer
         solutions. In this case (\(a(bx+c)=d\)), the two specified coefficients
         are \(c\) and \(d\), and the reason for selecting these is that they
@@ -565,20 +565,20 @@
       </div>
       <p>
         The above process attempts to randomly select coefficients that satisfy
-        both the contraints of the user (such as integer solutions) and those of
+        both the constraints of the user (such as integer solutions) and those of
         the equation form (such as restrictions on certain values). However, the
         "run_counter &lt; 500" expression in the loop condition limits this
         process to a finite number of attempts (which is necessary for a user
         interface). A few techniques are used to increase the odds of success
         given this explicit limit. First, as mentioned before, certain
         coefficients are designated as "absorbers," which increases the
-        probabilty of finding an integer solution. Additionally, the outer loop
+        probability of finding an integer solution. Additionally, the outer loop
         does not select the entire group of coefficients on every execution. In
         \(a(bx+c)=d(ex+f)\), for example, the loop first randomly assigns values
         to a (random) group of all but 2 coefficients (so the initial assignment
         may be \( (a,c,e,f) \rightarrow (4,2,3,4) \)). Then, for the remaining 2
         coefficients (\(b\) and \(d\) in this case), every permutation of the
-        possibile coefficients is tested in search of a solution that meet the
+        possible coefficients is tested in search of a solution that meets the
         constraints.
         <br /><br />
         Together, these two techniques allow valid solutions to be found within
@@ -601,9 +601,9 @@
 <span class="token punctuation">}</span></code></pre>
       </div>
       <p>
-        The "backup json" being fetched in the dynamic import statement is
+        The "backup JSON" being fetched in the dynamic import statement is
         essentially a pre-built list of valid coefficient values for every form
-        and every permutation of the user settings. This json was created as the
+        and every permutation of the user settings. This JSON was created as the
         generator was being developed by removing the limit on the number of
         solution search attempts (so around 20 valid solutions were found for
         <i>every</i> form where integer solutions are possible). As a result, in
@@ -611,8 +611,8 @@
         still be given an equation that matches their settings (which the user
         is extremely unlikely to have been given before). <br /><br />
         This is the final step in the "templates and random search" method. In
-        general, the method involes four components: templates to represent
-        algebriac math expressions, restrictions for values in each of those
+        general, the method involves four components: templates to represent
+        algebraic math expressions, restrictions for values in each of those
         templates, a solution search algorithm, and fallback values for each
         template.
         <br /><br />
@@ -698,7 +698,7 @@
         and only needs a brief explanation.
         <br /><br />
         Consider a generator for addition problems. In this case, there are no
-        futher constraints that the generator needs to enforce. The
+        further constraints that the generator needs to enforce. The
         implementation may simply select two integers from a user-defined range:
       </p>
       <div class="block-code">
@@ -720,7 +720,7 @@
 <span class="token punctuation">}</span></code></pre>
       </div>
       <p>
-        In math topics where "clean numbers" are either guarunteed or
+        In math topics where "clean numbers" are either guaranteed or
         irrelevant, the code for selecting numbers in the underlying generator
         is usually not much more complex than what is shown above. Examples of
         these topics include basic arithmetic (addition and multiplication),
@@ -729,12 +729,12 @@
         <br /><br />
         Some nuance can arise in topics that have other restrictions on their
         given values (unrelated to enforcing simple numbers). The following are
-        some examples: a "law of sines and cosines" problem needs to guaruntee
+        some examples: a "law of sines and cosines" problem needs to guarantee
         that its random length numbers satisfy the triangle inequality; a
         "fraction arithmetic" problem may need to ensure that the two fractions
-        it creates do not immidiately reduce to integers; and a "subtraction"
+        it creates do not immediately reduce to integers; and a "subtraction"
         problem may require its answer to be positive. However, unlike the more
-        nuanced constraints discussed for other methods, these constraints can
+        nuanced constraints discussed for other methods, these constraints can be
         met without any form of "transformation" or "template". Typically, this
         is simply done by restricting the ranges from which random integers are
         selected.
@@ -744,18 +744,18 @@
         The most important aspect of a math problem generator like NumberQ is
         correctness. NumberQ uses <a href="https://www.sympy.org/">SymPy</a> and
         <a href="https://shapely.readthedocs.io/">Shapely</a> to verify its
-        answers. These are trusted, open-source python libraries that provide
-        symbolic math and geometry functionality respectively. This section will
+        answers. These are trusted, open-source Python libraries that provide
+        symbolic math and geometry functionality, respectively. This section will
         describe how these technologies are used for answer verification.
         <br /><br />
-        Beginning with SymPy, this library is mainly useful for verifing answers
+        Beginning with SymPy, this library is mainly useful for verifying answers
         to symbolic computation problems (expressions, equations, etc). As
         demonstrated with the code samples for linear equations (above), most
         generators on NumberQ have already determined the answer to a prompt as
         it is created (rather than calculating the answer after creating the
         prompt). Thus, to verify that an answer supplied by NumberQ is correct,
-        it (along with its corresponding question) is supplied to a python
-        server that uses SymPy to calculate the answer to the same quesiton.
+        it (along with its corresponding question) is supplied to a Python
+        server that uses SymPy to calculate the answer to the same question.
         Then, the answer from the NumberQ generator must exactly match the
         answer from SymPy to be considered correct. The following is a minimal
         example with several elements removed or abstracted for simplicity:
@@ -817,26 +817,26 @@
         This reveals any bugs (which are then fixed). The result is that the
         final generator used on the website does not need constant verification;
         it has already been shown to be >99.999% accurate (eliminating the need
-        for back end, which allows for a much faster website). <br /><br />
+        for a back end, which allows for a much faster website). <br /><br />
         Another important note about the above example is that, in practice, the
         problems on NumberQ are created based on user settings. As a result, in
-        order to fully test a generator before putting in production, permutations 
+        order to fully test a generator before putting it into production, permutations 
         of user settings need to be tested. In generators with only
-        a few settings options, every permutation of the possible input values can be
-        tested several times over. However, in generations with more settings options
-        (where that number of permuations can be in the tens of billions), a few
-        hundred thousand permuations of the user settings are randomly selected
+        a few settings, every permutation of the possible input values can be
+        tested several times over. However, in generations with more settings
+        (where that number of permutations can be in the tens of billions), a few
+        hundred thousand permutations of the user settings are randomly selected
         and tested.
         <br /><br />
         This same process is also used to verify geometry questions on NumberQ,
-        but the Shapely python library is required to first extract the LaTeX
+        but the Shapely Python library is required to first extract the LaTeX
         from the figure. The generators that output figures (such as triangles)
         use the HTML canvas API to create these drawings, so there is no LaTeX
         exposed in the output that can be directly given to SymPy
-        utilities&mdash;this is one difficulty with verifying geometry quesiton
+        utilities&mdash;this is one difficulty with verifying geometry question
         generators. Another challenge is that the labels in the figures need to
         be accurately matched to the dimensions they represent. For example, if
-        two labels in a triangle problem are both accidently placed on the same
+        two labels in a triangle problem are both mistakenly placed on the same
         side, that question should be flagged by the verifier even if the
         numbers satisfy the related equations.
         <br /><br />
@@ -897,10 +897,11 @@
 <span class="token punctuation">}</span></code></pre>
       </div>
       <p>
-        In testing, this JSON is supplied to the Shapely library, which is used
+        In testing, this JSON is analyzed in Python with the Shapely library, which is used
         to verify proper drawing (along with labeling) and to extract the LaTeX
-        for the labels. The following is (part of) of the implementation to
-        accomplish this:
+        for the labels. The following is a part of the implementation to
+        accomplish this (the actual code includes several other functions, but the two
+        below are good examples):
       </p>
       <div class="block-code">
         <div class="code-lang-label">Python</div>
@@ -966,12 +967,12 @@
       <h2 id="technologies">Technologies</h2>
       <p>
         NumberQ uses the following open-source JavaScript and Python
-        technolgies:
+        technologies:
       </p>
       <ul class="links-list">
         <li>
           <a class="list-link" href="https://www.mathjax.org/">MathJax</a>:
-          JavaScript display engine that renders LaTeX in html. MathJax finds
+          JavaScript display engine that renders LaTeX in HTML. MathJax finds
           LaTeX on a webpage and outputs rendered math in SVG or HTML format;
           for example, MathJax converts '\sin(2\pi x^{2})' to \(\sin(2\pi
           x^{2})\) (which in this case is HTML). NumberQ uses MathJax to render
@@ -979,7 +980,7 @@
         </li>
         <li>
           <a class="list-link" href="https://prismjs.com/">Prism.js</a>: JavaScript
-          and CSS library used to format code in html. Prism takes a piece of
+          and CSS library used to format code in HTML. Prism takes a piece of
           code as text, then highlights (colors) it according to a specified
           language. Prism is very useful for writing online code documentation:
           all of the code on this page is highlighted using Prism.
@@ -988,15 +989,15 @@
           <a class="list-link" href="https://www.sympy.org/">SymPy</a>: Python
           library for symbolic math. SymPy is used for math computations that
           are mainly symbolic (where the result is an exact value or
-          expression). Some examples include sympifying experssions, solving
+          expression). Some examples include simplifying expressions, solving
           equations for exact answers, or finding symbolic derivatives and
-          integerals. NumberQ uses the tools provided by SymPy to test and
+          integrals. NumberQ uses the tools provided by SymPy to test and
           verify its math generators.
         </li>
         <li>
           <a class="list-link" href="https://shapely.readthedocs.io/">Shapely</a
-          >: Python library for analyzing and manipluating objects in two
-          dimensional space. Shapely can be used to perform operations on point
+          >: Python library for analyzing and manipulating objects in two-dimensional 
+          space. Shapely can be used to perform operations on point
           sets, and it can also test many important properties of point sets.
           For example, Shapely can perform geometric transformations, determine
           whether polygons are disjoint or overlapping, and find geometric
