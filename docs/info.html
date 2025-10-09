@@ -24,6 +24,13 @@
         important math concepts underlying the generators and the techniques
         used to implement those math concepts. This information is not needed to
         use the site, but is provided for anyone who may be interested.
+        <br /><br />
+        NumberQ is open source; its source code can be found on
+        <a href="https://github.com/daniel-153/numberQ.git">GitHub</a>.
+      </p>
+      <p class="author-note">
+        Written by <a href="">Daniel Trinkaus</a> on 10/07/2025.
+        <span>Last</span> updated: 10/08/2025.
       </p>
       <h2>Contents:</h2>
       <ul class="main-contents-list">
@@ -41,16 +48,19 @@
       </ul>
       <h2 id="objectives">Objectives For Problem Generation:</h2>
       <p>
-        NumberQ's math problem generation is aimed at solving common
-        shortcommings invovled with creating random math questions. One issue
+        NumberQ's math problem generation is aimed at addressing common
+        difficulties invovled with creating random math questions. One issue
         with math problem generators is that they often produce problems of a
         very predictable structure. A linear equation generator, for instance,
         could simply use the form \(ax+b=cx+d\), substitute random values for
-        the coefficients, and calculate the solution \(x=\frac{d-b}{a-c}\). The
-        problem with this approach is that it undermines student's learning.
-        Instead of learning the general method for solving linear equations,
-        students memorize an arbitrary set of steps because there is no
-        variation in structure.
+        the coefficients, and calculate the solution \(x=\frac{d-b}{a-c}\). 
+        The equations on the resulting worksheet would all follow this same layout: \(3x+2=x+1\), \(-x+5=x-6\), etc.  
+        The problem with this approach is that it undermines the value of the
+        worksheets created with these problems. Instead of learning the general
+        method for solving linear equations, students memorize an arbitrary set
+        of steps because there is no variation in structure. The generator
+        would be much more valuable if it offerred tens or hundreds of different
+        equation forms (\(ax+b=c\), \(a + \frac{x}{b} = cx\), \(\frac{x+a}{b}=c\), etc).
         <br /><br />
         Another issue faced by math problem generators is the difficultly of
         creating "clean" problems. For example, suppose random values were
@@ -59,21 +69,20 @@
         chosen values of the coefficients: they may result in numbers that are
         difficult to work with. Randomly substituting coefficients could result
         in \(\frac{x}{7}-13=10\), which requires \((7\cdot 23)\) to be
-        calculated in order to solve. This may not entirely undermine the
-        learning process if a calculator were involved, but if the equation were
-        just changed to \(\frac{x}{7}+13=10\), it would clearly be a much
-        cleaner problem.
+        calculated in order to solve. This may not entirely devalue the problem
+        if a calculator were involved, but if the equation were just changed to
+        \(\frac{x}{7}+13=10\), it would clearly be much cleaner and preferrable
+        for teaching purposes.
         <br /><br />
         A third issue that a math problem generator needs to overcome is the
         ability to enforce particular mathematical properties. As an example, a
         naive approach to an "order of operations" question generator would be
         to select a few random numbers and separate them by random operators:
         \(N_{1}\circ N_{2} \circ N_{3}\). However, this could yield \(2-5+7\),
-        which is useless if students haven't yet been introduced to negative
-        numbers. On the other hand, if students are currently learning how to
-        work with negative numbers, this may be exactly the type of problem the
-        teacher wants. The generator would be much more useful if it allowed
-        teachers to select for properties like this.
+        which is useless in math classes where negative numbers have not been
+        introduced yet. On the other hand, this may be exactly the type of
+        problem a teacher wants if they are currently explaining negative numbers. The generator would be much more useful if it
+        allowed teachers to select for properties like this.
         <br /><br />
         This is just a brief summary of challenges for math problem generation.
         NumberQ does not completely resolve these issues, but it was created to
@@ -97,37 +106,38 @@
         \(3x+5=11\), \(6x+7=2\), and \(8x+2=4\) with solutions of \(1, 2,
         -\frac{5}{6},\) and \(\frac{1}{4}\) respectively. The first two
         equations are preferrable because they have simple integer solutions.
-        More specifically, they have the property that \(c-b=ka\) where \(k\) is
-        an integer. Solving \(c-b=ka\) for \(a\) yields \(a=\frac{c-b}{k}\). If
-        the equation must have integer coefficients, then \(c-b\) must also be
-        an integer multiple of \(k\), yielding \(c-b=jk\) (so \(a=j\)).
-        Isolating \(c\) gives \(c=b+jk\), and since \(b\) must be some integer
-        (pick \(i\)), \(c=i+jk\). Substituing these values for \(a, b,\) and
+        More specifically, they have the property that \(c-b=ra\) where \(r\) is
+        an integer. Solving \(c-b=ra\) for \(a\) yields \(a=\frac{c-b}{r}\). If
+        the equation must have integer coefficients, then \(c-b\) must be
+        an integer multiple of \(r\), so \(c-b=rs\) where \(s\) is an integer (meaning \(a=s\)).
+        Isolating \(c\) gives \(c=b+rs\), and since \(b\) must be some integer
+        (pick \(t\)), \(c=t+rs\). Substituing these selected values for \(a, b,\) and
         \(c\) back into the original equation yields the following:
       </p>
-      <div class="block-math">\(ax+b=c \rightarrow [j]x+[i]=[i+jk]\)</div>
+      <div class="block-math">\(ax+b=c \rightarrow [s]x+[t]=[t+rs]\)</div>
       <p>
         This adjusted equaton (where each expression in brackets [] represets a
         single coefficient) now has two properties: it has both integer
-        coefficients and integer solutions for all values of \(i, j, k;~~j\neq
+        coefficients and integer solutions for all values of \(r, s, t;~~s\neq
         0\). This kind of "transformation" is particulary useful for programming
         a linear equation generator. Rather than having to randomly substitute
         and check values for \(a, b,\) and \(c\) until an integer solution is
-        found, program can pick <i>any</i> values for \(i, j, k;~~j\neq 0\), and
+        found, program can pick <i>any</i> values for \(r, s, t;~~s\neq
+        0\), and
         always meet this constraint. Furthermore, the solution to the
-        transformed equation is always \(x=k\), so there is no need to calculate
+        transformed equation is always \(x=r\), so there is no need to calculate
         or verify the solution (it is known when the equation is generated).
         <br /><br />
         Note that this specific reordering of coefficients is not the only one
-        that transforms the equation to have the desired properties. Isolating
+        that transforms the equation to have the desired properties. Isolating and remapping
         \(a, b,\) and \(c\) in a different order could have also yieled slightly
         different forms. All of the following transform the equation in this
         manner:
       </p>
       <div class="block-math">
-        \(\begin{array}{c} ax+b=c & \rightarrow & [j]x+[i]=[i+jk] \\ ax+b=c &
-        \rightarrow & [j]x+[i-jk]=[i] \\ ax+b=c & \rightarrow &
-        [i+j]x+[-ik]=[jk] \end{array}\)
+        \(\begin{array}{c} ax+b=c & \rightarrow & [s]x+[t]=[t+rs] \\ ax+b=c &
+        \rightarrow & [s]x+[t-rs]=[t] \\ ax+b=c & \rightarrow &
+        [s + t]x+[-rt]=[rs] \end{array}\)
       </div>
       <p>
         This type of transformation essentially creates a "generator" to meet
@@ -137,19 +147,15 @@
         expensive). The following is an example of how this may be implemented
         in JavaScript:
       </p>
-      <div class="block-code">
-        <div class="code-lang-label">JavaScript</div>
-        <pre
-          class="code-wrap"
-        ><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token parameter">i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> k</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-    <span class="token keyword">let</span> equation <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>j<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">x + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>i<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>i <span class="token operator">+</span> j <span class="token operator">*</span> k<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span>
+      <div class="block-code"><div class="code-lang-label">JavaScript</div><pre class="code-wrap"><code class="language-javascript"><span class="token keyword">function</span> <span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token parameter">r<span class="token punctuation">,</span> s<span class="token punctuation">,</span> t</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">let</span> equation <span class="token operator">=</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>s<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">x + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>t<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> = </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>t <span class="token operator">+</span> r <span class="token operator">*</span> s<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span>
 
     <span class="token comment">// Simplify the expressions '1x', '-1x', and '+ -'</span>
     equation <span class="token operator">=</span> equation<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">'1x'</span><span class="token punctuation">,</span> <span class="token string">'x'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
     equation <span class="token operator">=</span> equation<span class="token punctuation">.</span><span class="token function">replace</span><span class="token punctuation">(</span><span class="token string">'+ -'</span><span class="token punctuation">,</span> <span class="token string">'- '</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
     <span class="token comment">// Given by transforming</span>
-    <span class="token keyword">const</span> solution <span class="token operator">=</span> k<span class="token punctuation">;</span>
+    <span class="token keyword">const</span> solution <span class="token operator">=</span> r<span class="token punctuation">;</span>
 
     console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
         <span class="token literal-property property">eq</span><span class="token operator">:</span> equation<span class="token punctuation">,</span>
@@ -158,20 +164,20 @@
 <span class="token punctuation">}</span>
 
 <span class="token comment">// Examples:</span>
-<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '2x + 5 = 11', sol: 3 }</span>
-<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '-4x - 1 = -9', sol: 2 }</span>
-<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '2x + 2 = -8', sol: -5 }</span></code></pre>
-      </div>
+<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '2x + 5 = 11', sol: 3 }</span>
+<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">4</span><span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '-4x - 1 = -9', sol: 2 }</span>
+<span class="token function">buildEquation</span><span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">5</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">,</span> <span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// { eq: '2x + 2 = -8', sol: -5 }</span></code></pre></div>
       <p>
         Consider another linear equation form and one of its respective
         transformations to force integer solutions and coefficients:
       </p>
       <div class="block-math">
-        \(\begin{array}{l} ax+b=cx+d;~~x=\frac{d-b}{c-a} \\ x\Rightarrow
-        k=\frac{d-b}{c-a}~~~\scriptstyle{\mathbf{(1)}} \\ a\Rightarrow
-        l=\frac{b-d+kc}{k}~~~\scriptstyle{\mathbf{(2)}} \\ c\Rightarrow
-        m=\frac{-b+d+kl}{k}~~~\scriptstyle{\mathbf{(3)}} \\ b\Rightarrow
-        n=d+kl-km~~~\scriptstyle{\mathbf{(4)}} \\ d=n-kl+km \end{array}\)
+        \(\begin{array}{l} ax+b=cx+d;~~x=\frac{d-b}{c-a} \\ 
+        {\scriptstyle{\mathbf{(1)}}} ~~~ x\Rightarrow k=\frac{d-b}{c-a} \\ 
+        {\scriptstyle{\mathbf{(2)}}} ~~~ a\Rightarrow l=\frac{b-d+kc}{k} \\ 
+        {\scriptstyle{\mathbf{(3)}}} ~~~ c\Rightarrow m=\frac{-b+d+kl}{k} \\ 
+        {\scriptstyle{\mathbf{(4)}}} ~~~ b\Rightarrow n=d+kl-km \\ 
+        {\phantom{{\scriptstyle{\mathbf{(1)}}} ~~~ }} d=n-kl+km \end{array}\)
       </div>
       <div class="block-math">\( \Downarrow \)</div>
       <div class="block-math">\( [l]x+[n]=[m]x+[n-kl+km]\)</div>
@@ -194,31 +200,52 @@
         "absorb" the values of the others:
       </p>
       <div class="block-math">
-        \(\begin{array}{c} ax+b=c \\ \Downarrow \\ [j]x+[i]=[i+jk] \\ \\ \hline
+        \(\begin{array}{c} ax+b=c \\ \Downarrow \\ [s]x+[t]=[t+rs] \\ \\ \hline
         \\ ax+b=cx+d \\ \Downarrow \\ [l]x+[n]=[m]x+[n-kl+km] \end{array}\)
       </div>
       <p>
         The tendency for the value of one transformed coefficient to absorb the
         values of the others is the general characteristic of this
-        transformation process. A the most basic level, the process is negating
-        every operation that can lead to non-integer solutions of coefficients
-        in an algebra problem. In \(ax=b\) for example, the transformation is
-        simply \([j]x=[jk]\), and the motivation for this adjustment clear
-        without any computation. Furthermore, this general method of "negation"
-        can also be used to meet other constraints besides "integer solutions."
+        transformation process. In fact, the transformation "steps" demonstrated
+        above can be reduced to a single operation where an integer solution is assumed
+        and a coefficient is isolated. In the example of \(ax+b=cx+d\) above, suppose
+        we assume \(x\) is some integer \(x_{0}\), then isolate \(d\):
+      </p>
+      <div class="block-math">
+        \(\begin{aligned}
+        a(x_{0})+b &= c(x_{0}) + d \\
+        d &= b - x_{0}c + x_{0}a
+        \end{aligned}\)
+      </div>
+      <p>
+        Substituing this value for \(d\) back into the original equation yields exactly
+        the same result obtained in the 4 steps above \(([l]x+[n]=[m]x+[n-kl+km])\), only
+        differing in the labels for the coefficients:
+      </p>
+      <div class="block-math">\(
+        [a]x+[b]=[c]x+[b - x_{0}c + x_{0}a]
+      \)</div>
+      <p>
+        This simplification of the transformation process works as long as one rearranges 
+        for a variable that does not create any fractions when isolated (so in this case, 
+        one could isolate \(b\) or \(d\) but not \(a\) or \(c\)).
+        In \(ax=b\) for example, the transformation is
+        simply \([l]x=[kl]\), and the motivation for this adjustment clear
+        without any computation. Furthermore, this general method
+        can also be used to meet other constraints besides enforcing integer solutions.
         For example, it might be desired that the subtraction \( a-b \) has a
         non-negative result, and the corresponding transformation is \(
         [k+l]-[l] \). These two examples are a good simplified representation of
         the "generators for constraints" method in general:
       </p>
       <div class="block-math">
-        \(\begin{array}{c} \frac{a}{b} \rightarrow \frac{[lk]}{[l]} \\ a-b
-        \rightarrow [k+l]-[l] \end{array}\)
+        \(\begin{aligned} \frac{a}{b} &\rightarrow \frac{[lk]}{[l]} \\ a-b
+        &\rightarrow [k+l]-[l] \end{aligned}\)
       </div>
       <h2 id="more-applications">
         Generators For Constraints (more applications):
       </h2>
-      <p class="section-desc">
+      <p>
         An important characteristic of the general method described above is
         that it can be applied to many other topics besides linear equations.
         That being said, the specific process used to transform constraints to
@@ -368,10 +395,10 @@
       <p>
         Although the above method of "generators for constraints" eliminates the
         need for a search algorithm in many cases, there are scenarios where the
-        latter technique may be preferable. The main shortcomming of "generators
-        for constraints" is that it does not provide much variation in
-        structure. In the case where \(ax+b=c\) was transfomed to
-        \([j]x+[i]=[i+jk]\), the trasnformed equation can be implemented to have
+        latter technique may be preferable. "Generators
+        for constraints" is aimed at solving the problem of clean numbers, but it does 
+        not provide much variation in structure. In the case where \(ax+b=c\) was transfomed to
+        \([s]x+[t]=[t+rs]\), the transformed equation can be implemented to have
         random coefficients and solutions; however, maintaining the same form of
         \(ax+b=c\) means that problems can become too predictable.
         <br /><br />
@@ -381,7 +408,7 @@
         transformations for tens or hundreds of equations can result in a
         codebase that is very difficult to manage.
         <br /><br />
-        Thus, it is often preferrable to directly write the equation form into
+        Thus, it is often preferrable to write the equation form directly into
         the code and rely on a random search to provide coefficents and
         solutions with the desired characteristics. For example, the three
         equations mentioned above might be written as:
@@ -473,10 +500,10 @@
         c_{3}, \ldots) \\ \Downarrow \end{array}\)
       </div>
       <div class="block-math">
-        \(\begin{array}{l} A \mid C~~\scriptstyle{\mathbf{(1)}} \\ A \nmid
+        \(\begin{array}{r} A \mid C~~\scriptstyle{\mathbf{(1)}} \\ A \nmid
         C~~\scriptstyle{\mathbf{(2)}} \\ A=0,~C\neq
         0~~\scriptstyle{\mathbf{(3)}} \\ A=C=0~~\scriptstyle{\mathbf{(4)}}
-        \end{array}\)
+        \end{array}~~~~~~\)
       </div>
       <p>
         The <b>create_prompt</b> method builds the string for the equation based
@@ -603,12 +630,12 @@
         <pre
           class="code-wrap"
         ><code class="language-javascript"><span class="token punctuation">{</span> <span class="token comment">// Static form</span>
-    <span class="token function-variable function">base_form</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
-    <span class="token function-variable function">a</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
-    <span class="token function-variable function">b</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
-    <span class="token function-variable function">c</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
-    <span class="token function-variable function">d</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
-    <span class="token function-variable function">e</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span>
+    <span class="token function-variable function">base_form</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+    <span class="token function-variable function">a</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+    <span class="token function-variable function">b</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+    <span class="token function-variable function">c</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>d<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+    <span class="token function-variable function">d</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>e</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>e<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> - </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
+    <span class="token function-variable function">e</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span>d</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">\\frac{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> + </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>d<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}</span><span class="token template-punctuation string">`</span></span>
 <span class="token punctuation">}</span><span class="token punctuation">,</span>
 <span class="token punctuation">{</span> <span class="token comment">// Dynamic form (basic AST-like structure)</span>
     <span class="token function-variable function">base_form</span><span class="token operator">:</span><span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span><span class="token constant">A</span><span class="token punctuation">,</span><span class="token constant">B</span><span class="token punctuation">,</span><span class="token constant">C</span><span class="token punctuation">,</span><span class="token constant">D</span></span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span>
@@ -631,7 +658,7 @@
     <span class="token function-variable function">select</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token parameter">allow_negatives</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">{</span><span class="token operator">...</span><span class="token punctuation">}</span><span class="token punctuation">,</span> <span class="token comment">// Random selection</span>
     <span class="token function-variable function">create</span><span class="token operator">:</span> <span class="token punctuation">(</span><span class="token parameter">a<span class="token punctuation">,</span>b<span class="token punctuation">,</span>c<span class="token punctuation">,</span> <span class="token operator">...</span>pm</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">(</span><span class="token punctuation">{</span> <span class="token comment">// Usage of templates</span>
         <span class="token literal-property property">prompt_str</span><span class="token operator">:</span> <span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string">
-            \sqrt{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">} </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token constant">SRH</span><span class="token punctuation">.</span><span class="token function">pm</span><span class="token punctuation">(</span>pm<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> \sqrt{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">} </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token constant">SRH</span><span class="token punctuation">.</span><span class="token function">pm</span><span class="token punctuation">(</span>pm<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> \sqrt{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}
+            \\sqrt{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>a<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">} </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token constant">SRH</span><span class="token punctuation">.</span><span class="token function">pm</span><span class="token punctuation">(</span>pm<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> \\sqrt{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>b<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">} </span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span><span class="token constant">SRH</span><span class="token punctuation">.</span><span class="token function">pm</span><span class="token punctuation">(</span>pm<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token interpolation-punctuation punctuation">}</span></span><span class="token string"> \\sqrt{</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>c<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">}
         </span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span>
         <span class="token literal-property property">ans_num_int</span><span class="token operator">:</span> <span class="token number">0</span><span class="token punctuation">,</span>
         <span class="token literal-property property">ans_num_radics</span><span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> a<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>pm<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">,</span> b<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">[</span>pm<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">,</span> c<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
@@ -667,7 +694,7 @@
         have few constraints on the coefficients in their problems. Typically,
         this technique is used when there is no benefit to applying "generators
         for constraints" or "templates and random search" (the methods discussed
-        in the previous sections). As such, the method is typically quite basic
+        in the previous sections). As such, this method is typically quite basic
         and only needs a brief explanation.
         <br /><br />
         Consider a generator for addition problems. In this case, there are no
@@ -714,23 +741,23 @@
       </p>
       <h2 id="verification">Answer Verification</h2>
       <p>
-        The most important aspect of a problem generator like NumberQ is
-        correctness. NumberQ uses <a href="https://www.sympy.org/">sympy</a> and
-        <a href="https://shapely.readthedocs.io/">shapely</a> to verify its
+        The most important aspect of a math problem generator like NumberQ is
+        correctness. NumberQ uses <a href="https://www.sympy.org/">SymPy</a> and
+        <a href="https://shapely.readthedocs.io/">Shapely</a> to verify its
         answers. These are trusted, open-source python libraries that provide
         symbolic math and geometry functionality respectively. This section will
         describe how these technologies are used for answer verification.
         <br /><br />
-        Beginning with sympy, this library is mainly useful for verifing answers
-        to alegbriac simplification problems (expressions, equations, etc). As
+        Beginning with SymPy, this library is mainly useful for verifing answers
+        to symbolic computation problems (expressions, equations, etc). As
         demonstrated with the code samples for linear equations (above), most
         generators on NumberQ have already determined the answer to a prompt as
         it is created (rather than calculating the answer after creating the
         prompt). Thus, to verify that an answer supplied by NumberQ is correct,
         it (along with its corresponding question) is supplied to a python
-        server that uses sympy to calculate the answer to the same quesiton.
+        server that uses SymPy to calculate the answer to the same quesiton.
         Then, the answer from the NumberQ generator must exactly match the
-        answer from sympy in order to be correct. The following is a minimal
+        answer from SymPy to be considered correct. The following is a minimal
         example with several elements removed or abstracted for simplicity:
         <br /><br />
         JavaScript front end:
@@ -745,7 +772,7 @@
     <span class="token comment">// Generate a question</span>
     <span class="token keyword">const</span> <span class="token punctuation">{</span>prompt<span class="token punctuation">,</span> answer<span class="token punctuation">}</span> <span class="token operator">=</span> <span class="token function">generateLinearEq</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
 
-    <span class="token comment">// Verify with sympy (fetch request to a python server)</span>
+    <span class="token comment">// Verify with SymPy (fetch request to a python server)</span>
     <span class="token keyword">const</span> test_result <span class="token operator">=</span> <span class="token keyword">await</span> <span class="token function">matchToSympy</span><span class="token punctuation">(</span>prompt<span class="token punctuation">,</span> answer<span class="token punctuation">)</span><span class="token punctuation">;</span>
     
     <span class="token comment">// Catch failures</span>
@@ -767,7 +794,7 @@
     variable<span class="token punctuation">,</span> provided_sol <span class="token operator">=</span> tex_answer<span class="token punctuation">.</span>split<span class="token punctuation">(</span><span class="token string">'='</span><span class="token punctuation">)</span>
     provided_sol <span class="token operator">=</span> parse_latex<span class="token punctuation">(</span>provided_sol<span class="token punctuation">)</span>
 
-    <span class="token comment"># Use Sympy to solve the same equation</span>
+    <span class="token comment"># Use SymPy to solve the same equation</span>
     calculated_sol <span class="token operator">=</span> solve<span class="token punctuation">(</span> 
         parse_latex<span class="token punctuation">(</span>tex_question<span class="token punctuation">)</span><span class="token punctuation">,</span> symbols<span class="token punctuation">(</span>variable<span class="token punctuation">)</span> 
     <span class="token punctuation">)</span><span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>
@@ -792,20 +819,20 @@
         it has already been shown to be >99.999% accurate (eliminating the need
         for back end, which allows for a much faster website). <br /><br />
         Another important note about the above example is that, in practice, the
-        promblems on NumberQ are created based on user settings. As a result, in
-        order to fully test a generator before putting in production, the
-        permutations of user settings need to be tested. In generators with only
-        a few settings, every permutation of the possible input values can be
-        tested several times over. However, in generations with more settings
+        problems on NumberQ are created based on user settings. As a result, in
+        order to fully test a generator before putting in production, permutations 
+        of user settings need to be tested. In generators with only
+        a few settings options, every permutation of the possible input values can be
+        tested several times over. However, in generations with more settings options
         (where that number of permuations can be in the tens of billions), a few
         hundred thousand permuations of the user settings are randomly selected
         and tested.
         <br /><br />
         This same process is also used to verify geometry questions on NumberQ,
-        but the shapely python library is required to first extract the LaTeX
+        but the Shapely python library is required to first extract the LaTeX
         from the figure. The generators that output figures (such as triangles)
         use the HTML canvas API to create these drawings, so there is no LaTeX
-        exposed in the output that can be directly given to sympy
+        exposed in the output that can be directly given to SymPy
         utilities&mdash;this is one difficulty with verifying geometry quesiton
         generators. Another challenge is that the labels in the figures need to
         be accurately matched to the dimensions they represent. For example, if
@@ -814,7 +841,7 @@
         numbers satisfy the related equations.
         <br /><br />
         The first step to address these issues is to track the history of
-        drawing commands used to create the geometry figures. An HTML canvas is
+        canvas "commands" used to create the geometry figures. An HTML canvas is
         interacted with by calling methods such as lineTo, fillRect, moveTo,
         drawImage, etc. On NumberQ, all these method calls are captured and
         stored with their supplied arguments, and this is used to represent
@@ -854,7 +881,7 @@
         ><code class="language-python"><span class="token punctuation">{</span>
     <span class="token string">"action"</span><span class="token punctuation">:</span> <span class="token string">"method_call"</span><span class="token punctuation">,</span>
     <span class="token string">"method_name"</span><span class="token punctuation">:</span> <span class="token string">"lineTo"</span><span class="token punctuation">,</span>
-    <span class="token string">"args"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token number">429.76091793749873</span><span class="token punctuation">,</span> <span class="token number">158.72500000000002</span><span class="token punctuation">]</span>
+    <span class="token string">"args"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span><span class="token number">429</span><span class="token punctuation">,</span> <span class="token number">158</span><span class="token punctuation">]</span>
 <span class="token punctuation">}</span>
 
 <span class="token punctuation">{</span>
@@ -863,14 +890,14 @@
     <span class="token string">"args"</span><span class="token punctuation">:</span> <span class="token punctuation">[</span>
         <span class="token punctuation">{</span>
             <span class="token string">"identifier_note"</span><span class="token punctuation">:</span> <span class="token string">"mjx_image"</span><span class="token punctuation">,</span>
-            <span class="token string">"data"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"latex_code"</span><span class="token punctuation">:</span> <span class="token string">"30^\circ"</span><span class="token punctuation">}</span>
+            <span class="token string">"data"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span><span class="token string">"latex_code"</span><span class="token punctuation">:</span> <span class="token string">"30^\\circ"</span><span class="token punctuation">}</span>
         <span class="token punctuation">}</span><span class="token punctuation">,</span>
-        <span class="token number">352.18536364223246</span><span class="token punctuation">,</span> <span class="token number">246.29648602124462</span><span class="token punctuation">,</span> <span class="token number">116</span><span class="token punctuation">,</span> <span class="token number">59</span>
+        <span class="token number">352</span><span class="token punctuation">,</span> <span class="token number">246</span><span class="token punctuation">,</span> <span class="token number">116</span><span class="token punctuation">,</span> <span class="token number">59</span>
     <span class="token punctuation">]</span>
 <span class="token punctuation">}</span></code></pre>
       </div>
       <p>
-        In testing, this JSON is supplied to the shapely library, which is used
+        In testing, this JSON is supplied to the Shapely library, which is used
         to verify proper drawing (along with labeling) and to extract the LaTeX
         for the labels. The following is (part of) of the implementation to
         accomplish this:
@@ -932,8 +959,8 @@
       </div>
       <p>
         After all necessary geometry verification and extraction functions have
-        run (such as the ones above), verification can proceed as it would with
-        purely symbolic questions (as demonstrated in the first example in this
+        run, such as the ones above, verification can proceed as it
+        normally would using SymPy (as demonstrated in the first example in this
         section).
       </p>
       <h2 id="technologies">Technologies</h2>
@@ -951,19 +978,19 @@
           all of its math expressions and to create labels for geometry figures.
         </li>
         <li>
-          <a class="list-link" href="https://prismjs.com/">Prism</a>: JavaScript
+          <a class="list-link" href="https://prismjs.com/">Prism.js</a>: JavaScript
           and CSS library used to format code in html. Prism takes a piece of
           code as text, then highlights (colors) it according to a specified
           language. Prism is very useful for writing online code documentation:
           all of the code on this page is highlighted using Prism.
         </li>
         <li>
-          <a class="list-link" href="https://www.sympy.org/">Sympy</a>: Python
-          library for symbolic math. Sympy is used for math computations that
+          <a class="list-link" href="https://www.sympy.org/">SymPy</a>: Python
+          library for symbolic math. SymPy is used for math computations that
           are mainly symbolic (where the result is an exact value or
           expression). Some examples include sympifying experssions, solving
           equations for exact answers, or finding symbolic derivatives and
-          integerals. NumberQ uses the tools provided by Sympy to test and
+          integerals. NumberQ uses the tools provided by SymPy to test and
           verify its math generators.
         </li>
         <li>
@@ -971,9 +998,9 @@
           >: Python library for analyzing and manipluating objects in two
           dimensional space. Shapely can be used to perform operations on point
           sets, and it can also test many important properties of point sets.
-          For example, shapely can perform geometric transformations, determine
+          For example, Shapely can perform geometric transformations, determine
           whether polygons are disjoint or overlapping, and find geometric
-          locations like the incenter of a shape. NumberQ uses shapely to help
+          locations like the centroid of a shape. NumberQ uses Shapely to help
           test and verify its geometry problem generators.
         </li>
       </ul>
