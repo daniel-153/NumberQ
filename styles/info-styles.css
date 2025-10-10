@@ -126,6 +126,10 @@ body {
     color: rgba(0, 0, 0, 0.759);
 }
 
+.author-name {
+    color: rgb(0, 5, 165);
+}
+
 @media (max-width: 600px) {
     body {
         font-size: 25px;
