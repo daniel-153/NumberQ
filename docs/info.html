@@ -122,7 +122,7 @@
         0\), and
         always meet this constraint. Furthermore, the solution to the
         transformed equation is always \(x=r\), so there is no need to calculate
-        or verify the solution (it is known when the equation is generated).
+        the solution (it is known when the equation is generated).
         <br /><br />
         Note that this specific reordering of coefficients is not the only one
         that transforms the equation to have the desired properties. Isolating and remapping
@@ -168,15 +168,15 @@
         transformations to force integer solutions and coefficients:
       </p>
       <div class="block-math">
-        \(\begin{array}{l} ax+b=cx+d;~~x=\frac{d-b}{c-a} \\ 
-        {\scriptstyle{\mathbf{(1)}}} ~~~ x\Rightarrow k=\frac{d-b}{c-a} \\ 
-        {\scriptstyle{\mathbf{(2)}}} ~~~ a\Rightarrow l=\frac{b-d+kc}{k} \\ 
-        {\scriptstyle{\mathbf{(3)}}} ~~~ c\Rightarrow m=\frac{-b+d+kl}{k} \\ 
-        {\scriptstyle{\mathbf{(4)}}} ~~~ b\Rightarrow n=d+kl-km \\ 
-        {\phantom{{\scriptstyle{\mathbf{(1)}}} ~~~ }} d=n-kl+km \end{array}\)
+        \(\begin{array}{l} ax+b=cx+d;~~x=\frac{d-b}{a-c} \\ 
+        {\scriptstyle{\mathbf{(1)}}} ~~~ x\Rightarrow k=\frac{d-b}{a-c} \\ 
+        {\scriptstyle{\mathbf{(2)}}} ~~~ a\Rightarrow l=\frac{-b+d+kc}{k} \\ 
+        {\scriptstyle{\mathbf{(3)}}} ~~~ c\Rightarrow m=\frac{b-d+kl}{k} \\ 
+        {\scriptstyle{\mathbf{(4)}}} ~~~ b\Rightarrow n=d-kl+km \\ 
+        {\phantom{{\scriptstyle{\mathbf{(1)}}} ~~~ }} d=n+kl-km \end{array}\)
       </div>
       <div class="block-math">\( \Downarrow \)</div>
-      <div class="block-math">\( [l]x+[n]=[m]x+[n-kl+km]\)</div>
+      <div class="block-math">\( [l]x+[n]=[m]x+[n+kl-km]\)</div>
       <p>
         In each step, a new integer was introduced to meet a
         constraint. Step (1) introduced \(k\) to represent an integer solution.
@@ -197,7 +197,7 @@
       </p>
       <div class="block-math">
         \(\begin{array}{c} ax+b=c \\ \Downarrow \\ [s]x+[t]=[t+rs] \\ \\ \hline
-        \\ ax+b=cx+d \\ \Downarrow \\ [l]x+[n]=[m]x+[n-kl+km] \end{array}\)
+        \\ ax+b=cx+d \\ \Downarrow \\ [l]x+[n]=[m]x+[n+kl-km] \end{array}\)
       </div>
       <p>
         The tendency for the value of one transformed coefficient to absorb the
@@ -210,16 +210,16 @@
       <div class="block-math">
         \(\begin{aligned}
         a(x_{0})+b &= c(x_{0}) + d \\
-        d &= b - x_{0}c + x_{0}a
+        d &= b + x_{0}a - x_{0}c
         \end{aligned}\)
       </div>
       <p>
         Substituting this value for \(d\) back into the original equation yields exactly
-        the same result obtained in the 4 steps above \(([l]x+[n]=[m]x+[n-kl+km])\), only
+        the same result obtained in the 4 steps above \(([l]x+[n]=[m]x+[n+kl-km])\), only
         differing in the labels for the coefficients:
       </p>
       <div class="block-math">\(
-        [a]x+[b]=[c]x+[b - x_{0}c + x_{0}a]
+        [a]x+[b]=[c]x+[b + x_{0}a - x_{0}c]
       \)</div>
       <p>
         This simplification of the transformation process works as long as one rearranges 
