@@ -107,24 +107,24 @@
 
   0%,
   40% {
-    border-color: red;
+    outline-color: red;
     color: red;
   }
 
   41%,
   60% {
-    border-color: rgb(20, 20, 20);
+    outline-color: rgb(20, 20, 20);
     color: black;
   }
 
   61%,
   99% {
-    border-color: red;
+    outline-color: red;
     color: red;
   }
 
   100% {
-    border-color: rgb(20, 20, 20);
+    outline-color: rgb(20, 20, 20);
     color: black;
   }
 }
@@ -138,15 +138,15 @@
   height: 3vw;
   font-size: 2.3vw;
   text-align: center;
-  outline: none;
-  border: 0.1vw solid rgb(20, 20, 20);
-  border-radius: 0.1vw;
+  border: none;
+  outline: 2px solid rgb(20, 20, 20);
+  border-radius: 4%;
   font-family: monospace;
   font-weight: 400;
 }
 
 .settings-text-box:focus {
-  border: 0.12vw solid #1A73E8;
+  outline: 3px solid #1A73E8;
 }
 
 /* Settings tooltip and lock/unlock styles */
@@ -513,8 +513,8 @@
 }
 
 .wide-range-box {
-  width: 3.3vw;
-  font-size: 1.4vw;
+  width: 3.1vw;
+  font-size: 1.3vw;
 }
 
 /* Special radio button styles */
@@ -573,7 +573,7 @@
 .table-textbox-label {
   display: inline;
   font-family: monospace;
-  font-size: 1vw;
+  font-size: 0.95vw;
   margin-left: 5%;
 }
 
@@ -627,16 +627,21 @@
     width: 5vw;
     height: 5vw;
     font-size: 3.1vw;
-    border-width: 0.1vw;
-  }
-
-  .settings-text-box:focus {
-    border-width: 0.25vw;
   }
 
   .wide-range-box {
     width: 5.5vw;
-    font-size: 2.4vw;
+    font-size: 2.25vw;
+  }
+
+  .table-textbox {
+    width: 3vw;
+    height: 3vw;
+    font-size: 2.5vw;
+  }
+
+  .table-textbox-label {
+    font-size: 1.5vw;
   }
 
   .settings-info-button {
@@ -760,19 +765,26 @@
     width: 20vw;
     height: 20vw;
     font-size: 12.3vw;
-    border-width: 0.6vw;
   }
 
   .number-range-box {
-    font-size: 11.5vw;
+    width: 17vw;
+    height: 17vw;
+    font-size: 9.5vw;
   }
 
   .wide-range-box {
-    font-size: 8vw;
+    font-size: 7vw;
   }
 
-  .settings-text-box:focus {
-    border-width: 1vw;
+  .table-textbox {
+    width: 14vw;
+    height: 14vw;
+    font-size: 9vw;
+  }
+
+  .table-textbox-label {
+    font-size: 4.5vw;
   }
 
   .settings-info-button {
