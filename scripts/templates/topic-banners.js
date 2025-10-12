@@ -103,6 +103,7 @@ export const templates = [
         display_name: 'Special Right Triangles',
         display_category: 'geometry',
         example_problem: 'x\\sqrt{2}\\:\\;\\,2x\\:\\;\\,x\\sqrt{3}',
+        example_problem_class: 'slightly-shrunk-question',
         short_name: 'special-triangles'
     },
     {
@@ -111,7 +112,7 @@ export const templates = [
         display_name: 'Law of Sines & Cosines',
         display_category: 'geometry',
         example_problem: 'c^2=a^2+b^2-2ab\\cos(C)',
-        example_problem_class: 'shrunk-question',
+        example_problem_class: 'shrunk-shrunk-question',
         short_name: 'sines-cosines'
     },
     {
