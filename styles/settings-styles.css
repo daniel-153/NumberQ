@@ -453,43 +453,31 @@
   content: attr(data-input-name);
   position: absolute;
   bottom: 105%;
-  font-size: 0.8vw;
+  font-size: 20px;
   width: fit-content;
   height: fit-content;
   font-family: monospace;
 }
 
-.textbox-w-checkbox:focus {
-  border-width: 0.1vw;
-  outline: 0.05vw solid #1A73E8;
-  ;
-}
-
 .settings-checkbox-tab {
+  width: fit-content;
+  max-width: 100%;
+  height: fit-content;
+  white-space: nowrap;
+  padding: 2.5px 5px;
+  box-sizing: border-box;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
   align-items: center;
-  width: 6.7vw;
-  min-width: 110px;
-  height: 1.3vw;
-  min-height: 20px;
-  font-size: clamp(13px, 0.9vw, 0.9vw);
+  text-align: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.9vw;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   font-weight: 600;
   color: white;
   background-color: #585858;
-  border: 0.1vw solid rgb(68, 67, 67);
-  border-radius: 0.1vw;
-}
-
-.textbox-checkbox-tab {
-  width: fit-content;
-  padding-left: 0.3vw;
-  padding-right: 0.3vw;
-  max-width: 85%;
-  height: fit-content;
-  min-height: 1.4vw;
+  border: 2px solid rgb(68, 67, 67);
+  border-radius: 3px;
 }
 
 .single-settings-checkbox {
@@ -659,7 +647,7 @@
     /* Fixed width, allows height to grow dynamically */
     padding: 0.5vw;
     border-radius: 0.5vw;
-    font-size: 1.75vw;
+    font-size: 1.5vw;
   }
 
   .settings-info-button::after {
@@ -688,12 +676,6 @@
     font-size: 1.2vw;
   }
 
-  .settings-checkbox-tab {
-    width: 9.5vw;
-    height: 1.8vw;
-    font-size: 1.4vw;
-  }
-
   .single-settings-checkbox {
     width: 1.3vw;
     height: 1.3vw;
@@ -710,6 +692,14 @@
 
   .setting-control-buttons {
     gap: 2.2vw;
+  }
+
+  .settings-checkbox-tab {
+    font-size: 1.2vw;
+  }
+
+  .dimension-textbox-x {
+    font-size: 3vw;
   }
 }
 
@@ -764,7 +754,7 @@
   .settings-text-box {
     width: 20vw;
     height: 20vw;
-    font-size: 12.3vw;
+    font-size: 11vw;
   }
 
   .number-range-box {
@@ -798,11 +788,11 @@
   .settings-info-button::before {
     bottom: calc(100% + 3.85vw);
     /* Position tooltip above the button and arrow */
-    width: 70vw;
+    width: 62.5vw;
     /* Fixed width, allows height to grow dynamically */
     padding: 2.5vw;
     border-radius: 2.2vw;
-    font-size: 6vw;
+    font-size: 5vw;
   }
 
   .settings-info-button::after {
@@ -835,12 +825,6 @@
     font-size: 15vw;
   }
 
-  .settings-checkbox-tab {
-    width: 32vw;
-    height: 5.4vw;
-    font-size: 4.5vw;
-  }
-
   .single-settings-checkbox {
     width: 4.5vw;
     height: 4.5vw;
@@ -867,5 +851,19 @@
     height: 27px;
     font-size: 26px;
     bottom: 3px;
+  }
+
+  .settings-checkbox-tab {
+    font-size: 18px;
+  }
+
+  .dimension-textbox-x {
+    font-size: 10vw;
+  }
+}
+
+@media (max-width: 290px) {
+  .settings-checkbox-tab {
+    font-size: 13px;
   }
 }
