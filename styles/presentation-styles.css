@@ -15,88 +15,6 @@
     z-index: 99999;
 }
 
-#present-ui-button {
-    position: absolute;
-    outline: none;
-    border: 2px solid rgb(0, 0, 0);
-    border-radius: 5px;
-    top: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
-    background-color: rgb(52, 64, 81);
-    box-sizing: border-box;
-    padding: 2.5px;
-}
-
-#present-ui-button:hover {
-    cursor: pointer;
-    border-color: rgb(15, 129, 129);
-    background-color: rgb(64, 78, 98);
-}
-
-#present-image {
-    width: 100%;
-    aspect-ratio: 1;
-}
-
-.tooltip-base {
-    --tooltip-arrow-size: 10px;
-}
-
-.tooltip-base::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-top: var(--tooltip-arrow-size) solid transparent;
-    border-bottom: var(--tooltip-arrow-size) solid transparent;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.tooltip-base::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: #333;
-    width: min-content;
-    height: min-content;
-    font-size: 25px;
-    opacity: 0;
-    pointer-events: none;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: whitesmoke;
-    padding: 4px 7px;
-    border-radius: 5px;
-}
-
-.tooltip-base:hover::after,
-.tooltip-base:hover::before {
-    opacity: 1;
-}
-
-.tooltip-left::before {
-    right: calc(100% + 4px);
-    border-left: var(--tooltip-arrow-size) solid #333;
-}
-
-.tooltip-left::after {
-    right: calc(100% + var(--tooltip-arrow-size) + 4px);
-}
-
-.tooltip-right::before {
-    left: calc(100% + 4px);
-    border-right: var(--tooltip-arrow-size) solid #333;
-}
-
-.tooltip-right::after {
-    left: calc(100% + var(--tooltip-arrow-size) + 4px);
-}
-
 .large-pop-up-banner {
     --present-ui-border: 5px solid rgb(40, 40, 40);
     display: flex;
@@ -313,49 +231,11 @@
     object-fit: contain;
 }
 
-@media (max-width: 1700px) {
-    #present-ui-button {
-        width: 40px;
-        height: 40px;
-        top: 10px;
-        right: 10px;
-    }
-
-    .tooltip-left {
-        --tooltip-arrow-size: 8px;
-    }
-
-    .tooltip-left::after {
-        font-size: 20px;
-    }
-}
-
 @media (max-width: 900px) {
-    #present-ui-button {
-        top: 4px;
-        right: 4px;
-        border-radius: 3px;
-        padding: 1px;
-        width: 30px;
-        height: 30px;
-        border-width: 1px;
-    }
-
-    .tooltip-left::before,
-    .tooltip-left::after {
-        display: none;
-    }
-
-    #gen-type-header {
-        text-align: center;
-        max-width: calc(100% - 2 * (30px + 4px));
-    }
-
     .present-button {
         width: 40px;
         height: 40px;
         font-size: 30px;
-        
     }
 
     .present-button::before,
@@ -370,11 +250,6 @@
 }
 
 @media (max-width: 500px) {
-    #present-ui-button {
-        width: 25px;
-        height: 25px;
-    }
-
     .present-ans-math {
         max-width: 145px; 
         max-height: 145px;
