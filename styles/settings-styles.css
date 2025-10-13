@@ -549,6 +549,7 @@
 
 .textbox-table-entry:last-child {
   margin-bottom: 0;
+  border-bottom: 3px solid transparent;
 }
 
 .table-textbox {
