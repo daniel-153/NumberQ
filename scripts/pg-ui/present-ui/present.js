@@ -1,4 +1,5 @@
 import * as PH from './present-helpers.js';
+import * as UH from '../../helpers/ui-helpers.js';
 
 const ui_state = {
     first_present_ui_open: true,
@@ -6,12 +7,14 @@ const ui_state = {
     answer_img: null,
     canvas_png_blob: null,
     current_gen_func: null,
-    size_adjustments: {}
+    size_adjustments: {},
+    stylesheets: ['presentation-styles']
 };
 
 export async function buildNewPresentUi() {
     if (ui_state.first_present_ui_open) {
         PH.insertPresentUiHtml();
+        await UH.loadStyleSheets(ui_state.stylesheets);
         ui_state.first_present_ui_open = false;
     }
 

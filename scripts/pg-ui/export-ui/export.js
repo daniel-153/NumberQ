@@ -1,4 +1,5 @@
 import * as EH from './export-helpers.js';
+import * as UH from '../../helpers/ui-helpers.js';
 
 const export_ui_state = {
     first_export_ui_open: true,
@@ -8,12 +9,14 @@ const export_ui_state = {
     pre_export_element: null, // an svg el or html canvas el
     export_preview_copy: null, // the copy of the canvas or svg that will be used as a preview,
     export_file_format: null,
-    gen_short_name: null
+    gen_short_name: null,
+    stylesheets: ['export-ui-styles']
 };
 
 export async function buildNewExportUi(Q_or_A) {
     if (export_ui_state.first_export_ui_open) {
         EH.insertExportUiHtml();
+        await UH.loadStyleSheets(export_ui_state.stylesheets);
         export_ui_state.first_export_ui_open = false;
     }
     

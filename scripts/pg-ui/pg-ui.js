@@ -26,7 +26,12 @@ const pg_ui_state = {
     required_mjx_extensions: [],
     preset_funcs: {},
     focused_preset: null,
-    preset_is_applied: false
+    preset_is_applied: false,
+    stylesheets: [
+        'pg-ui-styles', 
+        'settings-styles', 
+        'presets-styles'
+    ]
 };
 
 export async function generate(func_name, display_name = '') {
@@ -37,6 +42,7 @@ export async function generate(func_name, display_name = '') {
         UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
         UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
         PH.insertCopySaveButtons();
+        await UH.loadStyleSheets(pg_ui_state.stylesheets);
     }
 
     if (pg_ui_state.first_pg_ui_open || func_name !== pg_ui_state.func_name) { // first generation with any mode Or switched to a new gen
