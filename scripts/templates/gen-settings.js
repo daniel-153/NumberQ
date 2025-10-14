@@ -152,7 +152,7 @@ export const factor_size = {
 export const division_result = {
     type: 'radio_buttons',
     display_name: 'Division Quotient Form',
-    radio_buttons: [['divide_evenly','Divide Evenly'],['numerical_remainder','Numerical Remainder'],['quotient_plus_remainder','Quotient+Remainder']], 
+    radio_buttons: [['divide_evenly','Divide Evenly'],['numerical_remainder','Numerical Remainder'],['quotient_plus_remainder','Quotient + Remainder']], 
     tooltip: 'In division, what form should the quotient be in?',
     prelocked: true
 };
