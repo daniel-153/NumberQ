@@ -271,3 +271,36 @@ export function close(content_id, visibility_states = UVH.visibility_states) {
     }   
     else return false;
 }
+
+export async function loadStyleSheets(sheet_name_array) {
+    const link_els = [];
+    const sheet_promises = [];
+    sheet_name_array.forEach(sheet_name => {
+        const link_el = document.createElement('link');
+        link_el.rel = 'stylesheet';
+        link_el.href = `styles/${sheet_name}.css`;
+        link_els.push(link_el);
+
+        sheet_promises.push(new Promise((resolve, reject) => {
+            link_el.onload = resolve;
+            link_el.onerror = reject;
+        }));
+    });
+
+    let all_loaded = true;
+    try {
+        link_els.forEach(link_el => document.head.appendChild(link_el));
+        await Promise.all(sheet_promises);
+
+        await new Promise(resolve => {
+            requestAnimationFrame(() => {
+                setTimeout(resolve, 0);
+            });
+        });
+    } catch (error) {
+        all_loaded = false;
+        console.error(`Failed to load one or more stylesheets: ${error}`);
+    }
+
+    return all_loaded;
+}
