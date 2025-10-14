@@ -313,6 +313,27 @@ body::-webkit-scrollbar-thumb:hover {
     border-width: 0.18vw;
 }
 
+#preset-list-wrapper {
+   opacity: 0;
+}
+
+.dark-overlay {
+    position: fixed;
+    top: 0vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.341);
+    z-index: 99;
+}
+
+.top-stacking-overlay {
+    z-index: 99999;
+}
+
 @media (max-width: 1700px) { /* Ipads and Small Laptops */
     #generator-list {
         grid-template-columns: repeat(3, 25vw);
