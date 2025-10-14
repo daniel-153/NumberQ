@@ -1,9 +1,8 @@
-import "./math-jax/interface.js";
-import { insertModeBanners } from "./helpers/ui-helpers.js";
+import { insertHomeMath, insertModeBanners } from "./helpers/ui-helpers.js";
 import { registerEventListeners } from "./events/handlers.js";
 
 (function init() {
+    insertHomeMath();
     insertModeBanners();
     registerEventListeners();
-    mjx_loader.typesetPromise();
 })();
