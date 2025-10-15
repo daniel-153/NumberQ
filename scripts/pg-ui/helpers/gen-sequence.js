@@ -407,10 +407,34 @@ export function insertCopySaveButtons() {
     document.getElementById('A-column').querySelector('.un-rendered-box-wrapper').insertAdjacentHTML('afterbegin', createSingleCopyButton('A'));
 }
 
+export function startGeneration(pg_ui_state, func_name) {
+    if (pg_ui_state.is_currently_generating) return false;
+    else {
+        pg_ui_state.is_currently_generating = true;
+
+        if (func_name !== pg_ui_state.func_name) { // first generation or switched to a different gen
+            ['rendered-Q', 'rendered-A'].forEach(outbox_box_id => {
+                const output_box = document.getElementById(outbox_box_id);
+                output_box.innerHTML = '';
+
+                const math_wrap = output_box.parentElement;
+                math_wrap.classList.add('spinner');
+            });
+        }
+
+        return true;
+    }
+}
+
 export function endGeneration(pg_ui_state) {
     pg_ui_state.first_pg_ui_open = false; // no longer the first generation
     pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
     pg_ui_state.is_currently_generating = false;
+
+    ['rendered-Q', 'rendered-A'].forEach(outbox_box_id => {
+        const math_wrap = document.getElementById(outbox_box_id).parentElement;
+        math_wrap.classList.remove('spinner');
+    });
 }
 
 export async function loadMjxExtensions(gen_module, pg_ui_state) {
