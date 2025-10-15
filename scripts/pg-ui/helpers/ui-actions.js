@@ -1,27 +1,3 @@
-export function toggleFullScreenAns(method = 'toggle') {
-    if (method === 'toggle') {
-        if (document.getElementById('show-hide-button').getAttribute('data-status') === 'show') method = 'show';
-        else if (document.getElementById('show-hide-button').getAttribute('data-status') === 'hide') method = 'hide';
-        else method = 'show';
-    }
-
-    if (method === 'show') {
-        document.getElementById('fullscreen-answer').style.background = 'whitesmoke';
-        document.getElementById('fullscreen-answer').style.color = 'rgb(11, 5, 5)';
-        document.getElementById('show-hide-button').innerHTML = 'Hide';
-        document.getElementById('show-hide-button').setAttribute('data-status','hide');
-        document.getElementById('fullscreen-answer').style.overflowX = 'auto';
-    }
-    else if (method === 'hide') {
-        document.getElementById('fullscreen-answer').style.background = '';
-        document.getElementById('fullscreen-answer').style.color = '';
-        document.getElementById('show-hide-button').innerHTML = 'Show';
-        document.getElementById('show-hide-button').removeAttribute('data-status');
-        document.getElementById('show-hide-button').setAttribute('data-status','show');
-        document.getElementById('fullscreen-answer').style.overflowX = 'hidden';
-    }
-} // method => 'show', 'hide', or 'toggle' the fullscreen answer 
-
 export function toggleSettingsLock(settings_lock_el, method = 'toggle') {
     if (method === 'toggle') {
         const current_status = settings_lock_el.getAttribute('data-status');
