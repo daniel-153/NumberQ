@@ -1,5 +1,3 @@
-import { CH } from "../../helpers/canvas-helpers.js";
-
 export function toggleFullScreenAns(method = 'toggle') {
     if (method === 'toggle') {
         if (document.getElementById('show-hide-button').getAttribute('data-status') === 'show') method = 'show';
