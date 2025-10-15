@@ -437,6 +437,23 @@ export function endGeneration(pg_ui_state) {
     });
 }
 
+export function revealUiButtons() {
+    const style_el = document.createElement('style');
+    
+    style_el.textContent = `
+        .export-buttons-wrapper,
+        .un-rendered-copy-image-wrapper {
+            display: flex;
+        }
+
+        #present-ui-button {
+            display: inline-block;
+        }
+    `;
+
+    document.head.appendChild(style_el);
+}
+
 export async function loadMjxExtensions(gen_module, pg_ui_state) {
     pg_ui_state.required_mjx_extensions.length = 0; // clear previous extensions
 
