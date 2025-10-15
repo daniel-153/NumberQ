@@ -5,13 +5,15 @@ export function updateElementMath(math_container_id, latex_str, initial_font_siz
     initial_font_size_vw = parseFloat(initial_font_size_vw); // break off the 'vw'
     latex_str = String(latex_str); // ensure string input (some gens output numbers)
 
-    // clear previously applied styles before running this func
+    // clear previously applied styles and scroll before running this func
     math_container.style.fontSize = '';
     math_container.style.display = '';
     math_container.style.overflowX = 'hidden';
     math_container.style.overflowY = 'hidden';
     math_container.style.justifyContent = '';
     math_container.style.alignItems = '';
+    math_container.scrollTop = 0;
+    math_container.scrollLeft = 0;
 
     // make some adjustments to the initial font size based on special cases (latex contains fractions, or smaller screen size detected)
     const frac_upscale = (latex_str.includes('\\frac')) ? 1.3 : 1;
@@ -49,8 +51,8 @@ export function updateElementMath(math_container_id, latex_str, initial_font_siz
             requestAnimationFrame(() => {
                 if (hasXorYOverflow()) {
                     math_container.style.display = 'flex';
-                    const applyYStyleUpdates = () => {math_container.style.overflowY = 'auto'; math_container.style.alignItems = 'flex-start'; math_container.scrollTop = 0;}
-                    const applyXStyleUpdates = () => {math_container.style.overflowX = 'auto'; math_container.style.justifyContent = 'left'; math_container.scrollLeft = 0;}
+                    const applyYStyleUpdates = () => {math_container.style.overflowY = 'auto'; math_container.style.alignItems = 'flex-start';}
+                    const applyXStyleUpdates = () => {math_container.style.overflowX = 'auto'; math_container.style.justifyContent = 'left';}
 
                     if (hasXOverflow() && hasYOverflow()) { // both directions overflowed (just apply both scroll bars at the same time)
                         applyXStyleUpdates();
