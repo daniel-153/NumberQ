@@ -28,20 +28,19 @@ const pg_ui_state = {
     focused_preset: null,
     preset_is_applied: false,
     stylesheets: [
-        'pg-ui-styles', 
         'settings-styles', 
         'presets-styles'
     ]
 };
 
 export async function generate(func_name, display_name = '') {
-    if (pg_ui_state.is_currently_generating) return;
-    pg_ui_state.is_currently_generating = true;
+    if (!PH.startGeneration(pg_ui_state, func_name)) return;
     
     if (pg_ui_state.first_pg_ui_open) { // first generation with any mode
         UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
         UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
         PH.insertCopySaveButtons();
+        await import('../math-jax/interface.js');
         await UH.loadStyleSheets(pg_ui_state.stylesheets);
     }
 
