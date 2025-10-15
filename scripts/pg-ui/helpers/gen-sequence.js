@@ -1,7 +1,6 @@
 import * as UH from '../../helpers/ui-helpers.js';
 import * as FH from '../../helpers/form-helpers.js';
 import * as UAH from './ui-actions.js'; 
-import { CH } from "../../helpers/canvas-helpers.js";
 
 export function insertGenTitle(gen_title, element_id) {
     document.getElementById(element_id).innerHTML = gen_title;
