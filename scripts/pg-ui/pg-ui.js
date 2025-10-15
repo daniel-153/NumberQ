@@ -42,6 +42,7 @@ export async function generate(func_name, display_name = '') {
         PH.insertCopySaveButtons();
         await import('../math-jax/interface.js');
         await UH.loadStyleSheets(pg_ui_state.stylesheets);
+        PH.revealUiButtons();
     }
 
     if (pg_ui_state.first_pg_ui_open || func_name !== pg_ui_state.func_name) { // first generation with any mode Or switched to a new gen
