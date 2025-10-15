@@ -432,6 +432,14 @@
     animation: spinner 600ms linear infinite;
 }
 
+/* initial hide for pgui buttons */
+
+.export-buttons-wrapper,
+.un-rendered-copy-image-wrapper,
+#present-ui-button {
+    display: none;
+}
+
 @media (max-width: 1700px) {
     #generate-button {
         width: 13vw;
