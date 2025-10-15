@@ -10,17 +10,10 @@ const event_listeners = [
             if (event.target.matches('.start-button')) {
                 UH.open('generation-content');
                 window.scrollTo(0, 0);
-                history.pushState({ page: 'generator' }, '', '');
                 PGH.resetSettingsVisualUi(event.target.getAttribute('data-gen-func-name'));
                 document.getElementById('generate-button').setAttribute('data-gen-func-name', event.target.getAttribute('data-gen-func-name'));
                 PG.generate(event.target.getAttribute('data-gen-func-name'), event.target.getAttribute('data-gen-type'));
             }
-        });
-
-        window.addEventListener('popstate',() => {
-            UH.open('home-page-content');
-            document.body.style.overflowY = 'visible';
-            history.pushState({ page: 'generator' }, '', '');
         });
 
         document.getElementById('feedback-button').addEventListener('click', () => {
