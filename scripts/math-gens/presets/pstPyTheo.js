@@ -124,7 +124,7 @@ export default [
             c\\approx 6.4
             \\end{array}
         `,
-        description: 'Triangles where the unknown side may be a non-teriminating decimal (so it is rounded).',
+        description: 'Triangles where the unknown side may be a non-terminating decimal (so it is rounded).',
         get_settings: function() {    
             return {
                 triangle_number_type: 'integers_only',
@@ -185,7 +185,7 @@ export default [
             c=?
             \\end{array}
         `,
-        description: 'Triangles where the hypontenuse is unknown (integer side lengths).',
+        description: 'Triangles where the hypotenuse is unknown (integer side lengths).',
         get_settings: function() {    
             return {
                 triangle_number_type: 'integers_only',
@@ -204,7 +204,7 @@ export default [
             c=?
             \\end{array}
         `,
-        description: 'Triangles where the hypontenuse is unknown (general side lengths).',
+        description: 'Triangles where the hypotenuse is unknown (general side lengths).',
         get_settings: function() {    
             return {
                 triangle_number_type: H.randFromList(['integers_only', 'allow_decimals']),

@@ -129,7 +129,7 @@ export default [
             -4=2y+x 
             \\end{array}
         `,
-        description: 'Equations with terms in a randomized order and smaller coeffficients.',
+        description: 'Equations with terms in a randomized order and smaller coefficients.',
         get_settings: function() {
             return {
                 sys_eqs_coef_size: 3,

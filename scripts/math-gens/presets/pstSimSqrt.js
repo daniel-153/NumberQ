@@ -99,7 +99,7 @@ export default [
     {
         title: 'Rationalize (root in denominator, beginner)',
         example_problem: '~~~~~~~\\frac{5}{\\sqrt{3}}~~~~~~~',
-        description: 'Expressions with a single square root in their denominator (beginnger).',
+        description: 'Expressions with a single square root in their denominator (beginner).',
         get_settings: function() {    
             return {
                 sim_sqrt_form: H.randFromList(['begin_1', 'begin_2', 'begin_7']),
@@ -176,7 +176,7 @@ export default [
     {
         title: 'Distribute Into An (a+&radic;b) Expression',
         example_problem: '\\sqrt{6}( \\sqrt{6}-3 )',
-        description: 'Apply the distrubutive property on an expression with an integer and a square root.',
+        description: 'Apply the distributive property on an expression with an integer and a square root.',
         get_settings: function() {    
             return {
                 sim_sqrt_form: H.randFromList(['begin_10', 'begin_11']),
