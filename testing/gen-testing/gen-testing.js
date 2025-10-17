@@ -2,7 +2,13 @@ import { createSettingsFields, preValidateSettings, getAllSetSubsets, getAllComb
 import { randInt, integerArray, removeFromArray } from '../../scripts/math-gens/helpers/gen-helpers.js'; 
 import * as settings_templates_module from '../../scripts/templates/gen-settings.js';
 
-// quick-start template: const gen_testing = await import('http://127.0.0.1:5500/testing/gen-testing/gen-testing.js'); gen_testing.testGenerator('genAddSub', {starting_test_number: 1, max_number_of_tests: 1000, stop_on_failed_test: false, settings_progression: 'permutations'});
+// quick-start template:
+// 
+// const root_url = window.location.origin;
+// if (typeof(window.mjx_loader) !== 'object' || window.mjx_loader === null) await import(`${root_url}/scripts/math-jax/interface.js`);
+// const gen_testing = await import(`${root_url}/testing/gen-testing/gen-testing.js`);
+// const test_schedule = (await (await fetch(`${root_url}/testing/gen-testing/schedule.json`)).json())["schedule"];
+// gen_testing.runTestSchedule(test_schedule);
 
 function _getValidValuesLog(gen_module) {
     // placeholder form required to use createSettingsFields
