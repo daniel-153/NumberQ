@@ -1,0 +1,25 @@
+{
+    "schedule": [
+        ["genAddSub", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random", "stratify_numerical_ranges": true}],
+        ["genComArith", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genDivInt", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random", "stratify_numerical_ranges": true}],
+        ["genFacQuad", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genFracArith", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genLawSico", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genLinEq", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genMtrxArith", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genMtrxOp", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genMulInt", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random", "stratify_numerical_ranges": true}],
+        ["genOrdOp", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genPolArith", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genPyTheo", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genRatEx", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genSimSqrt", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genSpTri", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genSysEqs", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genTrigEx", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genVarIso", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genVecArith", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genVecOp", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}]
+    ]
+}
