@@ -28,6 +28,7 @@ log.setLevel(logging.ERROR)
 # info that is needed persistently
 module_state = {
     "current_gen_name": None,
+    "current_gen_output_type": None,
     "current_verifier_func": None,
     "inner_verify_func": None, 
     "number_of_tests": 0,
