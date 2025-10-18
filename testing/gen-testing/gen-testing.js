@@ -299,11 +299,6 @@ export async function testGenerator(
 
             completed_tests++;
             settings_permutator.advanceToNextSettings();
-
-            // destroy the mjx-svg-loader iframe every 200 tests with canvas gens (to avoid memory usage buildup) (canvas helpers automatically recreate it if not present)
-            if (gen_output_type.includes('canvas') && completed_tests % 200 === 0) {
-                document.getElementById('mjx-svg-loader').remove();
-            }
         }
     } catch (error) {
         console.error('Testing failed: ', error);
