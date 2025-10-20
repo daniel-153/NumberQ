@@ -72,6 +72,7 @@ const event_listeners = [
     function presentationPage() {
         document.getElementById('generation-content').addEventListener('click', async (event) => {
             if (event.target.id === 'present-ui-button' || event.target.id === 'present-image') {
+                if (!document.getElementById('rendered-A').firstElementChild) return;
                 UH.open('present-content');
                 P.buildNewPresentUi();
                 document.body.style.overflowY = 'hidden';
