@@ -547,4 +547,9 @@ body::-webkit-scrollbar-thumb:hover {
         border-width: 0.5vw;
         border-radius: calc(0.4 * 2vw);
     }
+
+    #see-info-button:hover,
+    #see-info-button:focus {
+        font-size: 3vw;
+    }
 }
