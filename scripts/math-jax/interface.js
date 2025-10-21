@@ -1,4 +1,6 @@
 await (async function init() {
+    try { window.localStorage.clear(); } catch(e) {} // ensures MathJax loads with empty local storage
+    
     // create the two iframes (svg and chtml)
     const iframes = {'svg': null, 'chtml': null};
     Object.keys(iframes).forEach(loader_type => {
