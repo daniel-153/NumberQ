@@ -55,7 +55,6 @@
 }
 
 #presets-menu-toggle-btn {
-  --triangle-color: rgb(9, 9, 54);
   height: 29px;
   aspect-ratio: 1;
   background-color: transparent;
@@ -68,6 +67,8 @@
   z-index: 9;
   transition: z-index 0ms linear 75ms;
   flex-shrink: 0;
+  font-size: unset;
+  line-height: unset;
 }
 
 #presets-menu-toggle-btn[data-preset-menu-status="shown"] {
@@ -102,19 +103,16 @@
 
 #presets-menu-toggle-btn:hover {
     outline: 1px solid black;
-    --triangle-color: rgb(0, 0, 176);
 }
 
-#presets-menu-triangle {
+#presets-menu-gear {
     height: 100%;
     aspect-ratio: 1;
-    clip-path: polygon(50% 0, 0 100%, 100% 100%);
-    background-color: var(--triangle-color);
     transition: transform 75ms ease-in-out;
     flex-shrink: 0;
 }
 
-#presets-menu-triangle[data-preset-menu-status="shown"] {
+#presets-menu-gear[data-preset-menu-status="shown"] {
   transform: rotate(180deg);
 }
 
@@ -409,10 +407,6 @@
         bottom: unset;
         left: unset;
         top: calc(100% + 2px);
-    }
-
-    #presets-menu-triangle {
-        clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
     }
 
     .preset-tooltip-wrapper {

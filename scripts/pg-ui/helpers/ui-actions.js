@@ -117,7 +117,7 @@ export function togglePresetMenu() {
         menu_toggle_btn, 
         document.getElementById('settings-presets-tab'),
         document.getElementById('preset-list-wrapper'),
-        document.getElementById('presets-menu-triangle')
+        document.getElementById('presets-menu-gear')
     ].forEach(el => {
         el.setAttribute('data-preset-menu-status', updated_menu_status);
     });
