@@ -65,12 +65,15 @@
                 <h2 class="column-header">Q</h2>
                 <div class="output-box-group-wrapper">
                   <div class="rendered-box-wrapper">
-                    <div class="math-output-wrapper">
+                    <div
+                      class="math-output-wrapper rendered-math-output-wrapper"
+                    >
                       <div
                         class="output-box rendered-box"
                         id="rendered-Q"
                       ></div>
                     </div>
+                    <button id="fullscreen-button">Fullscreen Mode</button>
                   </div>
                   <div class="un-rendered-box-wrapper">
                     <div class="output-box latex-box" id="un-rendered-Q"></div>
@@ -115,13 +118,6 @@
               <form id="settings-form" autocomplete="off"></form>
             </div>
           </div>
-          <button
-            id="present-ui-button"
-            data-tooltip="Present"
-            class="tooltip-base tooltip-left"
-          >
-            <img src="images/present.png" alt="present" id="present-image" />
-          </button>
         </div>
       </div>
     </div>

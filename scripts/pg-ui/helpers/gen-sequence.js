@@ -445,8 +445,8 @@ export function revealUiButtons() {
             display: flex;
         }
 
-        #present-ui-button {
-            display: inline-block;
+        #fullscreen-button {
+            display: block;
         }
     `;
 
