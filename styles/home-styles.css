@@ -248,6 +248,11 @@ body::-webkit-scrollbar-thumb:hover {
     border-color: rgb(85, 86, 86);
 }
 
+#tutorial-gen {
+    background-color: rgb(170, 51, 51);
+    border-color: rgb(61, 13, 13);
+}
+
 #info-gen {
     background-color: rgb(49, 132, 159);
     border-color: rgb(40, 157, 196);
@@ -262,55 +267,36 @@ body::-webkit-scrollbar-thumb:hover {
     font-size: 1.5vw;
 }
 
-#feedback-button {
-    width: 16vw;
-    height: 2.4vw;
-    font-size: 1.06vw;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+.non-gen-button {
+    width: fit-content;
+    height: fit-content;
+    font-size: 1.1vw;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: 500;
-    background-color: rgb(104, 10, 163);
     color: whitesmoke;
-    border-radius: calc(0.1 * 2vw);
-    border: 0.15vw solid rgb(75, 9, 108);
-    margin-bottom: 0.25vw;
+    padding: 5px 10px;
+    margin-bottom: max(3px, 0.3vw);
     white-space: nowrap;
+    border-radius: 5px;
+    background-color: rgb(64, 84, 151);
+    border: 0.15vw solid rgb(38, 72, 185);
 }
 
-#feedback-button:hover,
-#feedback-button:focus {
+.non-gen-button:hover {
     cursor: pointer;
-    background-color: rgb(121, 18, 185);
-    font-size: 1.05vw;
-    border-width: 0.18vw;
+    filter: brightness(1.1);
+    outline: 0.5px solid rgb(38, 72, 185);
 }
 
-#generator-info-examples {
+.generator-info-examples {
     font-family: monospace;
     font-size: 1vw;
     text-align: center;
     line-height: 1.8;
 }
 
-#see-info-button {
-    width: 11vw;
-    height: 2.4vw;
-    font-size: 1.2vw;
-    margin-bottom: 0.25vw;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: white;
-    font-weight: 500;
-    background-color: rgb(64, 84, 151);
-    border: 0.15vw solid rgb(38, 72, 185);
-    border-radius: calc(0.1 * 2vw);
-    white-space: nowrap;
-}
-
-#see-info-button:hover,
-#see-info-button:focus {
-    cursor: pointer;
-    background-color: rgb(72, 95, 170);
-    font-size: 1.19vw;
-    border-width: 0.18vw;
+.tutorial-examples {
+    text-align: left;
 }
 
 #preset-list-wrapper {
@@ -374,29 +360,11 @@ body::-webkit-scrollbar-thumb:hover {
         font-size: 1.2vw;
     }
 
-    #feedback-button {
-        width: 19vw;
-        height: 3vw;
-        font-size: 1.23vw;
-    }
-
-    #feedback-button:hover,
-    #feedback-button:focus {
+    .non-gen-button {
         font-size: 1.2vw;
     }
 
-    #see-info-button {
-        width: 12.5vw;
-        height: 3vw;
-        font-size: 1.35vw;
-    }
-
-    #see-info-button:hover,
-    #see-info-button:focus {
-        font-size: 1.3vw;
-    }
-
-    #generator-info-examples {
+    .generator-info-examples {
         font-size: 1.2vw;
     }
 
@@ -514,42 +482,11 @@ body::-webkit-scrollbar-thumb:hover {
         font-size: 4.25vw;
     }
 
-    #feedback-button {
-        width: 45vw;
-        height: 6.7vw;
-        font-size: 2.9vw;
-        border-radius: calc(0.4 * 2vw);
-        border-width: 0.5vw;
-        margin-bottom: 1vw;
-    }
-
-    #feedback-button:hover,
-    #feedback-button:focus {
-        width: 42vw;
-        height: 6.7vw;
-        font-size: 2.9vw;
-        border-radius: calc(0.4 * 2vw);
-        border-width: 0.5vw;
-        margin-bottom: 1vw;
-        background-color: rgb(104, 10, 163);
-        border-color: rgb(75, 9, 108);
-    }
-
-    #generator-info-examples {
+    .generator-info-examples {
         font-size: 3vw;
     }
 
-    #see-info-button {
-        width: 25vw;
-        height: 6.7vw;
-        font-size: 3vw;
-        margin-bottom: 1vw;
-        border-width: 0.5vw;
-        border-radius: calc(0.4 * 2vw);
-    }
-
-    #see-info-button:hover,
-    #see-info-button:focus {
+    .non-gen-button {
         font-size: 3vw;
     }
 }

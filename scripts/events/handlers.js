@@ -20,6 +20,10 @@ const event_listeners = [
             window.open('https://forms.gle/WecgWERFcqpR4sSEA', '_blank');
         });
 
+        document.getElementById('tutorial-button').addEventListener('click', () => {
+            window.open('https://drive.google.com/file/d/1dA2V7vcDA_Eumr5frp1LbcOXhGiHQBdu/view?usp=sharing', '_blank');
+        });
+
         document.getElementById('see-info-button').addEventListener('click', () => {
             window.open(`${window.location.origin}/docs/info.html`, '_blank');
         });
