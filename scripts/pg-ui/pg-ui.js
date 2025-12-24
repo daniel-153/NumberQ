@@ -43,6 +43,7 @@ export async function generate(func_name, display_name = '') {
         await import('../math-jax/interface.js');
         await UH.loadStyleSheets(pg_ui_state.stylesheets);
         PH.revealUiButtons();
+        await import('../analytics/interface.js');
     }
 
     if (pg_ui_state.first_pg_ui_open || func_name !== pg_ui_state.func_name) { // first generation with any mode Or switched to a new gen
@@ -83,5 +84,6 @@ export async function generate(func_name, display_name = '') {
         PH.updatePresetStatus('random', false, pg_ui_state); // after the initial generation, focus the Randomize All preset (without applying it)
     }
     
+    window.nq_analytics.countGeneration(func_name);
     PH.endGeneration(pg_ui_state); // first_pg_ui_open, first_with_current_gen, is_currently_generating -> false
 }
