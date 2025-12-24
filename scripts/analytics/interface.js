@@ -64,9 +64,9 @@
         },
         {
             get: function(analytics_obj, key) {
-                const public = ['countGeneration', 'getLogStatus', 'enable', 'disable'];
+                const public_keys = ['countGeneration', 'getLogStatus', 'enable', 'disable'];
 
-                if (public.includes(key) && Object.prototype.hasOwnProperty.call(analytics_obj, key)) {
+                if (public_keys.includes(key) && Object.prototype.hasOwnProperty.call(analytics_obj, key)) {
                     if (typeof(analytics_obj[key]) === 'function') {
                         return function(...args) {
                             try { // ensure analytics interface never throws
