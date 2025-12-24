@@ -6,10 +6,11 @@
             // private
             entry_log_sent: false,
             final_log_sent: false,
+            status: {enabled: true, permanent: false},
             mode_usage_data: {},
             session_key: `${Date.now()}-${Math.random()}`,
             worker_endpoint: 'https://number-q.com/log-analytics',
-            buildLogJson: function(log_type) { // helper
+            buildLogJson: function(log_type) {
                 const payload = {
                     mode_usage_data: this.mode_usage_data,
                     log_type: log_type,
@@ -17,15 +18,20 @@
                 };
                 return new Blob([JSON.stringify(payload)], { type: 'application/json' });
             },
+            updateStatus: function(enabled, permanent) { 
+                if (this.status.permanent) return (enabled === this.status.enabled);
+                this.status = {enabled, permanent};
+                return true;
+            },
             sendEntryLog: function() {
-                if (!this.entry_log_sent) {
+                if (!this.entry_log_sent && this.status.enabled) {
                     this.entry_log_sent = true;
                     navigator.sendBeacon(this.worker_endpoint, this.buildLogJson('entry'));
                     window.addEventListener('beforeunload', this.sendFinalLog.bind(this));
                 }
             },
             sendFinalLog: function() {
-                if (!this.final_log_sent) {
+                if (!this.final_log_sent && this.status.enabled) {
                     this.final_log_sent = true;
                     navigator.sendBeacon(this.worker_endpoint, this.buildLogJson('final'));
                 }
@@ -46,12 +52,19 @@
                     entry_log_sent: this.entry_log_sent,
                     final_log_sent: this.final_log_sent,
                     mode_usage_data: this.mode_usage_data,
+                    status: this.status
                 }));
+            },
+            enable: function(permanent = false) {
+                return this.updateStatus(true, Boolean(permanent));
+            },
+            disable: function(permanent = false) {
+                return this.updateStatus(false, Boolean(permanent));
             }
         },
         {
             get: function(analytics_obj, key) {
-                const public = ['countGeneration', 'getLogStatus'];
+                const public = ['countGeneration', 'getLogStatus', 'enable', 'disable'];
 
                 if (public.includes(key) && Object.prototype.hasOwnProperty.call(analytics_obj, key)) {
                     if (typeof(analytics_obj[key]) === 'function') {
