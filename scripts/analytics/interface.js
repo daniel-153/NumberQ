@@ -8,7 +8,7 @@
             final_log_sent: false,
             mode_usage_data: {},
             session_key: `${Date.now()}-${Math.random()}`,
-            worker_endpoint: 'insert url',
+            worker_endpoint: 'https://number-q.com/log-analytics',
             buildLogJson: function(log_type) { // helper
                 const payload = {
                     mode_usage_data: this.mode_usage_data,
