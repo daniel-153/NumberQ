@@ -8,7 +8,7 @@
             final_log_sent: false,
             status: {enabled: true, permanent: false},
             mode_usage_data: {},
-            session_key: `${Date.now()}-${Math.random()}`,
+            session_key: `${Date.now()}-${String(Math.random()).split('.').slice(-1)[0]}`,
             worker_endpoint: 'https://number-q.com/log-analytics',
             buildLogJson: function(log_type) {
                 const payload = {
@@ -27,6 +27,7 @@
                 if (!this.entry_log_sent && this.status.enabled) {
                     this.entry_log_sent = true;
                     navigator.sendBeacon(this.worker_endpoint, this.buildLogJson('entry'));
+                    this.mode_usage_data = {};
                     window.addEventListener('beforeunload', this.sendFinalLog.bind(this));
                 }
             },
