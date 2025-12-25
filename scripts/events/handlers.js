@@ -21,7 +21,7 @@ const event_listeners = [
         });
 
         document.getElementById('tutorial-button').addEventListener('click', () => {
-            window.open('https://drive.google.com/file/d/1pXV2QLHHL-RoAegEbNPnTX4ciT-7Ttng/view?usp=sharing', '_blank');
+            window.open('https://drive.google.com/file/d/12avs7gb3xdODJxPAF32e5BBXkwy1cGjQ/view?usp=sharing', '_blank');
         });
 
         document.getElementById('see-info-button').addEventListener('click', () => {
