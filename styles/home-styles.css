@@ -299,6 +299,10 @@ body::-webkit-scrollbar-thumb:hover {
     text-align: left;
 }
 
+#presets-menu-gear {
+    height: 0;
+}
+
 #preset-list-wrapper {
    opacity: 0;
 }
