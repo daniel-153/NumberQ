@@ -243,6 +243,11 @@ body::-webkit-scrollbar-thumb:hover {
     border-color: rgb(87, 37, 0)
 }
 
+.diffeq-gen {
+    background-color: #7a5592; 
+    border-color: rgb(64, 3, 139);
+}
+
 #coming-soon-gen {
     background-color: rgb(175, 167, 167);
     border-color: rgb(85, 86, 86);
