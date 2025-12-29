@@ -1254,3 +1254,59 @@ export const sim_sqrt_frac_rule = {
     tooltip: 'How should irreducible fractions in (a+&radic;b)/c form be simplified?',
     prelocked: true
 };
+
+export const diff_notation = {
+    type: 'radio_buttons',
+    display_name: 'Derivative Notation',
+    radio_buttons: [
+        ['prime', 'Prime \\(y\'\\)&nbsp;'],
+        ['frac', 'Ratio \\(\\frac{dy}{dx}\\)&nbsp;'],
+        ['dot', 'Dot \\(\\dot{y}\\)&nbsp;'] 
+    ], 
+    tooltip: 'Which notation should represent the derivative?',
+    prelocked: true
+};
+
+export const sys_diff_vars = {
+    type: 'radio_buttons',
+    display_name: 'Unknown Functions',
+    radio_buttons: [
+        ['x_y', '\\(x\\) and \\(y\\)&nbsp;'],
+        ['x1_x2', '\\(x_{1}\\) and \\(x_{2}\\)&nbsp;'],
+        ['y1_y2', '\\(y_{1}\\) and \\(y_{2}\\)&nbsp;'] 
+    ], 
+    tooltip: 'Which symbols should represent the unknown functions?'
+};
+
+export const sys_diff_eigenvals = {
+    type: 'radio_buttons',
+    display_name: 'Eigenvalues',
+    radio_buttons: [
+        ['real_dis', 'Real Distinct \\(\\lambda_{1},\\lambda_{2}\\)&nbsp;'],
+        ['real_rep', 'Real Repeated \\(\\lambda=a\\)&nbsp;'],
+        ['complex', 'Complex \\(\\lambda=a\\pm bi\\)&nbsp;'] 
+    ], 
+    tooltip: 'What should the eigenvalue(s) of the matrix that describes the system be?'
+};
+
+export const sys_diff_initcond = {
+    type: 'radio_buttons',
+    display_name: 'Initial Condition',
+    radio_buttons: [
+        ['yes', 'Yes'],
+        ['no', 'No'] 
+    ], 
+    tooltip: 'Should the system have initial conditions to solve for?',
+    prelocked: true
+};
+
+export const func_notation = {
+    type: 'radio_buttons',
+    display_name: 'Function Notation',
+    radio_buttons: [
+        ['explicit', 'Explicit \\(x(t)\\)&nbsp;'],
+        ['implicit', 'Implicit \\(x\\)&nbsp;'] 
+    ], 
+    tooltip: 'Should function notation be used, or should functions be implied?',
+    prelocked: true
+};
