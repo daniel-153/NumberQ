@@ -1304,9 +1304,30 @@ export const func_notation = {
     type: 'radio_buttons',
     display_name: 'Function Notation',
     radio_buttons: [
-        ['explicit', 'Explicit \\(x(t)\\)&nbsp;'],
-        ['implicit', 'Implicit \\(x\\)&nbsp;'] 
+        ['explicit', 'Explicit \\(y(t)\\)&nbsp;'],
+        ['implicit', 'Implicit \\(y\\)&nbsp;'] 
     ], 
     tooltip: 'Should function notation be used, or should functions be implied?',
     prelocked: true
+};
+
+export const left_brace = {
+    type: 'radio_buttons',
+    display_name: 'Include Left Brace',
+    radio_buttons: [
+        ['yes', 'Yes  \\(~\\begin{cases} x \\\\ y \\end{cases}\\) &nbsp;'],
+        ['no', 'No \\(~~~\\begin{aligned} x \\\\ y \\end{aligned}\\) &nbsp;'] 
+    ], 
+    tooltip: 'Should the system be enclosed by a left brace?',
+    prelocked: true
+};
+
+export const force_nz_coefs = {
+    type: 'radio_buttons',
+    display_name: 'Force Non-Zero Coefficients',
+    radio_buttons: [
+        ['yes', 'Yes'],
+        ['no', 'No'] 
+    ], 
+    tooltip: 'Should the coefficients in the system always be non-zero?'
 };
