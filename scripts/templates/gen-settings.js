@@ -1322,12 +1322,13 @@ export const left_brace = {
     prelocked: true
 };
 
-export const force_nz_coefs = {
+export const sys_diff_degenerate = {
     type: 'radio_buttons',
-    display_name: 'Force Non-Zero Coefficients',
+    display_name: 'Allow Degenerate Cases',
     radio_buttons: [
         ['yes', 'Yes'],
         ['no', 'No'] 
     ], 
-    tooltip: 'Should the coefficients in the system always be non-zero?'
+    tooltip: 'Should systems that are solvable without system techniques be allowed?',
+    prelocked: true
 };
