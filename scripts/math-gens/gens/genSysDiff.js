@@ -1,4 +1,5 @@
 import * as H from '../helpers/gen-helpers.js';
+import * as PH from '../helpers/polynom-helpers.js';
 
 export function validateSettings(form_obj, error_locations) {
     if (form_obj.diff_notation === 'frac') form_obj.func_notation = 'implicit';
@@ -64,9 +65,10 @@ export const SDH = { // genSysDiff helpers
         else if (iy === 0 && jx === 0) return true;
         else return false;     
     },
-    getEigens: function(mtrx_2x2, eigen_type) {
+    getEigens: function(mtrx_2x2) {
         const [ix, jx] = mtrx_2x2[0];
         const [iy, jy] = mtrx_2x2[1];
+        const eigen_type = SDH.classifyByEigen(mtrx_2x2);
         const eigens = {values: null, vectors: null};
 
         const b = -ix - jy;
@@ -81,7 +83,7 @@ export const SDH = { // genSysDiff helpers
         }
         else if (eigen_type === 'real_rep') {
             eigens.values = [-b/2];
-            eigens.vectors = [[-jx * jx, (ix - eigens.values[0]) * jx], [jx, eigens.values[0] - ix - jx]];            
+            eigens.vectors = [[-jx * jx, (ix - eigens.values[0]) * jx], [jx, eigens.values[0] - ix - jx]]; // v and w          
         }
         else if (eigen_type === 'complex') {
             const sqrt_abs_D = Math.sqrt(Math.abs(D));
@@ -94,9 +96,7 @@ export const SDH = { // genSysDiff helpers
 
         return eigens;
     },
-    getInitCondMtrx: function(mtrx_2x2, eigen_type) { // get the coef matrix that represents the system to be solved to find C1 and C2 with x(0), y(0) initial conditions
-        const eigens = SDH.getEigens(mtrx_2x2, eigen_type);
-
+    getInitCondMtrx: function(eigen_type, eigens) { // get the coef matrix that represents the system to be solved to find C1 and C2 with x(0), y(0) initial conditions
         let coef_mtrx;
         if (eigen_type === 'real_dis' || eigen_type === 'real_rep') {
             coef_mtrx = [
@@ -117,27 +117,20 @@ export const SDH = { // genSysDiff helpers
         }
 
         return coef_mtrx;
-    }
-    // search2x2Eigenvals: function(entry_size) {
-    //     const rand_matrix_gen = SDH.buildMtrxSupplier(entry_size, 2);
-    //     const sorted_by_eigens = {
-    //         real_dis: [],
-    //         real_rep: [],
-    //         complex: []
-    //     };
+    },
+    smallestIntScale: function(vect_2d) {
+        if (vect_2d[0] < 0 && vect_2d[1] < 0) vect_2d = vect_2d.map(Math.abs);
 
-    //     let current_vals;
-    //     while (!(current_vals = rand_matrix_gen.next()).done) {
-    //         const coef_mtrx = [[current_vals.value[0], current_vals.value[1]],[current_vals.value[2], current_vals.value[3]]];
+        if (vect_2d[0] === 0 && vect_2d[1] === 0) return [0, 0];
+        else if (vect_2d[0] === 0) return [0, 1];
+        else if (vect_2d[1] === 0) return [1, 0];
+        else {
+            const reduced = PH.simplifyFraction(...vect_2d);
 
-    //         const classification = SDH.classifyByEigen(coef_mtrx);
-    //         if (Object.prototype.hasOwnProperty.call(sorted_by_eigens, classification)) {
-    //             sorted_by_eigens[classification].push(coef_mtrx);
-    //         }
-    //     }
-
-    //     return sorted_by_eigens;
-    // }
+            return [reduced.numer, reduced.denom];
+        }
+    },
+    coef: (int) => Math.abs(int) === 1? String(int).replace('1', '') : String(int)
 };
 export default function genSysDiff(settings) {
     const mtrx_entry_size = 5;
@@ -146,15 +139,18 @@ export default function genSysDiff(settings) {
     const max_attempts = 10_000;
     let current_attempts = 0;
     let mtrx_found = false;
+    let detected_eigen_type;
     let coef_mtrx;
     while (!mtrx_found && current_attempts++ < max_attempts) {
         coef_mtrx = SDH.getRandomMtrx(mtrx_entry_size);
 
         if (
             (settings.force_nz_coefs === 'yes' && coef_mtrx.every(row => row[0]*row[1] !== 0)) &&
-            SDH.classifyByEigen(coef_mtrx) === settings.sys_diff_eigenvals
+            (detected_eigen_type = SDH.classifyByEigen(coef_mtrx)) === settings.sys_diff_eigenvals
         ) mtrx_found = true;
     }
+
+    const eigens = SDH.getEigens(coef_mtrx, settings.sys_diff_eigenvals);
 
     // build question string
     let var1, var2;
@@ -183,12 +179,13 @@ export default function genSysDiff(settings) {
     })
 
     let question_str;
+    let constants = ['C_{1}', 'C_{2}'];
     if (settings.sys_diff_initcond === 'yes') {
-        const init_cond_mtrx = SDH.getInitCondMtrx(coef_mtrx, settings.sys_diff_eigenvals);
-        const [C1, C2] = (new Array(2)).fill(null).map(_ => H.randInt(-mtrx_entry_size, mtrx_entry_size));
+        const init_cond_mtrx = SDH.getInitCondMtrx(settings.sys_diff_eigenvals, eigens);
+        constants = (new Array(2)).fill(null).map(_ => H.randInt(-mtrx_entry_size, mtrx_entry_size));
 
-        const var1_0 = init_cond_mtrx[0][0]*C1 + init_cond_mtrx[0][1]*C2;
-        const var2_0 = init_cond_mtrx[1][0]*C1 + init_cond_mtrx[1][1]*C2;
+        const var1_0 = init_cond_mtrx[0][0]*constants[0] + init_cond_mtrx[0][1]*constants[1];
+        const var2_0 = init_cond_mtrx[1][0]*constants[0] + init_cond_mtrx[1][1]*constants[1];
 
         question_str = `
             \\begin{aligned}
@@ -206,11 +203,143 @@ export default function genSysDiff(settings) {
         `;
     }
 
-    if (settings.left_brace === 'yes') question_str = `\\left\\{${question_str}\\right.`
+    if (settings.left_brace === 'yes') question_str = `\\left\\{${question_str}\\right.`;
+
+    // build answer string
+    let var1_rhs, var2_rhs;
+    if (detected_eigen_type === 'real_dis') {
+        eigens.vectors = eigens.vectors.map(SDH.smallestIntScale);
+        
+        [var1_rhs, var2_rhs] = (new Array(2)).fill(null).map((_, idx0) => {
+            const [et_expr1, et_expr2] = (new Array(2)).fill(null).map((_, idx1) => {
+                let exponent = eigens.values[idx1];
+                let coef;
+                if (typeof(constants[idx1]) === 'number') {
+                    coef = constants[idx1] * eigens.vectors[idx1][idx0];
+                }
+                else if (Math.abs(eigens.vectors[idx1][idx0]) === 1) {
+                    coef = `${String(eigens.vectors[idx1][idx0]).replace('1', '')}${constants[idx1]}`;
+                }
+                else if (eigens.vectors[idx1][idx0] === 0) {
+                    coef = 0;
+                }
+                else coef = `${eigens.vectors[idx1][idx0]}${constants[idx1]}`;
+                
+                if (coef === 0) return '0';
+                else if (exponent === 0) return String(coef);
+                else {
+                    if (Math.abs(exponent) === 1) exponent = String(exponent).replace('1', '');
+                    if (Math.abs(coef) === 1) coef = String(coef).replace('1', '');
+
+                    return `${coef}e^{${exponent}t}`
+                } 
+            });
+
+            if (et_expr1 === '0' && et_expr2 === '0') return '0';
+            else if (et_expr1 === '0') return et_expr2;
+            else if (et_expr2 === '0') return et_expr1;
+            else return `${et_expr1}${(et_expr2.charAt(0) === '-')? '' : '+'}${et_expr2}`;
+        });
+    }
+    else if (detected_eigen_type === 'real_rep') {
+        const vw_entries = [
+            eigens.vectors[0][0], eigens.vectors[0][1], 
+            eigens.vectors[1][0], eigens.vectors[1][1]
+        ].filter(val => val !== 0).map(val => Math.abs(val));
+        
+        let gcf = vw_entries.length > 0 ? PH.gcfOfArray(vw_entries) : 1;
+        const filtered_w_entries = eigens.vectors[1].filter(wi => wi !== 0);
+        if (filtered_w_entries.length === 1 && filtered_w_entries[0] < 0) gcf *= -1;
+
+        eigens.vectors = eigens.vectors.map(vect => vect.map(entry => entry / gcf));
+
+        [var1_rhs, var2_rhs] = (new Array(2)).fill(null).map((_, idx0) => {
+            const vi = eigens.vectors[0][idx0];
+            const wi = eigens.vectors[1][idx0];
+            const lambda = SDH.coef(eigens.values[0]);
+            const e_lambda_t = lambda === '0' ? '' : `e^{${lambda}t}`;
+            const [C1, C2] = constants;
+
+            let term1, term2; // v_{i}C_{1}e^{\lambda t} and C_{2}e^{\lambda t}(w_{i} + v_{i}t)
+            if (settings.sys_diff_initcond === 'yes') {
+                // form: e^{rt}(A + Bt)
+                const A = vi*C1 + wi*C2;
+                const B = vi*C2;
+
+                if (A === 0 && B === 0) return '0';
+                else if (A === 0) return `${SDH.coef(B)}t${e_lambda_t}`;
+                else if (B === 0) return `${SDH.coef(A)}${e_lambda_t}`;
+                else {
+                    const A_plus_Bt = `${String(A)}${B > 0? '+' : ''}${SDH.coef(B)}t`;
+
+                    if (e_lambda_t === '') return A_plus_Bt;
+                    else return `${e_lambda_t}(${A_plus_Bt})`;
+                }
+            }
+            else if (settings.sys_diff_initcond === 'no') {
+                let term1_coef = SDH.coef(vi);
+                if (term1_coef === '0') term1 = '0';
+                else term1 = `${term1_coef}${C1}${e_lambda_t}`;
+
+                if (wi === 0 && vi === 0) term2 = '0';
+                else if (vi === 0) {
+                    term2 = `${SDH.coef(wi)}${C2}${e_lambda_t}`;
+                }
+                else if (wi === 0) {
+                    term2 = `${SDH.coef(vi)}${C2}t${e_lambda_t}`;
+                }
+                else {
+                    term2 = `${C2}${e_lambda_t}(${wi}${vi > 0? '+': ''}${SDH.coef(vi)}t)`
+                }
+
+                if (term1 === '0' && term2 === '0') return '0'
+                else if (term1 === '0') return term2;
+                else if (term2 === '0') return term1;
+                else return `${term1}${term2.charAt(0) === '-'? '' : '+'}${term2}`
+            }   
+        });
+    }
+    else if (detected_eigen_type === 'complex') {        
+        const vec_entries = [eigens.vectors[0][0][0], eigens.vectors[0][1][0], eigens.vectors[0][0][1], eigens.vectors[0][1][1]];
+        const nz_entries = vec_entries.filter(entry => entry !== 0);
+        const unsigned_gcf = nz_entries.length > 0? PH.gcfOfArray(nz_entries.map(Math.abs)) : 1;
+        eigens.vectors[0] = eigens.vectors[0].map(complex_entry => complex_entry.map(re_img => re_img / unsigned_gcf));
+
+        const p = vec_entries.slice(0, 2);
+        const q = vec_entries.slice(2)
+        const [alpha, beta] = eigens.values[0].map(SDH.coef);
+        const e_alpha_t = alpha === '0' ? '' : `e^{${alpha}t}`;
+
+        [var1_rhs, var2_rhs] = (new Array(2)).fill(null).map((_, idx0) => {
+            if (settings.sys_diff_initcond === 'yes') {
+                [sin_coef, cos_coef] = [-q[idx0]*C1 + p[idx0]*C2, p[idx0]*C1 + q[idx0]*C2].map(SDH.coef);
+
+                if (sin_coef === '0' && cos_coef === '0') return 0;
+                else if (sin_coef === '0') return `${cos_coef}${e_alpha_t}cos(${beta}t)`;
+                else if (cos_coef === '0') return `${sin_coef}${e_alpha_t}sin(${beta}t)`;
+                else {
+                    const sin_plus_cos = `${sin_coef}sin(${beta}t)${cos_coef.charAt(0) === '-'? '' : '+'}${cos_coef}cos(${beta}t)`;
+
+                    if (e_alpha_t === '') return sin_plus_cos;
+                    else return `${e_alpha_t}(${sin_plus_cos})`;
+                }
+            }
+            else if (settings.sys_diff_initcond === 'no') {
+                // add complex no initial condition handling
+            }
+        });
+    }
+
+    let answer_str = `
+        \\begin{aligned}
+            ${var1}&=${var1_rhs} \\\\
+            ${var2}&=${var2_rhs}
+        \\end{aligned}
+    `;
 
     return {
         question: question_str,
-        answer: '0'
+        answer: answer_str
     };
 }
 
