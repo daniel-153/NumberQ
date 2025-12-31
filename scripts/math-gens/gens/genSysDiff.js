@@ -62,7 +62,7 @@ export const SDH = { // genSysDiff helpers
         if (ix*iy*jx*jy !== 0) return false;
         else if (ix === 0 && jx === 0) return true;
         else if (iy === 0 && jy === 0) return true;
-        else if (iy === 0 && jx === 0) return true;
+        else if (iy === 0 || jx === 0) return true;
         else return false;     
     },
     getEigens: function(mtrx_2x2) {
@@ -134,7 +134,7 @@ export const SDH = { // genSysDiff helpers
 };
 export default function genSysDiff(settings) {
     const mtrx_entry_size = 5;
-    
+
     // search loop to find a matrix with the desired eigenvalues
     const max_attempts = 10_000;
     let current_attempts = 0;
@@ -145,7 +145,7 @@ export default function genSysDiff(settings) {
         coef_mtrx = SDH.getRandomMtrx(mtrx_entry_size);
 
         if (
-            (settings.force_nz_coefs === 'yes' && coef_mtrx.every(row => row[0]*row[1] !== 0)) &&
+            (settings.sys_diff_degenerate === 'no'? !SDH.isDegenerate(coef_mtrx) : true) &&
             (detected_eigen_type = SDH.classifyByEigen(coef_mtrx)) === settings.sys_diff_eigenvals
         ) mtrx_found = true;
     }
@@ -375,7 +375,7 @@ export const settings_fields = [
     'diff_notation',
     'sys_diff_initcond',
     'func_notation',
-    'force_nz_coefs',
+    'sys_diff_degenerate',
     'left_brace'
 ];
 
@@ -387,13 +387,18 @@ export const presets = {
             diff_notation: 'prime',
             sys_diff_initcond: 'yes',
             func_notation: 'implicit',
-            force_nz_coefs: 'yes',
+            sys_diff_degenerate: 'no',
             left_brace: 'no'
         };
     },
     random: function() {
         return {
-            
+            sys_diff_vars: '__random__',
+            sys_diff_eigenvals: '__random__',
+            diff_notation: '__random__',
+            sys_diff_initcond: '__random__',
+            func_notation: '__random__',
+            sys_diff_degenerate: '__random__'
         };
     },
     // has_topic_presets: true
