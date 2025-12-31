@@ -312,20 +312,46 @@ export default function genSysDiff(settings) {
 
         [var1_rhs, var2_rhs] = (new Array(2)).fill(null).map((_, idx0) => {
             if (settings.sys_diff_initcond === 'yes') {
-                [sin_coef, cos_coef] = [-q[idx0]*C1 + p[idx0]*C2, p[idx0]*C1 + q[idx0]*C2].map(SDH.coef);
+                const [sin_coef, cos_coef] = [-q[idx0]*constants[0] + p[idx0]*constants[1], p[idx0]*constants[0] + q[idx0]*constants[1]].map(SDH.coef);
 
                 if (sin_coef === '0' && cos_coef === '0') return 0;
-                else if (sin_coef === '0') return `${cos_coef}${e_alpha_t}cos(${beta}t)`;
-                else if (cos_coef === '0') return `${sin_coef}${e_alpha_t}sin(${beta}t)`;
+                else if (sin_coef === '0') return `${cos_coef}${e_alpha_t}\\cos(${beta}t)`;
+                else if (cos_coef === '0') return `${sin_coef}${e_alpha_t}\\sin(${beta}t)`;
                 else {
-                    const sin_plus_cos = `${sin_coef}sin(${beta}t)${cos_coef.charAt(0) === '-'? '' : '+'}${cos_coef}cos(${beta}t)`;
+                    const sin_plus_cos = `${sin_coef}\\sin(${beta}t)${cos_coef.charAt(0) === '-'? '' : '+'}${cos_coef}\\cos(${beta}t)`;
 
                     if (e_alpha_t === '') return sin_plus_cos;
                     else return `${e_alpha_t}(${sin_plus_cos})`;
                 }
             }
             else if (settings.sys_diff_initcond === 'no') {
-                // add complex no initial condition handling
+                let [cos_sin, sin_cos] = (new Array(2)).fill(null).map((_, idx1) => {
+                    const Ci = constants[idx1];
+                    const cos_coef = SDH.coef(idx1? q[idx0] : p[idx0]);
+                    const sin_coef = SDH.coef(idx1? p[idx0] : -q[idx0]);
+
+                    if (cos_coef === '0' && sin_coef === '0') return '0';
+                    else if (cos_coef === '0') return `${sin_coef}${Ci}\\sin(${beta}t)`;
+                    else if (sin_coef === '0') return `${cos_coef}${Ci}\\cos(${beta}t)`;
+                    else if (idx1 === 0) return `${Ci}(${cos_coef}\\cos(${beta}t)${sin_coef.charAt(0) === '-'? '' : '+'}${sin_coef}\\sin(${beta}t))`;
+                    else return `${Ci}(${sin_coef}\\sin(${beta}t)${cos_coef.charAt(0) === '-'? '' : '+'}${cos_coef}\\cos(${beta}t))`;
+                });
+
+                if (cos_sin === '0' && sin_cos === '0') return '0';
+                else if (cos_sin === '0') {
+                    const split_at_const = sin_cos.split(constants[1]);
+                    return `${split_at_const[0]}${e_alpha_t}${split_at_const[1]}`;
+                }
+                else if (sin_cos === '0') {
+                    const split_at_const = cos_sin.split(constants[0]);
+                    return `${split_at_const[0]}${e_alpha_t}${split_at_const[1]}`;
+                }
+                else {
+                    const inner_expr = `${cos_sin}${sin_cos.charAt(0) === '-'? '' : '+'}${sin_cos}`;
+
+                    if (e_alpha_t === '') return inner_expr;
+                    else return `${e_alpha_t}(${inner_expr})`;
+                }
             }
         });
     }
