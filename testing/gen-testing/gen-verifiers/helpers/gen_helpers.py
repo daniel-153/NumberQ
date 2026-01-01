@@ -166,3 +166,27 @@ def attempt_known_angle_label_parse(label_tex_str, sorted_labels_dict, angle_nam
         }
     else:
         raise Exception(f"Known angle label not parse-able or is invalid: '{label_tex_str}'")
+    
+def get_diffed_var(var_str, diff_type): # built for SysDiff
+    is_as_func = '(t)' in var_str
+    var_str = var_str.replace('(t)', '', 1)
+    
+    if diff_type == 'prime':
+        diffed = f"{var_str}'"
+    elif diff_type == 'frac':
+        diffed = f"\\frac{{d{var_str}}}{{dt}}"
+    elif diff_type == 'dot':
+        if "_{" in var_str:
+            diffed = f"\\dot{{{var_str.split("_")[0]}}}_{var_str.split("_")[1]}"
+        else:
+            diffed = f"\\dot{{{var_str}}}"
+    else:
+        raise Exception(f"Cannot format unknown diff type: '{diff_type}'")
+    
+    if is_as_func and diff_type != 'frac': 
+        diffed += '(t)'
+
+    return diffed
+
+def parse_init_expr(init_str): # parse an initial condition expression, like x(0)=3
+    return [parse_latex(tex) for tex in (init_str.split('(')[0:1] + init_str.split(')='))]
