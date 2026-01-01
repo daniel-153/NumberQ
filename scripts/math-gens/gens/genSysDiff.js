@@ -13,26 +13,6 @@ export const SDH = { // genSysDiff helpers
 
         return [[r(), r()], [r(), r()]];
     },
-    // buildMtrxSupplier: function*(entry_size, dimension) {
-    //     const possible_entries = H.integerArray(-entry_size, entry_size);
-    //     const odometer = (new Array(dimension**2)).fill(0);
-
-    //     while (true) {
-    //         yield odometer.map(idx => possible_entries[idx]);
-
-    //         let increment_idx = odometer.length - 1;
-    //         let has_rollover = true;
-    //         while (has_rollover && increment_idx >= 0) {
-    //             const updated_idx = odometer[increment_idx] + 1;
-    //             odometer[increment_idx] = updated_idx % possible_entries.length;
-
-    //             has_rollover = (updated_idx >= possible_entries.length);
-    //             increment_idx--;
-    //         }
-
-    //         if (has_rollover) break; // if the first odometer slot rolls over, generation is complete
-    //     }
-    // },
     classifyByEigen: function(mtrx_2x2) { // note: only counts integer (lamda=a \pm b) and integer-complex (lamda=a \pm bi) eigenvalues
         const [ix, jx] = mtrx_2x2[0];
         const [iy, jy] = mtrx_2x2[1];
