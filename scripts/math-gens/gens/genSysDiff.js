@@ -268,7 +268,10 @@ export default function genSysDiff(settings) {
 
                 if (A === 0 && B === 0) return '0';
                 else if (A === 0) return `${SDH.coef(B)}t${e_lambda_t}`;
-                else if (B === 0) return `${SDH.coef(A)}${e_lambda_t}`;
+                else if (B === 0) {
+                    if (e_lambda_t === '') return String(A);
+                    else return `${SDH.coef(A)}${e_lambda_t}`;
+                }
                 else {
                     const A_plus_Bt = `${String(A)}${B > 0? '+' : ''}${SDH.coef(B)}t`;
 
