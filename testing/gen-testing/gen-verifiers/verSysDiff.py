@@ -1,6 +1,6 @@
 from .helpers.gen_helpers import remove_whitespace, get_diffed_var, parse_init_expr
 from sympy.parsing.latex import parse_latex
-from sympy import symbols, simplify
+from sympy import symbols, simplify, E
 
 def verify(tex_question, tex_answer, settings):    
     # pre-processing and extraction
@@ -18,7 +18,7 @@ def verify(tex_question, tex_answer, settings):
     var1, var2 = [var.replace('(t)', '') for var in [var1, var2]]
     tex_question, tex_answer = [eq.replace(f'{var1}(t)', var1).replace(f'{var2}(t)', var2) for eq in [tex_question, tex_answer]]
     
-    answer_eq1, answer_eq2 = [parse_latex(eq) for eq in tex_answer.split('\\\\')]
+    answer_eq1, answer_eq2 = [parse_latex(eq).subs(symbols('e'), E) for eq in tex_answer.split('\\\\')]
     question_line1, question_line2 = tex_question.split('\\\\')
     var1, var2 = [parse_latex(var) for var in [var1, var2]]
 
@@ -42,21 +42,25 @@ def verify(tex_question, tex_answer, settings):
         init_val1_sub = {init_var1: init_val1, symbols('t'): init_t1}
         init_val2_sub = {init_var2: init_val2, symbols('t'): init_t2}
 
-        if (
-            simplify(question_eq1.lhs.subs(sol_eq_subs) - question_eq1.rhs.subs(sol_eq_subs)) == 0 and
-            simplify(question_eq2.lhs.subs(sol_eq_subs) - question_eq2.rhs.subs(sol_eq_subs)) == 0 and
-            simplify(answer_eq1.lhs.subs(init_val1_sub) - answer_eq1.rhs.subs(init_val1_sub)) == 0 and
-            simplify(answer_eq2.lhs.subs(init_val2_sub) - answer_eq2.rhs.subs(init_val2_sub)) == 0
-        ):
+        question_eq1_test = simplify(question_eq1.lhs.subs(sol_eq_subs) - question_eq1.rhs.subs(sol_eq_subs)).equals(0)
+        question_eq2_test = simplify(question_eq2.lhs.subs(sol_eq_subs) - question_eq2.rhs.subs(sol_eq_subs)).equals(0)
+        initial_cond1_test =  simplify(answer_eq1.lhs.subs(init_val1_sub) - answer_eq1.rhs.subs(init_val1_sub)).equals(0)
+        initial_cond2_test = simplify(answer_eq2.lhs.subs(init_val2_sub) - answer_eq2.rhs.subs(init_val2_sub)).equals(0)
+        
+        if (question_eq1_test and question_eq2_test and initial_cond1_test and initial_cond2_test):
             return True
-        else:
-            return 'Incorrect solution equations or initial conditions not met.'
+        elif ((not (question_eq1_test and question_eq2_test)) and (not (initial_cond1_test and initial_cond2_test))):
+            return 'Incorrect solution equations and initial conditions not met.'
+        elif (not (question_eq1_test and question_eq2_test)):
+            return "Incorrect solution equations."
+        elif (not (initial_cond1_test and initial_cond2_test)):
+            return "Initial conditions not met."
     elif settings['sys_diff_initcond'] == 'no':
         question_eq1, question_eq2 = [parse_latex(line) for line in [question_line1, question_line2]]
 
         if (
-            simplify(question_eq1.lhs.subs(sol_eq_subs) - question_eq1.rhs.subs(sol_eq_subs)) == 0 and
-            simplify(question_eq2.lhs.subs(sol_eq_subs) - question_eq2.rhs.subs(sol_eq_subs)) == 0
+            simplify(question_eq1.lhs.subs(sol_eq_subs) - question_eq1.rhs.subs(sol_eq_subs)).equals(0) and
+            simplify(question_eq2.lhs.subs(sol_eq_subs) - question_eq2.rhs.subs(sol_eq_subs)).equals(0)
         ):
             return True
         else:
