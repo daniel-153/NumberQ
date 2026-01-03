@@ -1,4 +1,4 @@
-from .helpers.gen_helpers import remove_whitespace, get_diffed_var, parse_init_expr, fix_implied_mul
+from .helpers.gen_helpers import remove_whitespace, get_diffed_var, parse_init_expr
 from sympy.parsing.latex import parse_latex
 from sympy import symbols, simplify, E
 
@@ -18,7 +18,7 @@ def verify(tex_question, tex_answer, settings):
     var1, var2 = [var.replace('(t)', '') for var in [var1, var2]]
     tex_question, tex_answer = [eq.replace(f'{var1}(t)', var1).replace(f'{var2}(t)', var2) for eq in [tex_question, tex_answer]]
     
-    answer_eq1, answer_eq2 = [(parse_latex(fix_implied_mul(eq)).subs(symbols('e'), E)) for eq in tex_answer.split('\\\\')]
+    answer_eq1, answer_eq2 = [(parse_latex(eq.replace('(', '[').replace(')', ']')).subs(symbols('e'), E)) for eq in tex_answer.split('\\\\')]
     question_line1, question_line2 = tex_question.split('\\\\')
     var1, var2 = [parse_latex(var) for var in [var1, var2]]
 
