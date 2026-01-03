@@ -89,18 +89,23 @@ export const SDH = { // genSysDiff helpers
                 // alpha and beta in diophantine (alpha)w_x + (beta)w_y = v_i
                 const [alpha, beta] = first_row_nz? char_matrix[0] : char_matrix[1];
                 const vi = first_row_nz? eigens.vectors[0][0] : eigens.vectors[0][1];
-                const [vx, vy] = eigens.vectors[0];
 
                 let wx, wy;
                 if (alpha === 0) {
-                    eigens.vectors[0] = eigens.vectors[0].map(entry => entry * beta);
-                    wy = vi;
-                    wx = Math.ceil(wx * (vx/vy) + 1) || 1;
+                    wy = vi === 0 ? 1 : vi / beta;
+                    if (!Number.isInteger(wy)) {
+                        wy = vi;
+                        wx = 0;
+                    }
+                    else wx = 1;
                 }
                 else if (beta === 0) {
-                    eigens.vectors[0] = eigens.vectors[0].map(entry => entry * alpha);
-                    wx = vi;
-                    wy = Math.ceil(wy * (vy/vx) + 1) || 1;
+                    wx = vi === 0 ? 1 : vi / alpha;
+                    if (!Number.isInteger(wx)) {
+                        wx = vi;
+                        wy = 0;
+                    }
+                    else wy = 1;
                 }
                 else if (vi === 0) { // (alpha)wx + (beta)wy = 0
                     [wx, wy] = [-beta, alpha];
