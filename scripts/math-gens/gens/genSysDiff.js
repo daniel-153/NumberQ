@@ -5,8 +5,6 @@ export function validateSettings(form_obj, error_locations) {
     if (form_obj.diff_notation === 'frac') form_obj.func_notation = 'implicit';
 }
 
-// const search2x2s = (await import(`${window.location.origin}/scripts/math-gens/gens/genSysDiff.js`)).SDH.search2x2Eigenvals;
-
 export const SDH = { // genSysDiff helpers
     getRandomMtrx: function(entry_size) {
         const r = () => H.randInt(-entry_size, entry_size);
@@ -55,23 +53,118 @@ export const SDH = { // genSysDiff helpers
         const c = ix*jy - iy*jx;
         const D = b**2 - 4*c;
 
-        // note that only !isDegenerate() cases are handled
         if (eigen_type === 'real_dis') {
             const sqrt_D = Math.sqrt(D);
             eigens.values = [(-b + sqrt_D) / 2, (-b - sqrt_D) / 2];
-            eigens.vectors = [[-jx, ix - eigens.values[0]], [-jx, ix - eigens.values[1]]];
+            eigens.vectors = [
+                ((ix - eigens.values[0]) * jx !== 0? [-jx, ix - eigens.values[0]] : [jy - eigens.values[0], -iy]), 
+                ((ix - eigens.values[1]) * jx !== 0? [-jx, ix - eigens.values[1]] : [jy - eigens.values[1], -iy])
+            ];
+
+            // scaling
+            eigens.vectors = eigens.vectors.map((vect_2d) => {
+                if (vect_2d[0] < 0 && vect_2d[1] < 0) vect_2d = vect_2d.map(Math.abs);
+
+                if (vect_2d[0] === 0 && vect_2d[1] === 0) return [0, 0];
+                else if (vect_2d[0] === 0) return [0, 1];
+                else if (vect_2d[1] === 0) return [1, 0];
+                else {
+                    const reduced = PH.simplifyFraction(...vect_2d);
+
+                    return [reduced.numer, reduced.denom];
+                }
+            })
         }
         else if (eigen_type === 'real_rep') {
-            eigens.values = [-b/2];
-            eigens.vectors = [[-jx * jx, (ix - eigens.values[0]) * jx], [jx, eigens.values[0] - ix - jx]]; // v and w          
+            if (ix === jy && ix !== 0 && jx === 0 && iy === 0) { // scalar matrix case kM 
+                eigens.values = [-b/2, -b/2];
+                eigens.vectors = [[1, 0], [0, 1]];
+            }
+            else {
+                eigens.values = [-b/2];
+                const char_matrix = [[ix - eigens.values[0], jx], [iy, jy - eigens.values[0]]];
+                const first_row_nz = char_matrix[0].some(entry => entry !== 0);
+                eigens.vectors = [first_row_nz? [-jx, ix - eigens.values[0]] : [jy - eigens.values[0], -iy]];
+                
+                // alpha and beta in diophantine (alpha)w_x + (beta)w_y = v_i
+                const [alpha, beta] = first_row_nz? char_matrix[0] : char_matrix[1];
+                const vi = first_row_nz? eigens.vectors[0][0] : eigens.vectors[0][1];
+                const [vx, vy] = eigens.vectors[0];
+
+                let wx, wy;
+                if (alpha === 0) {
+                    eigens.vectors[0] = eigens.vectors[0].map(entry => entry * beta);
+                    wy = vi;
+                    wx = Math.ceil(wx * (vx/vy) + 1) || 1;
+                }
+                else if (beta === 0) {
+                    eigens.vectors[0] = eigens.vectors[0].map(entry => entry * alpha);
+                    wx = vi;
+                    wy = Math.ceil(wy * (vy/vx) + 1) || 1;
+                }
+                else if (vi === 0) { // (alpha)wx + (beta)wy = 0
+                    [wx, wy] = [-beta, alpha];
+                }
+                else { // (alpha)wx + (beta)wy = vi
+                    const gcf_ab = PH.GCF(alpha, beta);
+                    eigens.vectors[0] = eigens.vectors[0].map(entry => entry * gcf_ab);
+                    const gamma = vi * gcf_ab;
+
+                    // find a solution to the diophantine [(alpha)wx + (beta)wy = gamma] where gamma = n * gcf(a, b)
+                    const extendedGCD = (a, b) => {
+                        if (b === 0) return [a, 1, 0]; // [gcd, x, y]
+                        const [g, x1, y1] = extendedGCD(b, a % b);
+                        return [g, y1, x1 - Math.floor(a / b) * y1];
+                    }
+                    const [g, x0, y0] = extendedGCD(Math.abs(alpha), Math.abs(beta));
+                    const scale = gamma / g;
+                    let wx_base = x0 * scale;
+                    let wy_base = y0 * scale;
+
+                    if (alpha < 0) wx_base *= -1;
+                    if (beta < 0) wy_base *= -1;
+
+                    [wx, wy] = [Math.round(wx_base), Math.round(wy_base)];
+                }
+                eigens.vectors.push([wx, wy]);
+
+                // scaling
+                const vw_entries = [
+                    eigens.vectors[0][0], eigens.vectors[0][1], 
+                    eigens.vectors[1][0], eigens.vectors[1][1]
+                ].filter(val => val !== 0).map(val => Math.abs(val));
+                
+                const unsigned_gcf = vw_entries.length > 0 ? PH.gcfOfArray(vw_entries) : 1;
+                eigens.vectors = eigens.vectors.map(vect => vect.map(entry => entry / unsigned_gcf));
+            }   
         }
         else if (eigen_type === 'complex') {
             const sqrt_abs_D = Math.sqrt(Math.abs(D));
             eigens.values = [[-b/2, sqrt_abs_D/2], [-b/2, -sqrt_abs_D/2]];
+            eigens.vectors = eigens.values.map(a_bi_eigen => {
+                const char_matrix = [
+                    [[ix - a_bi_eigen[0], 0 - a_bi_eigen[1]], [jx, 0]],
+                    [[iy, 0], [jy - a_bi_eigen[0], 0 - a_bi_eigen[1]]]
+                ];
+
+                if (char_matrix[0].every(complex_entry => complex_entry[0]*complex_entry[1] !== 0)) { 
+                    return [[-char_matrix[0][1][0], -char_matrix[0][1][1]], [char_matrix[0][0][0] - a_bi_eigen[0], char_matrix[0][0][1] - a_bi_eigen[1]]];
+                }
+                else { 
+                    return [[char_matrix[1][1][0] - a_bi_eigen[0], char_matrix[1][1][1] - a_bi_eigen[1]], [-char_matrix[1][0][0], -char_matrix[1][0][1]]];
+                }
+            });
+            
             eigens.vectors = [
                 [[-jx, 0], [ix - eigens.values[0][0], -eigens.values[0][1]]], 
                 [[-jx, 0], [ix - eigens.values[1][0], -eigens.values[1][1]]]
             ];
+
+            // scaling
+            const vec_entries = [eigens.vectors[0][0][0], eigens.vectors[0][1][0], eigens.vectors[0][0][1], eigens.vectors[0][1][1]];
+            const nz_entries = vec_entries.filter(entry => entry !== 0);
+            const unsigned_gcf = nz_entries.length > 0? PH.gcfOfArray(nz_entries.map(Math.abs)) : 1;
+            eigens.vectors[0] = eigens.vectors[0].map(complex_entry => complex_entry.map(re_img => re_img / unsigned_gcf));
         }
 
         return eigens;
@@ -98,18 +191,6 @@ export const SDH = { // genSysDiff helpers
 
         return coef_mtrx;
     },
-    smallestIntScale: function(vect_2d) {
-        if (vect_2d[0] < 0 && vect_2d[1] < 0) vect_2d = vect_2d.map(Math.abs);
-
-        if (vect_2d[0] === 0 && vect_2d[1] === 0) return [0, 0];
-        else if (vect_2d[0] === 0) return [0, 1];
-        else if (vect_2d[1] === 0) return [1, 0];
-        else {
-            const reduced = PH.simplifyFraction(...vect_2d);
-
-            return [reduced.numer, reduced.denom];
-        }
-    },
     coef: (int) => Math.abs(int) === 1? String(int).replace('1', '') : String(int)
 };
 export default function genSysDiff(settings) {
@@ -131,6 +212,7 @@ export default function genSysDiff(settings) {
     }
 
     const eigens = SDH.getEigens(coef_mtrx, settings.sys_diff_eigenvals);
+    const is_scalar_mtrx = (coef_mtrx[0][0] === coef_mtrx[1][1] && coef_mtrx[0][0] !== 0 && coef_mtrx[0][1] === 0 && coef_mtrx[1][0] === 0);
 
     // build question string
     let var1, var2;
@@ -187,9 +269,7 @@ export default function genSysDiff(settings) {
 
     // build answer string
     let var1_rhs, var2_rhs;
-    if (detected_eigen_type === 'real_dis') {
-        eigens.vectors = eigens.vectors.map(SDH.smallestIntScale);
-        
+    if (detected_eigen_type === 'real_dis' || is_scalar_mtrx) {
         [var1_rhs, var2_rhs] = (new Array(2)).fill(null).map((_, idx0) => {
             const [et_expr1, et_expr2] = (new Array(2)).fill(null).map((_, idx1) => {
                 let exponent = eigens.values[idx1];
@@ -222,17 +302,6 @@ export default function genSysDiff(settings) {
         });
     }
     else if (detected_eigen_type === 'real_rep') {
-        const vw_entries = [
-            eigens.vectors[0][0], eigens.vectors[0][1], 
-            eigens.vectors[1][0], eigens.vectors[1][1]
-        ].filter(val => val !== 0).map(val => Math.abs(val));
-        
-        let gcf = vw_entries.length > 0 ? PH.gcfOfArray(vw_entries) : 1;
-        const filtered_w_entries = eigens.vectors[1].filter(wi => wi !== 0);
-        if (filtered_w_entries.length === 1 && filtered_w_entries[0] < 0) gcf *= -1;
-
-        eigens.vectors = eigens.vectors.map(vect => vect.map(entry => entry / gcf));
-
         [var1_rhs, var2_rhs] = (new Array(2)).fill(null).map((_, idx0) => {
             const vi = eigens.vectors[0][idx0];
             const wi = eigens.vectors[1][idx0];
@@ -283,13 +352,8 @@ export default function genSysDiff(settings) {
         });
     }
     else if (detected_eigen_type === 'complex') {        
-        const vec_entries = [eigens.vectors[0][0][0], eigens.vectors[0][1][0], eigens.vectors[0][0][1], eigens.vectors[0][1][1]];
-        const nz_entries = vec_entries.filter(entry => entry !== 0);
-        const unsigned_gcf = nz_entries.length > 0? PH.gcfOfArray(nz_entries.map(Math.abs)) : 1;
-        eigens.vectors[0] = eigens.vectors[0].map(complex_entry => complex_entry.map(re_img => re_img / unsigned_gcf));
-
-        const p = vec_entries.slice(0, 2);
-        const q = vec_entries.slice(2)
+        const p = [eigens.vectors[0][0][0], eigens.vectors[0][1][0]];
+        const q = [eigens.vectors[0][0][1], eigens.vectors[0][1][1]];
         const [alpha, beta] = eigens.values[0].map(SDH.coef);
         const e_alpha_t = alpha === '0' ? '' : `e^{${alpha}t}`;
 
