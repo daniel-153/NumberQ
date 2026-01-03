@@ -189,4 +189,16 @@ def get_diffed_var(var_str, diff_type): # built for SysDiff
     return diffed
 
 def parse_init_expr(init_str): # parse an initial condition expression, like x(0)=3
-    return [parse_latex(tex) for tex in (init_str.split('(')[0:1] + init_str.split(')='))]
+    tex_tokens = init_str.split('(', 1)[0], init_str.split('(', 1)[1].split(')', 1)[0], init_str.split('=', 1)[1]
+    
+    return [parse_latex(tex) for tex in tex_tokens]
+
+# ensures implicit multiplications are not parsed as functions A(B + Ct) -> A*(B + Ct), x(t) -> x*(t)
+def fix_implied_mul(s: str) -> str:
+    def repl(m: re.Match) -> str:
+        token = m.group(1)
+        if token.startswith('\\'):
+            return m.group(0)  # function/command: leave as-is
+        return f"{token}\\cdot("
+
+    return re.sub(r'(\\[A-Za-z]+|[A-Za-z0-9_{}]+)\(', repl, s)
