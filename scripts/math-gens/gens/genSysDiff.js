@@ -195,14 +195,17 @@ export const SDH = { // genSysDiff helpers
 };
 export default function genSysDiff(settings) {
     const mtrx_entry_size = 5;
+    const mtrx_attempts = 10_000;
+    const init_cond_size = {'real_dis': 5, 'real_rep': 5, 'complex': 5}[settings.sys_diff_eigenvals];
+    const init_attempts = 100;
+    const init_percentile = 20;
 
     // search loop to find a matrix with the desired eigenvalues
-    const max_attempts = 10_000;
     let current_attempts = 0;
     let mtrx_found = false;
     let detected_eigen_type;
     let coef_mtrx;
-    while (!mtrx_found && current_attempts++ < max_attempts) {
+    while (!mtrx_found && current_attempts++ < mtrx_attempts) {
         coef_mtrx = SDH.getRandomMtrx(mtrx_entry_size);
 
         if (
@@ -244,8 +247,35 @@ export default function genSysDiff(settings) {
     let constants = ['C_{1}', 'C_{2}'];
     if (settings.sys_diff_initcond === 'yes') {
         const init_cond_mtrx = SDH.getInitCondMtrx(settings.sys_diff_eigenvals, eigens);
-        constants = (new Array(2)).fill(null).map(_ => H.randInt(-mtrx_entry_size, mtrx_entry_size));
+        const find_max_val = (C1, C2) => Math.max(
+            Math.abs(init_cond_mtrx[0][0]*C1 + init_cond_mtrx[0][1]*C2),
+            Math.abs(init_cond_mtrx[1][0]*C1 + init_cond_mtrx[1][1]*C2)
+        );
+        const rand = () => H.randInt(-init_cond_size, init_cond_size);
+        
+        const ordered_attempts = [];
+        for (let i = 0; i < init_attempts; i++) {
+            const C1 = rand();
+            const C2 = rand();
+            const curr_entry = [find_max_val(C1, C2), C1, C2];
+            
+            if (ordered_attempts.length > 0) {
+                if (curr_entry[0] <= ordered_attempts[0][0]) ordered_attempts.unshift(curr_entry);
+                else if (curr_entry[0] >= ordered_attempts[ordered_attempts.length - 1][0]) ordered_attempts.push(curr_entry);
+                else {
+                    for (let j = 1; j < ordered_attempts.length; j++) {
+                        if (curr_entry[0] < ordered_attempts[j][0]) {
+                            ordered_attempts.splice(j, 0, curr_entry);
+                            break;
+                        }
+                    }
+                }
+            }
+            else ordered_attempts.unshift(curr_entry);
+        }
 
+        const cutoff = Math.max(1, Math.floor(ordered_attempts.length * (init_percentile/100)));
+        constants = H.randFromList(ordered_attempts.slice(0, cutoff)).slice(1);
         const var1_0 = init_cond_mtrx[0][0]*constants[0] + init_cond_mtrx[0][1]*constants[1];
         const var2_0 = init_cond_mtrx[1][0]*constants[0] + init_cond_mtrx[1][1]*constants[1];
 
