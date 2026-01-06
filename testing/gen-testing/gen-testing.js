@@ -329,6 +329,7 @@ export const testing_rates = Object.freeze({
     "genRatEx": 56564.46306179201,
     "genSimSqrt": 176953.811188,
     "genSpTri": 62536.0956987,
+    "genSysDiff": 12443.5715096,
     "genSysEqs": 140297.8210966344,
     "genTrigEx": 322308.583415,
     "genVarIso": 118173.82055952623,
