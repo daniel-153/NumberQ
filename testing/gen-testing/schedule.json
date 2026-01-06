@@ -16,6 +16,7 @@
         ["genRatEx", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genSimSqrt", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genSpTri", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genSysDiff", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genSysEqs", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genTrigEx", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genVarIso", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
