@@ -1,6 +1,6 @@
 from .helpers.gen_helpers import remove_whitespace, get_diffed_var, parse_init_expr
 from sympy.parsing.latex import parse_latex
-from sympy import symbols, simplify, E
+from sympy import symbols, simplify, E, diff
 
 def verify(tex_question, tex_answer, settings):    
     # pre-processing and extraction
@@ -57,11 +57,19 @@ def verify(tex_question, tex_answer, settings):
             return "Initial conditions not met."
     elif settings['sys_diff_initcond'] == 'no':
         question_eq1, question_eq2 = [parse_latex(line) for line in [question_line1, question_line2]]
+        expected_constants = symbols('C_{1}, C_{2}')
+        det_J = (
+            diff(sol_eq_subs[var1], expected_constants[0])*diff(sol_eq_subs[var2], expected_constants[1]) - 
+            diff(sol_eq_subs[var2], expected_constants[0])*diff(sol_eq_subs[var1], expected_constants[1])
+        )
 
-        if (
-            simplify(question_eq1.lhs.subs(sol_eq_subs) - question_eq1.rhs.subs(sol_eq_subs)).equals(0) and
-            simplify(question_eq2.lhs.subs(sol_eq_subs) - question_eq2.rhs.subs(sol_eq_subs)).equals(0)
-        ):
+        question_eq1_test = simplify(question_eq1.lhs.subs(sol_eq_subs) - question_eq1.rhs.subs(sol_eq_subs)).equals(0)
+        question_eq2_test = simplify(question_eq2.lhs.subs(sol_eq_subs) - question_eq2.rhs.subs(sol_eq_subs)).equals(0)
+        generality_test = (det_J.equals(0) is False)
+
+        if (question_eq1_test and question_eq2_test and generality_test):
             return True
-        else:
+        elif (not (question_eq1_test and question_eq2_test)):
             return 'Incorrect solution equations.'
+        elif (not generality_test):
+            return 'Solutions are not sufficiently general.'
