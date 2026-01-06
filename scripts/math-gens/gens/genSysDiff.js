@@ -56,10 +56,11 @@ export const SDH = { // genSysDiff helpers
         if (eigen_type === 'real_dis') {
             const sqrt_D = Math.sqrt(D);
             eigens.values = [(-b + sqrt_D) / 2, (-b - sqrt_D) / 2];
-            eigens.vectors = [
-                ((ix - eigens.values[0]) * jx !== 0? [-jx, ix - eigens.values[0]] : [jy - eigens.values[0], -iy]), 
-                ((ix - eigens.values[1]) * jx !== 0? [-jx, ix - eigens.values[1]] : [jy - eigens.values[1], -iy])
-            ];
+            eigens.vectors = eigens.values.map(lambda => {
+                const char_matrix = [[ix - lambda, jx], [iy, jy - lambda]];
+                const first_row_nz = char_matrix[0].some(entry => entry !== 0);
+                return first_row_nz? [-jx, ix - lambda] : [jy - lambda, -iy];
+            });
 
             // scaling
             eigens.vectors = eigens.vectors.map((vect_2d) => {
@@ -76,7 +77,7 @@ export const SDH = { // genSysDiff helpers
             })
         }
         else if (eigen_type === 'real_rep') {
-            if (ix === jy && ix !== 0 && jx === 0 && iy === 0) { // scalar matrix case kM 
+            if (ix === jy && jx === 0 && iy === 0) { // scalar matrix case kI 
                 eigens.values = [-b/2, -b/2];
                 eigens.vectors = [[1, 0], [0, 1]];
             }
@@ -220,7 +221,7 @@ export default function genSysDiff(settings) {
     }
 
     const eigens = SDH.getEigens(coef_mtrx, settings.sys_diff_eigenvals);
-    const is_scalar_mtrx = (coef_mtrx[0][0] === coef_mtrx[1][1] && coef_mtrx[0][0] !== 0 && coef_mtrx[0][1] === 0 && coef_mtrx[1][0] === 0);
+    const is_scalar_mtrx = (coef_mtrx[0][0] === coef_mtrx[1][1] && coef_mtrx[0][1] === 0 && coef_mtrx[1][0] === 0);
 
     // build question string
     let var1, var2;
