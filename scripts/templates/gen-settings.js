@@ -1283,8 +1283,8 @@ export const sys_diff_eigenvals = {
     display_name: 'Eigenvalues',
     radio_buttons: [
         ['real_dis', 'Real Distinct \\(\\lambda_{1},\\lambda_{2}\\)&nbsp;'],
-        ['real_rep', 'Real Repeated \\(\\lambda=a\\)&nbsp;'],
-        ['complex', 'Complex \\(\\lambda=a\\pm bi\\)&nbsp;'] 
+        ['real_rep', 'Real Repeated \\(\\lambda=r\\)&nbsp;'],
+        ['complex', 'Complex \\(\\lambda=\\alpha \\pm \\beta i\\)&nbsp;'] 
     ], 
     tooltip: 'What should the eigenvalue(s) of the matrix that describes the system be?'
 };
