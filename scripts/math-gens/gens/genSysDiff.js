@@ -5,11 +5,42 @@ export function validateSettings(form_obj, error_locations) {
     if (form_obj.diff_notation === 'frac') form_obj.func_notation = 'implicit';
 }
 
-export const SDH = { // genSysDiff helpers
+const SDH = { // genSysDiff helpers
     getRandomMtrx: function(entry_size) {
         const r = () => H.randInt(-entry_size, entry_size);
 
         return [[r(), r()], [r(), r()]];
+    },
+    mtrxValSupplier: function*(entry_size, random_start = true, dimension = 2) {
+        let possible_entries = H.integerArray(-entry_size, entry_size);
+        const odometer = (new Array(dimension**2)).fill(0);
+
+        if (random_start) {
+            const chosen_start = H.randInt(0, possible_entries.length - 1);
+            possible_entries = possible_entries.slice(chosen_start).concat(possible_entries.slice(0, chosen_start));
+        }
+
+        while (true) {
+            let prev_row;
+            yield odometer.map((position, idx) => {
+                if (idx % dimension === 0) {
+                    return (prev_row = [possible_entries[position]]);
+                }
+                else prev_row.push(possible_entries[position])
+            }).filter(el => el !== undefined);
+
+            let increment_idx = odometer.length - 1;
+            let has_rollover = true;
+            while (has_rollover && increment_idx >= 0) {
+                const updated_idx = odometer[increment_idx] + 1;
+                odometer[increment_idx] = updated_idx % possible_entries.length;
+
+                has_rollover = (updated_idx >= possible_entries.length);
+                increment_idx--;
+            }
+
+            if (has_rollover) break; // if the first odometer slot rolls over, generation is complete
+        }
     },
     classifyByEigen: function(mtrx_2x2) { // note: only counts integer (lamda=a \pm b) and integer-complex (lamda=a \pm bi) eigenvalues
         const [ix, jx] = mtrx_2x2[0];
@@ -220,7 +251,30 @@ export default function genSysDiff(settings) {
         ) mtrx_found = true;
     }
 
-    const eigens = SDH.getEigens(coef_mtrx, settings.sys_diff_eigenvals);
+    if (!mtrx_found) {
+        const mtrx_supplier = SDH.mtrxValSupplier(mtrx_entry_size);
+        let curr_yield;
+        while (
+            !mtrx_found && 
+            !(curr_yield = mtrx_supplier.next()).done
+        ) {
+            coef_mtrx = curr_yield.value;
+            detected_eigen_type = SDH.classifyByEigen(coef_mtrx);
+
+            if (
+                (settings.sys_diff_degenerate === 'no'? !SDH.isDegenerate(coef_mtrx) : true) &&
+                detected_eigen_type === settings.sys_diff_eigenvals
+            ) mtrx_found = true;
+        }
+
+        if (!mtrx_found) {
+            coef_mtrx = [[1, 1], [1, 1]];
+            settings.sys_diff_degenerate = 'yes';
+            detected_eigen_type = settings.sys_diff_eigenvals = 'real_dis';
+        }
+    }
+
+    const eigens = SDH.getEigens(coef_mtrx);
     const is_scalar_mtrx = (coef_mtrx[0][0] === coef_mtrx[1][1] && coef_mtrx[0][1] === 0 && coef_mtrx[1][0] === 0);
 
     // build question string
