@@ -538,12 +538,26 @@ export const presets = {
             sys_diff_degenerate: '__random__'
         };
     },
-    // has_topic_presets: true
+    has_topic_presets: true
 };
 
 export const size_adjustments = {
-    width: 1.3,
-    height: 1.3,
-    // q_font_size: 1.1,
-    // a_font_size: 1.1
+    width: 1.25,
+    height: 1.4,
+    present: {
+        canvas: {
+            max_width: 0.5,
+            max_height: 0.2,
+            init_scale: 0.6
+        },
+        preview: {
+            max_width: 0.5,
+            max_height: 0.2,
+            init_scale: 0.6
+        },
+        answer: {
+            max_size_scale: 4.5,
+            init_scale: 0.9
+        }
+    }
 };
