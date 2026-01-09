@@ -1332,3 +1332,80 @@ export const sys_diff_degenerate = {
     tooltip: 'Should systems that are solvable without system techniques be allowed?',
     prelocked: true
 };
+
+export const sec_ord_roots = {
+    type: 'radio_buttons',
+    display_name: 'Characteristic Roots',
+    radio_buttons: [
+        ['real_dis', 'Real Distinct \\(r_{1},r_{2}\\)&nbsp;'],
+        ['real_rep', 'Real Repeated \\(r_{1}\\)&nbsp;'],
+        ['complex', 'Complex \\(r=\\lambda \\pm \\omega i\\)&nbsp;'] 
+    ], 
+    tooltip: 'What should the roots of the characteristic equation be?'
+};
+
+export const force_func_form = {
+    type: 'radio_buttons',
+    display_name: 'Forcing Function',
+    radio_buttons: [
+        ['zero','\\(0\\) (homogeneous)'],
+        ['constant','C','radio-math'],
+        ['et_alone','Ce^{\\lambda t}','radio-math'],
+        ['sin_alone','C\\sin(\\omega t)','radio-math'],
+        ['cos_alone','C\\cos(\\omega t)','radio-math'],
+        ['tn_alone','Ct^{n}','radio-math'],
+        ['e_and_sin','e^{\\lambda t}\\sin(\\omega t)','radio-math'],
+        ['e_and_cos','e^{\\lambda t}\\cos(\\omega t)','radio-math'],
+        ['tn_and_e','t^{n}e^{\\lambda t}','radio-math'],
+        ['tn_and_sin','t^{n}\\sin(\\omega t)','radio-math'],
+        ['tn_and_cos','t^{n}\\cos(\\omega t)','radio-math']
+    ],
+    tooltip: 'What form should the forcing function have?'
+};
+
+export const sec_ord_reso = {
+    type: 'radio_buttons',
+    display_name: 'Resonance',
+    radio_buttons: [
+        ['prefer', 'Prefered'],
+        ['allow', 'Allowed'],
+        ['avoid', 'Avoided'],
+    ], 
+    tooltip: 'Should a resonant forcing function be preferred, allowed, or avoided (when possible)?'
+};
+
+export const diff_initcond = {
+    type: 'radio_buttons',
+    display_name: 'Initial Conditions',
+    radio_buttons: [
+        ['yes', 'Yes'],
+        ['no', 'No'] 
+    ], 
+    tooltip: 'Should the differential equation have initial conditions?',
+    prelocked: true
+};
+
+export const diff_eq_vars = {
+    type: 'radio_buttons',
+    display_name: 'Variables',
+    radio_buttons: [
+        ['y_x', '\\(y(x)\\)&nbsp;'],
+        ['y_t', '\\(y(t)\\)&nbsp;'],
+        ['x_t', '\\(x(t)\\)&nbsp;'],
+        ['f_x', '\\(f(x)\\)&nbsp;'],
+        ['f_t', '\\(f(t)\\)&nbsp;']   
+    ], 
+    tooltip: 'What should the dependent and independent variable in the equation be?',
+    prelocked: true
+};
+
+export const sec_ord_b_term = {
+    type: 'radio_buttons',
+    display_name: 'First Derivative Term',
+    radio_buttons: [
+        ['rand', 'Random \\(y\'\' + by\' + cy\\)&nbsp;'],
+        ['zero', 'Always Zero \\(y\'\' +cy \\)&nbsp;']
+    ], 
+    tooltip: 'Should the coefficient of the first derivative term always be zero?',
+    prelocked: true
+};
