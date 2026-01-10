@@ -40,16 +40,6 @@ const SOH = { // genSecOrd helpers
                 field: 'trig_freq',
                 valid_types: [SOH.Int],
                 default: {constructor: SOH.Int, args: [0]}
-            },
-            {
-                field: 'has_sin',
-                valid_types: [Boolean],
-                default: {constructor: Boolean, args: [false]}
-            },
-            {
-                field: 'has_cos',
-                valid_types: [Boolean],
-                default: {constructor: Boolean, args: [false]}
             }
         ];
         
@@ -66,30 +56,13 @@ const SOH = { // genSecOrd helpers
                     }
                 }
                 else {
-                    const default_constructor = field_entry.default.constructor;
-
-                    if ([Number, Boolean].includes(default_constructor)) {
-                        this[field_entry.field] = default_constructor(...field_entry.default.args);
-                    }
-                    else {
-                        this[field_entry.field] = new default_constructor(...field_entry.default.args);
-                    }
+                    this[field_entry.field] = new field_entry.default.constructor(...field_entry.default.args);
                 }
             });
-
-            if (
-                (this.trig_freq.value === 0 && (this.has_sin || this.has_cos)) ||
-                (this.trig_freq.value !== 0 && !this.has_sin && !this.has_cos)
-            ) throw new Error(`Invalid PolExpTrig, [trig_freq: ${this.trig_freq.value}] and [has_sin: ${this.has_sin}, has_cos: ${this.has_cos}] are conflicting.`)
             
             const build_polynom = () => (new Array(this.degree + 1)).fill(null).map(_ => new SOH.Coef());
-            if (this.has_sin && this.his_cos) {
-                this.polynom_S = build_polynom();
-                this.polynom_C = build_polynom();
-            }
-            else {
-                this.polynom = build_polynom();
-            }
+            this.polynom_s = build_polynom();
+            this.polynom_c = build_polynom();
         }
     },
     createCharEq: function(type, root_size, allow_b_term = true) {
@@ -154,195 +127,180 @@ const SOH = { // genSecOrd helpers
                 exp_freq: new SOH.Int(roots[1])
             })
         ],
-        real_rep: (roots) => new SOH.PolExpTrig({
+        real_rep: (roots) => [new SOH.PolExpTrig({
             exp_freq: new SOH.Int(roots[0]),
             degree: new SOH.Int(1)
-        }),
-        complex: (roots) => new SOH.PolExpTrig({
+        })],
+        complex: (roots) => [new SOH.PolExpTrig({
             exp_freq: new SOH.Int(roots[0][0]),
-            trig_freq: new SOH.Int(Math.abs(roots[0][1])),
-            has_sin: true,
-            has_cos: true
-        })
+            trig_freq: new SOH.Int(Math.abs(roots[0][1]))
+        })]
     },
     forms: {
         'zero': {
-            pet_obj: () => new SOH.PolExpTrig(),
+            und_pet_sum: () => [new SOH.PolExpTrig()],
             selectPolyCoefs: function(pet_obj) {
-                pet_obj.polynom[0].value = new SOH.Int(0);
+                pet_obj.polynom_c[0].value = new SOH.Int(0);
             }
         },
         'constant': {
-            pet_obj: () => new SOH.PolExpTrig(),
+            und_pet_sum: () => [new SOH.PolExpTrig()],
             selectPolyCoefs: function(pet_obj) {
-                pet_obj.polynom[0].value = new SOH.Int(H.randIntExcept(-9, 9, 0));
+                pet_obj.polynom_c[0].value = new SOH.Int(H.randIntExcept(-9, 9, 0));
             }
         },
         'et_alone': {
-            pet_obj: () => new SOH.PolExpTrig({
+            und_pet_sum: () => new [SOH.PolExpTrig({
                 exp_freq: new SOH.Int(H.randIntExcept(-4, 4, 0))
-            }),
+            })],
             selectPolyCoefs: function(pet_obj) {
                 if (H.randInt(0, 1)) {
-                    pet_obj.polynom[0].value = new SOH.Int(1);
+                    pet_obj.polynom_c[0].value = new SOH.Int(1);
                 }
                 else {
-                    pet_obj.polynom[0].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
+                    pet_obj.polynom_c[0].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
                 }
             }
         },
         'sin_alone': {
-            pet_obj: () => new SOH.PolExpTrig({
-                trig_freq: new SOH.Int(H.randInt(1, 3)),
-                has_sin: true
+            und_pet_sum: () => new SOH.PolExpTrig({
+                trig_freq: new SOH.Int(H.randInt(1, 3))
             }),
             selectPolyCoefs: function(pet_obj) {
+                pet_obj.polynom_c[0].value = new SOH.Int(0);
+                
                 if (H.randInt(0, 1)) {
-                    pet_obj.polynom[0].value = new SOH.Int(1);
+                    pet_obj.polynom_s[0].value = new SOH.Int(1);
                 }
                 else {
-                    pet_obj.polynom[0].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
+                    pet_obj.polynom_s[0].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
                 }
             }
         },
-        'cos_alone': {
-            pet_obj: () => new SOH.PolExpTrig({
-                trig_freq: new SOH.Int(H.randInt(1, 3)),
-                has_cos: true
+        'sin_alone': {
+            und_pet_sum: () => new SOH.PolExpTrig({
+                trig_freq: new SOH.Int(H.randInt(1, 3))
             }),
             selectPolyCoefs: function(pet_obj) {
+                pet_obj.polynom_s[0].value = new SOH.Int(0);
+                
                 if (H.randInt(0, 1)) {
-                    pet_obj.polynom[0].value = new SOH.Int(1);
+                    pet_obj.polynom_c[0].value = new SOH.Int(1);
                 }
                 else {
-                    pet_obj.polynom[0].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
+                    pet_obj.polynom_c[0].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
                 }
             }
         },
         'tn_alone': {
-            pet_obj: () => new SOH.PolExpTrig({
+            und_pet_sum: () => new SOH.PolExpTrig({
                 degree: new SOH.Int(H.randInt(1, 2))
             }),
             selectCoefs: function(pet_obj) {
-                pet_obj.polynom[pet_obj.degree.value].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
+                pet_obj.polynom_c[pet_obj.degree.value].value = new SOH.Int(H.randIntExcept(-3, 3, 0));
 
                 for (let i = 0; i < pet_obj.degree.value; i++) {
-                    pet_obj.polynom[i].value = new SOH.Int(0);
+                    pet_obj.polynom_c[i].value = new SOH.Int(0);
                 }
             }
         },
         'e_and_sin': {
-            pet_obj: () => new SOH.PolExpTrig({
+            und_pet_sum: () => new SOH.PolExpTrig({
                 exp_freq: new SOH.Int(H.randIntExcept(-2, 2, 0)),
-                trig_freq: new SOH.Int(H.randInt(1, 2)),
-                has_sin: true
+                trig_freq: new SOH.Int(H.randInt(1, 2))
             }),
             selectCoefs: function(pet_obj) {
-                pet_obj.polynom[0].value = new SOH.Int(1);
+                pet_obj.polynom_c[0].value = new SOH.Int(0);
+                pet_obj.polynom_s[0].value = new SOH.Int(1);
             }
         },
-        'e_and_cos': {
-            pet_obj: () => new SOH.PolExpTrig({
+        'e_and_sin': {
+            und_pet_sum: () => new SOH.PolExpTrig({
                 exp_freq: new SOH.Int(H.randIntExcept(-2, 2, 0)),
-                trig_freq: new SOH.Int(H.randInt(1, 2)),
-                has_cos: true
+                trig_freq: new SOH.Int(H.randInt(1, 2))
             }),
             selectCoefs: function(pet_obj) {
-                pet_obj.polynom[0].value = new SOH.Int(1);
+                pet_obj.polynom_s[0].value = new SOH.Int(0);
+                pet_obj.polynom_c[0].value = new SOH.Int(1);
             }
         },
         'tn_and_e': {
-            pet_obj: () => new SOH.PolExpTrig({
+            und_pet_sum: () => new SOH.PolExpTrig({
                 exp_freq: new SOH.Int(H.randIntExcept(-3, 3, 0)),
                 degree: new SOH.Int(H.randInt(1, 2))
             }),
             selectCoefs: function(pet_obj) {
-                pet_obj.polynom[pet_obj.degree.value].value = new SOH.Int(1);
+                pet_obj.polynom_c[pet_obj.degree.value].value = new SOH.Int(1);
 
                 for (let i = 0; i < pet_obj.degree.value; i++) {
-                    pet_obj.polynom[i].value = new SOH.Int(0);
+                    pet_obj.polynom_c[i].value = new SOH.Int(0);
                 }
             }
         },
         'tn_and_sin': {
-            pet_obj: () => new SOH.PolExpTrig({
+            und_pet_sum: () => new SOH.PolExpTrig({
                 trig_freq: new SOH.Int(H.randInt(1, 3)),
-                degree: new SOH.Int(H.randInt(1, 2)),
-                has_sin: true
+                degree: new SOH.Int(H.randInt(1, 2))
             }),
             selectCoefs: function(pet_obj) {
-                pet_obj.polynom[pet_obj.degree.value].value = new SOH.Int(1);
+                pet_obj.polynom_c[pet_obj.degree.value].value = new SOH.Int(0);
+                pet_obj.polynom_s[pet_obj.degree.value].value = new SOH.Int(1);
 
                 for (let i = 0; i < pet_obj.degree.value; i++) {
-                    pet_obj.polynom[i].value = new SOH.Int(0);
+                    pet_obj.polynom_c[i].value = new SOH.Int(0);
+                    pet_obj.polynom_s[i].value = new SOH.Int(0);
                 }
             }
         },
         'tn_and_cos': {
-            pet_obj: () => new SOH.PolExpTrig({
+            und_pet_sum: () => new SOH.PolExpTrig({
                 trig_freq: new SOH.Int(H.randInt(1, 3)),
-                degree: new SOH.Int(H.randInt(1, 2)),
-                has_cos: true
+                degree: new SOH.Int(H.randInt(1, 2))
             }),
             selectCoefs: function(pet_obj) {
-                pet_obj.polynom[pet_obj.degree.value].value = new SOH.Int(1);
+                pet_obj.polynom_s[pet_obj.degree.value].value = new SOH.Int(0);
+                pet_obj.polynom_c[pet_obj.degree.value].value = new SOH.Int(1);
 
                 for (let i = 0; i < pet_obj.degree.value; i++) {
-                    pet_obj.polynom[i].value = new SOH.Int(0);
+                    pet_obj.polynom_s[i].value = new SOH.Int(0);
+                    pet_obj.polynom_c[i].value = new SOH.Int(0);
                 }
             }
         }
     },
-    checkForReso: function(yh_pet_obj, ft_pet_obj, adjust_ft = false) {
-        const [yh_pet_objs, ft_pet_objs] = [yh_pet_obj, ft_pet_obj].map(v => Array.isArray(v)? v : [v]);
-
+    adjustForReso: function(y_h_pets, y_p_pets, adjust_y_p = true) {
         let reso_found = false;
-        for (let i = 0; i < ft_pet_objs.length; i++) {
-            for (let j = 0; j < yh_pet_objs.length; j++) {
-                ft_pet_obj = ft_pet_objs[i];
-                yh_pet_obj = yh_pet_obj[j];
+        for (let i = 0; i < y_p_pets.length; i++) {
+            for (let j = 0; j < y_h_pets.length; j++) {
+                const y_p_pet = y_p_pets[i];
+                const y_h_pet = y_h_pets[j];
 
                 // check if terms resonate, adjust or break according to request
                 if (
                     (
-                        (Array.isArray(ft_pet_obj.polynom) && ft_pet_obj.polynom.some(entry => entry.value !== 0)) ||
-                        (
-                            ft_pet_obj.has_sin && ft_pet_obj.has_cos && (
-                                ft_pet_obj.polynom_S.some(entry => entry.value !== 0) || 
-                                ft_pet_obj.polynom_C.some(entry => entry.value !== 0)
-                            )
-                        )
+                        y_p_pet.polynom_c.some(entry => entry.value !== 0) ||
+                        y_p_pet.polynom_s.some(entry => entry.value !== 0)
                     ) &&
                     (
-                        (Array.isArray(yh_pet_obj.polynom) && yh_pet_obj.polynom.some(entry => entry.value !== 0)) ||
-                        (
-                            yh_pet_obj.has_sin && yh_pet_obj.has_cos && (
-                                yh_pet_obj.polynom_S.some(entry => entry.value !== 0) || 
-                                yh_pet_obj.polynom_C.some(entry => entry.value !== 0)
-                            )
-                        )
+                        y_h_pet.polynom_c.some(entry => entry.value !== 0) ||
+                        y_h_pet.polynom_s.some(entry => entry.value !== 0)
                     ) &&
                     (
-                        ft_pet_obj.exp_freq === yh_pet_obj.exp_freq && ft_pet_obj.trig_freq === yh_pet_obj.trig_freq
+                        y_p_pet.exp_freq === y_h_pet.exp_freq && y_p_pet.trig_freq === y_h_pet.trig_freq
                     ) &&
                     (
-                        yh_pet_obj.degree.value >= ft_pet_obj.degree.value
+                        y_h_pet.degree.value >= y_p_pet.degree.value
                     )
                 ) {
-                    if (!adjust_ft) return true;
+                    if (!adjust_y_p) return true;
                     else {
                         reso_found = true;
-                        const degree_increase = (yh_pet_obj.degree.value - ft_pet_obj.degree.value) + 1;
-                        ft_pet_obj.degree.value += degree_increase;
+                        const degree_increase = (y_h_pet.degree.value - y_p_pet.degree.value) + 1;
+                        y_p_pet.degree.value += degree_increase;
 
-                        const added_zero_terms = () => (new Array(degree_increase)).fill(null).map(_ => new SOH.Int(0));
-                        if (ft_pet_obj.has_sin && ft_pet_obj.has_cos) {
-                            ft_pet_obj.polynom_S = added_zero_terms().concat(ft_pet_obj.polynom_S);
-                            ft_pet_obj.polynom_C = added_zero_terms().concat(ft_pet_obj.polynom_C);
-                        }
-                        else {
-                            ft_pet_obj.polynom = added_zero_terms().concat(ft_pet_obj.polynom);
-                        }
+                        const added_zero_terms = new Array(degree_increase).fill(new SOH.Int(0));
+                        y_p_pet.polynom_s = added_zero_terms.concat(y_p_pet.polynom_s);
+                        y_p_pet.polynom_c = added_zero_terms.concat(y_p_pet.polynom_c);
                     }
                 }
             }
@@ -350,42 +308,164 @@ const SOH = { // genSecOrd helpers
 
         return reso_found;
     },
-    clonePetObj: function(pet_obj) {
-        const copied_pet_obj = SOH.PolExpTrig(pet_obj);
+    clonePetSum: function(pet_obj_sum) {
+        return pet_obj_sum.map(pet_obj => {
+            const copied_pet_obj = SOH.PolExpTrig(pet_obj);
 
-        copy_polynom = (polynom) => polynom.map(entry => new entry.constructor(Object.keys(entry)));
+            copy_polynom = (polynom) => polynom.map(entry => new entry.constructor(Object.keys(entry)));
 
-        if (copied_pet_obj.has_sin && copied_pet_obj.has_cos) {
-            copied_pet_obj.polynom_S = copy_polynom(polynom_S);
-            copied_pet_obj.polynom_C = copy_polynom(polynom_C);
+            copied_pet_obj.polynom_s = copy_polynom(pet_obj.polynom_s);
+            copied_pet_obj.polynom_c = copy_polynom(pet_obj.polynom_c);
+
+            return copied_pet_obj;
+        });
+    },
+    int_frac_ops: {
+        add: function(int_or_frac1, int_or_frac2) {
+            if (
+                int_or_frac1 instanceof SOH.Int && 
+                int_or_frac2 instanceof SOH.Int
+            ) {
+                return new SOH.Int(int_or_frac1.value + int_or_frac2.value);
+            }
+            else if (
+                int_or_frac1 instanceof SOH.Int &&
+                int_or_frac2 instanceof SOH.Frac
+            ) {
+                return new SOH.Frac(int_or_frac1.value*int_or_frac2.den + int_or_frac2.num, int_or_frac2.den);
+            }
+            else if (
+                int_or_frac1 instanceof SOH.Frac &&
+                int_or_frac2 instanceof SOH.Int
+            ) {
+                return new SOH.Frac(int_or_frac2.value*int_or_frac1.den + int_or_frac1.num, int_or_frac1.den);
+            }
+            else if (
+                int_or_frac1 instanceof SOH.Frac && 
+                int_or_frac2 instanceof SOH.Frac
+            ) {
+                return new SOH.Frac(int_or_frac1.value*int_or_frac2.den + int_or_frac2.value*int_or_frac1.den, int_or_frac1.den*int_or_frac2.den);
+            }
+        },
+        mul: function(int_or_frac1, int_or_frac2) {
+            if (
+                int_or_frac1 instanceof SOH.Int && 
+                int_or_frac2 instanceof SOH.Int
+            ) {
+                return new SOH.Int(int_or_frac1.value * int_or_frac2.value);
+            }
+            else if (
+                int_or_frac1 instanceof SOH.Int &&
+                int_or_frac2 instanceof SOH.Frac
+            ) {
+                return new SOH.Frac(int_or_frac1.value * int_or_frac2.num, int_or_frac2.den);
+            }
+            else if (
+                int_or_frac1 instanceof SOH.Frac &&
+                int_or_frac2 instanceof SOH.Int
+            ) {
+                return new SOH.Frac(int_or_frac2.value * int_or_frac1.num, int_or_frac1.den);
+            }
+            else if (
+                int_or_frac1 instanceof SOH.Frac && 
+                int_or_frac2 instanceof SOH.Frac
+            ) {
+                return new SOH.Frac(int_or_frac1.num * int_or_frac2.num, int_or_frac1.den*int_or_frac2.den);
+            }
+        },
+        pow: function(int_or_frac_base, int_exp) {
+            if (
+                (int_or_frac_base instanceof SOH.Int || int_or_frac_base instanceof SOH.Frac) &&
+                int_exp instanceof SOH.Int && int_exp.value >= 0
+            ) {
+                let accum = new SOH.Int(1);
+
+                for (let n = 0; n < int_exp.value; n++) {
+                    accum = SOH.int_frac_ops.mul(accum, int_or_frac_base);
+                }
+
+                return accum;
+            }
         }
-        else {
-            copied_pet_obj.polynom = copy_polynom(polynom);
-        }
+    },
+    polynom_ops: {
+        scale: function(polyom_arr, scalar) {
+            return polyom_arr.map(coef => SOH.int_frac_ops.mul(scalar, coef));
+        },
+        add: function(polynom_arr1, polynom_arr2) {
+            const [shorter_poly, longer_poly] = polynom_arr2.length > polynom_arr1.length? [polynom_arr1, polynom_arr2] : [polynom_arr2, polynom_arr1];
 
-        return copied_pet_obj;
-    } 
+            const sum_poly = [];
+            for (let i = 0; i < longer_poly.length; i++) {
+                const long_term = longer_poly[i];
+                const short_term = i < shorter_poly.length? shorter_poly[i] : new SOH.Int(0);
+                
+                sum_poly.push(SOH.int_frac_ops.add(long_term, short_term));
+            }
+
+            return sum_poly;
+        },
+        diff: function(polynom_arr) {
+            const diffed_poly = [];
+
+            for (let n = 1; n < polynom_arr.length; n++) {
+                diffed_poly.push(SOH.int_frac_ops.mul(new SOH.Int(n), polynom_arr[n]));
+            }
+
+            return diffed_poly;
+        },
+        evaluate: function(polynom_arr, value) {
+            let accum = new SOH.Int(0);
+
+            for (let n = 0; n < polynom_arr.length; n++) {
+                accum = SOH.int_frac_ops.add(
+                    accum,
+                    SOH.int_frac_ops.mul(
+                        polynom_arr[n],
+                        SOH.int_frac_ops.pow(
+                            value,
+                            new SOH.Int(n)
+                        )
+                    )
+                );
+            }
+
+            return accum;
+        }
+    },
+    diffPetSum: function(pet_sum) {
+        return pet_sum.map(pet_obj => {
+            const diffed_pet = SOH.PolExpTrig(pet_obj);
+
+            diffed_pet.polynom_s = SOH.polynom_ops.add(
+                SOH.polynom_ops.scale(pet_obj.polynom_s, pet_obj.exp_freq),
+                SOH.polynom_ops.add(
+                    SOH.polynom_ops.diff(pet_obj.polynom_s),
+                    SOH.polynom_ops.scale(pet_obj.polynom_c, new SOH.Int(-1))
+                )
+            );
+
+            diffed_pet.polynom_c = SOH.polynom_ops.add(
+                SOH.polynom_ops.scale(pet_obj.polynom_c, pet_obj.exp_freq),
+                SOH.polynom_ops.add(
+                    SOH.polynom_ops.diff(pet_obj.polynom_c),
+                    pet_obj.polynom_s
+                )
+            );
+
+            return diffed_pet;
+        });
+    }
 };
 export default function genSecOrd(settings) {
     const root_size = {'real_dis': 6, 'real_rep': 6, 'complex': 4}[settings.sec_ord_roots];
     const allow_b_term = (settings.sec_ord_b_term === 'zero')? false : true;
 
-    let resoConidtionMet;
-    if (settings.force_func_form !== 'zero' && settings.sec_ord_reso === 'prefer') {
-        resoConidtionMet = function(yh_pet_obj, ft_pet_obj) {
-            return SOH.checkForReso(yh_pet_obj, ft_pet_obj);
-        }
-    }
-    else if (settings.force_func_form !== 'zero' && settings.sec_ord_reso === 'avoid') {
-        resoConidtionMet = function(yh_pet_obj, ft_pet_obj) {
-            return !SOH.checkForReso(yh_pet_obj, ft_pet_obj);
-        }
-    }
-    else {
-        resoConidtionMet = function() {
-            return true;
-        }
-    }
+    const resoCheckAndAdjust = {
+        'prefer': SOH.adjustForReso, 
+        'allow': () => true, 
+        'avoid': (...args) => !SOH.adjustForReso(...args)
+    }[settings.sec_ord_reso];
 
     // search loop flags and controls
     const resonance_attempts = 5_000;
@@ -401,16 +481,19 @@ export default function genSecOrd(settings) {
     let eq_found = false;
 
     // search loop to match resonance preference and find clean numbers in both y_p coefs and initial conditions
-    let char_eq, f_t_pet, y_h_pet, y_p_pet, init_conds;
+    let char_eq, f_t_pets, y_h_pets, y_p_pets, init_conds;
     while (!eq_found && current_attempts++ < max_total_attempts) {
         char_eq = SOH.createCharEq(settings.sec_ord_roots, root_size, allow_b_term);
-        y_h_pet = SOH.homo_sols[settings.sec_ord_roots](char_eq.roots);
-        f_t_pet = SOH.forms[settings.force_func_form].pet_obj();
-        SOH.forms[settings.force_func_form].selectPolyCoefs(force_func_pet);
+        y_h_pets = SOH.homo_sols[settings.sec_ord_roots](char_eq.roots);
+        f_t_pets = SOH.forms[settings.force_func_form].und_pet_sum();
+        y_p_pets = SOH.clonePetSum(f_t_pets);
+        SOH.forms[settings.force_func_form].selectPolyCoefs(f_t_pets.length > 1? f_t_pets : f_t_pets[0]);
+        
+        if (current_attempts < resonance_attempts && resoCheckAndAdjust(y_h_pets, y_p_pets)) continue;
 
-        if (current_attempts < resonance_attempts && !resoConidtionMet(y_h_pet, f_t_pet)) continue;
+        const d_y_p_pets = SOH.diffPetSum(y_p_pets);
+        const dd_y_p_pets = SOH.diffPetSum(d_y_p_pets);
 
-        // build y_p and find the undetermined coefs
 
         // skip if less than y_p coef attempts and the coefs aren't nice
 
