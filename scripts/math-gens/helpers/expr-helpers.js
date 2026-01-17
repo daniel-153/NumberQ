@@ -61,11 +61,11 @@ export const Unknown = class {
             this.#typeIsValid = function(value) {
                 return this.#valid_types.some(type_indicator => (
                         typeof(type_indicator) === 'function' && 
-                        proposed_value instanceof type_indicator
+                        value instanceof type_indicator
                     ) ||
                     (
                         typeof(type_indicator) === 'string' &&
-                        typeof(proposed_value) === type_indicator
+                        typeof(value) === type_indicator
                 ))
             }
 
@@ -96,14 +96,14 @@ export const Unknown = class {
 export const Coef = class extends Unknown {
     #symbol;
     
-    constructor(symbol, valid_types, value) {
+    constructor(valid_types, value, symbol) {
         if (arguments.length <= 3) {
-            const proposed_types = (arguments.length >= 2)? arguments[1] : [Value, 'undefined'];
-            const proposed_value = (arguments.length >= 3)? arguments[2] : undefined;
+            const proposed_types = (arguments.length >= 1)? arguments[0] : [Value, 'undefined'];
+            const proposed_value = (arguments.length >= 2)? arguments[1] : undefined;
             super(proposed_types, proposed_value);
 
-            if (arguments.length >= 1) {
-                if (arguments[0] === 'string') this.#symbol = arguments[0];
+            if (arguments.length >= 3) {
+                if (typeof(arguments[2]) === 'string') this.#symbol = arguments[2];
                 else throw new Error('If provided, Coef symbol must be a string.');
             }
             else this.#symbol = 'C';
@@ -140,7 +140,7 @@ export const Oper = class extends Unknown {
     }
 
     get evaluate() {
-        return function() {
+        return () => {
             [this.#operand1, this.#operand2, this].forEach(operand => {
                 if (operand instanceof Oper) {
                     if (typeof(operand.perform) === 'function') operand.perform();
@@ -178,32 +178,32 @@ export const Sum = class extends Oper {
     }
 
     get perform() {
-        return function() {
+        return () => {
             const [operand1, operand2] = Oper.resolveCoefOperands(this.operand1, this.operand2);
 
             if (
                 operand1 instanceof Int && 
                 operand2 instanceof Int
             ) {
-                this.value = Int(operand1.value + operand2.value);
+                this.value = new Int(operand1.value + operand2.value);
             }
             else if (
                 operand1 instanceof Int &&
                 operand2 instanceof Frac
             ) {
-                this.value = Frac(operand1.value*operand2.den + operand2.num, operand2.den);
+                this.value = new Frac(operand1.value*operand2.den + operand2.num, operand2.den);
             }
             else if (
                 operand1 instanceof Frac &&
                 operand2 instanceof Int
             ) {
-                this.value = Frac(operand2.value*operand1.den + operand1.num, operand1.den);
+                this.value = new Frac(operand2.value*operand1.den + operand1.num, operand1.den);
             }
             else if (
                 operand1 instanceof Frac && 
                 operand2 instanceof Frac
             ) {
-                this.value = Frac(operand1.value*operand2.den + operand2.value*operand1.den, operand1.den*operand2.den);
+                this.value = new Frac(operand1.value*operand2.den + operand2.value*operand1.den, operand1.den*operand2.den);
             }
             else throw new Error('Could not perform Sum; unevaluated or invalid operand types.');
         }
@@ -217,7 +217,7 @@ export const Mul = class extends Oper {
     }
 
     get perform() {
-        return function() {
+        return () => {
             const [operand1, operand2] = Oper.resolveCoefOperands(this.operand1, this.operand2);
 
             if (
@@ -230,19 +230,19 @@ export const Mul = class extends Oper {
                 operand1 instanceof Int &&
                 operand2 instanceof Frac
             ) {
-                this.value = Frac(operand1.value * operand2.num, operand2.den);
+                this.value = new Frac(operand1.value * operand2.num, operand2.den);
             }
             else if (
                 operand1 instanceof Frac &&
                 operand2 instanceof Int
             ) {
-                this.value = Frac(operand2.value * operand1.num, operand1.den);
+                this.value = new Frac(operand2.value * operand1.num, operand1.den);
             }
             else if (
                 operand1 instanceof Frac && 
                 operand2 instanceof Frac
             ) {
-                this.value = Frac(operand1.num * operand2.num, operand1.den*operand2.den);
+                this.value = new Frac(operand1.num * operand2.num, operand1.den*operand2.den);
             }
             else throw new Error('Could not perform Mul; unevaluated or invalid operand types.');
         }
@@ -256,7 +256,7 @@ export const Pow = class extends Oper {
     }
 
     get perform() {
-        return function() {
+        return () => {
             const [base, exp] = Oper.resolveCoefOperands(this.operand1, this.operand2);
 
             if (
@@ -266,9 +266,9 @@ export const Pow = class extends Oper {
                 if (exp.value < 0) {
                     if (base instanceof Int) base = new Frac(1, base.value);
                     else base = new Frac(base.den, base.num);
-                    exp = -exp;
+                    exp = new Int(-exp.value);
                 }
-                
+                 
                 let accum = new Mul(new Int(1), new Int(1));
                 for (let n = 0; n < exp.value; n++) {
                     accum = new Mul(accum, base);
