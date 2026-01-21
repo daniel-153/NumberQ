@@ -324,7 +324,7 @@ const SOH = { // genSecOrd helpers
                 SOH.polynom_ops.scale(pet_obj.polynom_s, pet_obj.exp_freq),
                 SOH.polynom_ops.add(
                     SOH.polynom_ops.diff(pet_obj.polynom_s),
-                    SOH.polynom_ops.scale(pet_obj.polynom_c, new EH.Int(-1))
+                    SOH.polynom_ops.scale(pet_obj.polynom_c, new EH.Int(-diffed_pet.trig_freq.value))
                 )
             );
 
@@ -332,7 +332,7 @@ const SOH = { // genSecOrd helpers
                 SOH.polynom_ops.scale(pet_obj.polynom_c, pet_obj.exp_freq),
                 SOH.polynom_ops.add(
                     SOH.polynom_ops.diff(pet_obj.polynom_c),
-                    pet_obj.polynom_s
+                   SOH.polynom_ops.scale(pet_obj.polynom_s, diffed_pet.trig_freq)
                 )
             );
 
@@ -576,6 +576,96 @@ const SOH = { // genSecOrd helpers
                 polynom.every(coef => coef.value instanceof EH.Int)
             ))
         ));
+    },
+    getHomoSolCvals: function(homo_sol_pets, root_type) {
+        const cvals = {'C1': null, 'C2': null};
+
+        if (root_type === 'real_dis') {
+            cvals['C1'] = homo_sol_pets[0].polynom_c[0];
+            cvals['C2'] = homo_sol_pets[1].polynom_c[0];
+        }
+        else if (root_type === 'real_rep') {
+            cvals['C1'] = homo_sol_pets[0].polynom_c[0];
+            cvals['C2'] = homo_sol_pets[0].polynom_c[1];
+        }
+        else if (root_type === 'complex') {
+            cvals['C1'] = homo_sol_pets[0].polynom_s[0];
+            cvals['C2'] = homo_sol_pets[0].polynom_c[0];
+        }
+
+        return cvals;
+    },
+    petSumAtZero: function(pet_sum) {
+        let acc_expr = new EH.Sum(new EH.Int(0), new EH.Int(0));
+
+        pet_sum.forEach(pet_obj => {
+            acc_expr = new EH.Sum(acc_expr, pet_obj.polynom_c[0]);
+        });
+
+        return acc_expr;
+    },
+    pickSmallInitConds: function(cvals, y_0_expr, d_y_0_expr) {
+        const coef_size = 5;
+        const frac_weight = 4;
+        const sample_size = 250;
+        const selection_percentile = 20;
+        
+        const randSubs = () => new Map([
+            [cvals['C1'], new EH.Int(H.randInt(-coef_size, coef_size))],
+            [cvals['C2'], new EH.Int(H.randInt(-coef_size, coef_size))]
+        ]);
+        const subsScore = (y_0_value, d_y_0_value) => {
+            const scoreValue = (val) => {
+                if (val instanceof EH.Int) {
+                    const abs_val = Math.abs(val.value);
+                    
+                    if (val.value < 0) return abs_val * 1.25;
+                    else abs_val;
+                }
+                else if (val instanceof EH.Frac) {
+                    const num_score = scoreValue(new EH.Int(val.num));
+                    const den_score = scoreValue(new EH.Int(val.den));
+
+                    return frac_weight * ( ( num_score + den_score ) / 2 );
+                }
+            }
+
+            return Math.max(scoreValue(y_0_value), scoreValue(d_y_0_value));
+        }
+
+        const ordered_attempts = [];
+        for (let i = 0; i < sample_size; i++) {
+            const rand_subs = randSubs();
+            const [y_0_value, d_y_0_value] = [
+                y_0_expr, d_y_0_expr
+            ].map(expr => {
+                const subbed = expr.subs(rand_subs);
+                subbed.evaluate();
+                return subbed.value;
+            })
+
+            const curr_entry = [subsScore(y_0_value, d_y_0_value), rand_subs];
+            
+            if (ordered_attempts.length > 0) {
+                if (curr_entry[0] <= ordered_attempts[0][0]) ordered_attempts.unshift(curr_entry);
+                else if (curr_entry[0] >= ordered_attempts[ordered_attempts.length - 1][0]) ordered_attempts.push(curr_entry);
+                else {
+                    for (let j = 1; j < ordered_attempts.length; j++) {
+                        if (curr_entry[0] < ordered_attempts[j][0]) {
+                            ordered_attempts.splice(j, 0, curr_entry);
+                            break;
+                        }
+                    }
+                }
+            }
+            else ordered_attempts.unshift(curr_entry);
+        }
+
+        const cutoff = Math.max(1, Math.floor(ordered_attempts.length * (selection_percentile / 100)));
+        const final_subs = H.randFromList(ordered_attempts.slice(0, cutoff))[1];
+
+        cvals['C1'].value = final_subs.get(cvals['C1']);
+        cvals['C2'].value = final_subs.get(cvals['C2']);
     }
 };
 export default function genSecOrd(settings) {
@@ -588,22 +678,14 @@ export default function genSecOrd(settings) {
         'avoid': (...args) => !SOH.adjustForReso(...args)
     }[settings.sec_ord_reso];
 
-    // search loop flags and controls
-    const resonance_attempts = 5_000;
-    const y_p_coef_attempts = 10_000;
-    const init_cond_attempts = 15_000;
-    const max_total_attempts = [
-        resonance_attempts, y_p_coef_attempts, init_cond_attempts
-    ].sort((a, b) => a - b).reduce((acc, curr, idx, arr) => {
-        const prev = idx > 0? arr[idx] : 0;
-        return acc + (curr - prev);
-    }, 0);
-    let current_attempts = 0;
-    let eq_found = false;
-
     // search loop to match resonance preference and find clean numbers in both y_p coefs and initial conditions
-    let char_eq, f_t_pets, y_h_pets, y_p_pets, init_conds;
-    while (!eq_found && current_attempts++ < max_total_attempts) {
+    const resonance_attempts = 2_500;
+    const y_p_coef_attempts = 10_000;
+    let current_attempts = 0;
+    let char_eq, f_t_pets, y_h_pets, y_p_pets, y_sol_pets, cvals;
+    while (true) {
+        current_attempts++;
+
         char_eq = EH.createCharEq(settings.sec_ord_roots, root_size, allow_b_term);
         y_h_pets = EH.homo_sols[settings.sec_ord_roots](char_eq.roots);
         f_t_pets = EH.forms[settings.force_func_form].und_pet_sum();
@@ -615,19 +697,21 @@ export default function genSecOrd(settings) {
         const d_y_p_pets = EH.diffPetSum(y_p_pets);
         const dd_y_p_pets = EH.diffPetSum(d_y_p_pets);
         SOH.determineCoefs(char_eq, y_p_pets, d_y_p_pets, dd_y_p_pets, f_t_pets);
+        const all_int_coefs = SOH.allIntegerCoefs(y_p_pets);
 
-        if (current_attempts < y_p_coef_attempts && !SOH.allIntegerCoefs(y_p_pets)) continue;
+        if (current_attempts < y_p_coef_attempts && !all_int_coefs) continue;
 
-        // note: if integer coefs checks are done (fracs are comming through), searching for nice init-conds may not be practical anymore
-
-        // if there is an init cond, pick random (potentially biasing nice) C-vals
-
-        // skip if less than init cond attempts and the init cond isn't nice
-
-        // if made past all of above, sol found within attempt limit
+        y_sol_pets = [...y_h_pets, ...y_p_pets];
+        cvals = SOH.getHomoSolCvals(y_h_pets, settings.sec_ord_roots);
+        if (settings['diff_initcond'] === 'yes') {
+            const y_0_expr = SOH.petSumAtZero(y_sol_pets);
+            const d_y_sol_pets = SOH.diffPetSum(y_sol_pets);
+            const d_y_0_expr = SOH.petSumAtZero(d_y_sol_pets);
+            SOH.pickSmallInitConds(cvals, y_0_expr, d_y_0_expr);
+        }
+        
+        break;
     }
-
-    // if sol not found past above loop, use current state of vals?
 }
 
 export const settings_fields = [
