@@ -141,17 +141,29 @@ export const Oper = class extends Unknown {
 
     get evaluate() {
         return () => {
-            [this.#operand1, this.#operand2, this].forEach(operand => {
-                if (operand instanceof Oper) {
-                    if (typeof(operand.perform) === 'function') operand.perform();
-                    else throw new Error('Cannot evaluate operand; no perform method present on Oper instance.');
-                }
-                else if (!(operand instanceof Value || operand instanceof Coef)) {
-                    throw new Error('Cannot evaluate Oper; one or more operands is not a Value, Oper, or Coef.')
-                }
+            [this.#operand1, this.#operand2].forEach(operand => {
+                if (operand instanceof Oper) operand.evaluate();
             });
+            
+            this.perform();
         }
     }
+
+    get subs() {
+        return (mapping = new Map()) => {
+            if (!(mapping instanceof Map)) throw new Error('Substitution mapping is not a Map.');
+            
+            const [subs_operand1, subs_operand2] = [
+                this.#operand1, this.#operand2
+            ].map(operand => {
+                if (mapping.has(operand)) return mapping.get(operand);
+                else if (operand instanceof Oper) return operand.subs(mapping);
+                else return operand;
+            });
+
+            return new this.constructor(subs_operand1, subs_operand2);
+        }
+    }    
 
     get operand1() {return this.#operand1;}
     get operand2() {return this.#operand2;}
