@@ -6,6 +6,11 @@ export function validateSettings(form_obj, error_locations) {
     if (form_obj.diff_notation === 'frac') form_obj.func_notation = 'implicit';
 
     if (form_obj.sec_ord_roots === 'real_rep') form_obj.sec_ord_b_term = 'rand';
+
+    if (
+        form_obj.diff_initcond === 'yes' && 
+        form_obj.diff_notation === 'frac'
+    ) form_obj.diff_notation === 'prime';
 }
 
 const SOH = { // genSecOrd helpers
@@ -644,7 +649,7 @@ const SOH = { // genSecOrd helpers
                 return subbed.value;
             })
 
-            const curr_entry = [subsScore(y_0_value, d_y_0_value), rand_subs];
+            const curr_entry = [subsScore(y_0_value, d_y_0_value), rand_subs, [y_0_value, d_y_0_value]];
             
             if (ordered_attempts.length > 0) {
                 if (curr_entry[0] <= ordered_attempts[0][0]) ordered_attempts.unshift(curr_entry);
@@ -662,10 +667,197 @@ const SOH = { // genSecOrd helpers
         }
 
         const cutoff = Math.max(1, Math.floor(ordered_attempts.length * (selection_percentile / 100)));
-        const final_subs = H.randFromList(ordered_attempts.slice(0, cutoff))[1];
+        const [final_subs, final_vals] = H.randFromList(ordered_attempts.slice(0, cutoff)).slice(1);
 
         cvals['C1'].value = final_subs.get(cvals['C1']);
         cvals['C2'].value = final_subs.get(cvals['C2']);
+
+        return {
+            'init_y_0': final_vals[0],
+            'init_d_y_0': final_vals[1]
+        };
+    },
+    pickZeroInitConds: function(cvals, y_0_expr, d_y_0_expr) {
+        const exprSubsVal = (C1, C2) => {
+            const subbed = init_expr.subs(new Map([
+                [cvals['C1'], new EH.Int(C1)],
+                [cvals['C2'], new EH.Int(C2)]
+            ]));
+            subbed.evaluate();
+
+            return subbed.value;
+        };
+    
+        // y^{(n)}(0)=aC1 + bC1 + c, below a, b, and c are found via substitution
+        const coef_mtrx = [y_0_expr, d_y_0_expr].map(init_expr => {
+            const c = exprSubsVal(0, 0);
+            const a = exprSubsVal(1, 0) - c;
+            const b = exprSubsVal(0, 1) - c;
+
+            let den_acc = 1;
+            return [a, b, c].map(rational_val => {
+                if (rational_val instanceof EH.Int) {
+                    return [rational_val.value, 1];
+                }
+                else if (rational_val instanceof EH.Frac) {
+                    den_acc *= rational_val.denl;
+                    return [rational_val.num, rational_val.den];
+                }
+            }).map(num_den => num_den[0] * den_acc);
+        });
+
+        const rref_mtrx = LH.matrix_operations.rref(coef_mtrx);
+
+        ['C1', 'C2'].forEach((coef_id, idx) => {
+            const [sol_num, sol_den] = rref_mtrx[idx][2];
+
+            if (sol_num % sol_den === 0) {
+                cvals[coef_id].value = new EH.Int(sol_num / sol_den);
+            }
+            else {
+                cvals[coef_id].value = new EH.Frac(sol_num, sol_den);
+            }
+        });
+
+        return {
+            'init_y_0': new EH.Int(0),
+            'init_d_y_0': new EH.Int(0)
+        };
+    },
+    coef: (int) => Math.abs(int) === 1? String(int).replace('1', '') : String(int),
+    polArrToString: function(pol_arr, variable) {
+        let acc_str = '';
+
+        for (let n = pol_arr.length - 1; n >= 0; n--) {
+            const curr_coef = pol_arr[i];
+            if (
+                (curr_coef instanceof EH.Value) ||
+                (curr_coef instanceof EH.Coef &&
+                    (
+                        curr_coef.has_value || curr_coef.has_symbol
+                    )
+                )
+            ) {
+                let coef_str = curr_coef.toString();
+
+                let curr_term;
+                if (coef_str === '0') curr_term = '';
+                else if (n === 0) {
+                    curr_term = coef_str;
+                }
+                else {
+                    if (coef_str === '1') coef_str = '';
+                    else if (coef_str === '-1') coef_str = '-';
+
+                    curr_term = `${coef_str}${variable}^{${n}}`;
+                }
+
+                if (acc_str !== '' && curr_term.charAt(0) !== '-') {
+                    acc_str += `+${curr_term}`;
+                }
+                else acc_str += curr_term;
+            }
+            else throw new Error('Entry in polynom array is not a Value or determined Coef.');
+        }
+
+        return acc_str? acc_str : '0';
+    },
+    petSumToString: function(pet_sum, variable) {
+        let acc_str = '';
+
+        pet_sum.map(pet_obj => {
+            if (pet_obj.trig_freq.value !== 0) {
+                let freq_coef = pet_obj.trig_freq.toString();
+                if (freq_coef === '1') freq_coef = '';
+                else if (freq_coef === '-1') freq_coef = '-';
+
+                let sin_cos_expr = '';
+                [
+                    ['sin', pet_obj.polynom_s], 
+                    ['cos', pet_obj.polynom_c]
+                ].forEach(func_pol_pair => {
+                    const [func_str, polynom_arr] = func_pol_pair;
+                    let pol_to_str = SOH.polArrToString(polynom_arr, variable);
+
+                    if (pol_to_str === '0') return;
+                    else {
+                        let curr_trig_term;
+                        if (polynom_arr.length === 1) {
+                            if (pol_to_str === '1') pol_to_str = '';
+                            else if (pol_to_str === '-1') pol_to_str = '-';
+
+                            curr_trig_term = `${pol_to_str}\\${func_str}(${freq_coef}${variable})`;
+                        }
+                        else {
+                            curr_trig_term = `(${pol_to_str})\\${func_str}(${freq_coef}${variable})`;
+                        }
+
+                        if (sin_cos_expr !== '' && curr_trig_term.charAt(0) !== '-') {
+                            sin_cos_expr += `+${curr_trig_term}`;
+                        }
+                        else sin_cos_expr += curr_trig_term;
+                    }
+                });
+
+                if (sin_cos_expr === '') return '';
+                else if (pet_obj.exp_freq.value !== 0) {
+                    let exp_coef = pet_obj.exp_freq.toString();
+                    if (exp_coef === '1') exp_coef = '';
+                    else if (exp_coef === '-1') exp_coef = '-';
+
+                    const exp_expr = `e^{${exp_coef}${variable}`;
+                    
+                    const includes_sin = sin_cos_expr.includes('\\sin');
+                    const includes_cos = sin_cos_expr.includes('\\cos');
+
+                    if (includes_sin && includes_cos) {
+                        return `${exp_expr}(${sin_cos_expr})`;
+                    }
+                    else {
+                        const included_trig = includes_sin? '\\sin' : '\\cos';
+                        const [pre_trig, post_trig] = sin_cos_expr.split(included_trig, 2)[0];
+                        const trig_alone = `${included_trig}${post_trig}`;
+
+                        return `${pre_trig}${exp_expr}${trig_alone}`;
+                    }
+                }
+                else return sin_cos_expr;
+            }
+            else {
+                let polynom_str = SOH.polArrToString(pet_obj.polynom_c, variable);
+
+                if (polynom_str === '0') return '';
+                else if (pet_obj.exp_freq.value !== 0) {
+                    let exp_coef = pet_obj.exp_freq.toString();
+                    if (exp_coef === '1') exp_coef = '';
+                    else if (exp_coef === '-1') exp_coef = '-';
+                    
+                    const exp_expr = `e^{${exp_coef}${variable}`;
+
+                    if (pet_obj.polynom_c.length === 1) {
+                        if (polynom_str === '1') polynom_str = '';
+                        else if (polynom_str === '-1') polynom_str = '-';
+
+                        return `${polynom_str}${exp_expr}`;
+                    }
+                    else {
+                        return `${exp_expr}(${polynom_str})`;
+                    }
+                }
+                else return polynom_str;
+            }
+        }).forEach(single_pet_str => {
+            if (
+                acc_str !== '' && 
+                single_pet_str.length > 0 &&
+                single_pet_str.charAt(0) !== '-'
+            ) {
+                acc_str += `+${single_pet_str}`;
+            }
+            else acc_str += single_pet_str;
+        });
+
+        return acc_str? acc_str : '0';
     }
 };
 export default function genSecOrd(settings) {
@@ -678,18 +870,18 @@ export default function genSecOrd(settings) {
         'avoid': (...args) => !SOH.adjustForReso(...args)
     }[settings.sec_ord_reso];
 
-    // search loop to match resonance preference and find clean numbers in both y_p coefs and initial conditions
+    // search loop to match resonance preference and find clean numbers in the y_p coefs
     const resonance_attempts = 2_500;
     const y_p_coef_attempts = 10_000;
     let current_attempts = 0;
-    let char_eq, f_t_pets, y_h_pets, y_p_pets, y_sol_pets, cvals;
+    let char_eq, f_t_pets, y_h_pets, y_p_pets, y_sol_pets, cvals, init_vals;
     while (true) {
         current_attempts++;
 
         char_eq = EH.createCharEq(settings.sec_ord_roots, root_size, allow_b_term);
         y_h_pets = EH.homo_sols[settings.sec_ord_roots](char_eq.roots);
         f_t_pets = EH.forms[settings.force_func_form].und_pet_sum();
-        y_p_pets = f_t_pets.map(pet_obj => SOH.PolExpTrig(pet_obj));
+        y_p_pets = f_t_pets.map(pet_obj => new SOH.PolExpTrig(pet_obj));
         EH.forms[settings.force_func_form].selectPolyCoefs(f_t_pets.length > 1? f_t_pets : f_t_pets[0]);
         
         if (current_attempts < resonance_attempts && !resoCheckAndAdjust(y_h_pets, y_p_pets)) continue;
@@ -703,15 +895,85 @@ export default function genSecOrd(settings) {
 
         y_sol_pets = [...y_h_pets, ...y_p_pets];
         cvals = SOH.getHomoSolCvals(y_h_pets, settings.sec_ord_roots);
-        if (settings['diff_initcond'] === 'yes') {
+        if (settings.diff_initcond === 'yes') {
             const y_0_expr = SOH.petSumAtZero(y_sol_pets);
             const d_y_sol_pets = SOH.diffPetSum(y_sol_pets);
             const d_y_0_expr = SOH.petSumAtZero(d_y_sol_pets);
-            SOH.pickSmallInitConds(cvals, y_0_expr, d_y_0_expr);
+            if (settings.force_zero_inits === 'yes') {
+                init_vals = SOH.pickZeroInitConds(cvals, y_0_expr, d_y_0_expr);
+            }
+            else init_vals = SOH.pickSmallInitConds(cvals, y_0_expr, d_y_0_expr);
         }
         
         break;
     }
+
+    // question and answer string building
+    const [ind_var, dep_var] = settings.diff_eq_vars.split('_');
+    let unk = ind_var;
+
+    let d_unk, dd_unk;
+    if (settings.diff_notation === 'dot') {
+        d_unk = `\\dot{${unk}}`;
+        dd_unk = `\\ddot{${unk}}`;
+    }
+    else if (settings.diff_notation === 'prime') {
+        d_unk = `${unk}'`;
+        dd_unk = `${unk}''`;
+    }
+    else if (settings.diff_notation === 'frac') {
+        d_unk = `\\frac{d${unk}}{d${dep_var}}`;
+        dd_unk = `\\frac{d^{2}}${unk}}{d${dep_var}^{2}}`;
+    }
+
+    if (settings.func_notation === 'explicit') [unk, d_unk, dd_unk] = [
+        unk, d_unk, dd_unk
+    ].map(v => `${v}(${dep_var})`);
+
+    let prompt_lhs = '';
+    [
+        [char_eq.coefs.a, dd_unk],
+        [char_eq.coefs.b, d_unk],
+        [char_eq.coefs.c, unk]
+    ].forEach(coef_vari_pair => {
+        const [coef, vari] = coef_vari_pair;
+
+        let term;
+        if (coef === 0) term = '';
+        else if (Math.abs(coef) === 1) term = `${String(coef).replace('1', '')}${vari}`;
+        else term = `${String(coef)}${vari}`;
+
+        if (prompt_lhs !== '' && term.charAt(0) !== '-') prompt_lhs += `+${term}`;
+        else prompt_lhs += term;
+    });
+    if (prompt_lhs === '') prompt_lhs = '0';
+
+    const prompt_eq = `${prompt_lhs}=${SOH.petSumToString(f_t_pets)}`;
+    let question_str;
+    if (settings.diff_initcond === 'yes') {
+        const [init_unk, init_d_unk] = [
+            [unk, init_vals.init_y_0], 
+            [d_unk, init_vals.init_d_y_0]
+        ].map(unk_val_pair => {
+            const [unk_symbol, unk_val] = unk_val_pair;
+            `${unk_symbol.replace(`(${dep_var})`, '')}(0)=${unk_val.toString()}`;
+        });
+
+        question_str = `${prompt_eq} , \\quad ${init_unk} , \\quad ${init_d_unk}`;
+    }
+    else if (settings.diff_initcond === 'no') {
+        question_str = prompt_eq;
+
+        cvals['C1'].symbol = 'C_{1}';
+        cvals['C2'].symbol = 'C_{2}';
+    }
+
+    const answer_str = `${unk}=${SOH.petSumToString(y_sol_pets)}`;
+
+    return {
+        question: question_str,
+        answer: answer_str
+    };
 }
 
 export const settings_fields = [
@@ -722,7 +984,8 @@ export const settings_fields = [
     'sec_ord_reso',
     'sec_ord_b_term',
     'func_notation',
-    'diff_notation'
+    'diff_notation',
+    'force_zero_inits'
 ];
 
 export const presets = {
