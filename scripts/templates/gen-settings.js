@@ -1409,3 +1409,14 @@ export const sec_ord_b_term = {
     tooltip: 'Should the coefficient of the first derivative term always be zero?',
     prelocked: true
 };
+
+export const force_zero_inits = {
+    type: 'radio_buttons',
+    display_name: 'Force Zero Initials',
+    radio_buttons: [
+        ['yes', `Yes \\(~\\begin{aligned} y(0)&=0 \\\\ y'(0)&=0 \\end{aligned}\\)&nbsp;&nbsp;&nbsp;&nbsp;`],
+        ['no', `No&nbsp; \\(~\\begin{aligned} y(0)&=a \\\\ y'(0)&=b \\end{aligned}\\)&nbsp;&nbsp;&nbsp;&nbsp;`] 
+    ], 
+    tooltip: 'Should the initial values of function and its derivative always be zero?',
+    prelocked: true
+};
