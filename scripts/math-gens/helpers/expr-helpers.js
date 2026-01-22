@@ -94,7 +94,7 @@ export const Unknown = class {
 }
 
 export const Coef = class extends Unknown {
-    #symbol;
+    #symbol; #has_symbol;
     
     constructor(valid_types, value, symbol) {
         if (arguments.length <= 3) {
@@ -106,12 +106,23 @@ export const Coef = class extends Unknown {
                 if (typeof(arguments[2]) === 'string') this.#symbol = arguments[2];
                 else throw new Error('If provided, Coef symbol must be a string.');
             }
-            else this.#symbol = 'C';
         }
         else throw new Error('Coef constructor must recieve 0-3 arguments.');
     }
 
     get symbol() {return this.#symbol;}
+    set symbol(value) {
+        if (this.#has_symbol) {
+            throw new Error('Cannot set Coef symbol because it has already been determined.');
+        }
+        else if (typeof(value) !== 'string') {
+            throw new Error('Failed to set Coef symbol, coef symbol must be a string.');
+        }
+        else {
+            this.#symbol = value;
+            this.#has_symbol = true;
+        }
+    }
 }
 
 export const Oper = class extends Unknown {
