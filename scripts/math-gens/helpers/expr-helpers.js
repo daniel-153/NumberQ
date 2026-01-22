@@ -18,6 +18,10 @@ export const Int = class extends Value {
         }
         else throw new Error('Provided argument to Int constructor is not an integer.');
     }
+
+    get toString() {
+        return () => String(this.value + 0);
+    }
 }
 
 export const Frac = class extends Value {
@@ -39,6 +43,36 @@ export const Frac = class extends Value {
 
     get num() {return this.#num;}
     get den() {return this.#den;}
+
+    get reduce() {
+        return () => {
+            let a = this.#num;
+            let b = this.#den;
+            while (b !== 0) {
+                const t = b;
+                b = a % b;
+                a = t;
+            }
+
+            this.#num /= a;
+            this.#den /= a;
+
+            if (this.#den < 0) {
+                this.#num *= -1;
+                this.#den *= -1;
+            }
+        }
+    }
+
+    get toString() {
+        return () => {
+            this.reduce();
+
+            if (this.#den === 1) return String(this.#num + 0);
+            else if (this.#num < 0) return `-\\frac{${Math.abs(this.#num)}}{${this.#den}`;
+            else return `\\frac{${this.#num + 0}}{${this.#den}`;
+        }
+    }
 }
 
 export const Unknown = class {
@@ -121,6 +155,22 @@ export const Coef = class extends Unknown {
         else {
             this.#symbol = value;
             this.#has_symbol = true;
+        }
+    }
+
+    get has_symbol() {return this.#has_symbol};
+
+    get toString() {
+        return () => {
+            let repr;
+            if (this.has_value) {
+                if (typeof(this.value?.toString) === 'function') repr = this.value.toString();
+                else repr = this.value;
+            }
+            else if (this.#has_symbol) repr = this.#symbol;
+            else repr = this;
+
+            return String(repr)
         }
     }
 }
