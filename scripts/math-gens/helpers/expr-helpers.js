@@ -1,24 +1,32 @@
 export const Value = class {
-    #value;
+    #cargs;
     
-    constructor(value) {
-        if (arguments.length === 1) {
-            this.#value = arguments[0];
+    constructor() {
+        for (let i = 0; i < arguments.length; i++) {
+            if (arguments[i] === Object(arguments[i])) {
+                throw new Error('Value constructor must only recieve primitive type arguments.');
+            }
         }
-        else throw new Error('Value constructor must recieve a single argument.');
+        
+        this.#cargs = Object.freeze(arguments);
     }
 
-    get value() {return structuredClone(this.#value);}
+    get cargs() { return this.#cargs; }
+    get clone() {
+        return () => new this.constructor(...this.#cargs);
+    }
 }
 
 export const Int = class extends Value {
     constructor(value) {
-        if (Number.isSafeInteger(arguments[0])) {
-            super(...arguments);
-        }
+        if (
+            arguments.length === 1 &&
+            Number.isSafeInteger(arguments[0])
+        ) super(...arguments);
         else throw new Error('Provided argument to Int constructor is not an integer.');
     }
 
+    get value() {return this.cargs[0];}
     get toString() {
         return () => String(this.value + 0);
     }
@@ -34,9 +42,9 @@ export const Frac = class extends Value {
             Number.isSafeInteger(arguments[1]) &&
             arguments[1] !== 0
         ) {
-            super({num: arguments[0], den: arguments[1]});
-            this.#num = arguments[0];
-            this.#den = arguments[1];
+            super(...arguments);
+            this.#num = this.cargs[0];
+            this.#den = this.cargs[1];
         }
         else throw new Error('Frac constructor must recieve two integer arguments.');
     }
@@ -46,7 +54,7 @@ export const Frac = class extends Value {
 
     get reduce() {
         return () => {
-            let a = this.#num;
+            let a = this.#num;;
             let b = this.#den;
             while (b !== 0) {
                 const t = b;
@@ -89,9 +97,6 @@ export const Unknown = class {
             }
             else this.#valid_types = [Object, 'number', 'string', 'boolean', 'undefined'];
             
-            const proposed_value = (arguments.length >= 2)? arguments[1] : undefined;
-
-            this.#has_value = (arguments.length >= 2);
             this.#typeIsValid = function(value) {
                 return this.#valid_types.some(type_indicator => (
                         typeof(type_indicator) === 'function' && 
@@ -103,13 +108,22 @@ export const Unknown = class {
                 ))
             }
 
-            if (this.#typeIsValid(proposed_value)) this.#value = proposed_value;
-            else throw new Error('Proposed value is not in valid types.')
+            if (arguments.length >= 2) {
+                if (this.#typeIsValid(arguments[1])) {
+                    this.#value = arguments[1];
+                    this.#has_value = true;
+                }
+                else throw new Error('Proposed value is not in valid types.')
+            }
+            else this.#has_value = false;       
         }
         else throw new Error('Unknown constructor must recieve 0-2 arguments.');
     }
 
-    get value() {return structuredClone(this.#value);}
+    get value() {
+        if (this.#value instanceof Value) return this.#value.clone();
+        else return structuredClone(this.#value);
+    }
     set value(value) {
         if (this.#has_value) {
             throw new Error('Cannot set unknown value because it has already been determined.')
@@ -132,9 +146,9 @@ export const Coef = class extends Unknown {
     
     constructor(valid_types, value, symbol) {
         if (arguments.length <= 3) {
-            const proposed_types = (arguments.length >= 1)? arguments[0] : [Value, 'undefined'];
-            const proposed_value = (arguments.length >= 2)? arguments[1] : undefined;
-            super(proposed_types, proposed_value);
+            if (arguments.length >= 2) super(arguments[0], arguments[1]);
+            else if (arguments.length === 1) super(arguments[0]);
+            else super([Value]);
 
             if (arguments.length >= 3) {
                 if (typeof(arguments[2]) === 'string') this.#symbol = arguments[2];
@@ -206,7 +220,7 @@ export const Oper = class extends Unknown {
                 if (operand instanceof Oper) operand.evaluate();
             });
             
-            this.perform();
+            super.value = this.perform();
         }
     }
 
@@ -229,18 +243,19 @@ export const Oper = class extends Unknown {
     get operand1() {return this.#operand1;}
     get operand2() {return this.#operand2;}
 
+    get value() { return super.value; }
     set value(_) {
         throw new Error('Cannot set value on an Oper object.')
     }
 
-    static resolveCoefOperands(...operands) {
+    static resolveOperands(...operands) {
         return operands.map(operand => {
-            if (operand instanceof Coef) {
+            if (operand instanceof Unknown) {
                 if (operand.has_value) return operand.value;
-                else throw new Error('Could not resolve Coef operands; a Coef does not yet have a value.')
+                else throw new Error('Could not resolve operands; Unknown operand does not yet have a value.');
             }
             else return operand;
-        })
+        });
     }
 }
 
@@ -252,31 +267,31 @@ export const Sum = class extends Oper {
 
     get perform() {
         return () => {
-            const [operand1, operand2] = Oper.resolveCoefOperands(this.operand1, this.operand2);
+            const [operand1, operand2] = Oper.resolveOperands(this.operand1, this.operand2);
 
             if (
                 operand1 instanceof Int && 
                 operand2 instanceof Int
             ) {
-                this.value = new Int(operand1.value + operand2.value);
+                return new Int(operand1.value + operand2.value);
             }
             else if (
                 operand1 instanceof Int &&
                 operand2 instanceof Frac
             ) {
-                this.value = new Frac(operand1.value*operand2.den + operand2.num, operand2.den);
+                return new Frac(operand1.value*operand2.den + operand2.num, operand2.den);
             }
             else if (
                 operand1 instanceof Frac &&
                 operand2 instanceof Int
             ) {
-                this.value = new Frac(operand2.value*operand1.den + operand1.num, operand1.den);
+                return new Frac(operand2.value*operand1.den + operand1.num, operand1.den);
             }
             else if (
                 operand1 instanceof Frac && 
                 operand2 instanceof Frac
             ) {
-                this.value = new Frac(operand1.value*operand2.den + operand2.value*operand1.den, operand1.den*operand2.den);
+                return new Frac(operand1.value*operand2.den + operand2.value*operand1.den, operand1.den*operand2.den);
             }
             else throw new Error('Could not perform Sum; unevaluated or invalid operand types.');
         }
@@ -291,31 +306,31 @@ export const Mul = class extends Oper {
 
     get perform() {
         return () => {
-            const [operand1, operand2] = Oper.resolveCoefOperands(this.operand1, this.operand2);
+            const [operand1, operand2] = Oper.resolveOperands(this.operand1, this.operand2);
 
             if (
                 operand1 instanceof Int && 
                 operand2 instanceof Int
             ) {
-                this.value = new Int(operand1.value * operand2.value);
+                return new Int(operand1.value * operand2.value);
             }
             else if (
                 operand1 instanceof Int &&
                 operand2 instanceof Frac
             ) {
-                this.value = new Frac(operand1.value * operand2.num, operand2.den);
+                return new Frac(operand1.value * operand2.num, operand2.den);
             }
             else if (
                 operand1 instanceof Frac &&
                 operand2 instanceof Int
             ) {
-                this.value = new Frac(operand2.value * operand1.num, operand1.den);
+                return new Frac(operand2.value * operand1.num, operand1.den);
             }
             else if (
                 operand1 instanceof Frac && 
                 operand2 instanceof Frac
             ) {
-                this.value = new Frac(operand1.num * operand2.num, operand1.den*operand2.den);
+                return new Frac(operand1.num * operand2.num, operand1.den*operand2.den);
             }
             else throw new Error('Could not perform Mul; unevaluated or invalid operand types.');
         }
@@ -330,7 +345,7 @@ export const Pow = class extends Oper {
 
     get perform() {
         return () => {
-            const [base, exp] = Oper.resolveCoefOperands(this.operand1, this.operand2);
+            const [base, exp] = Oper.resolveOperands(this.operand1, this.operand2);
 
             if (
                 (base instanceof Int || base instanceof Frac) &&
@@ -348,7 +363,7 @@ export const Pow = class extends Oper {
                 }
                 accum.evaluate();
 
-                this.value = accum.value;
+                return accum.value;
             }
             else throw new Error('Could not perform Pow; unevaluated or invalid operand types.');
         }
