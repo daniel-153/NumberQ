@@ -77,8 +77,8 @@ export const Frac = class extends Value {
             this.reduce();
 
             if (this.#den === 1) return String(this.#num + 0);
-            else if (this.#num < 0) return `-\\frac{${Math.abs(this.#num)}}{${this.#den}`;
-            else return `\\frac{${this.#num + 0}}{${this.#den}`;
+            else if (this.#num < 0) return `-\\frac{${Math.abs(this.#num)}}{${this.#den}}`;
+            else return `\\frac{${this.#num + 0}}{${this.#den}}`;
         }
     }
 }
@@ -216,6 +216,8 @@ export const Oper = class extends Unknown {
 
     get evaluate() {
         return () => {
+            if (this.has_value) return;
+            
             [this.#operand1, this.#operand2].forEach(operand => {
                 if (operand instanceof Oper) operand.evaluate();
             });
@@ -345,7 +347,7 @@ export const Pow = class extends Oper {
 
     get perform() {
         return () => {
-            const [base, exp] = Oper.resolveOperands(this.operand1, this.operand2);
+            let [base, exp] = Oper.resolveOperands(this.operand1, this.operand2);
 
             if (
                 (base instanceof Int || base instanceof Frac) &&
