@@ -123,7 +123,7 @@ const SOH = { // genSecOrd helpers
             }
         },
         'et_alone': {
-            und_pet_sum: () => new [SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 exp_freq: new EH.Int(H.randIntExcept(-4, 4, 0))
             })],
             selectPolyCoefs: function(pet_obj) {
@@ -136,9 +136,9 @@ const SOH = { // genSecOrd helpers
             }
         },
         'sin_alone': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 trig_freq: new EH.Int(H.randInt(1, 3))
-            }),
+            })],
             selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_c[0].value = new EH.Int(0);
                 
@@ -150,10 +150,10 @@ const SOH = { // genSecOrd helpers
                 }
             }
         },
-        'sin_alone': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+        'cos_alone': {
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 trig_freq: new EH.Int(H.randInt(1, 3))
-            }),
+            })],
             selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_s[0].value = new EH.Int(0);
                 
@@ -166,10 +166,10 @@ const SOH = { // genSecOrd helpers
             }
         },
         'tn_alone': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 degree: new EH.Int(H.randInt(1, 2))
-            }),
-            selectCoefs: function(pet_obj) {
+            })],
+            selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_c[pet_obj.degree.value].value = new EH.Int(H.randIntExcept(-3, 3, 0));
 
                 for (let i = 0; i < pet_obj.degree.value; i++) {
@@ -178,31 +178,31 @@ const SOH = { // genSecOrd helpers
             }
         },
         'e_and_sin': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 exp_freq: new EH.Int(H.randIntExcept(-2, 2, 0)),
                 trig_freq: new EH.Int(H.randInt(1, 2))
-            }),
-            selectCoefs: function(pet_obj) {
+            })],
+            selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_c[0].value = new EH.Int(0);
                 pet_obj.polynom_s[0].value = new EH.Int(1);
             }
         },
-        'e_and_sin': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+        'e_and_cos': {
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 exp_freq: new EH.Int(H.randIntExcept(-2, 2, 0)),
                 trig_freq: new EH.Int(H.randInt(1, 2))
-            }),
-            selectCoefs: function(pet_obj) {
+            })],
+            selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_s[0].value = new EH.Int(0);
                 pet_obj.polynom_c[0].value = new EH.Int(1);
             }
         },
         'tn_and_e': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 exp_freq: new EH.Int(H.randIntExcept(-3, 3, 0)),
                 degree: new EH.Int(H.randInt(1, 2))
-            }),
-            selectCoefs: function(pet_obj) {
+            })],
+            selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_c[pet_obj.degree.value].value = new EH.Int(1);
 
                 for (let i = 0; i < pet_obj.degree.value; i++) {
@@ -211,11 +211,11 @@ const SOH = { // genSecOrd helpers
             }
         },
         'tn_and_sin': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 trig_freq: new EH.Int(H.randInt(1, 3)),
                 degree: new EH.Int(H.randInt(1, 2))
-            }),
-            selectCoefs: function(pet_obj) {
+            })],
+            selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_c[pet_obj.degree.value].value = new EH.Int(0);
                 pet_obj.polynom_s[pet_obj.degree.value].value = new EH.Int(1);
 
@@ -226,11 +226,11 @@ const SOH = { // genSecOrd helpers
             }
         },
         'tn_and_cos': {
-            und_pet_sum: () => new SOH.PolExpTrig({
+            und_pet_sum: () => [new SOH.PolExpTrig({
                 trig_freq: new EH.Int(H.randInt(1, 3)),
                 degree: new EH.Int(H.randInt(1, 2))
-            }),
-            selectCoefs: function(pet_obj) {
+            })],
+            selectPolyCoefs: function(pet_obj) {
                 pet_obj.polynom_s[pet_obj.degree.value].value = new EH.Int(0);
                 pet_obj.polynom_c[pet_obj.degree.value].value = new EH.Int(1);
 
@@ -250,16 +250,17 @@ const SOH = { // genSecOrd helpers
 
                 // check if terms resonate, adjust or break according to request
                 if (
-                    (
-                        y_p_pet.polynom_c.some(entry => entry.value !== 0) ||
-                        y_p_pet.polynom_s.some(entry => entry.value !== 0)
+                    ( 
+                        y_p_pet.polynom_c.some(entry => entry.value?.value !== 0) ||
+                        y_p_pet.polynom_s.some(entry => entry.value?.value !== 0)
                     ) &&
                     (
-                        y_h_pet.polynom_c.some(entry => entry.value !== 0) ||
-                        y_h_pet.polynom_s.some(entry => entry.value !== 0)
+                        y_h_pet.polynom_c.some(entry => entry.value?.value !== 0) ||
+                        y_h_pet.polynom_s.some(entry => entry.value?.value !== 0)
                     ) &&
                     (
-                        y_p_pet.exp_freq === y_h_pet.exp_freq && y_p_pet.trig_freq === y_h_pet.trig_freq
+                        y_p_pet.exp_freq.value === y_h_pet.exp_freq.value && 
+                        y_p_pet.trig_freq.value === y_h_pet.trig_freq.value
                     ) &&
                     (
                         y_h_pet.degree.value >= y_p_pet.degree.value
@@ -269,9 +270,12 @@ const SOH = { // genSecOrd helpers
                     else {
                         reso_found = true;
                         const degree_increase = (y_h_pet.degree.value - y_p_pet.degree.value) + 1;
-                        y_p_pet.degree.value += degree_increase;
+                        y_p_pet.degree = new EH.Int(y_p_pet.degree.value + degree_increase);
 
-                        const added_zero_terms = new Array(degree_increase).fill(new EH.Int(0));
+                        const added_zero_terms = Array.from(
+                            {length: degree_increase},
+                            () => new EH.Coef([EH.Int], new EH.Int(0))
+                        );
                         y_p_pet.polynom_s = added_zero_terms.concat(y_p_pet.polynom_s);
                         y_p_pet.polynom_c = added_zero_terms.concat(y_p_pet.polynom_c);
                     }
@@ -291,7 +295,7 @@ const SOH = { // genSecOrd helpers
             const sum_poly = [];
             for (let i = 0; i < longer_poly.length; i++) {
                 const long_term = longer_poly[i];
-                const short_term = i < shorter_poly.length? shorter_poly[i] : new EH.Int(0);
+                const short_term = i < shorter_poly.length? shorter_poly[i] : new EH.Coef([EH.Int], new EH.Int(0));;
                 
                 sum_poly.push(new EH.Sum(short_term, long_term));
             }
@@ -351,15 +355,17 @@ const SOH = { // genSecOrd helpers
     },
     normPolyLens: function(poly_1, poly_2) {
         if (poly_1.length > poly_2.length) {
-            return [poly_1, poly_2.concat(new Array(poly_1.length - poly_2.length).fill(new EH.Int(0)))];
+            const padding = Array.from({length: poly_1.length - poly_2.length}, () => new EH.Coef([EH.Int], new EH.Int(0)));
+            return [poly_1, poly_2.concat(padding)];
         }
         else {
-            return [poly_1.concat(new Array(poly_2.length - poly_1.length).fill(new EH.Int(0))), poly_2];
+            const padding = Array.from({length: poly_2.length - poly_1.length}, () => new EH.Coef([EH.Int], new EH.Int(0)));
+            return [poly_1.concat(padding), poly_2];
         }
     },
     determineCoefs: function(char_eq, y_p_pets, d_y_p_pets, dd_y_p_pets, f_t_pets) {
         // compute all scaled pet objs on the lhs (when y_p is substituted into the diff-eq)
-        let all_lhs_pets = [y_p_pets, d_y_p_pets, dd_y_p_pets].map((pet_sum, term_idx) => {
+        let all_lhs_pets = [dd_y_p_pets, d_y_p_pets, y_p_pets].map((pet_sum, term_idx) => {
             return pet_sum.map(pet_obj => {
                 const clone_pet_obj = new SOH.PolExpTrig(pet_obj);
 
@@ -378,13 +384,13 @@ const SOH = { // genSecOrd helpers
         const equal_polynoms = [];
         f_t_pets.forEach(f_t_pet => {
             const matching_lhs_idxs = [];
-            let accum_lhs_c_poly = [new EH.Int(0)];
-            let accum_lhs_s_poly = [new EH.Int(0)];
+            let accum_lhs_c_poly = [new EH.Coef([EH.Int], new EH.Int(0))];
+            let accum_lhs_s_poly = [new EH.Coef([EH.Int], new EH.Int(0))];
 
             all_lhs_pets.forEach((lhs_pet, lhs_idx) => {
                 if (
-                    lhs_pet.trig_freq === f_t_pet.trig_freq &&
-                    lhs_pet.exp_freq === f_t_pet.trig_freq
+                    lhs_pet.trig_freq.value === f_t_pet.trig_freq.value &&
+                    lhs_pet.exp_freq.value === f_t_pet.exp_freq.value
                 ) {
                     matching_lhs_idxs.push(lhs_idx);
                     accum_lhs_c_poly = SOH.polynom_ops.add(accum_lhs_c_poly, lhs_pet.polynom_c);
@@ -402,8 +408,8 @@ const SOH = { // genSecOrd helpers
 
         // remaining polynomials after matching must be equal to zero
         all_lhs_pets.forEach(remaining_pet => equal_polynoms.push(
-            SOH.normPolyLens(remaining_pet.polynom_c, [new EH.Int(0)]),
-            SOH.normPolyLens(remaining_pet.polynom_s, [new EH.Int(0)])
+            SOH.normPolyLens(remaining_pet.polynom_c, [new EH.Coef([EH.Int], new EH.Int(0))]),
+            SOH.normPolyLens(remaining_pet.polynom_s, [new EH.Coef([EH.Int], new EH.Int(0))])
         ));
 
         // dynamically extract and pad each row to create the matrix representing the system
@@ -475,7 +481,7 @@ const SOH = { // genSecOrd helpers
                         });
                     }
 
-                    curr_row.push(shift_term.value);
+                    curr_row.push(-shift_term.value);
                     coef_mtrx.push(curr_row);
                 }
             }
@@ -796,7 +802,7 @@ export default function genSecOrd(settings) {
 
     const resoCheckAndAdjust = {
         'prefer': SOH.adjustForReso, 
-        'allow': () => true, 
+        'allow': (...args) => { SOH.adjustForReso(...args); return true; }, 
         'avoid': (...args) => !SOH.adjustForReso(...args)
     }[settings.sec_ord_reso];
 
@@ -909,7 +915,6 @@ export default function genSecOrd(settings) {
         question: question_str,
         answer: answer_str
     }))
-
     return {
         question: question_str,
         answer: answer_str
