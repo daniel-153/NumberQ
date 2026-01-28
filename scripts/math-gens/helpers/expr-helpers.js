@@ -398,7 +398,7 @@ export const ArrayLikeExpr = class {
         
         if (arguments.length >= 2) {
             for (let i = 1; i < arguments.length; i++) {
-                if (this.#typeIsValid(arguments[i])) this[i] = arguments[i];
+                if (this.#typeIsValid(arguments[i])) this[i - 1] = arguments[i];
                 else throw new Error(`Provided ArrayLikeExpr arg at idx[${i}] is not in valid types.`);
             }
             this.#length = arguments.length - 1;
@@ -499,6 +499,7 @@ export const PolynomArray = class extends ArrayLikeExpr {
         for (let n = 1; n < polynom_arr.length; n++) {
             diffed_poly.push(new Mul(new Int(n), polynom_arr[n]));
         }
+        if (diffed_poly.length == 0) diffed_poly.push(new Coef([Int], new Int(0)));
 
         return new PolynomArray(...diffed_poly);
     }
@@ -537,7 +538,8 @@ export const PolExpTrig = class {
                     }
                     else this.#pet_values[pet_value] = new PolynomArray(...Array.from(
                         {length: this.#pet_values.degree.value + 1},
-                        () => new Coef([Int, Frac])
+                        (this.#pet_values.trig_freq.value === 0 && pet_value === 'polynom_s')? 
+                        (() => new Coef([Int, Frac], new Int(0))) : (() => new Coef([Int, Frac]))
                     ));
                 });
             }
