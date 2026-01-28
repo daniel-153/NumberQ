@@ -642,6 +642,31 @@ export const PolExpTrig = class {
     exprAtZero() {
         return this.#pet_values.polynom_c.exprAtZero();
     }
+
+    static diff(pet_obj) {
+        if (pet_obj instanceof PolExpTrig) {
+            return new PolExpTrig({
+                exp_freq: pet_obj.exp_freq,
+                trig_freq: pet_obj.trig_freq,
+                degree: pet_obj.degree,
+                polynom_c: PolynomArray.add(
+                    PolynomArray.scale(pet_obj.polynom_c, pet_obj.exp_freq),
+                    PolynomArray.add(
+                        PolynomArray.diff(pet_obj.polynom_c),
+                        PolynomArray.scale(pet_obj.polynom_s, new Mul(new Int(-1), pet_obj.trig_freq))
+                    )
+                ),
+                polynom_s: PolynomArray.add(
+                    PolynomArray.scale(pet_obj.polynom_s, new Mul(new Int(-1), pet_obj.exp_freq)),
+                    PolynomArray.add(
+                        PolynomArray.scale(PolynomArray.diff(pet_obj.polynom_s), new Int(-1)),
+                        PolynomArray.scale(pet_obj.polynom_c, new Mul(new Int(-1), pet_obj.trig_freq))
+                    )
+                )
+            });
+        }
+        else throw new Error('PolExpTrig.diff can only be applied to a PolExpTrig instance.');
+    }
 }
 
 export const PolExpTrigArray = class extends ArrayLikeExpr {
@@ -659,5 +684,16 @@ export const PolExpTrigArray = class extends ArrayLikeExpr {
             acc_expr = new Sum(acc_expr, this[i].exprAtZero());
         }
         return acc_expr;
+    }
+
+    static diff(pet_obj_arr) {
+        if (pet_obj_arr instanceof PolExpTrigArray) {
+            const diffed_pets = [];
+            for (let i = 0; i < pet_obj_arr.length; i++) {
+                diffed_pets.push(PolExpTrig.diff(pet_obj_arr[i]));
+            }
+            return new PolExpTrigArray(...diffed_pets);
+        }
+        else throw new Error('PolExpTrigArray.diff can only be applied to a PolExpTrigArray instance.');
     }
 }
