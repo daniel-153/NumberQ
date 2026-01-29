@@ -655,13 +655,13 @@ export const PolExpTrig = class {
                     PolynomArray.scale(pet_obj.polynom_c, pet_obj.exp_freq),
                     PolynomArray.add(
                         PolynomArray.diff(pet_obj.polynom_c),
-                        PolynomArray.scale(pet_obj.polynom_s, new Mul(new Int(-1), pet_obj.trig_freq))
+                        PolynomArray.scale(pet_obj.polynom_s, pet_obj.trig_freq)
                     )
                 ),
                 polynom_s: PolynomArray.add(
-                    PolynomArray.scale(pet_obj.polynom_s, new Mul(new Int(-1), pet_obj.exp_freq)),
+                    PolynomArray.scale(pet_obj.polynom_s, pet_obj.exp_freq),
                     PolynomArray.add(
-                        PolynomArray.scale(PolynomArray.diff(pet_obj.polynom_s), new Int(-1)),
+                        PolynomArray.diff(pet_obj.polynom_s),
                         PolynomArray.scale(pet_obj.polynom_c, new Mul(new Int(-1), pet_obj.trig_freq))
                     )
                 )
