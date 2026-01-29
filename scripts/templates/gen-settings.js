@@ -1356,9 +1356,7 @@ export const force_func_form = {
         ['tn_alone','Ct^{n}','radio-math'],
         ['e_and_sin','e^{\\lambda t}\\sin(\\omega t)','radio-math'],
         ['e_and_cos','e^{\\lambda t}\\cos(\\omega t)','radio-math'],
-        ['tn_and_e','t^{n}e^{\\lambda t}','radio-math'],
-        ['tn_and_sin','t^{n}\\sin(\\omega t)','radio-math'],
-        ['tn_and_cos','t^{n}\\cos(\\omega t)','radio-math']
+        ['tn_and_e','t^{n}e^{\\lambda t}','radio-math']
     ],
     tooltip: 'What form should the forcing function have?'
 };
