@@ -162,36 +162,6 @@ const SOH = { // genSecOrd helpers
                     pet_obj.polynom_c[i].value = new EH.Int(0);
                 }
             }
-        },
-        'tn_and_sin': {
-            undPetObj: () => new EH.PolExpTrig({
-                trig_freq: new EH.Int(H.randInt(1, 3)),
-                degree: new EH.Int(H.randInt(1, 2))
-            }),
-            selectPolyCoefs: function(pet_obj) {
-                pet_obj.polynom_c[pet_obj.degree.value].value = new EH.Int(0);
-                pet_obj.polynom_s[pet_obj.degree.value].value = new EH.Int(1);
-
-                for (let i = 0; i < pet_obj.degree.value; i++) {
-                    pet_obj.polynom_c[i].value = new EH.Int(0);
-                    pet_obj.polynom_s[i].value = new EH.Int(0);
-                }
-            }
-        },
-        'tn_and_cos': {
-            undPetObj: () => new EH.PolExpTrig({
-                trig_freq: new EH.Int(H.randInt(1, 3)),
-                degree: new EH.Int(H.randInt(1, 2))
-            }),
-            selectPolyCoefs: function(pet_obj) {
-                pet_obj.polynom_s[pet_obj.degree.value].value = new EH.Int(0);
-                pet_obj.polynom_c[pet_obj.degree.value].value = new EH.Int(1);
-
-                for (let i = 0; i < pet_obj.degree.value; i++) {
-                    pet_obj.polynom_s[i].value = new EH.Int(0);
-                    pet_obj.polynom_c[i].value = new EH.Int(0);
-                }
-            }
         }
     },
     createCharEq: function(type, allow_b_term, reso_pref, forcing_pet) {
@@ -324,7 +294,7 @@ const SOH = { // genSecOrd helpers
 
         return char_eq;
     },
-    adjustedForReso: function(y_p_pet, y_h_pet) {
+    adjustedForReso: function(y_p_pet, y_h_pet, forcing_pet) {
         if (
             y_h_pet instanceof EH.PolExpTrigArray &&
             y_h_pet.length === 2 &&
@@ -334,13 +304,13 @@ const SOH = { // genSecOrd helpers
                 y_h_pet[0].exp_freq.value === y_p_pet.exp_freq.value &&
                 y_h_pet[0].trig_freq.value === y_p_pet.trig_freq.value
             ) {
-                return SOH.adjustedForReso(y_p_pet, y_h_pet[0]);
+                return SOH.adjustedForReso(y_p_pet, y_h_pet[0], forcing_pet);
             }
             else if (
                 y_h_pet[1].exp_freq.value === y_p_pet.exp_freq.value &&
                 y_h_pet[1].trig_freq.value === y_p_pet.trig_freq.value
             ) {
-                return SOH.adjustedForReso(y_p_pet, y_h_pet[1]);
+                return SOH.adjustedForReso(y_p_pet, y_h_pet[1], forcing_pet);
             }
             else return y_p_pet;
         }
@@ -351,12 +321,24 @@ const SOH = { // genSecOrd helpers
             if (
                 y_h_pet.exp_freq.value === y_p_pet.exp_freq.value && 
                 y_h_pet.trig_freq.value === y_p_pet.trig_freq.value &&
-                y_h_pet.degree.value >= y_p_pet.degree.value
-            ) return new EH.PolExpTrig({
-                exp_freq: y_p_pet.exp_freq,
-                trig_freq: y_p_pet.trig_freq,
-                degree: new EH.Int(y_h_pet.degree.value + 1)
-            });
+                y_p_pet.degree.value < forcing_pet.degree.value + y_h_pet.degree.value + 1
+            ) {
+                const adjusted_pet = new EH.PolExpTrig({
+                    exp_freq: y_p_pet.exp_freq,
+                    trig_freq: y_p_pet.trig_freq,
+                    degree: new EH.Int(forcing_pet.degree.value + y_h_pet.degree.value + 1)
+                });
+
+                const deg_increase = adjusted_pet.degree.value - y_p_pet.degree.value;
+                for (let i = 0; i < deg_increase; i++) {
+                    adjusted_pet.polynom_c[i].value = new EH.Int(0);
+                    if (adjusted_pet.trig_freq.value !== 0) {
+                        adjusted_pet.polynom_s[i].value = new EH.Int(0);
+                    }
+                }
+
+                return adjusted_pet;
+            } 
             else return y_p_pet;
         }   
         else throw new Error('Invalid forcing pet or y_p pet in resonance adjustment.');
@@ -484,7 +466,7 @@ const SOH = { // genSecOrd helpers
                     curr_coef = coefs_iter.next().value;
                     col_idx++;
                 }
-                col_offset += (col_idx - row_idx);
+                col_offset = col_idx - row_idx;
 
                 if (col_idx === seen_coefs.size) { // loop terminated on zero entry prior to augment col
                     if (curr_mtrx_row[col_idx][0]/curr_mtrx_row[col_idx][1] === 0) break;
@@ -709,14 +691,8 @@ export default function genSecOrd(settings) {
         exp_freq: forcing_pet.exp_freq, 
         trig_freq: forcing_pet.trig_freq, 
         degree: forcing_pet.degree
-    }), homo_sol);
-    try {
-        SOH.determineCoefs(y_p_pet, forcing_pet, char_eq);
-    } catch (error) {
-        console.log('---------------------------------------------')
-        console.log(char_eq.roots)
-        throw new Error(error);
-    }
+    }), homo_sol, forcing_pet);
+    SOH.determineCoefs(y_p_pet, forcing_pet, char_eq);
 
     let y_sol_petarr;
     if (homo_sol instanceof EH.PolExpTrigArray) {
