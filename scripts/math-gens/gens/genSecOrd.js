@@ -586,7 +586,7 @@ const SOH = { // genSecOrd helpers
                 }
             });
 
-            return num_den_pairs.map(([num, den]) => num * (den_acc / den));
+            return num_den_pairs.map(([num, den], idx) => num * (den_acc / den) * (idx === 2? -1 : 1));
         });
 
         const rref_mtrx = LH.matrix_operations.rref(coef_mtrx);
@@ -668,11 +668,17 @@ const SOH = { // genSecOrd helpers
                 return `${unk_symbol.replace(`(${var_symbols.time_var})`, '')}(0)=${unk_val.toString()}`;
             });
 
-            return `, \\quad ${init_unk} , ~ ${init_d_unk}`;
+            return `${init_unk} , ~ ${init_d_unk}`;
         }
         else if (settings.diff_initcond === 'no') {
             return '';
         } 
+    },
+    formatPrompt: function(prompt_eq, init_addon, settings) {
+        if (settings.diff_initcond === 'no' || init_addon.length === 0) return prompt_eq;
+        else {
+            return `\\begin{array}{c} ${prompt_eq}, \\\\ ${init_addon} \\end{array}`;
+        }
     }
 };
 export default function genSecOrd(settings) {
@@ -717,7 +723,7 @@ export default function genSecOrd(settings) {
     const var_symbols = SOH.buildVarSymbols(settings);
     const prompt_eq = SOH.buildPromptEq(char_eq, var_symbols, forcing_pet);
     const init_addon = SOH.buildInitConds(settings, var_symbols, init_y, init_d_y);
-    const question_str = prompt_eq + init_addon;
+    const question_str = SOH.formatPrompt(prompt_eq, init_addon, settings);
     const answer_str = SOH.buildAnswerEq(y_sol_petarr, var_symbols);
     
     return {
