@@ -293,7 +293,7 @@ export const Sum = class extends Oper {
                 operand1 instanceof Frac && 
                 operand2 instanceof Frac
             ) {
-                return new Frac(operand1.value*operand2.den + operand2.value*operand1.den, operand1.den*operand2.den);
+                return new Frac(operand1.num*operand2.den + operand2.num*operand1.den, operand1.den*operand2.den);
             }
             else throw new Error('Could not perform Sum; unevaluated or invalid operand types.');
         }
