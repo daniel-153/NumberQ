@@ -167,24 +167,40 @@ def attempt_known_angle_label_parse(label_tex_str, sorted_labels_dict, angle_nam
     else:
         raise Exception(f"Known angle label not parse-able or is invalid: '{label_tex_str}'")
     
-def get_diffed_var(var_str, diff_type): # built for SysDiff
-    is_as_func = '(t)' in var_str
-    var_str = var_str.replace('(t)', '', 1)
+def get_diffed_var(var_str, diff_type, order = 1, time_var = "t"):
+    if not isinstance(var_str, str) or not isinstance(time_var, str):
+        raise Exception("Diff variables must be of type str")
+    if not isinstance(order, int) or not order > 0:
+        raise Exception("Diff order must be a postive integer")
     
-    if diff_type == 'prime':
-        diffed = f"{var_str}'"
-    elif diff_type == 'frac':
-        diffed = f"\\frac{{d{var_str}}}{{dt}}"
-    elif diff_type == 'dot':
-        if "_{" in var_str:
-            diffed = f"\\dot{{{var_str.split("_")[0]}}}_{var_str.split("_")[1]}"
+    is_as_func = f"({time_var})" in var_str
+    var_str = var_str.replace(f"({time_var})", "", 1)
+    if diff_type == "prime":
+        if order < 4:
+            rep_prime = "'" * order
+            diffed = f"{var_str}{rep_prime}"
         else:
-            diffed = f"\\dot{{{var_str}}}"
+            diffed = f"{var_str}^{{({order})}}"
+    elif diff_type == "frac":
+        if order == 1:
+            diffed = f"\\frac{{d{var_str}}}{{d{time_var}}}"
+        else:
+            diffed = f"\\frac{{d^{{{order}}}{var_str}}}{{d{time_var}^{{{order}}}}}"
+    elif diff_type == "dot":
+        if order <= 2:
+            sec_d = "d" if order == 2 else ""
+            if "_{" in var_str:
+                bef_script, in_script = var_str.split("_", 1)
+                diffed = f"\\{sec_d}dot{{{bef_script}}}_{in_script}"
+            else:
+                diffed = f"\\{sec_d}dot{{{var_str}}}"
+        else: 
+            raise Exception(f"dot diff type can only be formatted for order 1 or 2")
     else:
         raise Exception(f"Cannot format unknown diff type: '{diff_type}'")
     
-    if is_as_func and diff_type != 'frac': 
-        diffed += '(t)'
+    if is_as_func and diff_type != "frac": 
+        diffed += f"({time_var})"
 
     return diffed
 
