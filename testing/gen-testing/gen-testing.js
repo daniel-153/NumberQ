@@ -327,6 +327,7 @@ export const testing_rates = Object.freeze({
     "genPolArith": 36745.73634629745,
     "genPyTheo": 76373.2062168,
     "genRatEx": 56564.46306179201,
+    "genSecOrd": 39386.356218,
     "genSimSqrt": 176953.811188,
     "genSpTri": 62536.0956987,
     "genSysDiff": 12443.5715096,
