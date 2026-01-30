@@ -164,7 +164,8 @@ const SOH = { // genSecOrd helpers
             }
         }
     },
-    createCharEq: function(type, allow_b_term, reso_pref, forcing_pet) {
+    createCharEq: function(type, b_term_pref, reso_pref, forcing_pet) {
+        const allow_b_term = (b_term_pref === 'zero')? false : true;
         const root_size = {'real_dis': 6, 'real_rep': 8, 'complex': 4}[type];
         const char_eq = {
             coefs: {a: 1, b: null, c: null},
@@ -482,6 +483,31 @@ const SOH = { // genSecOrd helpers
         }
         free_coefs.forEach(coef => coef.value = new EH.Int(0));
     },
+    tryDetermineCoefs: function(y_p_pet, forcing_pet, char_eq) {
+        try {
+            SOH.determineCoefs(y_p_pet, forcing_pet, char_eq);
+            return 'success';
+        } catch (error) {
+            if (error instanceof EH.Value.SizeError) return 'RREF-cap-error';
+            else throw error;
+        }
+    },
+    tryPickInitConds: function(settings, cvals, y_0_expr, d_y_0_expr) {
+        let init_y, init_d_y;
+        try {
+            if (settings.force_zero_inits === 'yes') {
+                ({init_y, init_d_y} = SOH.pickZeroInitConds(cvals, y_0_expr, d_y_0_expr));
+            }
+            else ({init_y, init_d_y} = SOH.pickSmallInitConds(cvals, y_0_expr, d_y_0_expr));
+
+            return {init_result: 'success', init_y, init_d_y};
+        } catch(error) {
+            if (error instanceof EH.Value.SizeError) {
+                return {init_result: 'RREF-cap-error', init_y, init_d_y};
+            }
+            else throw error;
+        }
+    },
     pickSmallInitConds: function(cvals, y_0_expr, d_y_0_expr) {
         const coef_size = 5;
         const frac_weight = 4;
@@ -607,6 +633,31 @@ const SOH = { // genSecOrd helpers
             init_d_y: new EH.Int(0)
         };
     },
+    normValueSize: function(int_or_frac) {
+        if (int_or_frac instanceof EH.Int) {
+            return Math.abs(int_or_frac.value);
+        }
+        else if (int_or_frac instanceof EH.Frac) {
+            return Math.max(Math.abs(int_or_frac.num), Math.abs(int_or_frac.den));
+        }
+        else return NaN;
+    },
+    maxCoefSizeInPet: function(pet_obj) {
+        let max_seen = -Infinity;
+        for (let i = 0; i <= pet_obj.degree.value; i++) {
+            max_seen = Math.max(max_seen, 
+                SOH.normValueSize(pet_obj.polynom_c[i].value), 
+                SOH.normValueSize(pet_obj.polynom_s[i].value)
+            );
+        }
+        return max_seen;
+    },
+    buildYsol: function(homo_sol, y_p_pet) {
+        if (homo_sol instanceof EH.PolExpTrigArray) {
+            return new EH.PolExpTrigArray(...homo_sol, y_p_pet);
+        }
+        else return new EH.PolExpTrigArray(homo_sol, y_p_pet);
+    },
     buildVarSymbols: function(settings) {
         let [unknown, time_var] = settings.diff_eq_vars.split('_');
 
@@ -682,50 +733,74 @@ const SOH = { // genSecOrd helpers
     }
 };
 export default function genSecOrd(settings) {
-    const forcing_pet = SOH.forcing_forms[settings.force_func_form].undPetObj();
-    SOH.forcing_forms[settings.force_func_form].selectPolyCoefs(forcing_pet);
-    
-    const char_eq = SOH.createCharEq(
-        settings.sec_ord_roots, 
-        (settings.sec_ord_b_term === 'zero')? false : true, 
-        settings.sec_ord_reso,
-        forcing_pet
-    );
-    const {homo_sol, cvals} = SOH.homo_sols[settings.sec_ord_roots](char_eq.roots);
+    const time_limit = 50;
+    const max_coef_size = 35;
+    let sol_without_err = false;
+    let sol_within_size = false;
+    const smallest_sol = {
+        max_coef: Infinity, char_eq: null, forcing_pet: null, sol_pet_arr: null, init_y: null, init_d_y: null
+    };
+    const start_time = performance.now();
+    while (
+        (!sol_within_size && (performance.now() - start_time) < time_limit) ||
+        !sol_without_err
+    ) {
+        const forcing_pet = SOH.forcing_forms[settings.force_func_form].undPetObj();
+        SOH.forcing_forms[settings.force_func_form].selectPolyCoefs(forcing_pet);
+        
+        const char_eq = SOH.createCharEq(
+            settings.sec_ord_roots, 
+            settings.sec_ord_b_term, 
+            settings.sec_ord_reso,
+            forcing_pet
+        );
+        const {homo_sol, cvals} = SOH.homo_sols[settings.sec_ord_roots](char_eq.roots);
+        const y_p_pet = SOH.adjustedForReso(new EH.PolExpTrig({
+            exp_freq: forcing_pet.exp_freq, 
+            trig_freq: forcing_pet.trig_freq, 
+            degree: forcing_pet.degree
+        }), homo_sol, forcing_pet);
 
-    const y_p_pet = SOH.adjustedForReso(new EH.PolExpTrig({
-        exp_freq: forcing_pet.exp_freq, 
-        trig_freq: forcing_pet.trig_freq, 
-        degree: forcing_pet.degree
-    }), homo_sol, forcing_pet);
-    SOH.determineCoefs(y_p_pet, forcing_pet, char_eq);
+        const coef_result = SOH.tryDetermineCoefs(y_p_pet, forcing_pet, char_eq);
+        if (coef_result === 'RREF-cap-error') continue;
 
-    let y_sol_petarr;
-    if (homo_sol instanceof EH.PolExpTrigArray) {
-        y_sol_petarr = new EH.PolExpTrigArray(...homo_sol, y_p_pet);
-    }
-    else y_sol_petarr = new EH.PolExpTrigArray(homo_sol, y_p_pet);
+        if (settings.diff_initcond === 'yes') {
+            const sol_pet_arr = SOH.buildYsol(homo_sol, y_p_pet);
+            const y_0_expr = sol_pet_arr.exprAtZero();
+            const d_y_0_expr = EH.PolExpTrigArray.diff(sol_pet_arr).exprAtZero();
+            const {init_result, init_y, init_d_y} = SOH.tryPickInitConds(settings, cvals, y_0_expr, d_y_0_expr);
+            if (init_result === 'RREF-cap-error') continue;
 
-    let init_y, init_d_y;
-    if (settings.diff_initcond === 'yes') {
-        const y_0_expr = y_sol_petarr.exprAtZero();
-        const d_y_0_expr = EH.PolExpTrigArray.diff(y_sol_petarr).exprAtZero();
-        if (settings.force_zero_inits === 'yes') {
-            ({init_y, init_d_y} = SOH.pickZeroInitConds(cvals, y_0_expr, d_y_0_expr));
+            sol_without_err = true;
+            const max_coef = Math.max(
+                SOH.maxCoefSizeInPet(y_p_pet), 
+                SOH.normValueSize(init_y), SOH.normValueSize(init_d_y)
+            );
+            if (max_coef < smallest_sol.max_coef) {
+                Object.assign(smallest_sol, {max_coef, char_eq, forcing_pet, sol_pet_arr, init_y, init_d_y});
+                if (max_coef <= max_coef_size) sol_within_size = true;
+            }
         }
-        else ({init_y, init_d_y} = SOH.pickSmallInitConds(cvals, y_0_expr, d_y_0_expr));
+        else {
+            sol_without_err = true;
+            cvals['C1'].symbol = 'C_{1}';
+            cvals['C2'].symbol = 'C_{2}';
+            const max_coef = SOH.maxCoefSizeInPet(y_p_pet);
+
+            if (max_coef < smallest_sol.max_coef) {
+                const sol_pet_arr = SOH.buildYsol(homo_sol, y_p_pet);
+                Object.assign(smallest_sol, {max_coef, char_eq, forcing_pet, sol_pet_arr});
+                if (max_coef <= max_coef_size) sol_within_size = true;
+            }
+        }
     }
-    else {
-        cvals['C1'].symbol = 'C_{1}';
-        cvals['C2'].symbol = 'C_{2}';
-    }
-    
+
     const var_symbols = SOH.buildVarSymbols(settings);
-    const prompt_eq = SOH.buildPromptEq(char_eq, var_symbols, forcing_pet);
-    const init_addon = SOH.buildInitConds(settings, var_symbols, init_y, init_d_y);
+    const prompt_eq = SOH.buildPromptEq(smallest_sol.char_eq, var_symbols, smallest_sol.forcing_pet);
+    const init_addon = SOH.buildInitConds(settings, var_symbols, smallest_sol.init_y, smallest_sol.init_d_y);
     const question_str = SOH.formatPrompt(prompt_eq, init_addon, settings);
-    const answer_str = SOH.buildAnswerEq(y_sol_petarr, var_symbols);
-    
+    const answer_str = SOH.buildAnswerEq(smallest_sol.sol_pet_arr, var_symbols);
+
     return {
         question: question_str,
         answer: answer_str
