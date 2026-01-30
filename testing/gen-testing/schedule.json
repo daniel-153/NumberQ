@@ -14,6 +14,7 @@
         ["genPolArith", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genPyTheo", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genRatEx", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genSecOrd", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genSimSqrt", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genSpTri", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genSysDiff", {"starting_test_number": 1, "max_number_of_tests": 100000, "stop_on_failed_test": false, "settings_progression": "random"}],
