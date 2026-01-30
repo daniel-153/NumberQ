@@ -1,5 +1,5 @@
 from .helpers.gen_helpers import get_diffed_var, remove_whitespace
-from sympy import symbols, diff, E, simplify
+from sympy import symbols, diff, E
 from sympy.parsing.latex import parse_latex
 
 def verify(tex_question, tex_answer, settings):
@@ -32,7 +32,7 @@ def verify(tex_question, tex_answer, settings):
 
     # substitution and verification
     if settings["diff_initcond"] == "yes":
-        diff_eq_satisfied = simplify((prompt_eq.lhs - prompt_eq.rhs).subs({unknown: answer_eq.rhs})).equals(0) is True
+        diff_eq_satisfied = (prompt_eq.lhs - prompt_eq.rhs).subs({unknown: answer_eq.rhs}).doit().equals(0) is True
         f_init_satisfied = answer_eq.rhs.subs({time_var: 0}).equals(func_at_0) is True
         diff_init_satisfied = diff(answer_eq.rhs, time_var).subs({time_var: 0}).equals(diff_at_0) is True
 
@@ -45,7 +45,7 @@ def verify(tex_question, tex_answer, settings):
         elif not (f_init_satisfied and diff_init_satisfied):
             return "Initial conditions not met"
     else:
-        diff_eq_satisfied = simplify((prompt_eq.lhs - prompt_eq.rhs).subs({unknown: answer_eq.rhs})).equals(0) is True
+        diff_eq_satisfied = (prompt_eq.lhs - prompt_eq.rhs).subs({unknown: answer_eq.rhs}).doit().equals(0) is True
 
         expected_constants = symbols('C_{1}, C_{2}')
         sol, sol_diff = (answer_eq.rhs, diff(answer_eq.rhs, time_var))
