@@ -15,6 +15,13 @@ export const Value = class {
     get clone() {
         return () => new this.constructor(...this.#cargs);
     }
+
+    static SizeError = class extends RangeError {
+        constructor(message) {
+            super(message);
+            this.name = this.constructor.name;
+        }
+    }
 }
 
 export const Int = class extends Value {
@@ -23,6 +30,10 @@ export const Int = class extends Value {
             arguments.length === 1 &&
             Number.isSafeInteger(arguments[0])
         ) super(...arguments);
+        else if (arguments.length !== 1) throw new Error ('Int constructor must recieve a single argument.');
+        else if (Number.isInteger(arguments[0])) {
+            throw new Value.SizeError('Argument to Int constructor exceeds safe integer size.');
+        }
         else throw new Error('Provided argument to Int constructor is not an integer.');
     }
 
@@ -46,7 +57,11 @@ export const Frac = class extends Value {
             this.#num = this.cargs[0];
             this.#den = this.cargs[1];
         }
-        else throw new Error('Frac constructor must recieve two integer arguments.');
+        else if (arguments.length !== 2) throw new Error('Frac constructor must recieve two arguments.');
+        else if (Number.isInteger(arguments[0]) && Number.isInteger(arguments[1])) {
+            throw new Value.SizeError('One or both arguments to Frac constructor exceed safe integer size.');
+        }
+        else throw new Error('Frac constructor must recieve integer arguments.');
     }
 
     get num() {return this.#num;}
