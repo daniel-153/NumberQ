@@ -10,7 +10,7 @@ export function validateSettings(form_obj, error_locations) {
     if (
         form_obj.diff_initcond === 'yes' && 
         form_obj.diff_notation === 'frac'
-    ) form_obj.diff_notation === 'prime';
+    ) form_obj.diff_notation = 'prime';
 }
 
 const SOH = { // genSecOrd helpers
@@ -174,10 +174,7 @@ const SOH = { // genSecOrd helpers
         };
 
         if (type === 'real_dis') {
-            if (
-                forcing_pet.trig_freq.value !== 0 &&
-                forcing_pet.polynom_c[0].value !== 0
-            ) { // reso possible
+            if (forcing_pet.trig_freq.value === 0) { // reso possible
                 if (allow_b_term) {
                     if (reso_pref === 'prefer') {
                         char_eq.roots[0] = forcing_pet.exp_freq.value;
@@ -188,9 +185,12 @@ const SOH = { // genSecOrd helpers
                         char_eq.roots[1] = H.randIntExcept(-root_size, root_size, char_eq.roots[0]);
                     }
                     else if (reso_pref === 'avoid') {
-                        char_eq.roots[0] = H.randIntExcept(-root_size, root_size, forcing_pet.exp_freq.value);
-                        char_eq.roots[1] = H.randIntExcept(-root_size, root_size, forcing_pet.exp_freq.value);
-                        if (char_eq.roots[0] === char_eq.roots[1]) char_eq.roots[1] += ((-1)**H.randInt(0, 1));
+                        const i1 =  H.randInt(0, 2 * root_size - 1);
+                        let i2 = H.randInt(0, 2 * root_size - 2);
+                        if (i2 >= i1) i2++;
+
+                        char_eq.roots[0] = (i1 < forcing_pet.exp_freq.value + root_size) ? (i1 - root_size) : (i1 - root_size + 1);
+                        char_eq.roots[1] = (i2 < forcing_pet.exp_freq.value + root_size) ? (i2 - root_size) : (i2 - root_size + 1);
                     }
                 }
                 else {
@@ -222,13 +222,7 @@ const SOH = { // genSecOrd helpers
         }
         else if (type === 'real_rep') { // by settings validation b_term must be allowed here
             let root;
-            if (
-                forcing_pet.trig_freq.value === 0 &&
-                (
-                    forcing_pet.polynom_c[0].value !== 0 ||
-                    forcing_pet.polynom_c[1].value !== 0
-                )
-            ) { // reso possible
+            if (forcing_pet.trig_freq.value === 0) { // reso possible
                 if (reso_pref === 'prefer') root = forcing_pet.exp_freq.value;
                 else if (reso_pref === 'allow') root = (H.randInt(1, 20) === 1)? 0 : H.randIntExcept(-root_size, root_size, 0);
                 else if (reso_pref === 'avoid') root = H.randIntExcept(-root_size, root_size, forcing_pet.exp_freq.value);
@@ -243,13 +237,7 @@ const SOH = { // genSecOrd helpers
         }
         else if (type === 'complex') {
             let re, im;
-            if (
-                forcing_pet.trig_freq.value !== 0 &&
-                (
-                    forcing_pet.polynom_c[0].value !== 0 ||
-                    forcing_pet.polynom_s[0].value !== 0
-                )
-            ) { // reso possible
+            if (forcing_pet.trig_freq.value !== 0) { // reso possible
                 if (allow_b_term) {
                     if (reso_pref === 'prefer') {
                         re = forcing_pet.exp_freq.value;
