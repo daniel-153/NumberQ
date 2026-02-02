@@ -839,7 +839,20 @@ export const presets = {
 export const size_adjustments = {
     width: 1.25,
     height: 1.4,
-    // present: {
-        
-    // }
+    present: {
+        canvas: {
+            max_width: 0.5,
+            max_height: 0.2,
+            init_scale: 0.6
+        },
+        preview: {
+            max_width: 0.5,
+            max_height: 0.2,
+            init_scale: 0.6
+        },
+        answer: {
+            max_size_scale: 5,
+            init_scale: 1
+        }
+    }
 };
