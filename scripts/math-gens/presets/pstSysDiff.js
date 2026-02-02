@@ -78,7 +78,7 @@ export default [
         }
     },
     {
-        title: 'Mixed Eigen Cases',
+        title: 'Mixed Eigenvalue Cases',
         example_problem: `~~
             \\begin{array}{c}
                 \\lambda_{1},\\lambda_{2} \\;\\; \\text{or} \\\\
@@ -94,7 +94,7 @@ export default [
         }
     },
     {
-        title: 'Mixed Real Eigen Cases',
+        title: 'Mixed Real Eigenvalue Cases',
         example_problem: `~~~~
             \\begin{array}{c}
                 \\lambda_{1},\\lambda_{2} \\;\\; \\text{or} \\\\
