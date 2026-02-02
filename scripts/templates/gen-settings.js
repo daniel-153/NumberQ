@@ -1365,7 +1365,7 @@ export const sec_ord_reso = {
     type: 'radio_buttons',
     display_name: 'Resonance',
     radio_buttons: [
-        ['prefer', 'Prefered'],
+        ['prefer', 'Preferred'],
         ['allow', 'Allowed'],
         ['avoid', 'Avoided'],
     ], 
