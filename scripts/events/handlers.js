@@ -80,6 +80,7 @@ const event_listeners = [
                 UH.open('present-content');
                 P.buildNewPresentUi();
                 document.body.style.overflowY = 'hidden';
+                event.target.blur();
             }
             else if (event.target.id === 'present-exit-button') {
                 UH.close('present-content');
