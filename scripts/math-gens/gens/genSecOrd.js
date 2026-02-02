@@ -5,8 +5,6 @@ import * as LH from '../helpers/linalg-helpers.js';
 export function validateSettings(form_obj, error_locations) {
     if (form_obj.diff_notation === 'frac') form_obj.func_notation = 'implicit';
 
-    if (form_obj.sec_ord_roots === 'real_rep') form_obj.sec_ord_b_term = 'rand';
-
     if (
         form_obj.diff_initcond === 'yes' && 
         form_obj.diff_notation === 'frac'
@@ -225,7 +223,10 @@ const SOH = { // genSecOrd helpers
             if (forcing_pet.trig_freq.value === 0) { // reso possible
                 if (reso_pref === 'prefer') root = forcing_pet.exp_freq.value;
                 else if (reso_pref === 'allow') root = (H.randInt(1, 20) === 1)? 0 : H.randIntExcept(-root_size, root_size, 0);
-                else if (reso_pref === 'avoid') root = H.randIntExcept(-root_size, root_size, forcing_pet.exp_freq.value);
+                else if (reso_pref === 'avoid') {
+                    if (forcing_pet.exp_freq.value === 0) root = H.randIntExcept(-root_size, root_size, 0);
+                    else root = (H.randInt(1, 20) === 1)? 0 : (-1)**(H.randInt(0, 1)) * H.randIntExcept(1, root_size, Math.abs(forcing_pet.exp_freq.value));
+                }
             }
             else { // reso not possible
                 root = (H.randInt(1, 20) === 1)? 0 : H.randIntExcept(-root_size, root_size, 0);
@@ -499,8 +500,8 @@ const SOH = { // genSecOrd helpers
     pickSmallInitConds: function(cvals, y_0_expr, d_y_0_expr) {
         const coef_size = 5;
         const frac_weight = 4;
-        const sample_size = 250;
-        const selection_percentile = 20;
+        const sample_size = 100;
+        const selection_percentile = 15;
         
         const randSubs = () => new Map([
             [cvals['C1'], new EH.Int(H.randInt(-coef_size, coef_size))],
@@ -626,6 +627,7 @@ const SOH = { // genSecOrd helpers
             return Math.abs(int_or_frac.value);
         }
         else if (int_or_frac instanceof EH.Frac) {
+            int_or_frac.reduce();
             return Math.max(Math.abs(int_or_frac.num), Math.abs(int_or_frac.den));
         }
         else return NaN;
@@ -823,10 +825,15 @@ export const presets = {
     },
     random: function() {
         return {
-            
+            sec_ord_roots: '__random__',
+            diff_initcond: '__random__',
+            force_func_form: '__random__',
+            sec_ord_reso: '__random__',
+            sec_ord_b_term: 'rand',
+            force_zero_inits: '__random__'
         };
     },
-    // has_topic_presets: true
+    has_topic_presets: true
 };
 
 export const size_adjustments = {
