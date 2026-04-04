@@ -12,7 +12,7 @@ export const Symb = class {
             arguments.length === 1 &&
             typeof(description) === 'string'
         ) this.#description = description;
-        else if (arguments.length === 0) this.#description = '[unlabeled_Symb]';
+        else if (arguments.length === 0) this.#description = '\\mathrm{[Symb]}';
         else throw new Error(`Symb constructor only receives an optional 'string' description; provided arguments: ${Array.from(arguments)}`);
     }
 
@@ -60,7 +60,7 @@ export const Func = class {
         });
 
         if (typeof(this.repr) === 'function') return this.repr(...arg_strs);
-        else return `[unlabeled_Func](${arg_strs.join(',')})`
+        else return `\\mathrm{[Func]}\\left(${arg_strs.join(',')}\\right)`
     }
 
     clone() {
@@ -86,7 +86,51 @@ export const Func = class {
         }
         else throw new Error(`Func.diff(sym, order) receives a Symb and a non-negative integer order; provided arguments ${{sym, order}}.`);
     }
+
+    norm () {
+
+    }
 }
+
+export const VariadicFunc = class extends Func {
+    constructor() {
+        if (arguments.length > 0) super(...arguments);
+        else throw new Error('VariadicFunc must receive at least one argument, but none were provided.');
+    }
+}
+
+export const add  = callable(class extends VariadicFunc {
+    constructor() { 
+        const args = [];
+        for (let i  = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof add) args.push(...arguments[i].args);
+            else if (arguments[i] instanceof sub) args.push(arguments[i].args[0], neg(arguments[i].args[1]));
+            else args.push(arguments[i]);
+        }
+        super(...args);
+    }
+    repr() { return `\\left(${Array.from(arguments).join('\\right)+\\left(')}\\right)`; }
+    derivative(sym) { return Reflect.construct(add, this.args.map(arg => arg.diff(sym))); }
+})
+
+export const mul = callable(class extends VariadicFunc {
+    constructor() { 
+        const args = [];
+        for (let i  = 0; i < arguments.length; i++) {
+            if (arguments[i] instanceof mul) args.push(...arguments[i].args);
+            else args.push(arguments[i]);
+        }
+        super(...args);    
+    }
+    repr() { return `\\left(${Array.from(arguments).join('\\right)\\left(')}\\right)`; }
+    derivative(sym) { 
+        return Reflect.construct(add, 
+            this.args.map((_, addend_idx, args) => Reflect.construct(mul, 
+                args.map((arg, factor_idx) => addend_idx === factor_idx? arg.diff(sym) : arg)
+            ))
+        );
+    }
+})
 
 export const NullaryFunc = class extends Func {
     constructor() {
@@ -135,7 +179,7 @@ export const integer = callable(class extends constant {
     clone() { return integer(this.#value); }
 })
 
-export const fraction = callable(class extends constant {
+export const rational = callable(class extends constant {
     #num; #den;
         
     constructor(num, den) {
@@ -149,16 +193,16 @@ export const fraction = callable(class extends constant {
             this.#num = num;
             this.#den = den;
         }
-        else if (arguments.length !== 2) throw new Error(`fraction constructor must recieve two arguments; provided arguments: ${Array.from(arguments)}`);
+        else if (arguments.length !== 2) throw new Error(`rational constructor must recieve two arguments; provided arguments: ${Array.from(arguments)}`);
         else if (Number.isInteger(arguments[0]) && Number.isInteger(arguments[1])) {
-            throw new Error(`One or both arguments to fraction constructor exceed safe integer size.`);
+            throw new Error(`One or both arguments to rational constructor exceed safe integer size.`);
         }
-        else throw new Error(`fraction constructor must recieve integer arguments; provided arguments: ${Array.from(arguments)}`);
+        else throw new Error(`rational constructor must recieve integer arguments; provided arguments: ${Array.from(arguments)}`);
     }
 
     get num() { return this.#num; }
     get den() { return this.#den; }
-    clone() { return fraction(this.#num, this.#den); }
+    clone() { return rational(this.#num, this.#den); }
 })
 
 export const UnaryFunc = class extends Func {
@@ -176,7 +220,7 @@ export const identity = callable(class extends UnaryFunc {
 
 export const neg = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
-    repr() { return `\\left(-${arguments[0]}\\right)`; }
+    repr() { return `-\\left(${arguments[0]}\\right)`; }
     derivative(sym) { return neg(this.args[0].diff(sym)); }
 })
 
@@ -207,7 +251,7 @@ export const csc = callable(class extends UnaryFunc {
 export const sec = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sec\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return mul(mul(sec(this.args[0]), tan(this.args[0])), this.args[0].diff(sym)); }
+    derivative(sym) { return mul(sec(this.args[0]), tan(this.args[0]), this.args[0].diff(sym)); }
 })
 
 export const cot = callable(class extends UnaryFunc {
@@ -219,37 +263,37 @@ export const cot = callable(class extends UnaryFunc {
 export const asin = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sin^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), sqrt(sub(integer(1), pow(this.args[0], integer(2))))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), sqrt(sub(integer(1), pow(this.args[0], integer(2))))); }
 })
 
 export const acos = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\cos^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return neg(div(this.args[0].diff(sym), sqrt(sub(integer(1), pow(this.args[0], integer(2)))))); }
+    derivative(sym) { return neg(frac(this.args[0].diff(sym), sqrt(sub(integer(1), pow(this.args[0], integer(2)))))); }
 })
 
 export const atan = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\tan^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), add(integer(1), pow(this.args[0], integer(2)))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), add(integer(1), pow(this.args[0], integer(2)))); }
 })
 
 export const acsc = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\csc^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return neg(div(this.args[0].diff(sym), mul(abs(this.args[0]), sqrt(sub(pow(this.args[0], integer(2)), integer(1)))))); }
+    derivative(sym) { return neg(frac(this.args[0].diff(sym), mul(abs(this.args[0]), sqrt(sub(pow(this.args[0], integer(2)), integer(1)))))); }
 })
 
 export const asec = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sec^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), mul(abs(this.args[0]), sqrt(sub(pow(this.args[0], integer(2)), integer(1))))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), mul(abs(this.args[0]), sqrt(sub(pow(this.args[0], integer(2)), integer(1))))); }
 })
 
 export const acot = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\cot^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return neg(div(this.args[0].diff(sym), add(integer(1), pow(this.args[0], integer(2))))); }
+    derivative(sym) { return neg(frac(this.args[0].diff(sym), add(integer(1), pow(this.args[0], integer(2))))); }
 })
 
 export const sinh = callable(class extends UnaryFunc {
@@ -291,49 +335,49 @@ export const coth = callable(class extends UnaryFunc {
 export const asinh = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sinh^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), sqrt(add(pow(this.args[0], integer(2)), integer(1)))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), sqrt(add(pow(this.args[0], integer(2)), integer(1)))); }
 })
 
 export const acosh = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\cosh^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), mul(sqrt(sub(this.args[0], integer(1))), sqrt(add(this.args[0], integer(1))))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), mul(sqrt(sub(this.args[0], integer(1))), sqrt(add(this.args[0], integer(1))))); }
 })
 
 export const atanh = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\tanh^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), sub(integer(1), pow(this.args[0], integer(2)))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), sub(integer(1), pow(this.args[0], integer(2)))); }
 })
 
 export const acsch = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\csch^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return neg(div(this.args[0].diff(sym), mul(abs(this.args[0]), sqrt(add(pow(this.args[0], integer(2)), integer(1)))))); }
+    derivative(sym) { return neg(frac(this.args[0].diff(sym), mul(abs(this.args[0]), sqrt(add(pow(this.args[0], integer(2)), integer(1)))))); }
 })
 
 export const asech = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sech^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return neg(div(this.args[0].diff(sym), mul(this.args[0], sqrt(sub(integer(1), pow(this.args[0], integer(2))))))); }
+    derivative(sym) { return neg(frac(this.args[0].diff(sym), mul(this.args[0], sqrt(sub(integer(1), pow(this.args[0], integer(2))))))); }
 })
 
 export const acoth = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\coth^{-1}\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return div(this.args[0].diff(sym), sub(integer(1), pow(this.args[0], integer(2)))); }
+    derivative(sym) { return frac(this.args[0].diff(sym), sub(integer(1), pow(this.args[0], integer(2)))); }
 })
 
 export const sqrt = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sqrt{${arguments[0]}}`; }
-    derivative(sym) { return mul(div(integer(1), mul(integer(2), sqrt(this.args[0]))), this.args[0].diff(sym)); }
+    derivative(sym) { return mul(frac(integer(1), mul(integer(2), sqrt(this.args[0]))), this.args[0].diff(sym)); }
 })
 
 export const abs = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\left|${arguments[0]}\\right|`; }
-    derivative(sym) { return mul(div(this.args[0], abs(this.args[0])), this.args[0].diff(sym)); }
+    derivative(sym) { return mul(frac(this.args[0], abs(this.args[0])), this.args[0].diff(sym)); }
 })
 
 export const exp = callable(class extends UnaryFunc {
@@ -345,7 +389,7 @@ export const exp = callable(class extends UnaryFunc {
 export const ln = callable(class extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\ln\\left(${arguments[0]}\\right)`; }
-    derivative(sym) { return mul(div(integer(1), this.args[0]), this.args[0].diff(sym)); }
+    derivative(sym) { return mul(frac(integer(1), this.args[0]), this.args[0].diff(sym)); }
 })
 
 export const BinaryFunc = class extends Func {
@@ -355,18 +399,11 @@ export const BinaryFunc = class extends Func {
     }
 }
 
-export const add = callable(class extends BinaryFunc {
-    constructor() { super(...arguments); }
-    repr() { return `\\left(${arguments[0]}\\right)+\\left(${arguments[1]}\\right)`; }
-    derivative(sym) {
-        if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) return add(this.args[0].diff(sym), this.args[1].diff(sym));
-        if (sym.isIn(this.args[0])) return this.args[0].diff(sym);
-        return this.args[1].diff(sym);
-    }
-})
-
 export const sub = callable(class extends BinaryFunc {
-    constructor() { super(...arguments); }
+    constructor() { 
+        super(...arguments);
+        return add(this.args[0], neg(this.args[1]));
+    }
     repr() { return `\\left(${arguments[0]}\\right)-\\left(${arguments[1]}\\right)`; }
     derivative(sym) {
         if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) return sub(this.args[0].diff(sym), this.args[1].diff(sym));
@@ -375,37 +412,27 @@ export const sub = callable(class extends BinaryFunc {
     }
 })
 
-export const mul = callable(class extends BinaryFunc {
-    constructor() { super(...arguments); }
-    repr() { return `\\left(${arguments[0]}\\right)\\cdot\\left(${arguments[1]}\\right)`; }
-    derivative(sym) {
-        if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) return add(mul(this.args[0].diff(sym), this.args[1]), mul(this.args[0], this.args[1].diff(sym)));
-        if (sym.isIn(this.args[0])) return mul(this.args[0].diff(sym), this.args[1]);
-        return mul(this.args[0], this.args[1].diff(sym));
-    }
-})
-
-export const div = callable(class extends BinaryFunc {
+export const frac = callable(class extends BinaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\frac{${arguments[0]}}{${arguments[1]}}`; }
     derivative(sym) {
         if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) {
-            return div(sub(mul(this.args[0].diff(sym), this.args[1]), mul(this.args[0], this.args[1].diff(sym))), pow(this.args[1], integer(2)));
+            return frac(sub(mul(this.args[0].diff(sym), this.args[1]), mul(this.args[0], this.args[1].diff(sym))), pow(this.args[1], integer(2)));
         }
-        if (sym.isIn(this.args[0])) return div(this.args[0].diff(sym), this.args[1]);
-        return neg(div(mul(this.args[0], this.args[1].diff(sym)), pow(this.args[1], integer(2))));
+        if (sym.isIn(this.args[0])) return frac(this.args[0].diff(sym), this.args[1]);
+        return neg(frac(mul(this.args[0], this.args[1].diff(sym)), pow(this.args[1], integer(2))));
     }
 })
 
 export const pow = callable(class extends BinaryFunc {
     constructor() { super(...arguments); }
-    repr() { return `${arguments[0]}^{${arguments[1]}}`; }
+    repr() { return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`; }
     derivative(sym) {
         if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) {
-            return add(mul(this.args[0].diff(sym), mul(this.args[1], pow(this.args[0], sub(this.args[1], integer(1))))), mul(this.args[1].diff(sym), mul(pow(this.args[0], this.args[1]), ln(this.args[0]))));
+            return add(mul(this.args[0].diff(sym), this.args[1], pow(this.args[0], sub(this.args[1], integer(1)))), mul(this.args[1].diff(sym), pow(this.args[0], this.args[1]), ln(this.args[0])));
         }
-        if (sym.isIn(this.args[0])) return mul(this.args[0].diff(sym), mul(this.args[1], pow(this.args[0], sub(this.args[1], integer(1)))));
-        return mul(this.args[1].diff(sym), mul(pow(this.args[0], this.args[1]), ln(this.args[0])));
+        if (sym.isIn(this.args[0])) return mul(this.args[0].diff(sym), this.args[1], pow(this.args[0], sub(this.args[1], integer(1))));
+        return mul(this.args[1].diff(sym), pow(this.args[0], this.args[1]), ln(this.args[0]));
     }
 })
 
@@ -414,10 +441,10 @@ export const log = callable(class extends BinaryFunc {
     repr() { return `\\log_{${arguments[0]}}\\left(${arguments[1]}\\right)`; }
     derivative(sym) {
         if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) {
-            return div(sub(mul(div(this.args[1].diff(sym), this.args[1]), ln(this.args[0])), mul(div(this.args[0].diff(sym), this.args[0]), ln(this.args[1]))), pow(ln(this.args[0]), integer(2)));
+            return frac(sub(mul(frac(this.args[1].diff(sym), this.args[1]), ln(this.args[0])), mul(frac(this.args[0].diff(sym), this.args[0]), ln(this.args[1]))), pow(ln(this.args[0]), integer(2)));
         }
-        if (sym.isIn(this.args[1])) return div(div(this.args[1].diff(sym), this.args[1]), ln(this.args[0]));
-        return neg(div(mul(div(this.args[0].diff(sym), this.args[0]), ln(this.args[1])), pow(ln(this.args[0]), integer(2))));
+        if (sym.isIn(this.args[1])) return frac(frac(this.args[1].diff(sym), this.args[1]), ln(this.args[0]));
+        return neg(frac(mul(frac(this.args[0].diff(sym), this.args[0]), ln(this.args[1])), pow(ln(this.args[0]), integer(2))));
     }
 })
 
@@ -426,9 +453,9 @@ export const root = callable(class extends BinaryFunc {
     repr() { return `\\sqrt[${arguments[0]}]{${arguments[1]}}`; }
     derivative(sym) {
         if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) {
-            return mul(pow(this.args[1], div(integer(1), this.args[0])), div(sub(mul(this.args[0], div(this.args[1].diff(sym), this.args[1])), mul(ln(this.args[1]), this.args[0].diff(sym))), pow(this.args[0], integer(2))));
+            return mul(pow(this.args[1], frac(integer(1), this.args[0])), frac(sub(mul(this.args[0], frac(this.args[1].diff(sym), this.args[1])), mul(ln(this.args[1]), this.args[0].diff(sym))), pow(this.args[0], integer(2))));
         }
-        if (sym.isIn(this.args[1])) return mul(mul(div(integer(1), this.args[0]), pow(this.args[1], sub(div(integer(1), this.args[0]), integer(1)))), this.args[1].diff(sym));
-        return mul(neg(div(mul(ln(this.args[1]), this.args[0].diff(sym)), pow(this.args[0], integer(2)))), pow(this.args[1], div(integer(1), this.args[0])));
+        if (sym.isIn(this.args[1])) return mul(frac(integer(1), this.args[0]), pow(this.args[1], sub(frac(integer(1), this.args[0]), integer(1))), this.args[1].diff(sym));
+        return mul(neg(frac(mul(ln(this.args[1]), this.args[0].diff(sym)), pow(this.args[0], integer(2)))), pow(this.args[1], frac(integer(1), this.args[0])));
     }
 })
