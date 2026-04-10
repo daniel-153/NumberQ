@@ -123,7 +123,14 @@ export const add  = callable(class extends VariadicFunc {
         }
         super(...args);
     }
-    repr() { return `\\left(${Array.from(arguments).join('\\right)+\\left(')}\\right)`; }
+    repr() { 
+        let acc = '';
+        for (let i = 0; i < arguments.length; i++) {
+            if (acc.length > 0 && arguments[i].charAt(0) !== '-') acc += ('+' + arguments[i]);
+            else acc += arguments[i];
+        }
+        return acc.length > 0 ? acc : '0';
+    }
     derivative(sym) { return Reflect.construct(add, this.args.map(arg => arg.diff(sym))); }
     trimmed() { 
         const args = Array.from(arguments).filter(arg => !(arg instanceof integer && arg.value === 0));
@@ -142,7 +149,30 @@ export const mul = callable(class extends VariadicFunc {
         }
         super(...args);    
     }
-    repr() { return `\\left(${Array.from(arguments).join('\\right)\\left(')}\\right)`; }
+    repr() { 
+        let acc = '';
+        for (let i = 0; i < arguments.length; i++) {
+            const arg = this.args[i];
+            const arg_str = arguments[i];
+
+            if (arg instanceof NamedUnaryFunc || [abs,exp,logn].includes(arg.constructor)) acc += arg_str;
+            else if (arg instanceof constant) {
+                if (acc === '') {
+                    if (arg instanceof integer && arg.value === -1) acc += '-';
+                    else acc += arg_str;
+                }
+                else if (acc === '-' && arg_str.charAt(0) !== '-') acc += arg_str;
+                else acc += `(${arg_str})`;
+            }
+            else if (arg instanceof Symb || arg instanceof pow) {
+                if (this.args[i - 1] instanceof sqrt || this.args[i - 1] instanceof nroot) acc += `(${arg_str})`;
+                else acc += arg_str;
+            }
+            else acc += `(${arg_str})`;
+        }
+
+        return acc.length > 0 ? acc : '1';
+    }
     derivative(sym) { 
         return Reflect.construct(add, 
             this.args.map((_, addend_idx, args) => Reflect.construct(mul, 
@@ -486,7 +516,28 @@ export const frac = callable(class extends BinaryFunc {
 
 export const pow = callable(class extends BinaryFunc {
     constructor() { super(...arguments); }
-    repr() { return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`; }
+    repr() { 
+        if (this.args[0] instanceof Symb) return `${arguments[0]}^{${arguments[1]}}`;
+        else if (
+            this.args[0] instanceof NamedUnaryFunc && 
+            !(this.args[0] instanceof InvNamedUnaryFunc) &&
+            this.args[1] instanceof integer &&
+            this.args[1].value >= 2
+        ) {
+            if (NamedUnaryFunc.latex_operators.includes(this.args[0].constructor.name)) {
+                const op_name = this.args[0].constructor.name;
+                const prefix = `\\${op_name}\\left(`;
+                const suffix = '\\right)';
+                if (arguments[0].startsWith(prefix) && arguments[0].endsWith(suffix)) {
+                    const inner = arguments[0].slice(prefix.length, -suffix.length);
+                    return `\\${op_name}^{${arguments[1]}}\\left(${inner}\\right)`;
+                }
+                return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`;
+            }
+            else return `\\operatorname{${this.args[0].constructor.name}}^{${arguments[1]}}\\left(${this.args[0].args[0].toString()}\\right)`;
+        }
+        else return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`;
+    }
     derivative(sym) {
         if (sym.isIn(this.args[0]) && sym.isIn(this.args[1])) {
             return add(mul(this.args[0].diff(sym), this.args[1], pow(this.args[0], sub(this.args[1], integer(1)))), mul(this.args[1].diff(sym), pow(this.args[0], this.args[1]), ln(this.args[0])));
