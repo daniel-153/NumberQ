@@ -18,7 +18,6 @@ export class Symb {
 
     get description() { return this.#description; }
     toString() { return this.#description; }
-    json() { return {'node': 'Symb', 'args': [this.#description]}; }
     diff(sym) { return sym === this? integer(1) : integer(0); }
     clone() { return new Symb(this.#description); }
     isIn(arg) {
@@ -107,9 +106,22 @@ export class Func {
     }
 
     json() {
+        let node = this.constructor.name;
+        let modifier = null;
+        if (this instanceof PartialBinaryFunc) modifier = this.constant.json();
+        else if (this instanceof constant) modifier = this.repr();
+        else if (this instanceof InvNamedUnaryFunc) {
+            node = this.constructor.name ? `a${this.constructor.name}` : '';
+        }
+
         return {
-            'node': this.constructor.name,
-            'args': this.#args.map(arg => typeof(arg.json) === 'function'? arg.json() : 'no-json')
+            'node': node ? node : '[Unlabeled-Func]',
+            'args': this.#args.map(arg => {
+                if (arg instanceof Func) return arg.json();
+                else if (arg instanceof Symb) return {'node': arg.constructor.name, 'args': null, 'modifier': arg.description};
+                else return {'node': '[Unknown-Node]', 'args': null, 'modifier': null};  
+            }),
+            'modifier': modifier
         };
     }
 }
@@ -229,7 +241,6 @@ export const constant = callable(class constant extends NullaryFunc {
     }
 
     repr() { return this.#symbol; }
-    json() { return {'node': this.constructor.name, 'args': [this.#symbol]}; }
     derivative() { return integer(0); }
     clone() { return constant(this.#symbol); }
 })
@@ -336,7 +347,6 @@ export class PartialBinaryFunc extends UnaryFunc {
             this.#constant.clone(), this.args[0] instanceof Func ? this.args[0].clone() : this.args[0]
         );
     }
-    json() { return {'node': this.constructor.name, 'args': [this.#constant.json(), this.args[0].json()]}; }
 }
 
 export const nroot = callable(class nroot extends PartialBinaryFunc {
@@ -434,12 +444,6 @@ export class InvNamedUnaryFunc extends NamedUnaryFunc {
             return `\\${this.constructor.name}^{-1}\\left(${arguments[0]}\\right)`;
         }
         else return `\\operatorname{${this.constructor.name}}^{-1}\\left(${arguments[0]}\\right)`;
-    }
-    json() { 
-        return {
-            'node': this.constructor.name ? `a${this.constructor.name}` : '',
-            'args': [this.args[0].json()]
-        }; 
     }
 }
 
