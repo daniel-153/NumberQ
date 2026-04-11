@@ -4,7 +4,7 @@ const callable = (Cls) => new Proxy(Cls, {
     }
 })
 
-export const Symb = class {
+export class Symb {
     #description;
     
     constructor(description) {
@@ -18,6 +18,7 @@ export const Symb = class {
 
     get description() { return this.#description; }
     toString() { return this.#description; }
+    json() { return {'node': 'Symb', 'args': [this.#description]}; }
     diff(sym) { return sym === this? integer(1) : integer(0); }
     clone() { return new Symb(this.#description); }
     isIn(arg) {
@@ -27,7 +28,7 @@ export const Symb = class {
     }
 }
 
-export const Func = class {
+export class Func {
     #symbols; #args; #arity;
     
     constructor() {
@@ -104,16 +105,23 @@ export const Func = class {
         else if (this instanceof PartialBinaryFunc) return new this.constructor(this.constant.trim(Func.#trim_ctx), ...args);
         else return Reflect.construct(this.constructor, args);
     }
+
+    json() {
+        return {
+            'node': this.constructor.name,
+            'args': this.#args.map(arg => typeof(arg.json) === 'function'? arg.json() : 'no-json')
+        };
+    }
 }
 
-export const VariadicFunc = class extends Func {
+export class VariadicFunc extends Func {
     constructor() {
         if (arguments.length > 0) super(...arguments);
         else throw new Error('VariadicFunc must receive at least one argument, but none were provided.');
     }
 }
 
-export const add  = callable(class extends VariadicFunc {
+export const add  = callable(class add extends VariadicFunc {
     constructor() { 
         const args = [];
         for (let i  = 0; i < arguments.length; i++) {
@@ -140,7 +148,7 @@ export const add  = callable(class extends VariadicFunc {
     }
 })
 
-export const mul = callable(class extends VariadicFunc {
+export const mul = callable(class mul extends VariadicFunc {
     constructor() { 
         const args = [];
         for (let i  = 0; i < arguments.length; i++) {
@@ -196,14 +204,14 @@ export const mul = callable(class extends VariadicFunc {
     }
 })
 
-export const NullaryFunc = class extends Func {
+export class NullaryFunc extends Func {
     constructor() {
         if (arguments.length === 0) super();
         else throw new Error(`NullaryFunc must receive no arguments; provided arguments: ${Array.from(arguments)}`);
     }
 }
 
-export const constant = callable(class extends NullaryFunc {
+export const constant = callable(class constant extends NullaryFunc {
     #symbol;
     
     constructor(symbol) {
@@ -221,11 +229,12 @@ export const constant = callable(class extends NullaryFunc {
     }
 
     repr() { return this.#symbol; }
+    json() { return {'node': this.constructor.name, 'args': [this.#symbol]}; }
     derivative() { return integer(0); }
     clone() { return constant(this.#symbol); }
 })
 
-export const integer = callable(class extends constant {
+export const integer = callable(class integer extends constant {
     #value;
     
     constructor(int) {
@@ -243,7 +252,7 @@ export const integer = callable(class extends constant {
     clone() { return integer(this.#value); }
 })
 
-export const rational = callable(class extends constant {
+export const rational = callable(class rational extends constant {
     #num; #den;
         
     constructor(num, den) {
@@ -275,38 +284,38 @@ export const rational = callable(class extends constant {
     }
 })
 
-export const UnaryFunc = class extends Func {
+export class UnaryFunc extends Func {
     constructor() {
         if (arguments.length === 1) super(arguments[0]);
         else throw new Error(`UnaryFunc must receive one argument; provided arguments: ${Array.from(arguments)}`);
     }
 }
 
-export const identity = callable(class extends UnaryFunc {
+export const identity = callable(class identity extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `${arguments[0]}`; }
     derivative(sym) { return this.args[0].diff(sym); }
 })
 
-export const sqrt = callable(class extends UnaryFunc {
+export const sqrt = callable(class sqrt extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sqrt{${arguments[0]}}`; }
     derivative(sym) { return mul(frac(integer(1), mul(integer(2), sqrt(this.args[0]))), this.args[0].diff(sym)); }
 })
 
-export const abs = callable(class extends UnaryFunc {
+export const abs = callable(class abs extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\left|${arguments[0]}\\right|`; }
     derivative(sym) { return mul(frac(this.args[0], abs(this.args[0])), this.args[0].diff(sym)); }
 })
 
-export const exp = callable(class extends UnaryFunc {
+export const exp = callable(class exp extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `e^{${arguments[0]}}`; }
     derivative(sym) { return mul(exp(this.args[0]), this.args[0].diff(sym)); }
 })
 
-export const PartialBinaryFunc = class extends UnaryFunc {
+export class PartialBinaryFunc extends UnaryFunc {
     #constant;
     
     constructor(constant_modifier, arg) {
@@ -327,21 +336,22 @@ export const PartialBinaryFunc = class extends UnaryFunc {
             this.#constant.clone(), this.args[0] instanceof Func ? this.args[0].clone() : this.args[0]
         );
     }
+    json() { return {'node': this.constructor.name, 'args': [this.#constant.json(), this.args[0].json()]}; }
 }
 
-export const nroot = callable(class extends PartialBinaryFunc {
+export const nroot = callable(class nroot extends PartialBinaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sqrt[${this.constant.toString()}]{${arguments[0]}}`; }
     derivative(sym) { return mul(frac(integer(1), this.constant), pow(this.args[0], sub(frac(integer(1), this.constant), integer(1))), this.args[0].diff(sym)); }
 })
 
-export const logn = callable(class extends PartialBinaryFunc {
+export const logn = callable(class logn extends PartialBinaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\log_{${this.constant.toString()}}\\left(${arguments[0]}\\right)`; }
     derivative(sym) { return frac(this.args[0].diff(sym), mul(ln(this.constant), this.args[0])); }
 })
 
-export const NamedUnaryFunc = class extends UnaryFunc {
+export class NamedUnaryFunc extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { 
         if (NamedUnaryFunc.latex_operators.includes(this.constructor.name)) {
@@ -417,13 +427,19 @@ export const coth = callable(class coth extends NamedUnaryFunc {
     derivative(sym) { return mul(neg(pow(csch(this.args[0]), integer(2))), this.args[0].diff(sym)); }
 })
 
-export const InvNamedUnaryFunc = class extends NamedUnaryFunc {
+export class InvNamedUnaryFunc extends NamedUnaryFunc {
     constructor() { super(...arguments); }
     repr() {
         if (NamedUnaryFunc.latex_operators.includes(this.constructor.name)) {
             return `\\${this.constructor.name}^{-1}\\left(${arguments[0]}\\right)`;
         }
         else return `\\operatorname{${this.constructor.name}}^{-1}\\left(${arguments[0]}\\right)`;
+    }
+    json() { 
+        return {
+            'node': this.constructor.name ? `a${this.constructor.name}` : '',
+            'args': [this.args[0].json()]
+        }; 
     }
 }
 
@@ -487,14 +503,14 @@ export const acoth = callable(class coth extends InvNamedUnaryFunc {
     derivative(sym) { return frac(this.args[0].diff(sym), sub(integer(1), pow(this.args[0], integer(2)))); }
 })
 
-export const BinaryFunc = class extends Func {
+export class BinaryFunc extends Func {
     constructor() {
         if (arguments.length === 2) super(arguments[0], arguments[1]);
         else throw new Error(`BinaryFunc must receive two arguments; provided arguments: ${Array.from(arguments)}`);
     }
 }
 
-export const frac = callable(class extends BinaryFunc {
+export const frac = callable(class frac extends BinaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\frac{${arguments[0]}}{${arguments[1]}}`; }
     derivative(sym) {
@@ -514,7 +530,7 @@ export const frac = callable(class extends BinaryFunc {
     }
 })
 
-export const pow = callable(class extends BinaryFunc {
+export const pow = callable(class pow extends BinaryFunc {
     constructor() { super(...arguments); }
     repr() { 
         if (this.args[0] instanceof Symb) return `${arguments[0]}^{${arguments[1]}}`;
@@ -556,7 +572,7 @@ export const pow = callable(class extends BinaryFunc {
     }
 })
 
-export const WrapperFunc = class extends Func {
+export class WrapperFunc extends Func {
     constructor(arity, ...args) { 
         if (Number.isSafeInteger(arity) && arity >= 0) {
             if (args.length === arity) super(...args);
@@ -566,14 +582,14 @@ export const WrapperFunc = class extends Func {
     }
 }
 
-export const neg = callable(class extends WrapperFunc {
+export const neg = callable(class neg extends WrapperFunc {
     constructor() { 
         super(1, ...arguments);
         return mul(integer(-1), arguments[0]);
     }
 })
 
-export const sub = callable(class extends WrapperFunc {
+export const sub = callable(class sub extends WrapperFunc {
     constructor() { 
         super(2, ...arguments);
         return add(this.args[0], neg(this.args[1]));
