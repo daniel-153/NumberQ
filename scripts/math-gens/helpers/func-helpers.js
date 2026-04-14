@@ -88,6 +88,49 @@ export class Func {
         else throw new Error(`Func.diff(sym, order) receives a Symb and a non-negative integer order; provided arguments ${{sym, order}}.`);
     }
 
+    static sub = class {
+        #sub_map = new Map();
+        constructor(array) {
+            if (arguments.length === 0 || (arguments.length === 1 && Array.isArray(array))) {
+                if (arguments.length === 1) {
+                    array.forEach((entry, idx) => {
+                        if (
+                            Array.isArray(entry) && entry.length === 2 && 
+                            (entry[0] instanceof Func || entry[0] instanceof Symb) &&
+                            (entry[1] instanceof Func || entry[1] instanceof Symb)
+                        ) this.#sub_map.set(entry[0], entry[1]);
+                        else throw new Error(`Func.sub input array must contain pairs of Func or Symb; invalid entry encountered at index ${idx}.`);
+                    });
+                }
+                Object.freeze(this);
+            }
+            else throw new Error(`Func.sub constructor only receives an optional array; provided arguments: ${Array.from(arguments)}.`);
+        }
+
+        get(key) { return this.#sub_map.get(key); }
+        has(key) { return this.#sub_map.has(key); }
+    }
+    static #subs_ctx = Symbol();
+    subs(sub = new Func.sub(), subs_ctx = undefined) {
+        if (sub.constructor === Func.sub) {
+            const this_sub = sub.get(this);
+            if (this_sub) {
+                if (subs_ctx !== Func.#subs_ctx && this_sub instanceof Symb) return identity(this_sub);
+                else return this_sub;
+            }
+            else if (this instanceof constant) return this.clone();
+            else {
+                const args = this.#args.map(arg => {
+                    if (arg instanceof Symb) return sub.get(arg) ?? arg;
+                    else return arg.subs(sub, Func.#subs_ctx);
+                });
+                if (this instanceof PartialBinaryFunc) args.unshift(this.constant.clone());
+                return Reflect.construct(this.constructor, args); 
+            }
+        }
+        else throw new Error(`Func.subs receives an optional Func.sub argument; provided argument has constructor of '${sub.constructor}'.`);
+    }
+
     static #trim_ctx = Symbol();
     trim(trim_ctx = undefined) {
         const args = this.#args.map(arg => arg instanceof Func ? arg.trim(Func.#trim_ctx) : arg);
@@ -369,7 +412,7 @@ export class NamedUnaryFunc extends UnaryFunc {
         }
         else return `\\operatorname{${this.constructor.name}}\\left(${arguments[0]}\\right)`;
     }
-    static latex_operators = ['sin','cos','tan','csc','sec','cot','sinh','cosh','tanh','csch','sech','coth','exp','ln'];
+    static latex_operators = ['sin','cos','tan','csc','sec','cot','sinh','cosh','tanh','coth','exp','ln'];
 }
 
 export const ln = callable(class ln extends NamedUnaryFunc {
@@ -586,16 +629,28 @@ export class WrapperFunc extends Func {
     }
 }
 
-export const neg = callable(class neg extends WrapperFunc {
+export const neg = callable(class extends WrapperFunc {
     constructor() { 
         super(1, ...arguments);
         return mul(integer(-1), arguments[0]);
     }
 })
 
-export const sub = callable(class sub extends WrapperFunc {
+export const sub = callable(class extends WrapperFunc {
     constructor() { 
         super(2, ...arguments);
         return add(this.args[0], neg(this.args[1]));
+    }
+})
+
+export const compose = callable(class extends WrapperFunc {
+    constructor() {
+        super(2, ...arguments);
+        if (arguments[0] instanceof Func) {
+            if (arguments[0].arity === 1) return arguments[0].subs(new Func.sub([[arguments[0].symbols[0], arguments[1]]]));
+            else if (arguments[0].arity === 0) return arguments[0];
+            else throw new Error('First argument to compose constructor must have arity of 0 or 1.');
+        } 
+        else throw new Error('First argument to compose constructor must be a Func.');
     }
 })
