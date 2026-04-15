@@ -1418,3 +1418,80 @@ export const force_zero_inits = {
     tooltip: 'Should the initial values of function and its derivative always be zero?',
     prelocked: true
 };
+
+export const func_op_counts = {
+    type: 'textbox_table',
+    code_names: ['sum_count','mul_count','div_count','chain_count'],
+    display_names: ['Sums&nbsp;\\(f(x)\\pm g(x)\\)','Products&nbsp;\\(f(x)g(x)\\)','Quotients&nbsp;\\(\\dfrac{f(x)}{g(x)}\\)','Chains&nbsp;\\(f(g(x))\\)'],
+    display_name: 'Operations',
+    tooltip: "How many times should each operation appear? (enter integers from 0 to 3)",
+    valid_values: {
+        'sum_count': [0, '--', 3],
+        'mul_count': [0, '--', 3],
+        'div_count': [0, '--', 3],
+        'chain_count': [0, '--', 3]
+    },
+    default_value: {
+        'sum_count': 0,
+        'mul_count': 0,
+        'div_count': 0,
+        'chain_count': 0
+    }
+};
+
+export const diff_funcs = {
+    type: 'check_boxes',
+    display_name: 'Functions',
+    check_boxes: [
+        ['constant', '\\(C\\)'],
+        ['identity', '\\(x\\)'],
+        ['const_mul', '\\(ax\\)'],
+        ['linear', '\\(ax+b\\)'],
+        ['int_power', '\\(x^{n}\\)'],
+        ['e_x', '\\(e^{x}\\)'],
+        ['quadratic', '\\(ax^{2}+bx+c\\)'],
+        ['basic_trig', '\\(\\sin(x),~\\cos(x)\\)&nbsp;'],
+        ['advan_trig', '\\(\\tan(x),~\\sec(x),\\)<br>\\(\\cot(x),~\\csc(x)\\)&nbsp;'],
+        ['sqrt', '\\(\\sqrt{x}\\)'],
+        ['ln', '\\(\\ln(x)\\)'],
+        ['recip', '\\(\\dfrac{1}{x}\\)'],
+        ['frac_power', '\\(x^{\\frac{p}{q}}\\)'],
+        ['polynom', '\\(a_{n}x^{n}+\\dots+a_{0}\\)&nbsp;'],
+        ['nroot', '\\(\\sqrt[n]{x}\\)'],
+        ['a_x', '\\(a^{x}\\)'],
+        ['log_a_x', '\\(\\log_{a}(x)\\)'],
+        ['abs', '\\(|x|\\)'],
+        ['inv_trig', '\\(\\sin^{-1}(x),~\\cos^{-1}(x),\\)<br>\\(\\tan^{-1}(x)\\)&nbsp;'],
+        ['co_inv_trig', '\\(\\sec^{-1}(x),\\csc^{-1}(x),\\)<br>\\(\\cot^{-1}(x)\\)&nbsp;'],
+        ['basic_hyper_trig', '\\(\\sinh(x),~\\cosh(x)\\)&nbsp;'],
+        ['advan_hyper_trig', '\\(\\tanh(x),~\\operatorname{sech}(x),\\)<br>\\(\\coth(x),~\\operatorname{csch}(x)\\)&nbsp;'],
+        ['inv_hyper_trig', '\\(\\sinh^{-1}(x),~\\cosh^{-1}(x),\\)<br>\\(\\tanh^{-1}(x)\\)&nbsp;'],
+        ['co_inv_hyper_trig', '\\(\\operatorname{sech}^{-1}(x),\\operatorname{csch}^{-1}(x),\\)<br>\\(\\coth^{-1}(x)\\)&nbsp;']
+    ], 
+    tooltip: 'Which types of functions should be allowed in the expression?',
+    default_value: ['identity'] 
+};
+
+export const expr_diff_notation = {
+    type: 'radio_buttons',
+    display_name: 'Notation',
+    radio_buttons: [
+        ['oper_brac', '\\(\\dfrac{d}{dx}[\\dots]\\)&nbsp;'],
+        ['oper_paren', '\\(\\dfrac{d}{dx}(\\dots)\\)&nbsp;'],
+        ['func', '\\(y\'(x)=\\:?~\\)&nbsp;'],
+        ['implicit', '\\(\\dfrac{dy}{dx}=\\:?\\)&nbsp;']
+    ], 
+    tooltip: 'How should the prompt to \'find the derivative\' be communicated?',
+    prelocked: true
+};
+
+export const diff_order = {
+    type: 'radio_buttons',
+    display_name: 'Derivative Order',
+    radio_buttons: [
+        ['first', "First \\(\\dfrac{d}{dx}\\)&nbsp;"],
+        ['second', "Second \\(\\dfrac{d^{2}}{dx^{2}}\\)&nbsp;"]
+    ], 
+    tooltip: 'Should the first or second derivative be taken?',
+    prelocked: true
+};
