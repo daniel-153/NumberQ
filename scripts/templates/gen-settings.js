@@ -1419,30 +1419,35 @@ export const force_zero_inits = {
     prelocked: true
 };
 
-export const func_op_counts = {
-    type: 'textbox_table',
-    code_names: ['sum_count','mul_count','div_count','chain_count'],
-    display_names: ['Sums&nbsp;\\(f(x)\\pm g(x)\\)','Products&nbsp;\\(f(x)g(x)\\)','Quotients&nbsp;\\(\\dfrac{f(x)}{g(x)}\\)','Chains&nbsp;\\(f(g(x))\\)'],
-    display_name: 'Operations',
-    tooltip: "How many times should each operation appear? (enter integers from 0 to 3)",
-    valid_values: {
-        'sum_count': [0, '--', 3],
-        'mul_count': [0, '--', 3],
-        'div_count': [0, '--', 3],
-        'chain_count': [0, '--', 3]
-    },
-    default_value: {
-        'sum_count': 0,
-        'mul_count': 0,
-        'div_count': 0,
-        'chain_count': 0
-    }
+export const func_ops = {
+    type: 'check_boxes',
+    display_name: 'Allowed Operations',
+    check_boxes: [
+        ['sum', 'Sums&nbsp;\\(f(x)\\pm g(x)\\)&nbsp;'],
+        ['mul', 'Products&nbsp;\\(f(x)g(x)\\)&nbsp;'],
+        ['div', 'Quotients&nbsp;\\(\\dfrac{f(x)}{g(x)}\\)&nbsp;'],
+        ['chain', 'Chains&nbsp;\\(f(g(x))\\)&nbsp;']
+    ],
+    tooltip: 'Which operations should be allowed in the expression?',
+    required: false
+};
+
+export const func_op_count = {
+    type: 'radio_buttons',
+    display_name: 'Number of Operations',
+    radio_buttons: [
+        ['none', 'None \\(\\frac{d}{dx}[f(x)]\\)'],
+        ['one', '1 or fewer \\(\\frac{d}{dx}[f(x)\\star g(x)]\\)'],
+        ['two', '2 or fewer \\(\\frac{d}{dx}[f(x)\\star g(x) \\star h(x)]\\)'],
+    ], 
+    tooltip: 'How many operations should the expression have?'
 };
 
 export const diff_funcs = {
     type: 'check_boxes',
     display_name: 'Functions',
     check_boxes: [
+        ['any', 'Any (random)'],
         ['constant', '\\(C\\)'],
         ['identity', '\\(x\\)'],
         ['const_mul', '\\(ax\\)'],
