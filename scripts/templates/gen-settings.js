@@ -1419,28 +1419,19 @@ export const force_zero_inits = {
     prelocked: true
 };
 
-export const func_ops = {
-    type: 'check_boxes',
-    display_name: 'Allowed Operations',
-    check_boxes: [
+export const func_op = {
+    type: 'radio_buttons',
+    display_name: 'Operations',
+    radio_buttons: [
+        ['any', 'Any (random)'],
         ['sum', 'Sums&nbsp;\\(f(x)\\pm g(x)\\)&nbsp;'],
         ['mul', 'Products&nbsp;\\(f(x)g(x)\\)&nbsp;'],
         ['div', 'Quotients&nbsp;\\(\\dfrac{f(x)}{g(x)}\\)&nbsp;'],
-        ['chain', 'Chains&nbsp;\\(f(g(x))\\)&nbsp;']
+        ['chain', 'Chains&nbsp;\\(f(g(x))\\)&nbsp;'],
+        ['none', 'None']
     ],
     tooltip: 'Which operations should be allowed in the expression?',
     required: false
-};
-
-export const func_op_count = {
-    type: 'radio_buttons',
-    display_name: 'Number of Operations',
-    radio_buttons: [
-        ['none', 'None \\(\\frac{d}{dx}[f(x)]\\)'],
-        ['one', '1 or fewer \\(\\frac{d}{dx}[f(x)\\star g(x)]\\)'],
-        ['two', '2 or fewer \\(\\frac{d}{dx}[f(x)\\star g(x) \\star h(x)]\\)'],
-    ], 
-    tooltip: 'How many operations should the expression have?'
 };
 
 export const diff_funcs = {
@@ -1474,7 +1465,7 @@ export const diff_funcs = {
         ['co_inv_hyper_trig', '\\(\\operatorname{sech}^{-1}(x),\\operatorname{csch}^{-1}(x),\\)<br>\\(\\coth^{-1}(x)\\)&nbsp;']
     ], 
     tooltip: 'Which types of functions should be allowed in the expression?',
-    default_value: ['identity'] 
+    default_value: ['any']
 };
 
 export const expr_diff_notation = {
@@ -1487,16 +1478,5 @@ export const expr_diff_notation = {
         ['implicit', '\\(\\dfrac{dy}{dx}=\\:?\\)&nbsp;']
     ], 
     tooltip: 'How should the prompt to \'find the derivative\' be communicated?',
-    prelocked: true
-};
-
-export const diff_order = {
-    type: 'radio_buttons',
-    display_name: 'Derivative Order',
-    radio_buttons: [
-        ['first', "First \\(\\dfrac{d}{dx}\\)&nbsp;"],
-        ['second', "Second \\(\\dfrac{d^{2}}{dx^{2}}\\)&nbsp;"]
-    ], 
-    tooltip: 'Should the first or second derivative be taken?',
     prelocked: true
 };

@@ -113,65 +113,33 @@ const DIH  = { // genDerIve helpers
         div: (a, b) => FH.frac(a, b),
         chain: (a, b) => FH.compose(a, b)
     },
-    getRandOpOrder(settings) {
-        const op_list = [];
-        ['sum_count', 'mul_count', 'div_count', 'chain_count'].forEach(op_count_field => {
-            const op_count = settings[op_count_field];
-            const op_name = op_count_field.split('_')[0];
-            for (let i  = 0; i < op_count; i++) op_list.push(op_name);
-        });
-        return H.randomizeList(op_list);
+    getRandFunc(settings) {
+        const chosen_func = H.randFromList(settings.diff_funcs);
+        return chosen_func === 'any' ? H.randFromList(Object.keys(DIH.funcs)) : chosen_func;
     },
-    getRandFuncOrder(settings, num_ops) {
-        const possible_funcs = settings.diff_funcs;
-        const chosen_funcs = [];
-        for (let i = 0; i < num_ops + 1; i++) {
-            chosen_funcs.push(H.randFromList(possible_funcs));
-        }
-        return chosen_funcs;
+    getRandOp(settings) {
+        if (settings.func_op === 'any') return H.randFromList(Object.keys(DIH.ops));
+        else if (settings.func_op === 'none') return null;
+        else return settings.func_op;
     },
-    buildRandTree(op_order, func_order) {
-        const nodes = [[func_order[0]]];
-        for (let i = 0; i < op_order.length; i++) {
-            const op = op_order[i];
-            const func_node = [func_order[i + 1]];
-            const chosen_node = H.randFromList(nodes);
-            const cut_node = chosen_node.length === 1 ? [chosen_node[0]] : [chosen_node[0], chosen_node[1], chosen_node[2]];
-
-            chosen_node.length = 0;
-            if (H.randInt(0, 1)) chosen_node.push(cut_node, op, func_node);
-            else chosen_node.push(func_node, op, cut_node);
-            nodes.push(cut_node, func_node);
-        }
-        return nodes[0];
-    },
-    treeToFunc(tree, sym = new FH.Symb('x')) {
-        if (tree.length === 1) return DIH.funcs[tree[0]](sym);
-        else return DIH.ops[tree[1]](DIH.treeToFunc(tree[0], sym), DIH.treeToFunc(tree[2], sym));
+    buildPromptExpr(settings) {
+        const chosen_op = DIH.getRandOp(settings);
+        if (chosen_op) return (x) => DIH.ops[chosen_op](DIH.funcs[DIH.getRandFunc(settings)](x), DIH.funcs[DIH.getRandFunc(settings)](x));
+        else return (x) => DIH.funcs[DIH.getRandFunc(settings)](x)
     },
     getDiffOpStr(settings, ind_var, dep_var) {
         if (settings.expr_diff_notation === 'func') {
             const order = settings.diff_order === 'second' ? 2 : 1;
-            return `${dep_var}${"'".repeat(order)}(${ind_var})`;
+            return `${dep_var}${"'".repeat(order)}\\left(${ind_var}\\right)`;
         }
-        else {
-            let num = 'd';
-            let den = `d${ind_var}`;
-            if (settings.diff_order === 'second') {
-                num += '^{2}';
-                den += '^{2}';
-            }
-            if (settings.expr_diff_notation === 'implicit') num += dep_var;
-
-            return `\\dfrac{${num}}{${den}}`;
-        }
+        else return `\\dfrac{d${settings.expr_diff_notation === 'implicit' ? dep_var : ''}}{d${ind_var}}`;
     },
     getPromptStr(settings, func_str, diff_op_str) {
-        if (settings.expr_diff_notation === 'oper_brac') return `${diff_op_str}[${func_str}]`;
-        else if (settings.expr_diff_notation === 'oper_paren') return `${diff_op_str}(${func_str})`;
+        if (settings.expr_diff_notation === 'oper_brac') return `${diff_op_str}\\left[${func_str}\\right]`;
+        else if (settings.expr_diff_notation === 'oper_paren') return `${diff_op_str}\\left(${func_str}\\right)`;
         else {
             let lhs;
-            if (settings.expr_diff_notation === 'func') lhs = `${settings.diff_eq_vars.split('_').join('(')})`;
+            if (settings.expr_diff_notation === 'func') lhs = `${settings.diff_eq_vars.split('_').join('\\left(')}\\right)`;
             else if (settings.expr_diff_notation === 'implicit') lhs = settings.diff_eq_vars.split('_')[0];
 
             return `${lhs}=${func_str},~${diff_op_str}=\\:?`;
@@ -186,14 +154,11 @@ const DIH  = { // genDerIve helpers
     }
 };
 export default function genDerIve(settings) {
-    const op_order = DIH.getRandOpOrder(settings);
-    const func_order = DIH.getRandFuncOrder(settings, op_order.length);
-    const arr_tree = DIH.buildRandTree(op_order, func_order);
     const [dep_var, ind_var] = settings.diff_eq_vars.split('_');
     const ind_var_sym = new FH.Symb(ind_var);
-    const func = DIH.treeToFunc(arr_tree, ind_var_sym)
-    const diff_func = func.diff(ind_var_sym, settings.diff_order === 'second' ? 2 : 1);
-    const func_str = func.toString();
+    const func = DIH.buildPromptExpr(settings)(ind_var_sym);
+    const diff_func = func.diff(ind_var_sym);
+    const func_str = func.trim().toString();
     const diff_func_str = diff_func.trim().toString();
     const diff_op_str = DIH.getDiffOpStr(settings, ind_var, dep_var);
     const prompt_str = DIH.getPromptStr(settings, func_str, diff_op_str);
@@ -206,24 +171,19 @@ export default function genDerIve(settings) {
 }
 
 export const settings_fields = [
-    'func_op_counts',
+    'func_op',
     'diff_funcs',
     'expr_diff_notation',
-    'diff_eq_vars',
-    'diff_order'
+    'diff_eq_vars'
 ];
 
 export const presets = {
     default: function() {
         return {
-            sum_count: 0,
-            mul_count: 0,
-            div_count: 0,
-            chain_count: 0,
+            func_op: 'none',
             diff_funcs: ['constant', 'identity', 'const_mul', 'linear', 'int_power', 'e_x', 'basic_trig'],
             expr_diff_notation: 'oper_paren',
-            diff_eq_vars: 'y_x',
-            diff_order: 'first'
+            diff_eq_vars: 'y_x'
         };
     },
     random: function() {
