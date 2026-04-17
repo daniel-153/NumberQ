@@ -354,13 +354,13 @@ export const identity = callable(class identity extends UnaryFunc {
 export const sqrt = callable(class sqrt extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\sqrt{${arguments[0]}}`; }
-    derivative(sym) { return mul(frac(integer(1), mul(integer(2), sqrt(this.args[0]))), this.args[0].diff(sym)); }
+    derivative(sym) { return mul(frac(integer(1), mul(integer(2), new sqrt(this.args[0]))), this.args[0].diff(sym)); }
 })
 
 export const abs = callable(class abs extends UnaryFunc {
     constructor() { super(...arguments); }
     repr() { return `\\left|${arguments[0]}\\right|`; }
-    derivative(sym) { return mul(frac(this.args[0], abs(this.args[0])), this.args[0].diff(sym)); }
+    derivative(sym) { return mul(frac(this.args[0], new abs(this.args[0])), this.args[0].diff(sym)); }
 })
 
 export const exp = callable(class exp extends UnaryFunc {
