@@ -31,9 +31,7 @@ export function getGenOutput(pg_ui_state, question_obj) {
     });
 }
 
-export async function switchGenInfo(pg_ui_state, func_name, display_name) {
-    if (func_name !== pg_ui_state.func_name) pg_ui_state.first_with_current_gen = true;
-    
+export async function switchGenInfo(pg_ui_state, func_name, display_name) {    
     pg_ui_state.func_name = func_name;
     pg_ui_state.display_name = display_name;
     pg_ui_state.current_module = await import(`../../math-gens/gens/${func_name}.js`);
@@ -406,12 +404,14 @@ export function insertCopySaveButtons() {
     document.getElementById('A-column').querySelector('.un-rendered-box-wrapper').insertAdjacentHTML('afterbegin', createSingleCopyButton('A'));
 }
 
-export function startGeneration(pg_ui_state, func_name) {
+export function startGeneration(pg_ui_state, func_name, local_exec_sym) {
     if (pg_ui_state.is_currently_generating) return false;
     else {
         pg_ui_state.is_currently_generating = true;
+        pg_ui_state.global_exec_sym = local_exec_sym;
 
         if (func_name !== pg_ui_state.func_name) { // first generation or switched to a different gen
+            pg_ui_state.first_with_current_gen = true;
             ['rendered-Q', 'rendered-A'].forEach(outbox_box_id => {
                 const output_box = document.getElementById(outbox_box_id);
                 output_box.innerHTML = '';
@@ -425,15 +425,19 @@ export function startGeneration(pg_ui_state, func_name) {
     }
 }
 
-export function endGeneration(pg_ui_state) {
-    pg_ui_state.first_pg_ui_open = false; // no longer the first generation
-    pg_ui_state.first_with_current_gen = false; // no longer first with current gen (but this could get flipped above - near the start)
-    pg_ui_state.is_currently_generating = false;
+export function endGeneration(pg_ui_state, local_exec_sym) {
+    if (local_exec_sym !== pg_ui_state.global_exec_sym) return false;
+    else {
+        pg_ui_state.is_currently_generating = false;
+        pg_ui_state.global_exec_sym = null;
 
-    ['rendered-Q', 'rendered-A'].forEach(outbox_box_id => {
-        const math_wrap = document.getElementById(outbox_box_id).parentElement;
-        math_wrap.classList.remove('spinner');
-    });
+        ['rendered-Q', 'rendered-A'].forEach(outbox_box_id => {
+            const math_wrap = document.getElementById(outbox_box_id).parentElement;
+            math_wrap.classList.remove('spinner');
+        });
+
+        return true;
+    }
 }
 
 export function revealUiButtons() {
