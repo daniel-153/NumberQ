@@ -6,6 +6,7 @@ const pg_ui_state = {
     current_module: null,
     current_gen_func: null,
     is_currently_generating: false,
+    global_exec_sym: null,
     func_name: null,
     display_name: null,
     gen_type: null,
@@ -34,56 +35,55 @@ const pg_ui_state = {
 };
 
 export async function generate(func_name, display_name = '') {
-    if (!PH.startGeneration(pg_ui_state, func_name)) return;
-    
-    if (pg_ui_state.first_pg_ui_open) { // first generation with any mode
-        UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
-        UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
-        PH.insertCopySaveButtons();
-        await import('../math-jax/interface.js');
-        await UH.loadStyleSheets(pg_ui_state.stylesheets);
-        PH.revealUiButtons();
-        await import('../analytics/interface.js');
-    }
-
-    if (pg_ui_state.first_pg_ui_open || func_name !== pg_ui_state.func_name) { // first generation with any mode Or switched to a new gen
-        await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
-        PH.insertGenTitle(display_name, "generator-name");
-        PH.resolveSizeAdjustments(pg_ui_state.current_module, pg_ui_state);
-        PH.exposeSizeAdjustments(pg_ui_state.current_module);
-        await PH.loadMjxExtensions(pg_ui_state.current_module, pg_ui_state);
-        pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
-        await PH.createSettingsPresets(pg_ui_state.current_module, pg_ui_state);
-        FH.correctSettingOverflow('settings-form');
-        PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
-        PH.updatePresetStatus('default', true, pg_ui_state); // focus the 'default' preset and apply it for the first generation
-    }
-
-    PH.getPresetStatus(pg_ui_state);
-
-    PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into current_settings
-    
+    const local_exec_sym = Symbol();
     try {
+        if (!PH.startGeneration(pg_ui_state, func_name, local_exec_sym)) return;
+        
+        if (pg_ui_state.first_pg_ui_open) { // first generation with any mode
+            UH.addTextAutofitter(document.getElementById('un-rendered-Q'), '1.2vw');
+            UH.addTextAutofitter(document.getElementById('un-rendered-A'), '1.2vw');
+            PH.insertCopySaveButtons();
+            await import('../math-jax/interface.js');
+            await UH.loadStyleSheets(pg_ui_state.stylesheets);
+            PH.revealUiButtons();
+            pg_ui_state.first_pg_ui_open = false;
+            await import('../analytics/interface.js');
+        }
+
+        if (pg_ui_state.first_with_current_gen) {
+            await PH.switchGenInfo(pg_ui_state, func_name, display_name); // switch all the info to the new or current gen-module
+            PH.insertGenTitle(display_name, "generator-name");
+            PH.resolveSizeAdjustments(pg_ui_state.current_module, pg_ui_state);
+            PH.exposeSizeAdjustments(pg_ui_state.current_module);
+            await PH.loadMjxExtensions(pg_ui_state.current_module, pg_ui_state);
+            pg_ui_state.valid_settings_log = await FH.createSettingsFields(pg_ui_state.current_module.settings_fields, await import('../templates/gen-settings.js'), 'settings-form');
+            await PH.createSettingsPresets(pg_ui_state.current_module, pg_ui_state);
+            FH.correctSettingOverflow('settings-form');
+            PH.prelockSettings('settings-form', pg_ui_state.current_module); // lock any pre-locked settings if specified
+            PH.updatePresetStatus('default', true, pg_ui_state); // focus the 'default' preset and apply it for the first generation
+        }
+
+        PH.getPresetStatus(pg_ui_state);
+
+        PH.getCurrentSettings(pg_ui_state, 'settings-form'); // get current form values, get_presets, or get_rand_settings into current_settings
+        
         PH.getGenOutput(pg_ui_state, await pg_ui_state.current_gen_func(pg_ui_state.current_settings)); // get a new question_obj into the ui state
+
+        PH.updatePGQABoxes(pg_ui_state.question_obj, pg_ui_state.sizes, pg_ui_state.question_type, pg_ui_state.answer_type);
+
+        FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
+
+        if (!pg_ui_state.preset_is_applied) FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form'); 
+
+        if (pg_ui_state.first_with_current_gen) {
+            PH.updatePresetStatus('random', false, pg_ui_state); // after the initial generation, focus the Randomize All preset (without applying it)
+            pg_ui_state.first_with_current_gen = false;
+        }
+        
+        window.nq_analytics.countGeneration(func_name);
     } catch (error) {
         console.error('Failed to generate: ', error);
-        PH.endGeneration(pg_ui_state);
-        return;
+    } finally {
+        PH.endGeneration(pg_ui_state, local_exec_sym);
     }
-
-    PH.updatePGQABoxes(pg_ui_state.question_obj, pg_ui_state.sizes, pg_ui_state.question_type, pg_ui_state.answer_type);
-
-    FH.updateFormValues(pg_ui_state.current_settings, 'settings-form'); 
-
-    // all settings have the potential to be changed (corrected) by the validator function
-    if (!pg_ui_state.preset_is_applied) { // if a preset is currently applied, don't flash invalid settings that were corrected (some presets make use of auto-correction for simplicity)
-        FH.flashFormElements(Array.from(pg_ui_state.error_locations), 'settings-form'); 
-    }
-
-    if (pg_ui_state.first_with_current_gen) {
-        PH.updatePresetStatus('random', false, pg_ui_state); // after the initial generation, focus the Randomize All preset (without applying it)
-    }
-    
-    window.nq_analytics.countGeneration(func_name);
-    PH.endGeneration(pg_ui_state); // first_pg_ui_open, first_with_current_gen, is_currently_generating -> false
 }

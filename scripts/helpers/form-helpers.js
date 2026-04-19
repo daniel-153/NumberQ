@@ -1,22 +1,15 @@
 export function flashFormElements(element_name_array, form_ID) {
     const form = document.getElementById(form_ID);
-    if (!form) {
+    if (!(form instanceof HTMLFormElement)) {
         console.error(`Form with ID '${form_ID}' not found.`);
         return;
     }
 
     element_name_array.forEach(name => {
         const element = form.elements[name];
-        if (!element) {
-            console.warn(`No form element found with the name '${name}'.`);
-            return;
-        }
-
-        // Cancel any ongoing animation by forcing a reflow
+        if (!(element instanceof HTMLElement)) return;
         element.classList.remove('flash-red');
-        void element.offsetWidth; // trigger reflow (force styles to be applied/re-rendered)
-
-        // Re-apply animation class
+        void element.offsetWidth;
         element.classList.add('flash-red');
     });
 }
