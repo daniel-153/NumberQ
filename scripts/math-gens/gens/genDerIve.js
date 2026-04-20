@@ -128,10 +128,7 @@ const DIH  = { // genDerIve helpers
         else return (x) => DIH.funcs[DIH.getRandFunc(settings)](x)
     },
     getDiffOpStr(settings, ind_var, dep_var) {
-        if (settings.expr_diff_notation === 'func') {
-            const order = settings.diff_order === 'second' ? 2 : 1;
-            return `${dep_var}${"'".repeat(order)}\\left(${ind_var}\\right)`;
-        }
+        if (settings.expr_diff_notation === 'func') return `${dep_var}'\\left(${ind_var}\\right)`;
         else return `\\dfrac{d${settings.expr_diff_notation === 'implicit' ? dep_var : ''}}{d${ind_var}}`;
     },
     getPromptStr(settings, func_str, diff_op_str) {
