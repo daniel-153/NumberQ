@@ -1,40 +1,40 @@
 import * as H from '../helpers/gen-helpers.js';
-import * as FH from '../helpers/func-helpers.js';
+import * as DH from '../helpers/diff-helpers.js';
 
 export function validateSettings(form_obj, error_locations) {}
 
 const DIH  = { // genDerIve helpers
     funcs: {
-        constant: x => FH.integer(H.randIntExcept(-5, 5, 0)),
-        identity: x => FH.identity(x),
-        const_mul: x => FH.mul(DIH.funcs.constant(x), x),
-        linear: x => FH.add(DIH.funcs.const_mul(x), DIH.funcs.constant(x)),
-        int_power: x => FH.pow(x, FH.integer(H.randFromList(H.removeFromArray([0, 1], H.integerArray(-5, 5))))),
-        e_x: x => FH.exp(x),
+        constant: x => DH.integer(H.randIntExcept(-5, 5, 0)),
+        identity: x => x,
+        const_mul: x => DH.mul(DIH.funcs.constant(x), x),
+        linear: x => DH.add(DIH.funcs.const_mul(x), DIH.funcs.constant(x)),
+        int_power: x => DH.pow(x, DH.integer(H.randFromList(H.removeFromArray([0, 1], H.integerArray(-5, 5))))),
+        e_x: x => DH.exp(x),
         quadratic: x => {
             let a;
-            if (H.randInt(0, 1)) a = FH.integer(1);
-            else a = FH.integer(H.randFromList(H.removeFromArray([0, 1], H.integerArray(-5, 5))));
+            if (H.randInt(0, 1)) a = DH.integer(1);
+            else a = DH.integer(H.randFromList(H.removeFromArray([0, 1], H.integerArray(-5, 5))));
 
             let b;
-            if (!H.randInt(0, 2)) b = FH.integer(0);
-            else b = FH.integer(H.randIntExcept(-5, 5, 0));
+            if (!H.randInt(0, 2)) b = DH.integer(0);
+            else b = DH.integer(H.randIntExcept(-5, 5, 0));
 
-            let c = FH.integer(H.randInt(-5, 5));
+            let c = DH.integer(H.randInt(-5, 5));
 
-            return FH.add(FH.mul(a, FH.pow(x, FH.integer(2))), FH.mul(b, x), c);
+            return DH.add(DH.mul(a, DH.pow(x, DH.integer(2))), DH.mul(b, x), c);
         },
-        basic_trig: x => H.randInt(0, 1) ? FH.sin(x) : FH.cos(x),
+        basic_trig: x => H.randInt(0, 1) ? DH.sin(x) : DH.cos(x),
         advan_trig: x => {
             let switcher = H.randInt(0, 3);
-            if (switcher === 0) return FH.tan(x);
-            else if (switcher === 1) return FH.sec(x);
-            else if (switcher === 2) return FH.csc(x);
-            else return FH.cot(x);
+            if (switcher === 0) return DH.tan(x);
+            else if (switcher === 1) return DH.sec(x);
+            else if (switcher === 2) return DH.csc(x);
+            else return DH.cot(x);
         },
-        sqrt: x => FH.sqrt(x),
-        ln: x => FH.ln(x),
-        recip: x => FH.frac(FH.integer(1), x),
+        sqrt: x => DH.sqrt(x),
+        ln: x => DH.ln(x),
+        recip: x => DH.frac(DH.integer(1), x),
         frac_power: x => {
             let n;
             let d;
@@ -54,10 +54,10 @@ const DIH  = { // genDerIve helpers
                 d /= gcd;
             } while (d === 1);
 
-            let pow = FH.rational(n, d);
-            if (H.randInt(0, 1)) pow = FH.mul(FH.integer(-1), pow);
+            let pow = DH.frac(DH.integer(n), DH.integer(d));
+            if (H.randInt(0, 1)) pow = DH.mul(DH.integer(-1), pow);
 
-            return FH.pow(x, pow);
+            return DH.pow(x, pow);
         },
         polynom: x => {
             const degree = H.randInt(1, 4);
@@ -66,52 +66,52 @@ const DIH  = { // genDerIve helpers
                 let coef;
                 if (n === degree) coef = H.randIntExcept(-5, 5, 0);
                 else coef = H.randInt(-5, 5);
-                terms.push(FH.mul(FH.integer(coef), FH.pow(x, FH.integer(n))));
+                terms.push(DH.mul(DH.integer(coef), DH.pow(x, DH.integer(n))));
             }
-            return FH.add.apply({}, terms);
+            return DH.add.apply({}, terms);
         },
-        nroot: x => FH.nroot(FH.integer(H.randInt(3, 7)), x),
-        a_x: x => FH.pow(FH.integer(H.randInt(2, 9)), x),
-        log_a_x: x => FH.logn(FH.integer(H.randInt(2, 9)), x),
-        abs: x => FH.abs(x),
+        nroot: x => DH.root(DH.integer(H.randInt(3, 7)), x),
+        a_x: x => DH.pow(DH.integer(H.randInt(2, 9)), x),
+        log_a_x: x => DH.log(DH.integer(H.randInt(2, 9)), x),
+        abs: x => DH.abs(x),
         inv_trig: x => {
             const switcher = H.randInt(0, 2);
-            if (switcher === 0) return FH.asin(x);
-            else if (switcher === 1) return FH.acos(x);
-            else return FH.atan(x);
+            if (switcher === 0) return DH.asin(x);
+            else if (switcher === 1) return DH.acos(x);
+            else return DH.atan(x);
         },
         co_inv_trig: x => {
             const switcher = H.randInt(0, 2);
-            if (switcher === 0) return FH.asec(x);
-            else if (switcher === 1) return FH.acsc(x);
-            else return FH.acot(x);
+            if (switcher === 0) return DH.asec(x);
+            else if (switcher === 1) return DH.acsc(x);
+            else return DH.acot(x);
         },
-        basic_hyper_trig: x => H.randInt(0, 1) ? FH.sinh(x) : FH.cosh(x),
+        basic_hyper_trig: x => H.randInt(0, 1) ? DH.sinh(x) : DH.cosh(x),
         advan_hyper_trig: x => {
             let switcher = H.randInt(0, 3);
-            if (switcher === 0) return FH.tanh(x);
-            else if (switcher === 1) return FH.sech(x);
-            else if (switcher === 2) return FH.csch(x);
-            else return FH.coth(x);
+            if (switcher === 0) return DH.tanh(x);
+            else if (switcher === 1) return DH.sech(x);
+            else if (switcher === 2) return DH.csch(x);
+            else return DH.coth(x);
         },
         inv_hyper_trig: x => {
             const switcher = H.randInt(0, 2);
-            if (switcher === 0) return FH.asinh(x);
-            else if (switcher === 1) return FH.acosh(x);
-            else return FH.atanh(x);
+            if (switcher === 0) return DH.asinh(x);
+            else if (switcher === 1) return DH.acosh(x);
+            else return DH.atanh(x);
         },
         co_inv_hyper_trig: x => {
             const switcher = H.randInt(0, 2);
-            if (switcher === 0) return FH.asech(x);
-            else if (switcher === 1) return FH.acsch(x);
-            else return FH.acoth(x);
+            if (switcher === 0) return DH.asech(x);
+            else if (switcher === 1) return DH.acsch(x);
+            else return DH.acoth(x);
         }
     },
     ops: {
-        sum: (a, b) => H.randInt(0, 1) ? FH.add(a, b) : FH.sub(a, b),
-        mul: (a, b) => FH.mul(a, b),
-        div: (a, b) => FH.frac(a, b),
-        chain: (a, b) => FH.compose(a, b)
+        sum: (a, b) => H.randInt(0, 1) ? DH.add(a, b) : DH.sub(a, b),
+        mul: (a, b) => DH.mul(a, b),
+        div: (a, b) => DH.frac(a, b),
+        chain: (a, b) => DH.compose(a, b)
     },
     getRandFunc(settings) {
         const chosen_func = H.randFromList(settings.diff_funcs);
@@ -155,11 +155,11 @@ const DIH  = { // genDerIve helpers
 };
 export default function genDerIve(settings) {
     const [dep_var, ind_var] = settings.diff_eq_vars.split('_');
-    const ind_var_sym = new FH.Symb(ind_var);
+    const ind_var_sym = new DH.variable(ind_var);
     const func = DIH.buildPromptExpr(settings)(ind_var_sym);
     const diff_func = func.diff(ind_var_sym);
-    const func_str = func.trim().toString();
-    const diff_func_str = diff_func.trim().toString();
+    const func_str = func.toString();
+    const diff_func_str = diff_func.toString();
     const diff_op_str = DIH.getDiffOpStr(settings, ind_var, dep_var);
     const prompt_str = DIH.getPromptStr(settings, func_str, diff_op_str);
     const answer_str = DIH.getAnswerStr(settings, diff_func_str, diff_op_str);
