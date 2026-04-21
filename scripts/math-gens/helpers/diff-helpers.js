@@ -32,7 +32,7 @@ export class Expr {
     }
     trim() {
         if (typeof(this.constructor?.trimmed) === 'function') return this.constructor.trimmed.apply(this, this.#els.map(el => el.trim()));
-        else throw new Error('No .trim method present on Expr instance; failed to trim.');
+        else return Reflect.construct(this.constructor, this.#els.map(el => el.trim()));
     }
     equals(expr) {
         if (this instanceof variable) return this === expr;
@@ -61,6 +61,7 @@ export class Symb extends Expr {
     }
     repr() { return this.#symbol; }
     get symbol() { return this.#symbol; }
+    static trimmed() { return this; }
 }
 
 export const variable = callable(class variable extends Symb {
@@ -74,11 +75,16 @@ export const variable = callable(class variable extends Symb {
 })
 
 export const integer = callable(class integer extends Symb {
+    #value;
     constructor(int) {
-        if (Number.isSafeInteger(int)) super(String(int));
+        if (Number.isSafeInteger(int)) {
+            super(String(int));
+            this.#value = int;
+        }
         else throw new Error(`integer constructor must receive a safe integer argument; provided argument: '${int}', type '${int.constructor?.name}'.`);
     }
     derivative() { return new integer(0); }
+    get value() { return this.#value; }
 })
 
 export class Oper extends Expr {
@@ -92,6 +98,78 @@ export const add  = callable(class add extends Oper {
     constructor() { super(...arguments); }
     repr() { return `(${Array.from(arguments).join(')+(')})`; }
     derivative(vari) { return Reflect.construct(add, this.els.map(el => el.diff(vari))); }
+    static trimmed() {
+        let args = [];
+        Array.from(arguments).forEach(arg => {
+            if (!arg.equals(integer(0))) {
+                if (arg instanceof add) args.push.apply(args, arg.els);
+                else args.push(arg);
+            }
+        });
+        if (args.length === 0) return integer(0);
+
+        const factors = function(term) {
+            const const_frac = [integer(1), integer(1)];
+            const func_frac = [[], []];
+            if (term instanceof frac) {
+                const num_factors = factors(term.els[0]);
+                const den_factors = factors(term.els[1]);
+
+                const_frac[0] = num_factors.const_frac[0];
+                const_frac[1] = den_factors.const_frac[0];
+                func_frac[0] = num_factors.func_frac[0];
+                func_frac[1] = den_factors.func_frac[0];
+            }
+            else if (term instanceof mul) {
+                term.els.forEach(el => {
+                    if (el instanceof integer) const_frac[0] = integer(const_frac[0].value*el.value);
+                    else func_frac[0].push(el);
+                });
+            }
+            else if (term instanceof integer) const_frac[0] = term;
+            else func_frac[0] = [term];
+
+            return {const_frac, func_frac};
+        }
+        for (let i = 0; i < args.length; i++) {
+            const arg_factors = factors(args[i]);
+            let arg_constant = frac(...arg_factors.const_frac);
+            const combined_idxs = [];
+            for (let j = i + 1; j < args.length; j++) {
+                const test_factors = factors(args[j]);
+                let all_funcs_match = true;
+                for (let k = 0; (k < 2 && all_funcs_match); k++) {
+                    const arg_funcs = arg_factors.func_frac[k];
+                    const test_funcs = test_factors.func_frac[k];
+                    all_funcs_match = arg_funcs.length === test_funcs.length;
+                    for (let l = 0; (l < arg_funcs.length && all_funcs_match); l++) {
+                        const match_idx = test_funcs.findIndex(test_func => test_func.equals(arg_funcs[l]));
+                        all_funcs_match = match_idx !== -1;
+                        if (all_funcs_match) test_funcs.splice(match_idx, 1);
+                    }
+                    all_funcs_match = all_funcs_match && test_funcs.length === 0;
+                }
+                if (all_funcs_match) {
+                    arg_constant = frac(
+                        integer(arg_constant.els[0].value*test_factors.const_frac[1].value + arg_constant.els[1].value*test_factors.const_frac[0].value),
+                        integer(arg_constant.els[1].value*test_factors.const_frac[1].value)
+                    );
+                    combined_idxs.push(j);
+                }
+            }
+            const eval_arg_const = arg_constant.els[0].value / arg_constant.els[1].value;
+            if (Number.isSafeInteger(eval_arg_const)) {
+                if (arg_factors.func_frac[1].length === 0) args[i] = mul.trimmed(integer(eval_arg_const), ...arg_factors.func_frac[0]);
+                else args[i] = frac.trimmed(mul.trimmed(integer(eval_arg_const), ...arg_factors.func_frac[0]), mul.trimmed(...arg_factors.func_frac[1]));
+            }
+            else args[i] = frac.trimmed(mul.trimmed(arg_constant.els[0], ...arg_factors.func_frac[0]), mul.trimmed(arg_constant.els[1], ...arg_factors.func_frac[1]));
+            if (combined_idxs.length) args = args.filter((_, idx) => !combined_idxs.includes(idx)); 
+        }
+
+        if (args.length === 0) return integer(0);
+        else if (args.length === 1) return args[0];
+        else return new add(...args); 
+    }
 })
 
 export const mul = callable(class mul extends Oper {
@@ -105,19 +183,23 @@ export const mul = callable(class mul extends Oper {
         );
     }
     static trimmed() {
+        if (arguments.length === 1) return arguments[0];
         const args = [];
         let is_frac = false;
-        Array.from(arguments).forEach(arg => {
+        for (let i = 0; i < arguments.length; i++) {
+            const arg = arguments[i];
+            if (arg instanceof integer && arg.value === 0) return integer(0);
             if (arg instanceof mul) args.push.apply(args, arg.els);
             else if (arg instanceof frac) {
                 is_frac = true;
-                if (arg.els[0] instanceof mul) args.push.apply(args, arg.els[0]);
+                if (arg.els[0] instanceof integer && arg.els[0].value === 0) return integer(0);
+                if (arg.els[0] instanceof mul) args.push.apply(args, arg.els[0].els);
                 else args.push(arg.els[0]);
-                if (arg.els[1] instanceof mul) arg.els[1].els.forEach(el => args.push(pow(el, integer(-1))));
-                else args.push(pow(arg.els[1], integer(-1)));
+                if (arg.els[1] instanceof mul) arg.els[1].els.forEach(el => args.push(pow.trimmed(el, integer(-1))));
+                else args.push(pow.trimmed(arg.els[1], integer(-1)));
             }
             else args.push(arg);
-        });
+        }
 
         const base_pow_pairs = [];
         args.forEach(arg => {
@@ -134,7 +216,7 @@ export const mul = callable(class mul extends Oper {
         });
 
         const const_frac = [1, 1];
-        const func_frac = [integer(1), integer(1)];
+        const func_frac = [[], []];
         base_pow_pairs.forEach(base_pow => {
             const [resolved_base, resolved_pow] = base_pow;
             if (resolved_base instanceof integer && resolved_pow instanceof integer) {
@@ -142,17 +224,54 @@ export const mul = callable(class mul extends Oper {
                 else const_frac[0] *= (resolved_base.value ** resolved_pow.value);
             }
             else if (is_frac && resolved_pow instanceof integer && resolved_pow.value < 0) {
-                func_frac[1] = mul.trimmed(func_frac[1], pow.trimmed(resolved_base, integer(Math.abs(resolved_pow.value))));
+                func_frac[1].push(pow.trimmed(resolved_base, integer(Math.abs(resolved_pow.value))));
+            }
+            else if (
+                is_frac &&
+                resolved_pow instanceof frac &&
+                resolved_pow.els[0] instanceof integer &&
+                resolved_pow.els[1] instanceof integer &&
+                resolved_pow.els[0].value < 0
+            ) {
+                func_frac[1].push(
+                    pow.trimmed(resolved_base, frac(integer(-resolved_pow.els[0].value), resolved_pow.els[1]))
+                );
             }
             else {
-                func_frac[0] = mul.trimmed(func_frac[0], pow.trimmed(resolved_base, resolved_pow.value));
+                func_frac[0].push(pow.trimmed(resolved_base, resolved_pow));
             }
         });
 
-        const resolved_num = func_frac[0].equals(integer(1)) ? integer(const_frac[0]) : mul.trimmed(integer(const_frac[0]), func_frac[0]);
-        const resolved_den = func_frac[1].equals(integer(1)) ? integer(const_frac[1]) : mul.trimmed(integer(const_frac[1]), func_frac[1]);
-        if (resolved_den.equals(integer(1))) return resolved_num;
-        else return frac.trimmed(resolved_num, resolved_den);
+        if (const_frac[0] === 0) const_frac[1] = 1;
+        else {
+            const gcd = (function(a, b) {
+                a = Math.abs(a);
+                b = Math.abs(b);
+                while (b !== 0) {
+                    const t = b;
+                    b = a % b;
+                    a = t;
+                }
+                return a;
+            })(const_frac[0], const_frac[1]);
+
+            if (gcd > 1) {
+                const_frac[0] /= gcd;
+                const_frac[1] /= gcd;
+            }
+        }
+        if (const_frac[1] < 0) {
+            const_frac[0] = -const_frac[0];
+            const_frac[1] = -const_frac[1];
+        }
+         
+        const resolved_frac = Array.from({length: 2}, (_, i) => {
+            if (func_frac[i].length > 0 && const_frac[i] !== 1) return new mul(integer(const_frac[i]), ...func_frac[i]);
+            else if (func_frac[i].length > 0) return new mul(...func_frac[i]);
+            else return integer(const_frac[i]);
+        });
+        if (resolved_frac[1].equals(integer(1))) return resolved_frac[0];
+        else return frac(resolved_frac[0], resolved_frac[1]);
     }
 })  
 
@@ -167,6 +286,18 @@ export const frac = callable(class frac extends BinaryOper {
     constructor() { super(...arguments); }
     repr() { return `\\frac{${arguments[0]}}{${arguments[1]}}`; }
     derivative(vari) { return new frac(sub(mul(this.els[0].diff(vari), this.els[1]), mul(this.els[0], this.els[1].diff(vari))), pow(this.els[1], integer(2))); }
+    static trimmed() { 
+        if (arguments[0] instanceof frac && arguments[1] instanceof frac) {
+            return mul.trimmed(integer(1), new frac(mul.trimmed(arguments[0].els[0], arguments[1].els[1]), mul.trimmed(arguments[0].els[1], arguments[1].els[0])));
+        }   
+        else if (arguments[0] instanceof frac) {
+            return mul.trimmed(integer(1), new frac(arguments[0].els[0], mul.trimmed(arguments[0].els[1], arguments[1])));
+        }
+        else if (arguments[1] instanceof frac) {
+            return mul.trimmed(integer(1), new frac(mul.trimmed(arguments[0], arguments[1].els[1]), arguments[1].els[0]));
+        }
+        else return mul.trimmed(integer(1), new frac(arguments[0], arguments[1]));
+    }
 })
 
 export const pow = callable(class pow extends BinaryOper {
@@ -175,7 +306,19 @@ export const pow = callable(class pow extends BinaryOper {
     derivative(vari) { return mul(new pow(this.els[0], this.els[1]), mul(this.els[1], ln(this.els[0])).diff(vari)); }
     static trimmed() {
         if (arguments[0] instanceof pow) return pow.trimmed(arguments[0].els[0], mul.trimmed(arguments[0].els[1], arguments[1]));
-        else if (arguments[1]) 3;
+        else if (arguments[0] instanceof exp) return exp(mul.trimmed(arguments[0].els[0], arguments[1]))
+        else if (arguments[0] instanceof integer && arguments[1] instanceof integer) {
+            if (arguments[1].value >= 0) return integer(arguments[0].value ** arguments[1].value);
+            else return new pow(arguments[0], arguments[1])
+        }
+        else if (arguments[0] instanceof integer) {
+            if (arguments[0].value === 1) return integer(1);
+            else if (arguments[0].value === 0) return integer(0);
+            else return new pow(arguments[0], arguments[1])
+        }
+        else if (arguments[1] instanceof integer && arguments[1].value === 0) return integer(1);
+        else if (arguments[1] instanceof integer && arguments[1].value === 1) return arguments[0];
+        else return new pow(arguments[0], arguments[1]);
     }
 })
 
@@ -188,7 +331,7 @@ export const log = callable(class log extends BinaryOper {
 export const root = callable(class root extends BinaryOper {
     constructor() { super(...arguments); }
     repr() { return `\\sqrt[${arguments[0]}]{${arguments[1]}}`; }
-    derivative(vari) { return pow(this.els[0], frac(integer(1), this.els[1])).diff(vari); }
+    derivative(vari) { return pow(this.els[1], frac(integer(1), this.els[0])).diff(vari); }
 });
 
 export class UnaryOper extends Oper {
@@ -214,6 +357,10 @@ export const exp = callable(class exp extends UnaryOper {
     constructor() { super(...arguments); }
     repr() { return `e^{${arguments[0]}}`; }
     derivative(vari) { return mul(new exp(this.els[0]), this.els[0].diff(vari)); }
+    trimmed() {
+        if (arguments[0] instanceof integer && arguments[0].value === 0) return integer(1);
+        else return new exp(arguments[0]);
+    }
 })
 
 export class NamedUnaryOper extends UnaryOper {
