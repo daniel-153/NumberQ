@@ -30,6 +30,20 @@ export class Expr {
         if (vari instanceof variable) return this.#vars.includes(vari) ? this.derivative(vari) : integer(0);
         else throw new Error(`Expr.diff must receive a single variable argument; provided argument has type: '${vari?.constructor?.name}'`);
     }
+    trim() {
+        if (typeof(this.constructor?.trimmed) === 'function') return this.constructor.trimmed.apply(this, this.#els.map(el => el.trim()));
+        else throw new Error('No .trim method present on Expr instance; failed to trim.');
+    }
+    equals(expr) {
+        if (this instanceof variable) return this === expr;
+        if (this instanceof integer) return expr?.constructor === this.constructor && expr?.value === this.value;
+        if (this instanceof Oper) return (
+            this.constructor === expr?.constructor && 
+            expr.els.length === this.#els.length && 
+            this.#els.every((el, idx) => el.equals(expr.els[idx]))
+        );
+        throw new Error(`.equals comparison is only available for (variable, integer, Oper) Expr instances, not '${this.constructor.name}'.`);
+    }
 }
 
 export class Symb extends Expr {
@@ -90,7 +104,57 @@ export const mul = callable(class mul extends Oper {
             ))
         );
     }
-})
+    static trimmed() {
+        const args = [];
+        let is_frac = false;
+        Array.from(arguments).forEach(arg => {
+            if (arg instanceof mul) args.push.apply(args, arg.els);
+            else if (arg instanceof frac) {
+                is_frac = true;
+                if (arg.els[0] instanceof mul) args.push.apply(args, arg.els[0]);
+                else args.push(arg.els[0]);
+                if (arg.els[1] instanceof mul) arg.els[1].els.forEach(el => args.push(pow(el, integer(-1))));
+                else args.push(pow(arg.els[1], integer(-1)));
+            }
+            else args.push(arg);
+        });
+
+        const base_pow_pairs = [];
+        args.forEach(arg => {
+            let resolved_arg, resolved_pow;
+            if (arg instanceof pow) ([resolved_arg, resolved_pow] = arg.els);
+            else {
+                resolved_arg = arg;
+                resolved_pow = integer(1);
+            }
+
+            const base_idx = base_pow_pairs.findIndex(base_pow => resolved_arg.equals(base_pow[0]));
+            if (base_idx > -1) base_pow_pairs[base_idx][1] = add.trimmed(base_pow_pairs[base_idx][1], resolved_pow);
+            else base_pow_pairs.push([resolved_arg, resolved_pow]);
+        });
+
+        const const_frac = [1, 1];
+        const func_frac = [integer(1), integer(1)];
+        base_pow_pairs.forEach(base_pow => {
+            const [resolved_base, resolved_pow] = base_pow;
+            if (resolved_base instanceof integer && resolved_pow instanceof integer) {
+                if (resolved_pow.value < 0) const_frac[1] *= (resolved_base.value ** Math.abs(resolved_pow.value));
+                else const_frac[0] *= (resolved_base.value ** resolved_pow.value);
+            }
+            else if (is_frac && resolved_pow instanceof integer && resolved_pow.value < 0) {
+                func_frac[1] = mul.trimmed(func_frac[1], pow.trimmed(resolved_base, integer(Math.abs(resolved_pow.value))));
+            }
+            else {
+                func_frac[0] = mul.trimmed(func_frac[0], pow.trimmed(resolved_base, resolved_pow.value));
+            }
+        });
+
+        const resolved_num = func_frac[0].equals(integer(1)) ? integer(const_frac[0]) : mul.trimmed(integer(const_frac[0]), func_frac[0]);
+        const resolved_den = func_frac[1].equals(integer(1)) ? integer(const_frac[1]) : mul.trimmed(integer(const_frac[1]), func_frac[1]);
+        if (resolved_den.equals(integer(1))) return resolved_num;
+        else return frac.trimmed(resolved_num, resolved_den);
+    }
+})  
 
 export class BinaryOper extends Oper {
     constructor() {
@@ -109,6 +173,10 @@ export const pow = callable(class pow extends BinaryOper {
     constructor() { super(...arguments); }
     repr() { return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`; }
     derivative(vari) { return mul(new pow(this.els[0], this.els[1]), mul(this.els[1], ln(this.els[0])).diff(vari)); }
+    static trimmed() {
+        if (arguments[0] instanceof pow) return pow.trimmed(arguments[0].els[0], mul.trimmed(arguments[0].els[1], arguments[1]));
+        else if (arguments[1]) 3;
+    }
 })
 
 export const log = callable(class log extends BinaryOper {
