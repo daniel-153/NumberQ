@@ -96,7 +96,7 @@ export class Oper extends Expr {
 
 export const add  = callable(class add extends Oper {
     constructor() { super(...arguments); }
-    repr() { return `(${Array.from(arguments).join(')+(')})`; }
+    repr() { return Array.from(arguments).reduce((acc, curr, idx) => acc + (curr.charAt(0) !== '-' && idx > 0 ? ('+' + curr) : curr), ''); }
     derivative(vari) { return Reflect.construct(add, this.els.map(el => el.diff(vari))); }
     static trimmed() {
         let args = [];
@@ -174,7 +174,47 @@ export const add  = callable(class add extends Oper {
 
 export const mul = callable(class mul extends Oper {
     constructor() { super(...arguments); }
-    repr() { return `(${Array.from(arguments).join(')(')})`; }
+    repr() { 
+        const order_groups = [
+            [integer],
+            [frac],
+            [variable],
+            [pow, exp, abs],
+            [sqrt, root, add, mul],
+            [
+                log, ln, sin, cos, tan, csc, sec, cot, asin, acos, atan, acsc, asec, acot, 
+                sinh, cosh, tanh, csch, sech, coth, asinh, acosh, atanh, acsch, asech, acoth
+            ],
+            [Expr]
+        ].map(group => ({group, args: []}));
+        let len_args = 0;
+        Array.from({length: arguments.length}, (_, i) => this.els[i].equals(integer(1)) ? null : [arguments[i], this.els[i]]).forEach(arg_el => {
+            if (arg_el) {
+                const group_idx = order_groups.findIndex(group_entry => group_entry.group.some(ctr => arg_el[1] instanceof ctr));
+                order_groups[group_idx].args.push(arg_el);
+                len_args++;
+            }
+        });
+
+        let acc_str = '';
+        order_groups.forEach((group_entry, group_idx) => {
+            group_entry.args.forEach(arg_el => {
+                const [str, expr] = arg_el;
+                if (group_idx === 0) {
+                    if (acc_str.length !== 0) acc_str += `\\left(${str}\\right)`;
+                    else if (expr.equals(integer(-1)) && len_args > 1) acc_str += '-';
+                    else acc_str += str;
+                }
+                else if (group_idx === 1) {
+                    if (group_entry.args.length > 1 || acc_str.length !== 0) acc_str += `\\left(${str}\\right)`;
+                    else acc_str += str;
+                }
+                else if (len_args > 1 && (expr instanceof add || expr instanceof mul || group_idx === 6)) acc_str += `\\left(${str}\\right)`;
+                else acc_str += str;
+            });
+        })
+        return acc_str ? acc_str : '1';
+    }
     derivative(vari) {
         return Reflect.construct(add,
             this.els.map((_, addend_idx, args) => Reflect.construct(mul,
@@ -284,7 +324,10 @@ export class BinaryOper extends Oper {
 
 export const frac = callable(class frac extends BinaryOper {
     constructor() { super(...arguments); }
-    repr() { return `\\frac{${arguments[0]}}{${arguments[1]}}`; }
+    repr() { 
+        if (arguments[0].charAt(0) === '-' && !(this.els[0] instanceof add)) return `-\\frac{${arguments[0].slice(1)}}{${arguments[1]}}`;
+        else return `\\frac{${arguments[0]}}{${arguments[1]}}`;
+    }
     derivative(vari) { return new frac(sub(mul(this.els[0].diff(vari), this.els[1]), mul(this.els[0], this.els[1].diff(vari))), pow(this.els[1], integer(2))); }
     static trimmed() { 
         if (arguments[0] instanceof frac && arguments[1] instanceof frac) {
@@ -302,7 +345,19 @@ export const frac = callable(class frac extends BinaryOper {
 
 export const pow = callable(class pow extends BinaryOper {
     constructor() { super(...arguments); }
-    repr() { return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`; }
+    repr() { 
+        if (
+            this.els[0] instanceof NamedUnaryOper && 
+            !(this.els[0] instanceof InvNamedUnaryOper) &&
+            this.els[1] instanceof integer &&
+            this.els[1].value > 0
+        ) {
+            const open_idx = arguments[0].indexOf('\\left(');
+            return `${arguments[0].slice(0, open_idx)}^{${arguments[1]}}${arguments[0].slice(open_idx)}`;
+        }
+        else if (this.els[0] instanceof variable && this.els[0].symbol.length === 1) return `${arguments[0]}^{${arguments[1]}}`;
+        else return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`;
+    }
     derivative(vari) { return mul(new pow(this.els[0], this.els[1]), mul(this.els[1], ln(this.els[0])).diff(vari)); }
     static trimmed() {
         if (arguments[0] instanceof pow) return pow.trimmed(arguments[0].els[0], mul.trimmed(arguments[0].els[1], arguments[1]));
@@ -486,7 +541,7 @@ export const asinh = callable(class sinh extends InvNamedUnaryOper {
 
 export const acosh = callable(class cosh extends InvNamedUnaryOper {
     constructor() { super(...arguments); }
-    derivative(vari) { return frac(this.els[0].diff(vari), mul(sqrt(sub(this.els[0], integer(1))), sqrt(add(this.els[0], integer(1))))); }
+    derivative(vari) { return frac(this.els[0].diff(vari), sqrt(sub(pow(this.els[0], integer(2)), integer(1)))); }
 })
 
 export const atanh = callable(class tanh extends InvNamedUnaryOper {
