@@ -44,6 +44,16 @@ export class Expr {
         );
         throw new Error(`.equals comparison is only available for (variable, integer, Oper) Expr instances, not '${this.constructor.name}'.`);
     }
+    static getMaxNesting(expr, nesting = 0) {
+        if (!(expr instanceof Expr)) throw new Error('Expr.getMaxNesting(expr) argument must be instanceof Expr.');
+        else if (expr instanceof frac) return Math.max(Expr.getMaxNesting(expr.els[0], nesting + 1), Expr.getMaxNesting(expr.els[1], nesting + 1));
+        else if (expr instanceof pow) return Math.max(Expr.getMaxNesting(expr.els[0], nesting), Expr.getMaxNesting(expr.els[1], nesting + 1));
+        else if (expr instanceof log || expr instanceof root) return Math.max(Expr.getMaxNesting(expr.els[0], nesting + 1), Expr.getMaxNesting(expr.els[1], nesting));
+        else if (expr instanceof exp) return Expr.getMaxNesting(expr.els[0], nesting + 1);
+        else if (expr instanceof InvNamedUnaryOper) return Math.max(nesting + 1, Expr.getMaxNesting(expr.els[0], nesting));
+        else if (!expr.els.length) return nesting;
+        else return Math.max.apply(null, expr.els.map(el => Expr.getMaxNesting(el, nesting)));
+    }
 }
 
 export class Symb extends Expr {
@@ -412,7 +422,7 @@ export const exp = callable(class exp extends UnaryOper {
     constructor() { super(...arguments); }
     repr() { return `e^{${arguments[0]}}`; }
     derivative(vari) { return mul(new exp(this.els[0]), this.els[0].diff(vari)); }
-    trimmed() {
+    static trimmed() {
         if (arguments[0] instanceof integer && arguments[0].value === 0) return integer(1);
         else return new exp(arguments[0]);
     }

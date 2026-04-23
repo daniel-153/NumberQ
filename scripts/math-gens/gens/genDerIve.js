@@ -148,18 +148,21 @@ const DIH  = { // genDerIve helpers
             settings.expr_diff_notation === 'implicit'
         ) return `${diff_op_str}=${diff_func_str}`;
         else return diff_func_str;
+    },
+    wrapForNesting(target_str, expr) {
+        return DH.Expr.getMaxNesting(expr) >= 3 ? `\\displaystyle{${target_str}}` : target_str;
     }
 };
 export default function genDerIve(settings) {
     const [dep_var, ind_var] = settings.diff_eq_vars.split('_');
     const ind_var_sym = new DH.variable(ind_var);
-    const func = DIH.buildPromptExpr(settings)(ind_var_sym);
-    const diff_func = func.diff(ind_var_sym);
+    const func = DIH.buildPromptExpr(settings)(ind_var_sym).trim();
+    const diff_func = func.diff(ind_var_sym).trim();
     const func_str = func.toString();
     const diff_func_str = diff_func.toString();
     const diff_op_str = DIH.getDiffOpStr(settings, ind_var, dep_var);
-    const prompt_str = DIH.getPromptStr(settings, func_str, diff_op_str);
-    const answer_str = DIH.getAnswerStr(settings, diff_func_str, diff_op_str);
+    const prompt_str = DIH.wrapForNesting(DIH.getPromptStr(settings, func_str, diff_op_str), func);
+    const answer_str = DIH.wrapForNesting(DIH.getAnswerStr(settings, diff_func_str, diff_op_str), diff_func);
 
     return {
         question: prompt_str,
@@ -178,7 +181,7 @@ export const presets = {
     default: function() {
         return {
             func_op: 'none',
-            diff_funcs: ['constant', 'identity', 'const_mul', 'linear', 'int_power', 'e_x', 'basic_trig'],
+            diff_funcs: ['any'],
             expr_diff_notation: 'oper_paren',
             diff_eq_vars: 'y_x'
         };
