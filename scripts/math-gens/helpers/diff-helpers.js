@@ -1,6 +1,12 @@
 const callable = (Cls) => new Proxy(Cls, {
     apply(target, _, args) {
         return Reflect.construct(target, args);
+    },
+    get(target, prop, receiver) {
+        return prop === 'ctr' ? target : Reflect.get(target, prop, receiver);
+    },
+    construct(target, args, new_target) {
+        return Reflect.construct(target, args, new_target?.ctr ?? new_target);
     }
 })
 
@@ -15,7 +21,7 @@ export class Expr {
             }
             else throw new Error(`Expr constructor must only receive Expr args; failed with arg at index ${i}.`);
         }
-        this.#vars = Object.freeze(this instanceof variable ? [this] : Array.from(this.#vars));
+        this.#vars = Object.freeze(new.target === variable.ctr ? [this] : Array.from(this.#vars));
         Object.freeze(this.#els);
     }
 
@@ -49,7 +55,6 @@ export class Expr {
         else if (expr instanceof frac) return Math.max(Expr.getMaxNesting(expr.els[0], nesting + 1), Expr.getMaxNesting(expr.els[1], nesting + 1));
         else if (expr instanceof pow) return Math.max(Expr.getMaxNesting(expr.els[0], nesting), Expr.getMaxNesting(expr.els[1], nesting + 1));
         else if (expr instanceof log || expr instanceof root) return Math.max(Expr.getMaxNesting(expr.els[0], nesting + 1), Expr.getMaxNesting(expr.els[1], nesting));
-        else if (expr instanceof exp) return Expr.getMaxNesting(expr.els[0], nesting + 1);
         else if (expr instanceof InvNamedUnaryOper) return Math.max(nesting + 1, Expr.getMaxNesting(expr.els[0], nesting));
         else if (!expr.els.length) return nesting;
         else return Math.max.apply(null, expr.els.map(el => Expr.getMaxNesting(el, nesting)));
@@ -83,6 +88,8 @@ export const variable = callable(class variable extends Symb {
         else throw new Error(`No variable.isIn test available for '${arg?.constructor?.name}'.`);
     }
 })
+export const const_e = callable(class const_e extends variable { constructor() { super('e'); } })();
+export const const_pi = callable(class const_pi extends variable { constructor() { super('\\pi'); } })();
 
 export const integer = callable(class integer extends Symb {
     #value;
@@ -189,7 +196,7 @@ export const mul = callable(class mul extends Oper {
             [integer],
             [frac],
             [variable],
-            [pow, exp, abs],
+            [pow, abs],
             [sqrt, root, add, mul],
             [
                 log, ln, sin, cos, tan, csc, sec, cot, asin, acos, atan, acsc, asec, acot, 
@@ -371,7 +378,6 @@ export const pow = callable(class pow extends BinaryOper {
     derivative(vari) { return mul(new pow(this.els[0], this.els[1]), mul(this.els[1], ln(this.els[0])).diff(vari)); }
     static trimmed() {
         if (arguments[0] instanceof pow) return pow.trimmed(arguments[0].els[0], mul.trimmed(arguments[0].els[1], arguments[1]));
-        else if (arguments[0] instanceof exp) return exp(mul.trimmed(arguments[0].els[0], arguments[1]))
         else if (arguments[0] instanceof integer && arguments[1] instanceof integer) {
             if (arguments[1].value >= 0) return integer(arguments[0].value ** arguments[1].value);
             else return new pow(arguments[0], arguments[1])
@@ -418,16 +424,6 @@ export const abs = callable(class abs extends UnaryOper {
     derivative(vari) { return mul(frac(this.els[0], new abs(this.els[0])), this.els[0].diff(vari)); }
 })
 
-export const exp = callable(class exp extends UnaryOper {
-    constructor() { super(...arguments); }
-    repr() { return `e^{${arguments[0]}}`; }
-    derivative(vari) { return mul(new exp(this.els[0]), this.els[0].diff(vari)); }
-    static trimmed() {
-        if (arguments[0] instanceof integer && arguments[0].value === 0) return integer(1);
-        else return new exp(arguments[0]);
-    }
-})
-
 export class NamedUnaryOper extends UnaryOper {
     constructor() { super(...arguments); }
     repr() {
@@ -436,12 +432,16 @@ export class NamedUnaryOper extends UnaryOper {
         }
         else return `\\operatorname{${this.constructor.name}}\\left(${arguments[0]}\\right)`;
     }
-    static latex_operators = ['sin','cos','tan','csc','sec','cot','sinh','cosh','tanh','coth','exp','ln'];
+    static latex_operators = ['sin','cos','tan','csc','sec','cot','sinh','cosh','tanh','coth','ln'];
 }
 
 export const ln = callable(class ln extends NamedUnaryOper {
     constructor() { super(...arguments); }
     derivative(vari) { return mul(frac(integer(1), this.els[0]), this.els[0].diff(vari)); }
+    static trimmed() {
+        if (arguments[0].equals(const_e)) return integer(1);
+        else return this;
+    }
 })
 
 export const sin = callable(class sin extends NamedUnaryOper {
@@ -610,3 +610,10 @@ export const compose = callable(class extends SyntaxOper {
         else throw new Error(`First element of compose must contain 1 or 0 variables; [${this.els[0].vars.length}] variables present in first element.`);
     }
 })
+
+export const exp = callable(class extends SyntaxOper {
+    constructor() {
+        super(1, ...arguments);
+        return pow(const_e, arguments[0]);
+    }
+});
