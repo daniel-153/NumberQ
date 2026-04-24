@@ -468,6 +468,7 @@ export const abs = callable(class abs extends UnaryOper {
     constructor() { super(...arguments); }
     repr() { return `\\left|${arguments[0]}\\right|`; }
     derivative(vari) { return mul(frac(this.els[0], new abs(this.els[0])), this.els[0].diff(vari)); }
+    static trimmed() { return arguments[0] instanceof abs ? arguments[0] : this; }
 })
 
 export class NamedUnaryOper extends UnaryOper {
