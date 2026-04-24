@@ -427,6 +427,7 @@ export const pow = callable(class pow extends BinaryOper {
             if (arguments[1].value >= 0) return integer(arguments[0].value ** arguments[1].value);
             else return new pow(arguments[0], arguments[1])
         }
+        else if (arguments[0] instanceof sqrt && arguments[1] instanceof integer && arguments[1].value === 2) return arguments[0].els[0];
         else if (arguments[0] instanceof integer) {
             if (arguments[0].value === 1) return integer(1);
             else if (arguments[0].value === 0) return integer(0);
