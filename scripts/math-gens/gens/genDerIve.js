@@ -128,7 +128,7 @@ const DIH  = { // genDerIve helpers
             if (settings.expr_diff_notation === 'func') lhs = `${settings.diff_eq_vars.split('_').join('\\left(')}\\right)`;
             else if (settings.expr_diff_notation === 'implicit') lhs = settings.diff_eq_vars.split('_')[0];
 
-            return `${lhs}=${func_str},~${diff_op_str}=\\:?`;
+            return `${lhs}=${func_str},~~${diff_op_str}=\\:?`;
         }
     },
     getAnswerStr(settings, diff_func_str, diff_op_str) {
@@ -177,10 +177,13 @@ export const presets = {
     },
     random: function() {
         return {
-            
+            func_op: '__random__',
+            diff_funcs: '__random__',
+            expr_diff_notation: '__random__',
+            diff_eq_vars: '__random__'
         };
     },
-    // has_topic_presets: true
+    has_topic_presets: true
 };
 
 export const size_adjustments = {
@@ -190,16 +193,16 @@ export const size_adjustments = {
         canvas: {
             max_width: 0.5,
             max_height: 0.2,
-            init_scale: 0.6
+            init_scale: 0.85
         },
         preview: {
             max_width: 0.5,
             max_height: 0.2,
-            init_scale: 0.6
+            init_scale: 0.85
         },
         answer: {
             max_size_scale: 4.5,
-            init_scale: 0.9
+            init_scale: 1.5
         }
     }
 };
