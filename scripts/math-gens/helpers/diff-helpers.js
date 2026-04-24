@@ -173,11 +173,17 @@ export const add  = callable(class add extends Oper {
                 }
             }
             const eval_arg_const = arg_constant.els[0].value / arg_constant.els[1].value;
-            if (Number.isSafeInteger(eval_arg_const)) {
-                if (arg_factors.func_frac[1].length === 0) args[i] = mul.trimmed(integer(eval_arg_const), ...arg_factors.func_frac[0]);
-                else args[i] = frac.trimmed(mul.trimmed(integer(eval_arg_const), ...arg_factors.func_frac[0]), mul.trimmed(...arg_factors.func_frac[1]));
+            if (eval_arg_const === 0) {
+                combined_idxs.push(i);
+                i--;
             }
-            else args[i] = frac.trimmed(mul.trimmed(arg_constant.els[0], ...arg_factors.func_frac[0]), mul.trimmed(arg_constant.els[1], ...arg_factors.func_frac[1]));
+            else {
+                if (Number.isSafeInteger(eval_arg_const)) {
+                    if (arg_factors.func_frac[1].length === 0) args[i] = mul.trimmed(integer(eval_arg_const), ...arg_factors.func_frac[0]);
+                    else args[i] = frac.trimmed(mul.trimmed(integer(eval_arg_const), ...arg_factors.func_frac[0]), mul.trimmed(...arg_factors.func_frac[1]));
+                }
+                else args[i] = frac.trimmed(mul.trimmed(arg_constant.els[0], ...arg_factors.func_frac[0]), mul.trimmed(arg_constant.els[1], ...arg_factors.func_frac[1]));
+            }
             if (combined_idxs.length) args = args.filter((_, idx) => !combined_idxs.includes(idx)); 
         }
 
@@ -239,6 +245,16 @@ export const mul = callable(class mul extends Oper {
     }
     static trimmed() {
         if (arguments.length === 1) return arguments[0];
+        if (arguments.length === 2 && (
+            (arguments[0] instanceof add && arguments[1] instanceof integer) ||
+            (arguments[1] instanceof add && arguments[0] instanceof integer)
+        )) {
+            let int_factor, add_expr;
+            if (arguments[0] instanceof integer) ([int_factor, add_expr] = arguments);
+            else ([add_expr, int_factor] = arguments);
+            return add.trimmed(...add_expr.els.map(el => mul.trimmed(int_factor, el)));
+        }
+
         const args = [];
         let is_frac = false;
         for (let i = 0; i < arguments.length; i++) {
