@@ -59,17 +59,6 @@ const DIH  = { // genDerIve helpers
 
             return DH.pow(x, pow);
         },
-        polynom: x => {
-            const degree = H.randInt(1, 4);
-            const terms = [];
-            for (let n = degree; n >= 0; n--) {
-                let coef;
-                if (n === degree) coef = H.randIntExcept(-5, 5, 0);
-                else coef = H.randInt(-5, 5);
-                terms.push(DH.mul(DH.integer(coef), DH.pow(x, DH.integer(n))));
-            }
-            return DH.add.apply({}, terms);
-        },
         nroot: x => DH.root(DH.integer(H.randInt(3, 7)), x),
         a_x: x => DH.pow(DH.integer(H.randInt(2, 9)), x),
         log_a_x: x => DH.log(DH.integer(H.randInt(2, 9)), x),
@@ -155,7 +144,7 @@ const DIH  = { // genDerIve helpers
 };
 export default function genDerIve(settings) {
     const [dep_var, ind_var] = settings.diff_eq_vars.split('_');
-    const ind_var_sym = new DH.variable(ind_var);
+    const ind_var_sym = DH.variable(ind_var);
     const func = DIH.buildPromptExpr(settings)(ind_var_sym).trim();
     const diff_func = func.diff(ind_var_sym).trim();
     const func_str = func.toString();

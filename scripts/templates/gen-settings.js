@@ -1452,7 +1452,6 @@ export const diff_funcs = {
         ['ln', '\\(\\ln(x)\\)'],
         ['recip', '\\(\\dfrac{1}{x}\\)'],
         ['frac_power', '\\(x^{\\frac{p}{q}}\\)'],
-        ['polynom', '\\(a_{n}x^{n}+\\dots+a_{0}\\)&nbsp;'],
         ['nroot', '\\(\\sqrt[n]{x}\\)'],
         ['a_x', '\\(a^{x}\\)'],
         ['log_a_x', '\\(\\log_{a}(x)\\)'],
