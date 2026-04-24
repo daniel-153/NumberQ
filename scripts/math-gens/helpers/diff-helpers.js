@@ -1,14 +1,12 @@
-const callable = (Cls) => new Proxy(Cls, {
-    apply(target, _, args) {
-        return Reflect.construct(target, args);
-    },
-    get(target, prop, receiver) {
-        return prop === 'ctr' ? target : Reflect.get(target, prop, receiver);
-    },
-    construct(target, args, new_target) {
-        return Reflect.construct(target, args, new_target?.ctr ?? new_target);
-    }
-})
+const callable = function(Cls) {
+    const prx = new Proxy(Cls, {
+        apply(target, _, args) {
+            return Reflect.construct(target, args);
+        }
+    });
+    prx.ctr = Cls;
+    return prx; 
+}
 
 export class Expr {
     #vars = new Set();
@@ -245,18 +243,25 @@ export const mul = callable(class mul extends Oper {
         let is_frac = false;
         for (let i = 0; i < arguments.length; i++) {
             const arg = arguments[i];
-            if (arg instanceof integer && arg.value === 0) return integer(0);
-            if (arg instanceof mul) args.push.apply(args, arg.els);
+            if (arg instanceof integer) {
+                if (arg.value === 0) return integer(0);
+                else if (arg.value !== 1) args.push(arg);
+            }
+            else if (arg instanceof mul) args.push.apply(args, arg.els);
             else if (arg instanceof frac) {
                 is_frac = true;
-                if (arg.els[0] instanceof integer && arg.els[0].value === 0) return integer(0);
-                if (arg.els[0] instanceof mul) args.push.apply(args, arg.els[0].els);
+                if (arg.els[0] instanceof integer) {
+                    if (arg.els[0].value === 0) return integer(0);
+                    else if (arg.els[0].value !== 1) args.push(arg.els[0]);
+                }
+                else if (arg.els[0] instanceof mul) args.push.apply(args, arg.els[0].els);
                 else args.push(arg.els[0]);
                 if (arg.els[1] instanceof mul) arg.els[1].els.forEach(el => args.push(pow.trimmed(el, integer(-1))));
                 else args.push(pow.trimmed(arg.els[1], integer(-1)));
             }
             else args.push(arg);
         }
+        if (args.length === 0) return integer(1);
 
         const base_pow_pairs = [];
         args.forEach(arg => {
@@ -274,28 +279,52 @@ export const mul = callable(class mul extends Oper {
 
         const const_frac = [1, 1];
         const func_frac = [[], []];
+        const need_trim = [false, false];
         base_pow_pairs.forEach(base_pow => {
             const [resolved_base, resolved_pow] = base_pow;
             if (resolved_base instanceof integer && resolved_pow instanceof integer) {
                 if (resolved_pow.value < 0) const_frac[1] *= (resolved_base.value ** Math.abs(resolved_pow.value));
                 else const_frac[0] *= (resolved_base.value ** resolved_pow.value);
             }
-            else if (is_frac && resolved_pow instanceof integer && resolved_pow.value < 0) {
-                func_frac[1].push(pow.trimmed(resolved_base, integer(Math.abs(resolved_pow.value))));
-            }
-            else if (
-                is_frac &&
-                resolved_pow instanceof frac &&
-                resolved_pow.els[0] instanceof integer &&
-                resolved_pow.els[1] instanceof integer &&
-                resolved_pow.els[0].value < 0
-            ) {
-                func_frac[1].push(
-                    pow.trimmed(resolved_base, frac(integer(-resolved_pow.els[0].value), resolved_pow.els[1]))
-                );
-            }
             else {
-                func_frac[0].push(pow.trimmed(resolved_base, resolved_pow));
+                let resolved_entry, frac_idx;
+                if (is_frac && resolved_pow instanceof integer && resolved_pow.value < 0) {
+                    resolved_entry = pow.trimmed(resolved_base, integer(Math.abs(resolved_pow.value)));
+                    frac_idx = 1;
+                }
+                else if (
+                    is_frac &&
+                    resolved_pow instanceof frac &&
+                    resolved_pow.els[0] instanceof integer &&
+                    resolved_pow.els[1] instanceof integer &&
+                    resolved_pow.els[0].value < 0
+                ) {
+                    resolved_entry = pow.trimmed(resolved_base, frac(integer(-resolved_pow.els[0].value), resolved_pow.els[1]));
+                    frac_idx = 1; 
+                }
+                else {
+                    resolved_entry = pow.trimmed(resolved_base, resolved_pow);
+                    frac_idx = 0;
+                }
+
+                if (resolved_entry instanceof mul) {
+                    let func_pushed = false;
+                    resolved_entry.els.forEach(el => {
+                        if (el instanceof integer) const_frac[frac_idx] *= el.value;
+                        else {
+                            func_frac[frac_idx].push(el);
+                            func_pushed = true;
+                        }
+                    })
+                    if (func_pushed) need_trim[frac_idx] = true;
+                }
+                else func_frac[frac_idx].push(resolved_entry);
+            }
+        });
+        need_trim.forEach((flag, idx) => {
+            if (flag) {
+                const trimmed = mul.trimmed(...func_frac[idx]);
+                func_frac[idx] = trimmed instanceof mul ? [...trimmed.els] : [trimmed];
             }
         });
 
@@ -323,8 +352,8 @@ export const mul = callable(class mul extends Oper {
         }
          
         const resolved_frac = Array.from({length: 2}, (_, i) => {
-            if (func_frac[i].length > 0 && const_frac[i] !== 1) return new mul(integer(const_frac[i]), ...func_frac[i]);
-            else if (func_frac[i].length > 0) return new mul(...func_frac[i]);
+            if (func_frac[i].length > 1) return const_frac[i] === 1 ? new mul(...func_frac[i]) : new mul(integer(const_frac[i]), ...func_frac[i]);
+            else if (func_frac[i].length === 1) return const_frac[i] === 1 ? func_frac[i][0] : new mul(integer(const_frac[i]), func_frac[i][0]);
             else return integer(const_frac[i]);
         });
         if (resolved_frac[1].equals(integer(1))) return resolved_frac[0];
