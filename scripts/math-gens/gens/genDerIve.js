@@ -118,7 +118,7 @@ const DIH  = { // genDerIve helpers
     },
     getDiffOpStr(settings, ind_var, dep_var) {
         if (settings.expr_diff_notation === 'func') return `${dep_var}'\\left(${ind_var}\\right)`;
-        else return `\\dfrac{d${settings.expr_diff_notation === 'implicit' ? dep_var : ''}}{d${ind_var}}`;
+        else return settings.expr_diff_notation === 'implicit' ? `\\frac{d${dep_var}}{d${ind_var}}` : `\\dfrac{d}{d${ind_var}}`;
     },
     getPromptStr(settings, func_str, diff_op_str) {
         if (settings.expr_diff_notation === 'oper_brac') return `${diff_op_str}\\left[${func_str}\\right]`;
@@ -178,7 +178,11 @@ export const presets = {
     random: function() {
         return {
             func_op: '__random__',
-            diff_funcs: '__random__',
+            diff_funcs: [
+                'any', 'constant', 'identity', 'const_mul', 'linear', 'int_power', 'e_x', 'quadratic', 'basic_trig', 
+                'advan_trig', 'sqrt', 'ln', 'recip', 'frac_power', 'nroot', 'a_x', 'log_a_x', 'abs', 'inv_trig', 
+                'co_inv_trig', 'basic_hyper_trig', 'advan_hyper_trig', 'inv_hyper_trig', 'co_inv_hyper_trig'
+            ].filter(_ => H.randInt(0, 1)),
             expr_diff_notation: '__random__',
             diff_eq_vars: '__random__'
         };
