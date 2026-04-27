@@ -2,6 +2,7 @@
     "schedule": [
         ["genAddSub", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random", "stratify_numerical_ranges": true}],
         ["genComArith", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
+        ["genDerIve", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genDivInt", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random", "stratify_numerical_ranges": true}],
         ["genFacQuad", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
         ["genFracArith", {"starting_test_number": 1, "max_number_of_tests": 200000, "stop_on_failed_test": false, "settings_progression": "random"}],
