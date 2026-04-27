@@ -75,26 +75,8 @@ const DIH  = { // genDerIve helpers
             else if (switcher === 1) return DH.acsc(x);
             else return DH.acot(x);
         },
-        basic_hyper_trig: x => H.randInt(0, 1) ? DH.sinh(x) : DH.cosh(x),
-        advan_hyper_trig: x => {
-            let switcher = H.randInt(0, 3);
-            if (switcher === 0) return DH.tanh(x);
-            else if (switcher === 1) return DH.sech(x);
-            else if (switcher === 2) return DH.csch(x);
-            else return DH.coth(x);
-        },
-        inv_hyper_trig: x => {
-            const switcher = H.randInt(0, 2);
-            if (switcher === 0) return DH.asinh(x);
-            else if (switcher === 1) return DH.acosh(x);
-            else return DH.atanh(x);
-        },
-        co_inv_hyper_trig: x => {
-            const switcher = H.randInt(0, 2);
-            if (switcher === 0) return DH.asech(x);
-            else if (switcher === 1) return DH.acsch(x);
-            else return DH.acoth(x);
-        }
+        hyper_trig: x => H.randInt(0, 1) ? DH.sinh(x) : DH.cosh(x),
+        inv_hyper_trig: x => H.randInt(0, 1) ? DH.asinh(x) : DH.acosh(x)
     },
     ops: {
         sum: (a, b) => H.randInt(0, 1) ? DH.add(a, b) : DH.sub(a, b),

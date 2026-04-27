@@ -1458,10 +1458,8 @@ export const diff_funcs = {
         ['abs', '\\(|x|\\)'],
         ['inv_trig', '\\(\\sin^{-1}(x),~\\cos^{-1}(x),\\)<br>\\(\\tan^{-1}(x)\\)&nbsp;'],
         ['co_inv_trig', '\\(\\sec^{-1}(x),\\csc^{-1}(x),\\)<br>\\(\\cot^{-1}(x)\\)&nbsp;'],
-        ['basic_hyper_trig', '\\(\\sinh(x),~\\cosh(x)\\)&nbsp;'],
-        ['advan_hyper_trig', '\\(\\tanh(x),~\\operatorname{sech}(x),\\)<br>\\(\\coth(x),~\\operatorname{csch}(x)\\)&nbsp;'],
-        ['inv_hyper_trig', '\\(\\sinh^{-1}(x),~\\cosh^{-1}(x),\\)<br>\\(\\tanh^{-1}(x)\\)&nbsp;'],
-        ['co_inv_hyper_trig', '\\(\\operatorname{sech}^{-1}(x),\\operatorname{csch}^{-1}(x),\\)<br>\\(\\coth^{-1}(x)\\)&nbsp;']
+        ['hyper_trig', '\\(\\sinh(x),~\\cosh(x)\\)&nbsp;'],
+        ['inv_hyper_trig', '\\(\\sinh^{-1}(x),~\\cosh^{-1}(x)\\)&nbsp;']
     ], 
     tooltip: 'Which types of functions should be allowed in the expression?',
     default_value: ['any']
