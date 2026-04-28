@@ -31,7 +31,7 @@ def verify(tex_question, tex_answer, settings):
         ).xreplace({symbols('e'): E}) for tex_str in [q_expr_str, a_expr_str]
     ]
     target_var = symbols(ind_var)
-    smp_diff_expr = diff_expr_normed(prompt_expr, target_var)
+    smp_diff_expr = diff_expr_normed(prompt_expr, target_var) if prompt_expr.has(target_var) else 0
     
     if simplify(expand(trigsimp(powdenest((smp_diff_expr - nq_diff_expr).doit(), force=True)))).equals(0) is True: return True  
     else: return latex(smp_diff_expr)
