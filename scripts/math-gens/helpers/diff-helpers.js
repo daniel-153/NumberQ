@@ -202,6 +202,7 @@ export const mul = callable(class mul extends Oper {
             [variable],
             [pow, abs],
             [sqrt, root, add, mul],
+            [],
             [
                 log, ln, sin, cos, tan, csc, sec, cot, asin, acos, atan, acsc, asec, acot, 
                 sinh, cosh, tanh, csch, sech, coth, asinh, acosh, atanh, acsch, asech, acoth
@@ -211,7 +212,9 @@ export const mul = callable(class mul extends Oper {
         let len_args = 0;
         Array.from({length: arguments.length}, (_, i) => this.els[i].equals(integer(1)) ? null : [arguments[i], this.els[i]]).forEach(arg_el => {
             if (arg_el) {
-                const group_idx = order_groups.findIndex(group_entry => group_entry.group.some(ctr => arg_el[1] instanceof ctr));
+                let group_idx;
+                if (arg_el[1] instanceof pow && order_groups[6].group.some(ctr => arg_el[1].els[0] instanceof ctr)) group_idx = 5;
+                else group_idx = order_groups.findIndex(group_entry => group_entry.group.some(ctr => arg_el[1] instanceof ctr));
                 order_groups[group_idx].args.push(arg_el);
                 len_args++;
             }
@@ -230,7 +233,7 @@ export const mul = callable(class mul extends Oper {
                     if (group_entry.args.length > 1 || acc_str.length !== 0) acc_str += `\\left(${str}\\right)`;
                     else acc_str += str;
                 }
-                else if (len_args > 1 && (expr instanceof add || expr instanceof mul || group_idx === 6)) acc_str += `\\left(${str}\\right)`;
+                else if (len_args > 1 && (expr instanceof add || expr instanceof mul || group_idx === 7)) acc_str += `\\left(${str}\\right)`;
                 else acc_str += str;
             });
         })
