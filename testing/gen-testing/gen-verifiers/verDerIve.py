@@ -1,10 +1,10 @@
-from .helpers.gen_helpers import get_diffed_var, remove_whitespace
-from sympy import symbols, diff, E, latex
+from .helpers.gen_helpers import get_diffed_var, remove_whitespace, norm_base_logs, diff_expr_normed
+from sympy import symbols, E, latex, simplify, expand, trigsimp, powdenest
 from sympy.parsing.latex import parse_latex
 
 def verify(tex_question, tex_answer, settings):
     tex_question, tex_answer = [
-        (tex_str.replace("\\displaystyle{", "", 1)[:-1] if tex_str.startswith("\\displaystyle{") else tex_str) 
+        (tex_str.replace("\\displaystyle{", "", 1)[:-1] if tex_str.startswith("\\displaystyle{") else tex_str)
         for tex_str in [remove_whitespace(tex_str) for tex_str in [tex_question, tex_answer]]
     ]
     dep_var, ind_var = settings["diff_eq_vars"].split("_")
@@ -16,9 +16,9 @@ def verify(tex_question, tex_answer, settings):
         if func_def.count(func_symbol) == 1 and func_def.startswith(func_symbol): q_expr_str = func_def.replace(func_symbol, "")
         else: return "Invalid function definition formatting in question."
         if tex_answer.count(diff_symbol) == 1 and tex_answer.startswith(diff_symbol): a_expr_str = tex_answer.replace(diff_symbol, "")
-        else: 
+        else:
             print('hit')
-            return "Invalid derivative equality formatting in answer." 
+            return "Invalid derivative equality formatting in answer."
     else:
         diff_op = f"\\dfrac{{d}}{{d{ind_var}}}"
         if tex_question.count(diff_op) == 1 and tex_question.startswith(diff_op): q_expr_str = tex_question.replace(diff_op, "")
@@ -26,16 +26,12 @@ def verify(tex_question, tex_answer, settings):
         a_expr_str = tex_answer
 
     prompt_expr, nq_diff_expr = [
-        parse_latex(tex_str.replace("(", "[").replace(")", "]").replace("\\left", "").replace("\\right", "").replace("sech^{-1}", "asech")
-        .replace("csch^{-1}", "acsch").replace("coth^{-1}", "acoth"), strict=True).subs(symbols('e'), E) for tex_str in [q_expr_str, a_expr_str]
+        norm_base_logs(parse_latex(tex_str.replace("(", "[").replace(")", "]").replace("\\left", "").replace("\\right", "")
+        .replace(f"{ind_var}\\ln", f"{ind_var}\\cdot\\ln").replace(f"{ind_var}\\log", f"{ind_var}\\cdot\\log"), strict=True)
+        ).xreplace({symbols('e'): E}) for tex_str in [q_expr_str, a_expr_str]
     ]
     target_var = symbols(ind_var)
-
-    smp_diff_expr = diff(prompt_expr, target_var)
-    if smp_diff_expr.equals(nq_diff_expr) is True:
-        # TODO also check that the domain of the diff expr is a superset (greater or equal) to the domain of the original func
-        # (then compare them for equality only on the domain of the original func)
-        return True
-    else:
-        return latex(smp_diff_expr)
-
+    smp_diff_expr = diff_expr_normed(prompt_expr, target_var)
+    
+    if simplify(expand(trigsimp(powdenest((smp_diff_expr - nq_diff_expr).doit(), force=True)))).equals(0) is True: return True  
+    else: return latex(smp_diff_expr)

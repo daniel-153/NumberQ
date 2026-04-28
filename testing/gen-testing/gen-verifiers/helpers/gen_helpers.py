@@ -1,8 +1,9 @@
 import re
 import random
-from sympy import zoo, nan, Basic, log, Abs, sign, sqrt, Function, asec, acsc, acosh, Derivative, diff, Dummy
+from sympy import zoo, nan, Basic, log, Abs, sqrt, Function, asec, acsc, acosh, Derivative, diff, tan, cot, sec, csc
 from sympy.parsing.latex import parse_latex
 from decimal import Decimal, ROUND_HALF_UP
+import uuid
 
 def get_adjusted_tex_str(tex_str): # helper
    tex_str = re.sub(r'(?<=[a-zA-Z0-9])\(', r'\\cdot(', tex_str) # a(b+c) -> a\cdot(b+c) (parsed as a function by default)
@@ -226,24 +227,32 @@ def norm_base_logs(expr):
     )
 
 def diff_expr_normed(expr, target_var):
-    if not target_var.is_real: raise Exception("target_var in diff_expr_normed(expr, target_var) must be defined as real.")
     func_map = {
         Abs: lambda x: x / Abs(x),
         asec: lambda x: 1/(Abs(x)*sqrt(x**2 - 1)),
         acsc: lambda x: -1/(Abs(x)*sqrt(x**2 - 1)),
-        acosh: lambda x: 1/sqrt(x**2 - 1)
+        acosh: lambda x: 1/sqrt(x**2 - 1),
+        tan: lambda x: sec(x)**2,
+        cot: lambda x: -csc(x)**2
     }
     sub_map = {}
 
     last_key = [None]
     def check_and_key(func_node):
         if getattr(func_node, "func", None) in func_map:
-            last_key[0] = Function(Dummy("f"))(target_var)
+            last_key[0] = Function(f"f_{uuid.uuid4().hex}")(target_var)
+            sub_map[Derivative(last_key[0], target_var)] = func_map[func_node.func](func_node.args[0]) * diff_expr_normed(func_node.args[0], target_var)
             sub_map[last_key[0]] = func_node
-            sub_map[Derivative(last_key[0], target_var)] = func_map[func_node.func](func_node.args[0]) * diff(func_node.args[0], target_var)
             return True
 
-    return diff(expr.replace(
+    diffed_expr = diff(expr.replace(
         check_and_key,
         lambda _: last_key[0]
-    ), target_var).subs(sub_map)
+    ), target_var)
+    sub_items = list(sub_map.items())
+    for i in range(0, len(sub_items)):
+        diffed_expr = diffed_expr.subs(*sub_items[i])
+        for j in range(i, len(sub_items)):
+            sub_items[j] = (sub_items[j][0], sub_items[j][1].subs(*sub_items[i]))
+
+    return diffed_expr
