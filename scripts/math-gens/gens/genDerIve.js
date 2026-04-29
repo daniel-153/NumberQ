@@ -165,9 +165,9 @@ export const presets = {
         return {
             func_op: '__random__',
             diff_funcs: [
-                'any', 'constant', 'identity', 'const_mul', 'linear', 'int_power', 'e_x', 'quadratic', 'basic_trig', 
-                'advan_trig', 'sqrt', 'ln', 'recip', 'frac_power', 'nroot', 'a_x', 'log_a_x', 'abs', 'inv_trig', 
-                'co_inv_trig', 'basic_hyper_trig', 'advan_hyper_trig', 'inv_hyper_trig', 'co_inv_hyper_trig'
+                'any', 'constant', 'identity', 'const_mul', 'linear', 'int_power', 'e_x', 'quadratic',
+                'basic_trig', 'advan_trig', 'sqrt', 'ln', 'recip', 'frac_power', 'nroot', 'a_x',
+                'log_a_x', 'abs', 'inv_trig', 'co_inv_trig', 'hyper_trig', 'inv_hyper_trig'
             ].filter(_ => H.randInt(0, 1)),
             expr_diff_notation: '__random__',
             diff_eq_vars: '__random__'
