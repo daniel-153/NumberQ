@@ -84,19 +84,23 @@ const DIH  = { // genDerIve helpers
         div: (a, b) => DH.frac(a, b),
         chain: (a, b) => DH.compose(a, b)
     },
-    getRandFunc(settings) {
-        const chosen_func = H.randFromList(settings.diff_funcs);
-        return chosen_func === 'any' ? H.randFromList(Object.keys(DIH.funcs)) : chosen_func;
-    },
     getRandOp(settings) {
         if (settings.func_op === 'any') return H.randFromList(Object.keys(DIH.ops));
         else if (settings.func_op === 'none') return null;
         else return settings.func_op;
     },
     buildPromptExpr(settings) {
+        const all_funcs = Object.keys(DIH.funcs);
+        const resolveRandFunc = f => f === 'any' ? H.randFromList(all_funcs) : f;
+        let func1 = H.randFromList(settings.diff_funcs);
         const chosen_op = DIH.getRandOp(settings);
-        if (chosen_op) return (x) => DIH.ops[chosen_op](DIH.funcs[DIH.getRandFunc(settings)](x), DIH.funcs[DIH.getRandFunc(settings)](x));
-        else return (x) => DIH.funcs[DIH.getRandFunc(settings)](x)
+        if (chosen_op) {
+            const remaining_funcs = settings.diff_funcs.filter(f => f !== func1);
+            let func2 = remaining_funcs.length ? H.randFromList(remaining_funcs) : func1;
+            if (H.randInt(0, 1)) [func1, func2] = [func2, func1];
+            return (x) => DIH.ops[chosen_op](DIH.funcs[resolveRandFunc(func1)](x), DIH.funcs[resolveRandFunc(func2)](x));
+        }
+        else return (x) => DIH.funcs[resolveRandFunc(func1)](x);
     },
     getDiffOpStr(settings, ind_var, dep_var) {
         if (settings.expr_diff_notation === 'func') return `${dep_var}'\\left(${ind_var}\\right)`;
