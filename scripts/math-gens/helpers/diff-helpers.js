@@ -247,14 +247,15 @@ export const mul = callable(class mul extends Oper {
         );
     }
     static trimmed() {
+        let nontriv_args;
         if (arguments.length === 1) return arguments[0];
-        if (arguments.length === 2 && (
-            (arguments[0] instanceof add && arguments[1] instanceof integer) ||
-            (arguments[1] instanceof add && arguments[0] instanceof integer)
+        if ((nontriv_args = Array.from(arguments).filter(arg => !(arg.equals(integer(1))))).length === 2 && (
+            (nontriv_args[0] instanceof add && nontriv_args[1] instanceof integer) ||
+            (nontriv_args[1] instanceof add && nontriv_args[0] instanceof integer)
         )) {
             let int_factor, add_expr;
-            if (arguments[0] instanceof integer) ([int_factor, add_expr] = arguments);
-            else ([add_expr, int_factor] = arguments);
+            if (nontriv_args[0] instanceof integer) ([int_factor, add_expr] = nontriv_args);
+            else ([add_expr, int_factor] = nontriv_args);
             return add.trimmed(...add_expr.els.map(el => mul.trimmed(int_factor, el)));
         }
 
@@ -423,7 +424,10 @@ export const pow = callable(class pow extends BinaryOper {
         else if (this.els[0] instanceof variable && this.els[0].symbol.length === 1) return `${arguments[0]}^{${arguments[1]}}`;
         else return `\\left(${arguments[0]}\\right)^{${arguments[1]}}`;
     }
-    derivative(vari) { return mul(new pow(this.els[0], this.els[1]), mul(this.els[1], ln(this.els[0])).diff(vari)); }
+    derivative(vari) { 
+        if (!this.els[1].vars.includes(vari)) return mul(this.els[1], new pow(this.els[0], sub(this.els[1], integer(1))), this.els[0].diff(vari));
+        else return mul(new pow(this.els[0], this.els[1]), mul(this.els[1], ln(this.els[0])).diff(vari));
+    }
     static trimmed() {
         if (arguments[0] instanceof pow) return pow.trimmed(arguments[0].els[0], mul.trimmed(arguments[0].els[1], arguments[1]));
         else if (arguments[0] instanceof integer && arguments[1] instanceof integer) {
@@ -471,7 +475,7 @@ export const abs = callable(class abs extends UnaryOper {
     constructor() { super(...arguments); }
     repr() { return `\\left|${arguments[0]}\\right|`; }
     derivative(vari) { return mul(frac(this.els[0], new abs(this.els[0])), this.els[0].diff(vari)); }
-    static trimmed() { return arguments[0] instanceof abs ? arguments[0] : this; }
+    static trimmed() { return arguments[0] instanceof abs ? arguments[0] : new abs(arguments[0]); }
 })
 
 export class NamedUnaryOper extends UnaryOper {
@@ -488,10 +492,7 @@ export class NamedUnaryOper extends UnaryOper {
 export const ln = callable(class ln extends NamedUnaryOper {
     constructor() { super(...arguments); }
     derivative(vari) { return mul(frac(integer(1), this.els[0]), this.els[0].diff(vari)); }
-    static trimmed() {
-        if (arguments[0].equals(const_e)) return integer(1);
-        else return this;
-    }
+    static trimmed() { return arguments[0].equals(const_e) ? integer(1) : new ln(arguments[0]);}
 })
 
 export const sin = callable(class sin extends NamedUnaryOper {
